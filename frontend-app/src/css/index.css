@@ -1,0 +1,19 @@
+/* ⭐ Tu CSS corporativo */
+@import "./variables.css";
+@import "./glass.css";
+@import "./buttons.css";
+@import "./cards.css";
+@import "./tables.css";
+@import "./forms.css";
+@import "./tabs.css";
+@import "./layout.css";
+@import "./sidebar.css";
+@import "./animations.css";
+@import "./modals.css";
+
+/* ⭐ Tailwind — necesario para TODO el layout */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+

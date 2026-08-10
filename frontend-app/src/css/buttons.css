@@ -1,0 +1,25 @@
+.btn {
+  padding: 0.6rem 1rem;
+  border-radius: var(--sj-radius);
+  font-weight: 600;
+  transition: 0.2s;
+}
+
+.btn-primary {
+  background: var(--sj-blue);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #1f54b8;
+}
+
+.btn-outline {
+  border: 1px solid var(--sj-blue);
+  color: var(--sj-blue-dark);
+}
+
+.btn-outline:hover {
+  background: var(--sj-blue);
+  color: white;
+}

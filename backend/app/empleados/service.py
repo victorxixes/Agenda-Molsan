@@ -7,7 +7,7 @@ from datetime import datetime
 from app.empleados.models import Empleado
 from app.auditoria.models import Auditoria
 
-BACKEND_URL = "https://agenda-intranet-backend.onrender.com"
+BACKEND_URL = "https://https://agenda-intranet-b.onrender.com"
 
 
 def hash_password(password: str):

@@ -30,7 +30,7 @@ def login(data: LoginRequest):
     return {
         "id": 1,
         "nombre": "Administrador",
-        "avatar_url": "https://ahttps://agenda-intranet-f.onrender.com/public/avatar.jpg",
+        "avatar_url": "https://agenda-intranet-b.onrender.com/static/avatar.png",
 
         "modulos_visibles": [
             "dashboard",

@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { agendaAPI } from "../api/agendaAPI";
+import { agendaAPI } from "../api/agendaAPI.js";
 import { crearLog } from "../lib/log";
 
 export const useAgendaStore = create((set, get) => ({

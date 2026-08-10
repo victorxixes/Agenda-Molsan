@@ -1,0 +1,49 @@
+from datetime import datetime
+from sqlalchemy.orm import Session
+from app.auditoria.models import Auditoria
+
+def registrar_auditoria(db: Session, usuario: str, modulo: str, accion: str, descripcion: str):
+    registro = Auditoria(
+        usuario=usuario,
+        modulo=modulo,
+        accion=accion,
+        descripcion=descripcion,
+        fecha=datetime.utcnow()
+    )
+    db.add(registro)
+    db.commit()
+    db.refresh(registro)
+    return registro
+
+def obtener_auditoria(db: Session):
+    return db.query(Auditoria).order_by(Auditoria.fecha.desc()).all()
+
+def obtener_metricas(db: Session):
+    total = db.query(Auditoria).count()
+
+    por_modulo = (
+        db.query(Auditoria.modulo, db.func.count(Auditoria.id))
+        .group_by(Auditoria.modulo)
+        .all()
+    )
+
+    por_accion = (
+        db.query(Auditoria.accion, db.func.count(Auditoria.id))
+        .group_by(Auditoria.accion)
+        .all()
+    )
+
+    ultimos_logins = (
+        db.query(Auditoria)
+        .filter(Auditoria.accion == "login")
+        .order_by(Auditoria.fecha.desc())
+        .limit(10)
+        .all()
+    )
+
+    return {
+        "total_registros": total,
+        "por_modulo": [{"modulo": m, "cantidad": c} for m, c in por_modulo],
+        "por_accion": [{"accion": a, "cantidad": c} for a, c in por_accion],
+        "ultimos_logins": ultimos_logins,
+    }

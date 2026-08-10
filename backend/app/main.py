@@ -32,8 +32,6 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "https://agenda-intranet-f.onrender.com",   # 🔥 TU FRONTEND ACTUAL
-        "https://agenda-intranet-front.onrender.com",
-        "https://agenda-intranet-front-v3.onrender.com",
         "http://localhost:5173"
     ],
     allow_credentials=True,

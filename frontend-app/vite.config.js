@@ -7,8 +7,7 @@ export default defineConfig({
     host: true,
     port: 5173
   },
-  build: {
-    outDir: "dist-prod",
-    sourcemap: false
-  }
+build: {
+  outDir: "dist",
+}
 });

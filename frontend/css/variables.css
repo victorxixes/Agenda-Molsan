@@ -1,0 +1,12 @@
+:root {
+  --sj-white: #ffffff;
+  --sj-gray-blue: #6A7A8C;
+  --sj-blue-dark: #1F3A5F;
+  --sj-blue: #2D6CDF;
+
+  --sj-glass-bg: rgba(255, 255, 255, 0.7);
+  --sj-glass-border: rgba(200, 200, 200, 0.4);
+
+  --sj-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  --sj-radius: 10px;
+}

@@ -1,0 +1,21 @@
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  color: var(--sj-blue-dark);
+}
+
+.table th {
+  background: var(--sj-gray-blue);
+  color: white;
+  padding: 0.7rem;
+  text-align: left;
+}
+
+.table td {
+  padding: 0.6rem;
+  border-bottom: 1px solid var(--sj-glass-border);
+}
+
+.table tr:hover {
+  background: rgba(240, 240, 255, 0.4);
+}

@@ -1,0 +1,76 @@
+/* ---------------------------------------------------------
+   INPUTS (Glass UI)
+--------------------------------------------------------- */
+.input {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 10px;
+  border-radius: 8px;
+  color: white;
+  width: 100%;
+  transition: 0.2s ease;
+}
+
+.input:focus {
+  border-color: rgba(0, 150, 255, 0.5);
+  outline: none;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* ---------------------------------------------------------
+   BOTÓN PRINCIPAL (Glass Primary)
+--------------------------------------------------------- */
+.btn-primary {
+  background: rgba(0, 150, 255, 0.3);
+  padding: 10px;
+  border-radius: 8px;
+  color: white;
+  width: 100%;
+  transition: 0.2s ease;
+}
+
+.btn-primary:hover {
+  background: rgba(0, 150, 255, 0.5);
+}
+
+.btn-primary:active {
+  background: rgba(0, 150, 255, 0.6);
+}
+
+/* ---------------------------------------------------------
+   BOTÓN EDITAR (Glass Edit)
+--------------------------------------------------------- */
+.btn-edit {
+  background: rgba(0, 150, 255, 0.2);
+  padding: 8px 12px;
+  border-radius: 8px;
+  color: white;
+  transition: 0.2s ease;
+}
+
+.btn-edit:hover {
+  background: rgba(0, 150, 255, 0.4);
+}
+
+.btn-edit:active {
+  background: rgba(0, 150, 255, 0.5);
+}
+
+/* ---------------------------------------------------------
+   BOTÓN ELIMINAR (Glass Danger)
+--------------------------------------------------------- */
+.btn-delete {
+  background: rgba(255, 0, 0, 0.2);
+  padding: 8px 12px;
+  border-radius: 8px;
+  color: white;
+  transition: 0.2s ease;
+}
+
+.btn-delete:hover {
+  background: rgba(255, 0, 0, 0.4);
+}
+
+.btn-delete:active {
+  background: rgba(255, 0, 0, 0.5);
+}

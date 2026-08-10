@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "https://agenda-intranet-backend.onrender.com";
+const API_URL = "https://agenda-intranet-f.onrender.com";
 
 export const loginRequest = async (usuario, password) => {
   const { data } = await axios.post(

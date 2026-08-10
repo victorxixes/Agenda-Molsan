@@ -13,6 +13,9 @@ class LoginRequest(BaseModel):
     usuario: str
     password: str
 
+@router.options("/login")
+def options_login():
+    return {}
 
 @router.post("/login")
 def login(data: LoginRequest):

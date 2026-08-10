@@ -1,0 +1,11 @@
+.card {
+  padding: 1rem;
+  border-radius: var(--sj-radius);
+  background: var(--sj-white);
+  box-shadow: var(--sj-shadow);
+}
+
+.card-glass {
+  composes: glass;
+  padding: 1rem;
+}

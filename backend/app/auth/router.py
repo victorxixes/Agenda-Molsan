@@ -1,5 +1,10 @@
 import hashlib
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
+from sqlalchemy.orm import Session
+
+from app.database import get_db
+from app.empleados.models import Empleado
+from app.auth.utils import create_access_token
 from pydantic import BaseModel
 
 router = APIRouter(prefix="/auth", tags=["Autenticación"])
@@ -8,10 +13,11 @@ router = APIRouter(prefix="/auth", tags=["Autenticación"])
 def hash_password(password: str) -> str:
     return hashlib.sha256(password.encode()).hexdigest()
 
+
 # ---------------------------------------------------------
 # LOGIN EMPLEADOS
 # ---------------------------------------------------------
-@router.post("/login")
+@router.post("/empleados/login")
 def login_empleado(usuario: str, password: str, db: Session = Depends(get_db)):
     empleado = db.query(Empleado).filter(Empleado.usuario == usuario).first()
 
@@ -32,16 +38,22 @@ def login_empleado(usuario: str, password: str, db: Session = Depends(get_db)):
         "token": token
     }
 
+
+# ---------------------------------------------------------
+# LOGIN ADMIN
+# ---------------------------------------------------------
 class LoginRequest(BaseModel):
     usuario: str
     password: str
+
 
 @router.options("/login")
 def options_login():
     return {}
 
+
 @router.post("/login")
-def login(data: LoginRequest):
+def login_admin(data: LoginRequest):
     # Usuario y contraseña fijos: admin / admin
     if data.usuario != "admin":
         raise HTTPException(status_code=400, detail="Usuario no encontrado")
@@ -49,7 +61,6 @@ def login(data: LoginRequest):
     if hash_password(data.password) != hash_password("admin"):
         raise HTTPException(status_code=400, detail="Contraseña incorrecta")
 
-    # Respuesta adaptada al frontend
     return {
         "id": 1,
         "nombre": "Administrador",

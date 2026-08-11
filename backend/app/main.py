@@ -22,7 +22,6 @@ from app.intranet.noticias.router_fix_schema import router as router_fix_noticia
 
 # Utilidades
 from app.utilidades.router import router as utilidades_router
-from app.empleados.router_v2 import router as empleados_v2_router
 
 # CREAR TABLAS
 Base.metadata.create_all(bind=engine)
@@ -109,7 +108,7 @@ app.include_router(realtime_router)
 
 # Utilidades al final
 app.include_router(utilidades_router)
-app.include_router(empleados_v2_router)
+
 
 # ---------------------------------------------------------
 # STATIC FILES

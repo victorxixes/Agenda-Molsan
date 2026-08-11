@@ -19,6 +19,7 @@ from app.ctn.models import Notaria
 from app.intranet.noticias.router_reset_pg import router as router_reset_pg
 from app.intranet.noticias.router_fix_pg import router as router_fix_pg
 from app.intranet.noticias.router_fix_schema import router as router_fix_noticias
+from app.utilidades.router_force import router as force_router
 
 # Utilidades
 from app.utilidades.router import router as utilidades_router
@@ -108,6 +109,7 @@ app.include_router(realtime_router)
 
 # Utilidades al final
 app.include_router(utilidades_router)
+app.include_router(force_router)
 
 
 # ---------------------------------------------------------

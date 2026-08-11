@@ -20,6 +20,9 @@ from app.intranet.noticias.router_reset_pg import router as router_reset_pg
 from app.intranet.noticias.router_fix_pg import router as router_fix_pg
 from app.intranet.noticias.router_fix_schema import router as router_fix_noticias
 
+# Utilidades
+from app.utilidades.router import router as utilidades_router
+
 # CREAR TABLAS
 Base.metadata.create_all(bind=engine)
 
@@ -31,15 +34,13 @@ app = FastAPI(title="Agenda Intranet Backend")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://agenda-intranet-f.onrender.com",   # 🔥 TU FRONTEND ACTUAL
+        "https://agenda-intranet-f.onrender.com",
         "http://localhost:5173"
     ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
 
 # ---------------------------------------------------------
 # IMPORTAR ROUTERS
@@ -53,7 +54,7 @@ from app.auth.router import router as auth_router
 from app.empleados.router import router as empleados_router
 from app.maestros.router import router as maestros_router
 
-from app.ctn.router import router as ctn_router   # CTN PRIMERO
+from app.ctn.router import router as ctn_router
 from app.agenda.router import router as agenda_router
 from app.agenda.notarios_router import router as agenda_notarios_router
 
@@ -65,13 +66,12 @@ from app.intranet.documentos.router import router as documentos_router
 from app.logs.router import router as logs_router
 from app.mensajes.router import router as mensajes_router
 from app.realtime.router import router as realtime_router
-from app.utilidades.router import router as utilidades_router
 
 # ---------------------------------------------------------
 # INCLUIR ROUTERS (ORDEN CORRECTO)
 # ---------------------------------------------------------
 
-# Primero los admin
+# Admin
 app.include_router(router_reset_pg)
 app.include_router(router_fix_pg)
 app.include_router(router_fix_noticias)
@@ -89,10 +89,10 @@ app.include_router(maestros_router)
 app.include_router(noticias_router)
 app.include_router(documentos_router)
 
-# 🔥 CTN ANTES QUE AGENDA (dependencia crítica)
+# CTN antes que Agenda
 app.include_router(ctn_router)
 
-# Agenda (depende de CTN)
+# Agenda
 app.include_router(agenda_router)
 app.include_router(agenda_notarios_router)
 

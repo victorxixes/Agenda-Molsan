@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlalchemy.orm import Session
+from sqlalchemy import or_
 import os
 
 from app.database import get_db
@@ -7,7 +8,8 @@ from app.empleados.models import Empleado
 from app.empleados.schemas import (
     EmpleadoCreate,
     EmpleadoUpdate,
-    EmpleadoResponse
+    EmpleadoResponse,
+    EmpleadoSearchResponse
 )
 from app.empleados.service import (
     crear_empleado,
@@ -69,6 +71,67 @@ def actualizar_permisos(
 @router.get("/", response_model=list[EmpleadoResponse])
 def listar(db: Session = Depends(get_db)):
     return listar_empleados(db)
+
+# ---------------------------------------------------------
+# BÚSQUEDA + FILTROS + PAGINACIÓN
+# ---------------------------------------------------------
+@router.get("/search", response_model=EmpleadoSearchResponse)
+def buscar_empleados(
+    db: Session = Depends(get_db),
+    q: str = "",
+    departamento_id: int = None,
+    seccion_id: int = None,
+    cargo_id: int = None,
+    activo: bool = None,
+    page: int = 1,
+    limit: int = 20
+):
+    query = db.query(Empleado)
+
+    # -----------------------------
+    # BÚSQUEDA
+    # -----------------------------
+    if q:
+        query = query.filter(
+            or_(
+                Empleado.nombre.ilike(f"%{q}%"),
+                Empleado.apellidos.ilike(f"%{q}%"),
+                Empleado.dni.ilike(f"%{q}%")
+            )
+        )
+
+    # -----------------------------
+    # FILTROS
+    # -----------------------------
+    if departamento_id is not None:
+        query = query.filter(Empleado.departamento_id == departamento_id)
+
+    if seccion_id is not None:
+        query = query.filter(Empleado.seccion_id == seccion_id)
+
+    if cargo_id is not None:
+        query = query.filter(Empleado.cargo_id == cargo_id)
+
+    if activo is not None:
+        query = query.filter(Empleado.activo == activo)
+
+    # -----------------------------
+    # PAGINACIÓN
+    # -----------------------------
+    total = query.count()
+    pages = (total + limit - 1) // limit
+    offset = (page - 1) * limit
+
+    empleados = query.offset(offset).limit(limit).all()
+
+    return EmpleadoSearchResponse(
+        total=total,
+        page=page,
+        pages=pages,
+        limit=limit,
+        offset=offset,
+        items=empleados
+    )
 
 # ---------------------------------------------------------
 # OBTENER UNO POR ID

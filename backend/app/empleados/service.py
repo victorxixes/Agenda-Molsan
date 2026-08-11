@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 from app.empleados.models import Empleado
 from app.empleados.schemas import EmpleadoCreate, EmpleadoUpdate
 import hashlib
+import json
 
 def hash_password(password: str):
     return hashlib.sha256(password.encode()).hexdigest()
@@ -28,8 +29,11 @@ def crear_empleado(db: Session, data: EmpleadoCreate):
         observaciones=data.observaciones,
         usuario=data.usuario,
         password=hash_password(data.password),
-        modulos_visibles=data.modulos_visibles,
-        permisos_modulo=data.permisos_modulo,
+
+        # 🔥 Conversión explícita a JSON
+        modulos_visibles=json.loads(json.dumps(data.modulos_visibles)),
+        permisos_modulo=json.loads(json.dumps(data.permisos_modulo)),
+
         activo=True
     )
 
@@ -46,6 +50,13 @@ def editar_empleado(db: Session, empleado_id: int, data: EmpleadoUpdate):
     for campo, valor in data.dict(exclude_unset=True).items():
         if campo == "password":
             valor = hash_password(valor)
+
+        # 🔥 Conversión explícita en edición también
+        if campo == "modulos_visibles":
+            valor = json.loads(json.dumps(valor))
+        if campo == "permisos_modulo":
+            valor = json.loads(json.dumps(valor))
+
         setattr(empleado, campo, valor)
 
     db.commit()

@@ -1,16 +1,21 @@
 import { useState, useEffect } from "react";
 import { useAgendaStore } from "../../store/agendaStore";
+
 import CalendarHeader from "./CalendarHeader";
 import CalendarGrid from "./CalendarGrid";
+
 import AgendaSidebar from "../../sidebar/AgendaSidebar.jsx";
 import AgendaNuevaCitaModal from "./AgendaNuevaCitaModal";
+import AgendaEditarCitaModal from "./AgendaEditarCitaModal.jsx";
 
 export default function AgendaPage() {
   const { citasDia, cargarDia, cargarMes } = useAgendaStore();
 
   const today = new Date();
   const [selectedDate, setSelectedDate] = useState(today);
-  const [showModal, setShowModal] = useState(false);
+
+  const [showNuevaCita, setShowNuevaCita] = useState(false);
+  const [editarId, setEditarId] = useState(null);
 
   const year = selectedDate.getFullYear();
   const month = selectedDate.getMonth() + 1;
@@ -22,7 +27,7 @@ export default function AgendaPage() {
   const handleSelectDay = (day) => {
     setSelectedDate(day);
     cargarDia(day.toISOString().split("T")[0]);
-    setShowModal(true);
+    setShowNuevaCita(true);
   };
 
   return (
@@ -41,20 +46,28 @@ export default function AgendaPage() {
         />
       </div>
 
-      {/* Tabla lateral */}
+      {/* Sidebar */}
       <div className="col-span-4">
         <AgendaSidebar 
           date={selectedDate}
           citas={citasDia}
-          onNuevaCita={() => setShowModal(true)}
+          onNuevaCita={() => setShowNuevaCita(true)}
+          onEditarCita={(id) => setEditarId(id)}
         />
       </div>
 
-      {/* Modal */}
+      {/* Modal: Nueva cita */}
       <AgendaNuevaCitaModal 
-        open={showModal}
-        onClose={() => setShowModal(false)}
+        open={showNuevaCita}
+        onClose={() => setShowNuevaCita(false)}
         fechaSeleccionada={selectedDate}
+      />
+
+      {/* Modal: Editar cita */}
+      <AgendaEditarCitaModal
+        open={editarId !== null}
+        citaId={editarId}
+        onClose={() => setEditarId(null)}
       />
 
     </div>

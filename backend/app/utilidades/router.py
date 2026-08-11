@@ -9,6 +9,16 @@ from app.intranet.documentos.service import crear_documento
 
 router = APIRouter(prefix="/utilidades", tags=["Utilidades"])
 
+@router.delete("/reset_empleados")
+def reset_empleados(db: Session = Depends(get_db)):
+    # 1. Eliminar tabla
+    db.execute("DROP TABLE IF EXISTS empleados CASCADE;")
+
+    # 2. Volver a crear tabla según el modelo actual
+    Base.metadata.tables["empleados"].create(db.bind)
+
+    return {"status": "ok", "message": "Tabla empleados recreada correctamente"}
+    
 # ---------------------------------------------------------
 # IMPORTAR CTN (Excel)
 # ---------------------------------------------------------

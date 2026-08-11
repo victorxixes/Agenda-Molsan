@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useAgendaStore } from "../../store/agendaStore";
 import CalendarHeader from "./CalendarHeader";
 import CalendarGrid from "./CalendarGrid";
-import AgendaSidebar from "./AgendaSidebar";
+import AgendaSidebar from "../../sidebar/AgendaSidebar.jsx";
 import AgendaNuevaCitaModal from "./AgendaNuevaCitaModal";
 
 export default function AgendaPage() {

@@ -51,6 +51,18 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
   }, [open]);
 
   // ---------------------------------------------------------
+  // AUTOSELECCIONAR APODERADO (usuario actual ID = 2)
+  // ---------------------------------------------------------
+  useEffect(() => {
+    if (open && apoderados.length > 0) {
+      const yo = apoderados.find(a => a.id === 2);
+      if (yo) {
+        setForm(f => ({ ...f, apoderado_id: yo.id }));
+      }
+    }
+  }, [open, apoderados]);
+
+  // ---------------------------------------------------------
   // SELECCIONAR NOTARIA
   // ---------------------------------------------------------
   const seleccionarNotaria = (n) => {
@@ -71,7 +83,7 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
       ...form,
       notario_id: n.id,
       tipo_firma: tipoFirmaTraducida,
-      apoderado_id: apoderadoEncontrado ? apoderadoEncontrado.id : null,
+      apoderado_id: apoderadoEncontrado ? apoderadoEncontrado.id : form.apoderado_id,
       observaciones: n.observacion || form.observaciones,
     });
   };

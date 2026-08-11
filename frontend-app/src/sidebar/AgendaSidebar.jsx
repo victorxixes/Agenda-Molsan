@@ -1,4 +1,4 @@
-export default function AgendaSidebar({ date, citas, onNuevaCita }) {
+export default function AgendaSidebar({ date, citas, onNuevaCita, onEditarCita }) {
   const fecha = date.toISOString().split("T")[0];
 
   return (
@@ -19,13 +19,14 @@ export default function AgendaSidebar({ date, citas, onNuevaCita }) {
             <th>Tipo</th>
             <th>Apoderado</th>
             <th>Estado</th>
+            <th></th>
           </tr>
         </thead>
 
         <tbody>
           {citas.length === 0 && (
             <tr>
-              <td colSpan="4" className="text-center py-4 text-gray-500">
+              <td colSpan="5" className="text-center py-4 text-gray-500">
                 No hay citas en esta fecha
               </td>
             </tr>
@@ -37,6 +38,15 @@ export default function AgendaSidebar({ date, citas, onNuevaCita }) {
               <td>{c.tipo_cita}</td>
               <td>{c.apoderado_nombre}</td>
               <td>{c.estado}</td>
+
+              <td>
+                <button
+                  className="btn"
+                  onClick={() => onEditarCita(c.id)}
+                >
+                  Editar
+                </button>
+              </td>
             </tr>
           ))}
         </tbody>

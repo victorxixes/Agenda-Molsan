@@ -38,7 +38,6 @@ app.add_middleware(
 # IMPORTAR ROUTERS
 # ---------------------------------------------------------
 from app.seguridad.router_fix_schema import fix_empleados_schema
-fix_empleados_schema()
 
 from app.seguridad.router import router as seguridad_router
 from app.seguridad.permisos_router import router as permisos_router

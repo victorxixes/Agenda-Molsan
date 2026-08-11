@@ -6,7 +6,7 @@ import CalendarGrid from "./CalendarGrid";
 
 import AgendaSidebar from "../../sidebar/AgendaSidebar.jsx";
 import AgendaNuevaCitaModal from "./AgendaNuevaCitaModal";
-import AgendaEditarCitaModal from "./AgendaEditarCitaModal.jsx";
+import AgendaNuevaEditarCitaModal from "./AgendaNuevaEditarCitaModal.jsx";
 
 export default function AgendaPage() {
   const { citasDia, cargarDia, cargarMes } = useAgendaStore();
@@ -64,7 +64,7 @@ export default function AgendaPage() {
       />
 
       {/* Modal: Editar cita */}
-      <AgendaEditarCitaModal
+      <AgendaNuevaEditarCitaModal
         open={editarId !== null}
         citaId={editarId}
         onClose={() => setEditarId(null)}

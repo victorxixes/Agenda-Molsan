@@ -3,28 +3,17 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import os
 
-from app.database import Base, engine, get_db
-
-# IMPORTAR MODELOS
-from app.empleados.models import Empleado
-from app.maestros.models import Departamento, Seccion, Cargo
-from app.auditoria.models import Auditoria
-from app.logs.models import Log
-from app.intranet.noticias.models import Noticia
-from app.intranet.documentos.models import Documento
-from app.agenda.models import Cita
-from app.ctn.models import Notaria
+from app.database import Base, engine
 
 # Routers admin (PostgreSQL)
 from app.intranet.noticias.router_reset_pg import router as router_reset_pg
 from app.intranet.noticias.router_fix_pg import router as router_fix_pg
 from app.intranet.noticias.router_fix_schema import router as router_fix_noticias
 
-
 # Utilidades
 from app.utilidades.router import router as utilidades_router
-from app.utilidades.router_force import router as force_router
 from app.utilidades.router_create import router as create_router
+from app.utilidades.router_force import router as force_router
 
 # CREAR TABLAS
 Base.metadata.create_all(bind=engine)
@@ -71,49 +60,38 @@ from app.mensajes.router import router as mensajes_router
 from app.realtime.router import router as realtime_router
 
 # ---------------------------------------------------------
-# INCLUIR ROUTERS (ORDEN CORRECTO)
+# INCLUIR ROUTERS
 # ---------------------------------------------------------
-
-# Admin
 app.include_router(router_reset_pg)
 app.include_router(router_fix_pg)
 app.include_router(router_fix_noticias)
 
-# Autenticación y seguridad
 app.include_router(auth_router)
 app.include_router(seguridad_router)
 app.include_router(permisos_router)
 
-# Empleados y maestros
 app.include_router(empleados_router)
 app.include_router(maestros_router)
 
-# Noticias y documentos
 app.include_router(noticias_router)
 app.include_router(documentos_router)
 
-# CTN antes que Agenda
 app.include_router(ctn_router)
 
-# Agenda
 app.include_router(agenda_router)
 app.include_router(agenda_notarios_router)
 
-# Auditoría, informes, dashboard
 app.include_router(auditoria_router)
 app.include_router(dashboard_router)
 app.include_router(informes_router)
 
-# Logs, mensajes, realtime
 app.include_router(logs_router)
 app.include_router(mensajes_router)
 app.include_router(realtime_router)
 
-# Utilidades al final
 app.include_router(utilidades_router)
-app.include_router(force_router)
 app.include_router(create_router)
-
+app.include_router(force_router)
 
 # ---------------------------------------------------------
 # STATIC FILES

@@ -13,8 +13,6 @@ import LoginPage from "./pages/LoginPage.jsx";
 import DashboardPage from "./pages/dashboard/DashboardPage.jsx";
 
 // AGENDA
-
-import AgendaCitaDetalle from "./pages/agenda/AgendaCitaDetalle.jsx";
 import AgendaCitaForm from "./pages/agenda/AgendaCitaForm.jsx";
 import AgendaDia from "./pages/agenda/AgendaPage.jsx";
 
@@ -63,9 +61,8 @@ export default function AppRouter() {
       {/* AGENDA */}
       <Route element={<RequireAuth modulo="agenda" />}>
         <Route element={<Layout />}>
-          <Route path="/agenda/cita/:id" element={<AgendaCitaDetalle />} />
           <Route path="/agenda/nueva" element={<AgendaCitaForm />} />
-          <Route path="/agenda/dia/:fecha" element={<AgendaDia />} />
+          <Route path="/agenda/dia/:fecha" element={<AgendaPage />} />
         </Route>
       </Route>
 

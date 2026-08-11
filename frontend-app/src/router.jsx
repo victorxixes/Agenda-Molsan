@@ -16,7 +16,7 @@ import DashboardPage from "./pages/dashboard/DashboardPage.jsx";
 import AgendaCalendario from "./pages/agenda/AgendaCalendario.jsx";
 import AgendaCitaDetalle from "./pages/agenda/AgendaCitaDetalle.jsx";
 import AgendaCitaForm from "./pages/agenda/AgendaCitaForm.jsx";
-import AgendaDia from "./pages/agenda/AgendaDia.jsx";
+import AgendaDia from "./pages/agenda/AgendaPage.jsx";
 
 // INTRANET
 import IntranetPage from "./pages/intranet/IntranetPage.jsx";

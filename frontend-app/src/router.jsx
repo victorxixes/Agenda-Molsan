@@ -12,9 +12,8 @@ import LoginPage from "./pages/LoginPage.jsx";
 // DASHBOARD
 import DashboardPage from "./pages/dashboard/DashboardPage.jsx";
 
-// AGENDA
-import AgendaCitaForm from "./pages/agenda/AgendaCitaForm.jsx";
-import AgendaDia from "./pages/agenda/AgendaPage.jsx";
+// AGENDA (nuevo módulo)
+import AgendaPage from "./pages/agenda/AgendaPage.jsx";
 
 // INTRANET
 import IntranetPage from "./pages/intranet/IntranetPage.jsx";
@@ -61,8 +60,7 @@ export default function AppRouter() {
       {/* AGENDA */}
       <Route element={<RequireAuth modulo="agenda" />}>
         <Route element={<Layout />}>
-          <Route path="/agenda/nueva" element={<AgendaCitaForm />} />
-          <Route path="/agenda/dia/:fecha" element={<AgendaPage />} />
+          <Route path="/agenda" element={<AgendaPage />} />
         </Route>
       </Route>
 
@@ -87,8 +85,6 @@ export default function AppRouter() {
           <Route path="/empleados" element={<EmpleadosList />} />
           <Route path="/empleados/nuevo" element={<EmpleadoForm />} />
           <Route path="/empleados/:id" element={<EmpleadoDetalle />} />
-
-          {/* PERFIL DEL USUARIO */}
           <Route path="/perfil" element={<MiPerfil />} />
         </Route>
       </Route>

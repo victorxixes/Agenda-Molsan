@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional, List, Dict
 
 class EmpleadoBase(BaseModel):
@@ -24,8 +24,9 @@ class EmpleadoBase(BaseModel):
     telefono_contacto: Optional[str] = None
     observaciones: Optional[str] = None
 
-    modulos_visibles: List[str] = []
-    permisos_modulo: Dict[str, List[str]] = {}
+    # IMPORTANTÍSIMO: evitar defaults mutables
+    modulos_visibles: List[str] = Field(default_factory=list)
+    permisos_modulo: Dict[str, List[str]] = Field(default_factory=dict)
 
 class EmpleadoCreate(EmpleadoBase):
     usuario: str

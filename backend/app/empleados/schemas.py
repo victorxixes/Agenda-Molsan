@@ -3,8 +3,8 @@ from typing import Optional, List, Dict
 
 class EmpleadoBase(BaseModel):
     nombre: str
-    apellidos: str
-    dni: Optional[str] = None
+    apellidos: None
+    dni: Optional[str] = str
     telefono: Optional[str] = None
     email_personal: Optional[str] = None
     direccion: Optional[str] = None
@@ -28,9 +28,9 @@ class EmpleadoBase(BaseModel):
     modulos_visibles: List[str] = Field(default_factory=list)
     permisos_modulo: Dict[str, List[str]] = Field(default_factory=dict)
 
-class EmpleadoCreate(EmpleadoBase):
-    usuario: str
-    password: str
+class EmpleadoCreate(BaseModel):
+    nombre: str
+    dni: str
 
 class EmpleadoUpdate(EmpleadoBase):
     usuario: Optional[str] = None

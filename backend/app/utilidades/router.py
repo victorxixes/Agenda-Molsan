@@ -11,13 +11,18 @@ router = APIRouter(prefix="/utilidades", tags=["Utilidades"])
 
 @router.delete("/reset_empleados")
 def reset_empleados(db: Session = Depends(get_db)):
-    # 1. Eliminar tabla
-    db.execute("DROP TABLE IF EXISTS empleados CASCADE;")
 
-    # 2. Volver a crear tabla según el modelo actual
+    # 1. DROP TABLE usando SQLAlchemy 2.x + psycopg3
+    db.execute(text("DROP TABLE IF EXISTS empleados CASCADE;"))
+    db.commit()
+
+    # 2. Recrear tabla según el modelo actual
     Base.metadata.tables["empleados"].create(db.bind)
 
-    return {"status": "ok", "message": "Tabla empleados recreada correctamente"}
+    return {
+        "status": "ok",
+        "message": "Tabla empleados eliminada y recreada correctamente"
+    }
     
 # ---------------------------------------------------------
 # IMPORTAR CTN (Excel)

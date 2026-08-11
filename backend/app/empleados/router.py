@@ -26,19 +26,37 @@ def subir_foto(empleado_id: int, archivo: UploadFile = File(...), db: Session = 
     if not empleado:
         raise HTTPException(status_code=404, detail="Empleado no encontrado")
 
-    # Carpeta destino
     carpeta = "static/fotos_empleados"
     os.makedirs(carpeta, exist_ok=True)
 
-    # Nombre del archivo
     ruta_archivo = f"{carpeta}/empleado_{empleado_id}.jpg"
 
-    # Guardar archivo
     with open(ruta_archivo, "wb") as f:
         f.write(archivo.file.read())
 
-    # URL pública
     empleado.foto = f"/static/fotos_empleados/empleado_{empleado_id}.jpg"
+
+    db.commit()
+    db.refresh(empleado)
+
+    return empleado
+
+# ---------------------------------------------------------
+# ACTUALIZAR PERMISOS Y MÓDULOS
+# ---------------------------------------------------------
+@router.put("/{empleado_id}/permisos", response_model=EmpleadoResponse)
+def actualizar_permisos(
+    empleado_id: int,
+    modulos_visibles: list[str],
+    permisos_modulo: dict,
+    db: Session = Depends(get_db)
+):
+    empleado = db.query(Empleado).filter(Empleado.id == empleado_id).first()
+    if not empleado:
+        raise HTTPException(status_code=404, detail="Empleado no encontrado")
+
+    empleado.modulos_visibles = modulos_visibles
+    empleado.permisos_modulo = permisos_modulo
 
     db.commit()
     db.refresh(empleado)

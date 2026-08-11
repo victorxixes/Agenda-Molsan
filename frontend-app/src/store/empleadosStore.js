@@ -103,28 +103,19 @@ export const useEmpleadosStore = create((set, get) => ({
   // ---------------------------------------------------------
   toggleActivo: async (empleado) => {
     try {
-      if (empleado.activo) {
-        await empleadosAPI.inhabilitar(empleado.id);
+      const nuevoEstado = !empleado.activo;
 
-        await crearLog(
-          "empleados",
-          "inhabilitar",
-          `Empleado desactivado: ${empleado.nombre} ${empleado.apellidos}`,
-          empleado
-        );
-      } else {
-        await empleadosAPI.actualizar(empleado.id, {
-          ...empleado,
-          activo: true,
-        });
+      const res = await empleadosAPI.actualizar(empleado.id, {
+        ...empleado,
+        activo: nuevoEstado,
+      });
 
-        await crearLog(
-          "empleados",
-          "activar",
-          `Empleado activado: ${empleado.nombre} ${empleado.apellidos}`,
-          empleado
-        );
-      }
+      await crearLog(
+        "empleados",
+        nuevoEstado ? "activar" : "inhabilitar",
+        `Empleado ${nuevoEstado ? "activado" : "desactivado"}: ${empleado.nombre} ${empleado.apellidos}`,
+        res
+      );
 
       await get().cargarEmpleado(empleado.id);
       await get().cargarEmpleados();
@@ -161,47 +152,34 @@ export const useEmpleadosStore = create((set, get) => ({
       );
 
       await get().cargarEmpleado(id);
+      await get().cargarEmpleados();
     } catch (err) {
       set({ error: "Error subiendo foto" });
     }
   },
 
   // ---------------------------------------------------------
-  // CARGAR PERMISOS Y MÓDULOS VISIBLES
+  // GUARDAR PERMISOS Y MÓDULOS VISIBLES
   // ---------------------------------------------------------
-  cargarPermisos: async (id) => {
+  guardarPermisos: async (id, modulos_visibles, permisos_modulo) => {
     try {
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/empleados/${id}/modulos`
-      );
-      const data = await res.json();
-      return data;
-    } catch (err) {
-      set({ error: "Error cargando permisos" });
-      return null;
-    }
-  },
-
-  guardarPermisos: async (id, modulos, permisos) => {
-    try {
-      await fetch(`${import.meta.env.VITE_API_URL}/empleados/${id}/modulos`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(modulos),
-      });
-
       await fetch(`${import.meta.env.VITE_API_URL}/empleados/${id}/permisos`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(permisos),
+        body: JSON.stringify({
+          modulos_visibles,
+          permisos_modulo,
+        }),
       });
 
       await crearLog(
         "empleados",
         "permisos",
         `Permisos actualizados para empleado ID ${id}`,
-        { modulos, permisos }
+        { modulos_visibles, permisos_modulo }
       );
+
+      await get().cargarEmpleado(id);
     } catch (err) {
       set({ error: "Error guardando permisos" });
     }

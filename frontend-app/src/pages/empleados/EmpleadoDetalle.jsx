@@ -6,6 +6,10 @@ import RolEmpleado from "./RolEmpleado";
 import ModulosVisibles from "./ModulosVisibles";
 import PermisosEmpleado from "./PermisosEmpleado";
 import AuditoriaEmpleado from "./AuditoriaEmpleado";
+import DatosPersonales from "./DatosPersonales";
+import DatosLaborales from "./DatosLaborales";
+import EditarEmpleado from "./EditarEmpleado";
+
 
 export default function EmpleadoDetalle() {
   const [empleado, setEmpleado] = useState(null);
@@ -69,6 +73,10 @@ export default function EmpleadoDetalle() {
       {tab === "modulos" && <ModulosVisibles empleadoId={empleadoId} />}
       {tab === "permisos" && <PermisosEmpleado empleadoId={empleadoId} />}
       {tab === "auditoria" && <AuditoriaEmpleado empleadoId={empleadoId} />}
+      {tab === "datos" && <DatosPersonales empleadoId={empleadoId} />}
+{tab === "laboral" && <DatosLaborales empleadoId={empleadoId} />}
+{tab === "editar" && <EditarEmpleado empleadoId={empleadoId} />}
+
 
       {/* Las pestañas "datos", "laboral" y "editar" las conectas cuando quieras */}
     </div>

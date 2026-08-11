@@ -1,52 +1,44 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from typing import Optional, List, Dict
-from app.maestros.schemas import Departamento, Seccion, Cargo
 
 class EmpleadoBase(BaseModel):
     nombre: str
     apellidos: str
-    dni: str | None = None
-    telefono: str | None = None
-    email_personal: str | None = None
-    direccion: str | None = None
-    fecha_nacimiento: str | None = None
+    dni: Optional[str] = None
+    telefono: Optional[str] = None
+    email_personal: Optional[EmailStr] = None
+    direccion: Optional[str] = None
+    fecha_nacimiento: Optional[str] = None
 
-    departamento_id: int | None = None
-    seccion_id: int | None = None
-    cargo_id: int | None = None
+    departamento_id: Optional[int] = None
+    seccion_id: Optional[int] = None
+    cargo_id: Optional[int] = None
 
-    email_empresa: str | None = None
-    extension: str | None = None
-    fecha_alta: str | None = None
-    fecha_baja: str | None = None
+    email_empresa: Optional[EmailStr] = None
+    extension: Optional[str] = None
+    fecha_alta: Optional[str] = None
+    fecha_baja: Optional[str] = None
 
-    alergias: str | None = None
-    persona_contacto: str | None = None
-    telefono_contacto: str | None = None
-    observaciones: str | None = None
-
-    foto: str | None = None
-    foto_url: str | None = None
+    alergias: Optional[str] = None
+    persona_contacto: Optional[str] = None
+    telefono_contacto: Optional[str] = None
+    observaciones: Optional[str] = None
 
     modulos_visibles: List[str] = []
     permisos_modulo: Dict[str, List[str]] = {}
 
-class EmpleadoCreate(BaseModel):
-    nombre: str
-    apellidos: str
+class EmpleadoCreate(EmpleadoBase):
     usuario: str
     password: str
-    modulos_visibles: Optional[List[str]] = []
-    permisos_modulo: Optional[Dict[str, List[str]]] = {}
 
-class Empleado(EmpleadoBase):
+class EmpleadoUpdate(EmpleadoBase):
+    usuario: Optional[str] = None
+    password: Optional[str] = None
+
+class EmpleadoResponse(EmpleadoBase):
     id: int
     usuario: str
     activo: bool
-
-    departamento: Departamento | None = None
-    seccion: Seccion | None = None
-    cargo: Cargo | None = None
 
     class Config:
         orm_mode = True

@@ -24,6 +24,14 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
     observaciones: "",
   });
 
+  // Normalizar nombres (sin tildes)
+  const normalize = (str) =>
+    str
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .trim();
+
   // ---------------------------------------------------------
   // CARGAR CATÁLOGOS
   // ---------------------------------------------------------
@@ -51,11 +59,11 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
   }, [open]);
 
   // ---------------------------------------------------------
-  // AUTOSELECCIONAR APODERADO (usuario actual ID = 2)
+  // AUTOSELECCIONAR APODERADO (fallback si no coincide)
   // ---------------------------------------------------------
   useEffect(() => {
     if (open && apoderados.length > 0) {
-      const yo = apoderados.find(a => a.id === 2);
+      const yo = apoderados.find(a => a.id === 2); // tu ID real
       if (yo) {
         setForm(f => ({ ...f, apoderado_id: yo.id }));
       }
@@ -73,17 +81,19 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
 
     const apoderadoEncontrado =
       apoderados.find((a) =>
-        `${a.nombre} ${a.apellidos}`.trim() === (n.apoderado || "").trim()
+        normalize(`${a.nombre} ${a.apellidos}`) === normalize(n.apoderado || "")
       ) ||
       apoderados.find((a) =>
-        `${a.nombre} ${a.apellidos}`.trim() === (n.apoderado_s || "").trim()
+        normalize(`${a.nombre} ${a.apellidos}`) === normalize(n.apoderado_s || "")
       );
 
     setForm({
       ...form,
       notario_id: n.id,
       tipo_firma: tipoFirmaTraducida,
-      apoderado_id: apoderadoEncontrado ? apoderadoEncontrado.id : form.apoderado_id,
+      apoderado_id: apoderadoEncontrado
+        ? apoderadoEncontrado.id
+        : (form.apoderado_id ?? 2), // fallback seguro
       observaciones: n.observacion || form.observaciones,
     });
   };
@@ -93,6 +103,7 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
   // ---------------------------------------------------------
   const guardar = async () => {
     await crear(form);
+
     alert("Cita creada correctamente");
     onClose();
   };

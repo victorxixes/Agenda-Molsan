@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useAgendaStore } from "../../store/agendaStore";
+import { useCTNStore } from "../../store/ctnStore";
 import GlassCard from "../../components/ui/GlassCard.jsx";
 import BuscadorNotariaPremium from "../../components/agenda/BuscadorNotariaPremium.jsx";
-import axios from "axios";
 
 export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada }) {
   const { crear } = useAgendaStore();
+  const { notarias, cargarNotarias } = useCTNStore();
 
-  const [notarios, setNotarios] = useState([]);
   const [apoderados, setApoderados] = useState([]);
 
   const [form, setForm] = useState({
@@ -39,12 +39,22 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
   }, [open, fechaSeleccionada]);
 
   // ---------------------------------------------------------
-  // CARGAR NOTARIOS Y APODERADOS
+  // CARGAR NOTARÍAS DESDE CTN
   // ---------------------------------------------------------
   useEffect(() => {
-    axios.get("/agenda/notarios").then((res) => setNotarios(res.data));
-    axios.get("/agenda/apoderados").then((res) => setApoderados(res.data));
-  }, []);
+    if (open) cargarNotarias();
+  }, [open]);
+
+  // ---------------------------------------------------------
+  // CARGAR APODERADOS DESDE BACKEND
+  // ---------------------------------------------------------
+  useEffect(() => {
+    if (open) {
+      fetch(`${import.meta.env.VITE_API_URL}/agenda/apoderados`)
+        .then((r) => r.json())
+        .then((data) => setApoderados(data));
+    }
+  }, [open]);
 
   // ---------------------------------------------------------
   // SELECCIONAR NOTARIA (rellena tipo_firma, apoderado, observaciones)
@@ -81,6 +91,8 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
   // SI EL MODAL NO ESTÁ ABIERTO → NO RENDERIZAR
   // ---------------------------------------------------------
   if (!open) return null;
+
+  const notarioSeleccionado = notarias.find((n) => n.id === form.notario_id);
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
@@ -135,9 +147,38 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
 
         {/* Buscador de notaria */}
         <BuscadorNotariaPremium
-          notarios={notarios}
+          notarios={notarias}
           onSelect={seleccionarNotaria}
         />
+
+        {/* Datos del notario + Google Maps */}
+        {notarioSeleccionado && (
+          <div className="space-y-2 bg-white/40 p-3 rounded-lg">
+
+            <div className="font-semibold">
+              {notarioSeleccionado.nombre} {notarioSeleccionado.apellidos}
+            </div>
+
+            <div className="text-sm">
+              📍 {notarioSeleccionado.direccion}
+            </div>
+
+            <div className="text-sm">
+              ☎️ {notarioSeleccionado.telefono}
+            </div>
+
+            <div className="text-sm">
+              ✉️ {notarioSeleccionado.email}
+            </div>
+
+            <iframe
+              className="w-full h-40 rounded-lg"
+              src={`https://www.google.com/maps?q=${encodeURIComponent(
+                notarioSeleccionado.direccion
+              )}&output=embed`}
+            ></iframe>
+          </div>
+        )}
 
         {/* Apoderado */}
         <select

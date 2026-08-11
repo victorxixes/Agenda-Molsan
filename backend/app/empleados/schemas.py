@@ -58,3 +58,14 @@ class EmpleadoResponse(EmpleadoBase):
 
     class Config:
         orm_mode = True
+
+# ---------------------------------------------------------
+# SEARCH RESPONSE (paginación)
+# ---------------------------------------------------------
+class EmpleadoSearchResponse(BaseModel):
+    total: int
+    page: int
+    pages: int
+    limit: int
+    offset: int
+    items: list[EmpleadoResponse]

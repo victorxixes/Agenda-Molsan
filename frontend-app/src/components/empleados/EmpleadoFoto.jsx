@@ -1,13 +1,12 @@
-import React, { useState } from "react";
-import { useEmpleadosStore } from "../../store/empleadosStore";
+import { useState } from "react";
 import GlassCard from "../ui/GlassCard";
 
-export default function EmpleadoFoto({ empleado }) {
-  const { cargarEmpleado } = useEmpleadosStore();
-
+export default function EmpleadoFoto({ empleado, onUploaded }) {
   const [archivo, setArchivo] = useState(null);
   const [subiendo, setSubiendo] = useState(false);
   const [error, setError] = useState(null);
+
+  const API = "https://agenda-intranet-backend.onrender.com";
 
   const subirFoto = async () => {
     if (!archivo) return;
@@ -22,28 +21,19 @@ export default function EmpleadoFoto({ empleado }) {
 
     try {
       const formData = new FormData();
+      formData.append("archivo", archivo);
 
-      // El backend requiere "data" aunque esté vacío
-      formData.append("data", JSON.stringify({}));
-
-      // Foto real
-      formData.append("foto", archivo);
-
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/empleados/editar-completo/${empleado.id}`,
-        {
-          method: "PUT",
-          body: formData,
-        }
-      );
+      const res = await fetch(`${API}/empleados/${empleado.id}/foto`, {
+        method: "POST",
+        body: formData,
+      });
 
       const data = await res.json();
 
       if (data.error) {
         setError(data.error);
       } else {
-        // Recargar empleado para obtener la nueva foto_url
-        await cargarEmpleado(empleado.id);
+        onUploaded && onUploaded();
       }
     } catch (err) {
       setError("Error subiendo la foto");
@@ -55,19 +45,13 @@ export default function EmpleadoFoto({ empleado }) {
 
   return (
     <GlassCard className="p-4 space-y-4">
-      <h3 className="text-xl font-bold" style={{ color: "#1F3A5F" }}>
-        Foto del empleado
-      </h3>
+      <h3 className="text-xl font-bold text-[#1F3A5F]">Foto del empleado</h3>
 
-      {empleado.foto_url ? (
-        <img
-          src={empleado.foto_url}
-          alt="Foto empleado"
-          className="w-40 h-40 rounded-lg object-cover border"
-        />
-      ) : (
-        <p className="text-neutral-500">No hay foto asignada</p>
-      )}
+      <img
+        src={empleado.foto || "/placeholder.png"}
+        alt="Foto empleado"
+        className="w-40 h-40 rounded-lg object-cover border"
+      />
 
       <input
         type="file"

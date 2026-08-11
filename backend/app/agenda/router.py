@@ -108,7 +108,7 @@ def citas_mes(year: int, month: int, db: Session = Depends(get_db)):
     return listar_citas_mes(db, year, month)
 
 
-@router.post("/")
+@router.post("")
 def crear(data: CitaCreate, db: Session = Depends(get_db)):
     try:
         return crear_cita(db, data)

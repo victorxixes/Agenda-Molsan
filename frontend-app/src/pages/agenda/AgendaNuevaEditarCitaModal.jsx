@@ -4,7 +4,7 @@ import { useCTNStore } from "../../store/ctnStore";
 import GlassCard from "../../components/ui/GlassCard.jsx";
 import BuscadorNotariaPremium from "../../components/agenda/BuscadorNotariaPremium.jsx";
 
-export default function AgendaEditarCitaModal({ citaId, open, onClose }) {
+export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
   const { cargarCita, citaActual, editar, cambiarEstado } = useAgendaStore();
   const { notarias, cargarNotarias } = useCTNStore();
 
@@ -25,7 +25,7 @@ export default function AgendaEditarCitaModal({ citaId, open, onClose }) {
   });
 
   // ---------------------------------------------------------
-  // CARGAR CITA AL ABRIR EL MODAL
+  // CARGAR CITA + CATÁLOGOS
   // ---------------------------------------------------------
   useEffect(() => {
     if (open && citaId) {
@@ -38,16 +38,16 @@ export default function AgendaEditarCitaModal({ citaId, open, onClose }) {
 
       fetch(`${import.meta.env.VITE_API_URL}/agenda/tipos-cita`)
         .then((r) => r.json())
-        .then(setTiposCita);
+        .then((data) => setTiposCita(data.map((t) => t.nombre)));
 
       fetch(`${import.meta.env.VITE_API_URL}/agenda/tipos-firma`)
         .then((r) => r.json())
-        .then(setTiposFirma);
+        .then((data) => setTiposFirma(data.map((t) => t.nombre)));
     }
   }, [open, citaId]);
 
   // ---------------------------------------------------------
-  // CUANDO SE CARGA LA CITA → RELLENAR FORMULARIO
+  // RELLENAR FORMULARIO
   // ---------------------------------------------------------
   useEffect(() => {
     if (citaActual) {
@@ -66,24 +66,33 @@ export default function AgendaEditarCitaModal({ citaId, open, onClose }) {
   }, [citaActual]);
 
   // ---------------------------------------------------------
-  // SELECCIONAR NOTARIA (rellena tipo_firma, apoderado, observaciones)
+  // SELECCIONAR NOTARIA
   // ---------------------------------------------------------
   const seleccionarNotaria = (n) => {
+    const tipoFirmaTraducida =
+      n.vc === "SI" ? "Videoconferencia" :
+      n.vc === "NO" ? "Presencial" :
+      "";
+
     const apoderadoEncontrado =
-      apoderados.find((a) => a.nombre === n.apoderado) ||
-      apoderados.find((a) => a.nombre === n.apoderado_s);
+      apoderados.find((a) =>
+        `${a.nombre} ${a.apellidos}`.trim() === (n.apoderado || "").trim()
+      ) ||
+      apoderados.find((a) =>
+        `${a.nombre} ${a.apellidos}`.trim() === (n.apoderado_s || "").trim()
+      );
 
     setForm({
       ...form,
       notario_id: n.id,
-      tipo_firma: n.vc || "",
+      tipo_firma: tipoFirmaTraducida,
       apoderado_id: apoderadoEncontrado ? apoderadoEncontrado.id : "",
       observaciones: n.observacion || form.observaciones,
     });
   };
 
   // ---------------------------------------------------------
-  // GUARDAR CAMBIOS
+  // GUARDAR
   // ---------------------------------------------------------
   const guardar = async () => {
     await editar(citaId, form);
@@ -107,7 +116,6 @@ export default function AgendaEditarCitaModal({ citaId, open, onClose }) {
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
       <GlassCard className="w-full max-w-xl space-y-4 relative">
 
-        {/* Botón cerrar */}
         <button
           className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
           onClick={onClose}
@@ -117,7 +125,6 @@ export default function AgendaEditarCitaModal({ citaId, open, onClose }) {
 
         <h2 className="text-2xl font-bold">Editar cita</h2>
 
-        {/* Fecha */}
         <input
           type="date"
           className="input"
@@ -125,7 +132,6 @@ export default function AgendaEditarCitaModal({ citaId, open, onClose }) {
           onChange={(e) => setForm({ ...form, fecha: e.target.value })}
         />
 
-        {/* Horas */}
         <div className="grid grid-cols-2 gap-3">
           <input
             type="time"
@@ -142,7 +148,6 @@ export default function AgendaEditarCitaModal({ citaId, open, onClose }) {
           />
         </div>
 
-        {/* Tipo de cita */}
         <select
           className="input"
           value={form.tipo_cita}
@@ -153,30 +158,19 @@ export default function AgendaEditarCitaModal({ citaId, open, onClose }) {
           ))}
         </select>
 
-        {/* Buscador de notaria */}
         <BuscadorNotariaPremium
           notarios={notarias}
           onSelect={seleccionarNotaria}
         />
 
-        {/* Datos del notario + Google Maps */}
         {notarioSeleccionado && (
           <div className="space-y-2 bg-white/40 p-3 rounded-lg">
-
             <div className="font-semibold">
               {notarioSeleccionado.nombre} {notarioSeleccionado.apellidos}
             </div>
 
             <div className="text-sm">
               📍 {notarioSeleccionado.direccion}
-            </div>
-
-            <div className="text-sm">
-              ☎️ {notarioSeleccionado.telefono}
-            </div>
-
-            <div className="text-sm">
-              ✉️ {notarioSeleccionado.email}
             </div>
 
             <iframe
@@ -188,7 +182,6 @@ export default function AgendaEditarCitaModal({ citaId, open, onClose }) {
           </div>
         )}
 
-        {/* Apoderado */}
         <select
           className="input"
           value={form.apoderado_id}
@@ -201,7 +194,6 @@ export default function AgendaEditarCitaModal({ citaId, open, onClose }) {
           ))}
         </select>
 
-        {/* Tipo de firma */}
         <select
           className="input"
           value={form.tipo_firma}
@@ -212,7 +204,6 @@ export default function AgendaEditarCitaModal({ citaId, open, onClose }) {
           ))}
         </select>
 
-        {/* Estado */}
         <div className="flex gap-2">
           {["Pendiente", "Confirmada", "En curso", "Finalizada", "Cancelada"].map((estado) => (
             <button
@@ -225,7 +216,6 @@ export default function AgendaEditarCitaModal({ citaId, open, onClose }) {
           ))}
         </div>
 
-        {/* Observaciones */}
         <textarea
           className="input"
           placeholder="Observaciones"
@@ -233,7 +223,6 @@ export default function AgendaEditarCitaModal({ citaId, open, onClose }) {
           onChange={(e) => setForm({ ...form, observaciones: e.target.value })}
         />
 
-        {/* Botón guardar */}
         <button className="btn-primary w-full" onClick={guardar}>
           Guardar cambios
         </button>

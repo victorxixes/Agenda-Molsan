@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAgendaStore } from "../../store/agendaStore";
 import { useCTNStore } from "../../store/ctnStore";
 import GlassCard from "../../components/ui/GlassCard.jsx";
@@ -9,87 +9,82 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
   const { notarias, cargarNotarias } = useCTNStore();
 
   const [apoderados, setApoderados] = useState([]);
+  const [tiposCita, setTiposCita] = useState([]);
+  const [tiposFirma, setTiposFirma] = useState([]);
 
   const [form, setForm] = useState({
     fecha: "",
     hora_inicio: "",
     hora_fin: "",
-    tipo_cita: "Firma notarial",
+    tipo_cita: "",
     notario_id: null,
     tipo_firma: "",
-    apoderado_id: "",
+    apoderado_id: null,
     estado: "Pendiente",
     observaciones: "",
   });
 
   // ---------------------------------------------------------
-  // PRELLENAR FECHA AL ABRIR EL MODAL
-  // ---------------------------------------------------------
-  useEffect(() => {
-    if (open && fechaSeleccionada) {
-      const fechaISO = fechaSeleccionada.toISOString().split("T")[0];
-
-      setForm((f) => ({
-        ...f,
-        fecha: fechaISO,
-        hora_inicio: "",
-        hora_fin: "",
-      }));
-    }
-  }, [open, fechaSeleccionada]);
-
-  // ---------------------------------------------------------
-  // CARGAR NOTARÍAS DESDE CTN
-  // ---------------------------------------------------------
-  useEffect(() => {
-    if (open) cargarNotarias();
-  }, [open]);
-
-  // ---------------------------------------------------------
-  // CARGAR APODERADOS DESDE BACKEND
+  // CARGAR CATÁLOGOS
   // ---------------------------------------------------------
   useEffect(() => {
     if (open) {
+      cargarNotarias();
+
       fetch(`${import.meta.env.VITE_API_URL}/agenda/apoderados`)
         .then((r) => r.json())
-        .then((data) => setApoderados(data));
+        .then(setApoderados);
+
+      fetch(`${import.meta.env.VITE_API_URL}/agenda/tipos-cita`)
+        .then((r) => r.json())
+        .then((data) => setTiposCita(data.map((t) => t.nombre)));
+
+      fetch(`${import.meta.env.VITE_API_URL}/agenda/tipos-firma`)
+        .then((r) => r.json())
+        .then((data) => setTiposFirma(data.map((t) => t.nombre)));
+
+      setForm((f) => ({
+        ...f,
+        fecha: fechaSeleccionada.toISOString().split("T")[0],
+      }));
     }
   }, [open]);
 
   // ---------------------------------------------------------
-  // SELECCIONAR NOTARIA (rellena tipo_firma, apoderado, observaciones)
+  // SELECCIONAR NOTARIA
   // ---------------------------------------------------------
   const seleccionarNotaria = (n) => {
+    const tipoFirmaTraducida =
+      n.vc === "SI" ? "Videoconferencia" :
+      n.vc === "NO" ? "Presencial" :
+      "";
+
     const apoderadoEncontrado =
-      apoderados.find((a) => a.nombre === n.apoderado) ||
-      apoderados.find((a) => a.nombre === n.apoderado_s);
+      apoderados.find((a) =>
+        `${a.nombre} ${a.apellidos}`.trim() === (n.apoderado || "").trim()
+      ) ||
+      apoderados.find((a) =>
+        `${a.nombre} ${a.apellidos}`.trim() === (n.apoderado_s || "").trim()
+      );
 
     setForm({
       ...form,
       notario_id: n.id,
-      tipo_firma: n.vc || "",
-      apoderado_id: apoderadoEncontrado ? apoderadoEncontrado.id : "",
-      observaciones: n.observacion || "",
+      tipo_firma: tipoFirmaTraducida,
+      apoderado_id: apoderadoEncontrado ? apoderadoEncontrado.id : null,
+      observaciones: n.observacion || form.observaciones,
     });
   };
 
   // ---------------------------------------------------------
-  // GUARDAR CITA
+  // GUARDAR
   // ---------------------------------------------------------
   const guardar = async () => {
-    if (!form.apoderado_id) {
-      alert("Debes seleccionar un apoderado.");
-      return;
-    }
-
     await crear(form);
     alert("Cita creada correctamente");
     onClose();
   };
 
-  // ---------------------------------------------------------
-  // SI EL MODAL NO ESTÁ ABIERTO → NO RENDERIZAR
-  // ---------------------------------------------------------
   if (!open) return null;
 
   const notarioSeleccionado = notarias.find((n) => n.id === form.notario_id);
@@ -98,7 +93,6 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
       <GlassCard className="w-full max-w-xl space-y-4 relative">
 
-        {/* Botón cerrar */}
         <button
           className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
           onClick={onClose}
@@ -139,10 +133,10 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
           value={form.tipo_cita}
           onChange={(e) => setForm({ ...form, tipo_cita: e.target.value })}
         >
-          <option value="Firma notarial">Firma notarial</option>
-          <option value="Reunión">Reunión</option>
-          <option value="Visita">Visita</option>
-          <option value="Otros">Otros</option>
+          <option value="">Selecciona tipo de cita</option>
+          {tiposCita.map((t) => (
+            <option key={t} value={t}>{t}</option>
+          ))}
         </select>
 
         {/* Buscador de notaria */}
@@ -151,24 +145,15 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
           onSelect={seleccionarNotaria}
         />
 
-        {/* Datos del notario + Google Maps */}
+        {/* Datos del notario */}
         {notarioSeleccionado && (
           <div className="space-y-2 bg-white/40 p-3 rounded-lg">
-
             <div className="font-semibold">
               {notarioSeleccionado.nombre} {notarioSeleccionado.apellidos}
             </div>
 
             <div className="text-sm">
               📍 {notarioSeleccionado.direccion}
-            </div>
-
-            <div className="text-sm">
-              ☎️ {notarioSeleccionado.telefono}
-            </div>
-
-            <div className="text-sm">
-              ✉️ {notarioSeleccionado.email}
             </div>
 
             <iframe
@@ -183,14 +168,26 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
         {/* Apoderado */}
         <select
           className="input"
-          value={form.apoderado_id}
+          value={form.apoderado_id || ""}
           onChange={(e) => setForm({ ...form, apoderado_id: Number(e.target.value) })}
         >
-          <option value="">Seleccionar apoderado</option>
+          <option value="">Selecciona apoderado</option>
           {apoderados.map((a) => (
             <option key={a.id} value={a.id}>
               {a.nombre} {a.apellidos}
             </option>
+          ))}
+        </select>
+
+        {/* Tipo de firma */}
+        <select
+          className="input"
+          value={form.tipo_firma}
+          onChange={(e) => setForm({ ...form, tipo_firma: e.target.value })}
+        >
+          <option value="">Selecciona tipo de firma</option>
+          {tiposFirma.map((t) => (
+            <option key={t} value={t}>{t}</option>
           ))}
         </select>
 
@@ -204,7 +201,7 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
 
         {/* Botón guardar */}
         <button className="btn-primary w-full" onClick={guardar}>
-          Guardar cita
+          Crear cita
         </button>
 
       </GlassCard>

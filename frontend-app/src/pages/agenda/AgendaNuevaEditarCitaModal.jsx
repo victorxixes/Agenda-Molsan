@@ -19,7 +19,7 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
     tipo_cita: "",
     notario_id: null,
     tipo_firma: "",
-    apoderado_id: "",
+    apoderado_id: null,
     estado: "",
     observaciones: "",
   });
@@ -86,7 +86,7 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
       ...form,
       notario_id: n.id,
       tipo_firma: tipoFirmaTraducida,
-      apoderado_id: apoderadoEncontrado ? apoderadoEncontrado.id : "",
+      apoderado_id: apoderadoEncontrado ? apoderadoEncontrado.id : null,
       observaciones: n.observacion || form.observaciones,
     });
   };

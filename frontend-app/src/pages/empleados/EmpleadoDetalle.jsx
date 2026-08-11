@@ -10,8 +10,7 @@ import DatosPersonales from "./DatosPersonales";
 import DatosLaborales from "./DatosLaborales";
 import EditarEmpleado from "./EditarEmpleado";
 import FotoEmpleado from "./FotoEmpleado";
-import AuditoriaEmpleado from "./AuditoriaEmpleado";
-
+import EstadoEmpleado from "./EstadoEmpleado";
 
 export default function EmpleadoDetalle() {
   const [empleado, setEmpleado] = useState(null);
@@ -34,12 +33,18 @@ export default function EmpleadoDetalle() {
     <div className="p-6">
       {/* CABECERA */}
       <div className="flex items-center gap-4 mb-6">
-        <div className="w-20 h-20 bg-gray-200 rounded-full" />
+        <img
+          src={empleado.foto || "/placeholder.png"}
+          alt="Foto empleado"
+          className="w-20 h-20 rounded-full object-cover border"
+        />
+
         <div>
           <h2 className="text-2xl font-bold">
             {empleado.nombre} {empleado.apellidos}
           </h2>
-          <p className="text-green-600">
+
+          <p className={empleado.activo ? "text-green-600" : "text-red-600"}>
             Estado: {empleado.activo ? "Activo" : "Inactivo"}
           </p>
         </div>
@@ -54,10 +59,10 @@ export default function EmpleadoDetalle() {
           ["rol", "Rol"],
           ["modulos", "Módulos"],
           ["permisos", "Permisos"],
+          ["foto", "Foto"],
+          ["estado", "Estado"],
           ["auditoria", "Auditoría"],
           ["editar", "Editar completo"],
-      ["foto", "Foto"],
-["auditoria", "Auditoría"],
         ].map(([key, label]) => (
           <button
             key={key}
@@ -73,17 +78,15 @@ export default function EmpleadoDetalle() {
 
       {/* CONTENIDO SEGÚN PESTAÑA */}
       {tab === "resumen" && <ResumenEmpleado empleadoId={empleadoId} />}
+      {tab === "datos" && <DatosPersonales empleadoId={empleadoId} />}
+      {tab === "laboral" && <DatosLaborales empleadoId={empleadoId} />}
       {tab === "rol" && <RolEmpleado empleadoId={empleadoId} />}
       {tab === "modulos" && <ModulosVisibles empleadoId={empleadoId} />}
       {tab === "permisos" && <PermisosEmpleado empleadoId={empleadoId} />}
+      {tab === "foto" && <FotoEmpleado empleadoId={empleadoId} />}
+      {tab === "estado" && <EstadoEmpleado empleadoId={empleadoId} />}
       {tab === "auditoria" && <AuditoriaEmpleado empleadoId={empleadoId} />}
-      {tab === "datos" && <DatosPersonales empleadoId={empleadoId} />}
-{tab === "laboral" && <DatosLaborales empleadoId={empleadoId} />}
-{tab === "editar" && <EditarEmpleado empleadoId={empleadoId} />}
-{tab === "foto" && <FotoEmpleado empleadoId={empleadoId} />}
-{tab === "auditoria" && <AuditoriaEmpleado empleadoId={empleadoId} />}
-
-      {/* Las pestañas "datos", "laboral" y "editar" las conectas cuando quieras */}
+      {tab === "editar" && <EditarEmpleado empleadoId={empleadoId} />}
     </div>
   );
 }

@@ -9,6 +9,8 @@ import AuditoriaEmpleado from "./AuditoriaEmpleado";
 import DatosPersonales from "./DatosPersonales";
 import DatosLaborales from "./DatosLaborales";
 import EditarEmpleado from "./EditarEmpleado";
+import FotoEmpleado from "./FotoEmpleado";
+import AuditoriaEmpleado from "./AuditoriaEmpleado";
 
 
 export default function EmpleadoDetalle() {
@@ -54,6 +56,8 @@ export default function EmpleadoDetalle() {
           ["permisos", "Permisos"],
           ["auditoria", "Auditoría"],
           ["editar", "Editar completo"],
+      ["foto", "Foto"],
+["auditoria", "Auditoría"],
         ].map(([key, label]) => (
           <button
             key={key}
@@ -76,7 +80,8 @@ export default function EmpleadoDetalle() {
       {tab === "datos" && <DatosPersonales empleadoId={empleadoId} />}
 {tab === "laboral" && <DatosLaborales empleadoId={empleadoId} />}
 {tab === "editar" && <EditarEmpleado empleadoId={empleadoId} />}
-
+{tab === "foto" && <FotoEmpleado empleadoId={empleadoId} />}
+{tab === "auditoria" && <AuditoriaEmpleado empleadoId={empleadoId} />}
 
       {/* Las pestañas "datos", "laboral" y "editar" las conectas cuando quieras */}
     </div>

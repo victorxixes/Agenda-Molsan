@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlalchemy.orm import Session
+import os
 
 from app.database import get_db
 from app.empleados.models import Empleado
@@ -15,6 +16,34 @@ from app.empleados.service import (
 )
 
 router = APIRouter(prefix="/empleados", tags=["Empleados"])
+
+# ---------------------------------------------------------
+# SUBIR FOTO DE EMPLEADO
+# ---------------------------------------------------------
+@router.post("/{empleado_id}/foto", response_model=EmpleadoResponse)
+def subir_foto(empleado_id: int, archivo: UploadFile = File(...), db: Session = Depends(get_db)):
+    empleado = db.query(Empleado).filter(Empleado.id == empleado_id).first()
+    if not empleado:
+        raise HTTPException(status_code=404, detail="Empleado no encontrado")
+
+    # Carpeta destino
+    carpeta = "static/fotos_empleados"
+    os.makedirs(carpeta, exist_ok=True)
+
+    # Nombre del archivo
+    ruta_archivo = f"{carpeta}/empleado_{empleado_id}.jpg"
+
+    # Guardar archivo
+    with open(ruta_archivo, "wb") as f:
+        f.write(archivo.file.read())
+
+    # URL pública
+    empleado.foto = f"/static/fotos_empleados/empleado_{empleado_id}.jpg"
+
+    db.commit()
+    db.refresh(empleado)
+
+    return empleado
 
 # ---------------------------------------------------------
 # LISTAR TODOS

@@ -6,7 +6,7 @@ class EmpleadoBase(BaseModel):
     apellidos: str
     dni: Optional[str] = None
     telefono: Optional[str] = None
-    email_personal: Optional[EmailStr] = None
+    email_personal: Optional[Str] = None
     direccion: Optional[str] = None
     fecha_nacimiento: Optional[str] = None
 
@@ -14,7 +14,7 @@ class EmpleadoBase(BaseModel):
     seccion_id: Optional[int] = None
     cargo_id: Optional[int] = None
 
-    email_empresa: Optional[EmailStr] = None
+    email_empresa: Optional[Str] = None
     extension: Optional[str] = None
     fecha_alta: Optional[str] = None
     fecha_baja: Optional[str] = None

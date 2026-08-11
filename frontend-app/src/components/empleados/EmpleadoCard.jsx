@@ -1,17 +1,29 @@
 import GlassCard from "../ui/GlassCard.jsx";
 import IconEmpleados from "../icons/IconEmpleados.jsx";
 
-export default function EmpleadoCard({ empleado }) {
+export default function EmpleadoCard({ empleado, onClick }) {
   return (
-    <GlassCard className="flex items-center gap-4">
-      <IconEmpleados size={26} />
+    <GlassCard
+      className="flex items-center gap-4 cursor-pointer"
+      onClick={onClick}
+    >
+      <img
+        src={empleado.foto || "/placeholder.png"}
+        alt="Foto empleado"
+        className="w-12 h-12 rounded-full object-cover border"
+      />
 
       <div>
-        <p className="font-bold text-lg" style={{ color: "#1F3A5F" }}>
-          {empleado.nombre}
+        <p className="font-bold text-lg text-[#1F3A5F]">
+          {empleado.nombre} {empleado.apellidos}
         </p>
-        <p className="text-sm" style={{ color: "#6A7A8C" }}>
-          {empleado.rol}
+        <p className="text-sm text-[#6A7A8C]">{empleado.rol || "Sin rol"}</p>
+        <p
+          className={`text-xs ${
+            empleado.activo ? "text-green-600" : "text-red-600"
+          }`}
+        >
+          {empleado.activo ? "Activo" : "Inactivo"}
         </p>
       </div>
     </GlassCard>

@@ -54,5 +54,5 @@ class Empleado(Base):
     # -----------------------------
     # MÓDULOS Y PERMISOS
     # -----------------------------
-    modulos_visibles = Column(JSONB, nullable=True)
-    permisos_modulo = Column(JSONB, nullable=True)
+    modulos_visibles = Column(JSONB, nullable=True, default=[])
+    permisos_modulo = Column(JSONB, nullable=True, default={})

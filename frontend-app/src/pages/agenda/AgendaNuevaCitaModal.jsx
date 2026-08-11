@@ -4,7 +4,7 @@ import GlassCard from "../../components/ui/GlassCard.jsx";
 import BuscadorNotariaPremium from "../../components/agenda/BuscadorNotariaPremium.jsx";
 import axios from "axios";
 
-export default function AgendaNuevaCitaModal() {
+export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada }) {
   const { crear } = useAgendaStore();
 
   const [notarios, setNotarios] = useState([]);
@@ -22,11 +22,33 @@ export default function AgendaNuevaCitaModal() {
     observaciones: "",
   });
 
+  // ---------------------------------------------------------
+  // PRELLENAR FECHA AL ABRIR EL MODAL
+  // ---------------------------------------------------------
+  useEffect(() => {
+    if (open && fechaSeleccionada) {
+      const fechaISO = fechaSeleccionada.toISOString().split("T")[0];
+
+      setForm((f) => ({
+        ...f,
+        fecha: fechaISO,
+        hora_inicio: "",
+        hora_fin: "",
+      }));
+    }
+  }, [open, fechaSeleccionada]);
+
+  // ---------------------------------------------------------
+  // CARGAR NOTARIOS Y APODERADOS
+  // ---------------------------------------------------------
   useEffect(() => {
     axios.get("/agenda/notarios").then((res) => setNotarios(res.data));
     axios.get("/agenda/apoderados").then((res) => setApoderados(res.data));
   }, []);
 
+  // ---------------------------------------------------------
+  // SELECCIONAR NOTARIA (rellena tipo_firma, apoderado, observaciones)
+  // ---------------------------------------------------------
   const seleccionarNotaria = (n) => {
     const apoderadoEncontrado =
       apoderados.find((a) => a.nombre === n.apoderado) ||
@@ -41,6 +63,9 @@ export default function AgendaNuevaCitaModal() {
     });
   };
 
+  // ---------------------------------------------------------
+  // GUARDAR CITA
+  // ---------------------------------------------------------
   const guardar = async () => {
     if (!form.apoderado_id) {
       alert("Debes seleccionar un apoderado.");
@@ -49,14 +74,29 @@ export default function AgendaNuevaCitaModal() {
 
     await crear(form);
     alert("Cita creada correctamente");
+    onClose();
   };
 
+  // ---------------------------------------------------------
+  // SI EL MODAL NO ESTÁ ABIERTO → NO RENDERIZAR
+  // ---------------------------------------------------------
+  if (!open) return null;
+
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4">
-      <GlassCard className="w-full max-w-xl space-y-4">
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
+      <GlassCard className="w-full max-w-xl space-y-4 relative">
+
+        {/* Botón cerrar */}
+        <button
+          className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
+          onClick={onClose}
+        >
+          ✕
+        </button>
 
         <h2 className="text-2xl font-bold">Nueva cita</h2>
 
+        {/* Fecha */}
         <input
           type="date"
           className="input"
@@ -64,6 +104,7 @@ export default function AgendaNuevaCitaModal() {
           onChange={(e) => setForm({ ...form, fecha: e.target.value })}
         />
 
+        {/* Horas */}
         <div className="grid grid-cols-2 gap-3">
           <input
             type="time"
@@ -80,6 +121,7 @@ export default function AgendaNuevaCitaModal() {
           />
         </div>
 
+        {/* Tipo de cita */}
         <select
           className="input"
           value={form.tipo_cita}
@@ -91,11 +133,13 @@ export default function AgendaNuevaCitaModal() {
           <option value="Otros">Otros</option>
         </select>
 
+        {/* Buscador de notaria */}
         <BuscadorNotariaPremium
           notarios={notarios}
           onSelect={seleccionarNotaria}
         />
 
+        {/* Apoderado */}
         <select
           className="input"
           value={form.apoderado_id}
@@ -109,6 +153,7 @@ export default function AgendaNuevaCitaModal() {
           ))}
         </select>
 
+        {/* Observaciones */}
         <textarea
           className="input"
           placeholder="Observaciones"
@@ -116,6 +161,7 @@ export default function AgendaNuevaCitaModal() {
           onChange={(e) => setForm({ ...form, observaciones: e.target.value })}
         />
 
+        {/* Botón guardar */}
         <button className="btn-primary w-full" onClick={guardar}>
           Guardar cita
         </button>
@@ -124,4 +170,3 @@ export default function AgendaNuevaCitaModal() {
     </div>
   );
 }
-

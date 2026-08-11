@@ -24,4 +24,4 @@ def editar(empleado_id: int, data: EmpleadoUpdate, db: Session = Depends(get_db)
 
 @router.delete("/{empleado_id}")
 def eliminar(empleado_id: int, db: Session = Depends(get_db)):
-    return eliminar_empleado(db, empleado_id
+    return eliminar_empleado(db, empleado_id)

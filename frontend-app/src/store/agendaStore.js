@@ -4,10 +4,13 @@ import { crearLog } from "../lib/log";
 
 export const useAgendaStore = create((set, get) => ({
   citasDia: [],
+  citasMes: {},
   citas: [],
   citaActual: null,
   loading: false,
-
+ // ---------------------------------------------------------
+  // CARGAR CITAS DEL DÍA
+  // ---------------------------------------------------------
   cargarDia: async (fecha) => {
     set({ loading: true });
 
@@ -21,11 +24,35 @@ export const useAgendaStore = create((set, get) => ({
     });
   },
 
+  // ---------------------------------------------------------
+  // CARGAR CITAS DEL MES (para CalendarGrid)
+  // ---------------------------------------------------------
+  cargarMes: async (year, month) => {
+    const data = await agendaAPI.citasMes(year, month);
+
+    // Transformamos array → objeto por fecha
+    const mapa = {};
+
+    data.forEach(cita => {
+      const fecha = cita.fecha; // "2026-07-31"
+      if (!mapa[fecha]) mapa[fecha] = [];
+      mapa[fecha].push(cita);
+    });
+
+    set({ citasMes: mapa });
+  },
+
+  // ---------------------------------------------------------
+  // CARGAR UNA CITA COMPLETA
+  // ---------------------------------------------------------
   cargarCita: async (id) => {
     const data = await agendaAPI.obtener(id);
     set({ citaActual: data });
   },
 
+  // ---------------------------------------------------------
+  // CREAR CITA
+  // ---------------------------------------------------------
   crear: async (data) => {
     const payload = {
       fecha: data.fecha,
@@ -44,22 +71,6 @@ export const useAgendaStore = create((set, get) => ({
     await crearLog("agenda", "crear", `Cita creada para el día ${res.fecha}`, res);
 
     await get().cargarDia(res.fecha);
-  },
-
-  mover: async (id, nuevaFecha, hi, hf) => {
-    const res = await agendaAPI.mover(id, nuevaFecha, hi, hf);
-
-    await crearLog("agenda", "mover", `Cita ${id} movida a ${nuevaFecha}`, res);
-
-    await get().cargarDia(nuevaFecha);
-  },
-
-  cambiarEstado: async (id, nuevoEstado) => {
-    const res = await agendaAPI.cambiarEstado(id, nuevoEstado);
-
-    await crearLog("agenda", "estado", `Estado de cita ${id} cambiado a ${nuevoEstado}`, res);
-
-    await get().cargarCita(id);
   },
 
   // ---------------------------------------------------------
@@ -84,4 +95,16 @@ export const useAgendaStore = create((set, get) => ({
 
     await get().cargarDia(payload.fecha);
   },
+
+  // ---------------------------------------------------------
+  // CAMBIAR ESTADO
+  // ---------------------------------------------------------
+  cambiarEstado: async (id, nuevoEstado) => {
+    const res = await agendaAPI.cambiarEstado(id, nuevoEstado);
+
+    await crearLog("agenda", "estado", `Estado de cita ${id} cambiado a ${nuevoEstado}`, res);
+
+    await get().cargarCita(id);
+  },
 }));
+

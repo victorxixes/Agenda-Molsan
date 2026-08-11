@@ -42,7 +42,7 @@ from app.auth.router import router as auth_router
 
 # Empleados
 from app.empleados.router import router as empleados_router
-from app.auth.router_empleados import router as auth_empleados_router
+
 
 # Maestros
 from app.maestros.router import router as maestros_router
@@ -89,7 +89,7 @@ app.include_router(permisos_router)
 
 # Empleados
 app.include_router(empleados_router)
-app.include_router(auth_empleados_router)
+
 
 # Maestros
 app.include_router(maestros_router)

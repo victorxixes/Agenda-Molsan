@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional, Dict
+from typing import Optional, Dict, List
 
 # ---------------------------------------------------------
 # SCHEMA BASE
@@ -34,8 +34,8 @@ class EmpleadoBase(BaseModel):
 
     foto: Optional[str] = None
 
-    modulos_visibles: Optional[Dict] = None
-    permisos_modulo: Optional[Dict] = None
+    modulos_visibles: Optional[List[str]] = None
+    permisos_modulo: Optional[Dict[str, List[str]]] = None
 
 # ---------------------------------------------------------
 # CREATE

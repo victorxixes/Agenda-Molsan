@@ -3,7 +3,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from app.database import Base
 
 class Empleado(Base):
-    __tablename__ = "empleados"
+    __tablename__ = "empleados_v2"   # 🔥 TABLA NUEVA
 
     id = Column(Integer, primary_key=True, index=True)
 

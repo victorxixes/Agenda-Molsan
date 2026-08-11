@@ -11,13 +11,28 @@ from app.empleados.schemas import (
     EmpleadoResponse,
     EmpleadoSearchResponse
 )
-from app.empleados.service import (
-    crear_empleado,
-    editar_empleado,
-    listar_empleados
-)
 
 router = APIRouter(prefix="/empleados", tags=["Empleados"])
+
+# ---------------------------------------------------------
+# LISTA DE MÓDULOS Y PERMISOS DEL ERP
+# ---------------------------------------------------------
+@router.get("/modulos")
+def obtener_modulos_y_permisos():
+    modulos = [
+        "auth", "seguridad", "permisos",
+        "empleados", "maestros",
+        "noticias", "documentos",
+        "ctn",
+        "agenda", "agenda_notarios",
+        "auditoria", "dashboard", "informes",
+        "logs", "mensajes", "realtime",
+        "utilidades"
+    ]
+
+    permisos = ["oculto", "ver", "crear", "editar", "eliminar"]
+
+    return {"modulos": modulos, "permisos": permisos}
 
 # ---------------------------------------------------------
 # SUBIR FOTO DE EMPLEADO
@@ -44,21 +59,20 @@ def subir_foto(empleado_id: int, archivo: UploadFile = File(...), db: Session = 
     return empleado
 
 # ---------------------------------------------------------
-# ACTUALIZAR PERMISOS Y MÓDULOS
+# ACTUALIZAR PERMISOS Y MÓDULOS (BODY JSON)
 # ---------------------------------------------------------
 @router.put("/{empleado_id}/permisos", response_model=EmpleadoResponse)
 def actualizar_permisos(
     empleado_id: int,
-    modulos_visibles: list[str],
-    permisos_modulo: dict,
+    data: dict,
     db: Session = Depends(get_db)
 ):
     empleado = db.query(Empleado).filter(Empleado.id == empleado_id).first()
     if not empleado:
         raise HTTPException(status_code=404, detail="Empleado no encontrado")
 
-    empleado.modulos_visibles = modulos_visibles
-    empleado.permisos_modulo = permisos_modulo
+    empleado.modulos_visibles = data.get("modulos_visibles", [])
+    empleado.permisos_modulo = data.get("permisos_modulo", {})
 
     db.commit()
     db.refresh(empleado)
@@ -70,7 +84,7 @@ def actualizar_permisos(
 # ---------------------------------------------------------
 @router.get("/", response_model=list[EmpleadoResponse])
 def listar(db: Session = Depends(get_db)):
-    return listar_empleados(db)
+    return db.query(Empleado).all()
 
 # ---------------------------------------------------------
 # BÚSQUEDA + FILTROS + PAGINACIÓN
@@ -88,9 +102,6 @@ def buscar_empleados(
 ):
     query = db.query(Empleado)
 
-    # -----------------------------
-    # BÚSQUEDA
-    # -----------------------------
     if q:
         query = query.filter(
             or_(
@@ -100,9 +111,6 @@ def buscar_empleados(
             )
         )
 
-    # -----------------------------
-    # FILTROS
-    # -----------------------------
     if departamento_id is not None:
         query = query.filter(Empleado.departamento_id == departamento_id)
 
@@ -115,9 +123,6 @@ def buscar_empleados(
     if activo is not None:
         query = query.filter(Empleado.activo == activo)
 
-    # -----------------------------
-    # PAGINACIÓN
-    # -----------------------------
     total = query.count()
     pages = (total + limit - 1) // limit
     offset = (page - 1) * limit

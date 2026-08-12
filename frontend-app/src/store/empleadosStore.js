@@ -36,6 +36,24 @@ export const useEmpleadosStore = create((set, get) => ({
       set({ loading: false, error: "Error cargando empleado" });
     }
   },
+  
+  // ---------------------------------------------------------
+  // BUSCAR EMPLEADO
+ // ---------------------------------------------------------
+  buscarEmpleados: async (filtros) => {
+  const params = new URLSearchParams();
+
+  if (filtros.id) params.append("id", filtros.id);
+  if (filtros.dni) params.append("dni", filtros.dni);
+  if (filtros.q) params.append("q", filtros.q);
+  if (filtros.activo !== null) params.append("activo", filtros.activo);
+
+  const API = import.meta.env.VITE_API_URL;
+  const res = await fetch(`${API}/empleados/search?${params.toString()}`);
+  const data = await res.json();
+
+  set({ empleados: data.items });
+},
 
   // ---------------------------------------------------------
   // CREAR EMPLEADO

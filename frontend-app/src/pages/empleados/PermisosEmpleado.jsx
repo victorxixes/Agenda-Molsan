@@ -8,7 +8,7 @@ export default function PermisosEmpleado({ empleadoId }) {
   const [modulosVisibles, setModulosVisibles] = useState([]);
   const [permisosModulo, setPermisosModulo] = useState({});
 
-  const API = "https://agenda-intranet-backend.onrender.com";
+  const API = "https://agenda-intranet-b.onrender.com";
 
   // ---------------------------------------------------------
   // CARGAR MÓDULOS Y PERMISOS DISPONIBLES

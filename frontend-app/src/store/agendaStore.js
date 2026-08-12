@@ -53,48 +53,49 @@ export const useAgendaStore = create((set, get) => ({
   // ---------------------------------------------------------
   // CREAR CITA
   // ---------------------------------------------------------
-  crear: async (data) => {
-    const payload = {
-      fecha: data.fecha,
-      hora_inicio: data.hora_inicio,
-      hora_fin: data.hora_fin,
-      tipo_cita: data.tipo_cita,
-      notario_id: Number(data.notario_id),
-      tipo_firma: data.tipo_firma || "",
-      apoderado_id: Number(data.apoderado_id),
-      estado: data.estado,
-      observaciones: data.observaciones || "",
-    };
+crear: async (data) => {
+  const payload = {
+    fecha: data.fecha,
+    hora_inicio: data.hora_inicio,
+    hora_fin: data.hora_fin,
+    tipo_cita: data.tipo_cita,
+    notario_id: Number(data.notario_id),
+    tipo_firma: data.tipo_firma || "",
+    apoderado: data.apoderado || "",   // ← TEXTO DEL EXCEL
+    estado: data.estado,
+    observaciones: data.observaciones || "",
+  };
 
-    const res = await agendaAPI.crear(payload);
+  const res = await agendaAPI.crear(payload);
 
-    await crearLog("agenda", "crear", `Cita creada para el día ${res.fecha}`, res);
+  await crearLog("agenda", "crear", `Cita creada para el día ${res.fecha}`, res);
 
-    await get().cargarDia(res.fecha);
-  },
+  await get().cargarDia(res.fecha);
+},
+
 
   // ---------------------------------------------------------
   // EDITAR CITA
   // ---------------------------------------------------------
-  editar: async (id, data) => {
-    const payload = {
-      fecha: data.fecha,
-      hora_inicio: data.hora_inicio,
-      hora_fin: data.hora_fin,
-      tipo_cita: data.tipo_cita,
-      notario_id: Number(data.notario_id),
-      tipo_firma: data.tipo_firma || "",
-      apoderado_id: Number(data.apoderado_id),
-      estado: data.estado,
-      observaciones: data.observaciones || "",
-    };
+ editar: async (id, data) => {
+  const payload = {
+    fecha: data.fecha,
+    hora_inicio: data.hora_inicio,
+    hora_fin: data.hora_fin,
+    tipo_cita: data.tipo_cita,
+    notario_id: Number(data.notario_id),
+    tipo_firma: data.tipo_firma || "",
+    apoderado: data.apoderado || "",   // ← TEXTO DEL EXCEL
+    estado: data.estado,
+    observaciones: data.observaciones || "",
+  };
 
-    const res = await agendaAPI.editar(id, payload);
+  const res = await agendaAPI.editar(id, payload);
 
-    await crearLog("agenda", "editar", `Cita ${id} editada`, res);
+  await crearLog("agenda", "editar", `Cita ${id} editada`, res);
 
-    await get().cargarDia(payload.fecha);
-  },
+  await get().cargarDia(payload.fecha);
+},
 
   // ---------------------------------------------------------
   // CAMBIAR ESTADO

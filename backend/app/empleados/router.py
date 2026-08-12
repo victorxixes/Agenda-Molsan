@@ -168,3 +168,43 @@ def eliminar(empleado_id: int, db: Session = Depends(get_db)):
     db.delete(empleado)
     db.commit()
     return {"detail": "Empleado eliminado correctamente"}
+
+# ---------------------------------------------------------
+# ACTUALIZAR MÓDULOS VISIBLES
+# ---------------------------------------------------------
+@router.put("/{empleado_id}/permisos")
+def actualizar_modulos(empleado_id: int, data: dict, db: Session = Depends(get_db)):
+    empleado = db.query(Empleado).filter(Empleado.id == empleado_id).first()
+    if not empleado:
+        raise HTTPException(status_code=404, detail="Empleado no encontrado")
+
+    # data = { "modulos": ["dashboard", "empleados", ...] }
+    if "modulos" not in data:
+        raise HTTPException(status_code=400, detail="Faltan los módulos")
+
+    empleado.modulos_visibles = ",".join(data["modulos"])
+
+    db.commit()
+    db.refresh(empleado)
+
+    return {"detail": "Módulos actualizados correctamente"}
+
+# ---------------------------------------------------------
+# ACTUALIZAR PERMISOS DEL EMPLEADO
+# ---------------------------------------------------------
+@router.put("/{empleado_id}/permisos-detalle")
+def actualizar_permisos(empleado_id: int, data: dict, db: Session = Depends(get_db)):
+    empleado = db.query(Empleado).filter(Empleado.id == empleado_id).first()
+    if not empleado:
+        raise HTTPException(status_code=404, detail="Empleado no encontrado")
+
+    if "permisos" not in data:
+        raise HTTPException(status_code=400, detail="Faltan los permisos")
+
+    empleado.permisos = ",".join(data["permisos"])
+
+    db.commit()
+    db.refresh(empleado)
+
+    return {"detail": "Permisos actualizados correctamente"}
+

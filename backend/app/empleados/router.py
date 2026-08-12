@@ -4,7 +4,7 @@ from sqlalchemy import or_
 import os
 
 from app.database import get_db
-from app.empleados.models import Empleado
+from app.empleados.models import Empleado, Departamento, Seccion, Cargo
 from app.empleados.schemas import (
     EmpleadoCreate,
     EmpleadoUpdate,
@@ -12,7 +12,7 @@ from app.empleados.schemas import (
     EmpleadoSearchResponse
 )
 
-# 🔥 IMPORTAR FUNCIONES DEL SERVICE (ESTO ES LO QUE FALTABA)
+# 🔥 IMPORTAR FUNCIONES DEL SERVICE
 from app.empleados.service import (
     crear_empleado,
     editar_empleado as editar_empleado_service,
@@ -21,6 +21,7 @@ from app.empleados.service import (
 )
 
 router = APIRouter(prefix="/empleados", tags=["Empleados"])
+
 
 # ---------------------------------------------------------
 # LISTA DE MÓDULOS Y PERMISOS DEL ERP
@@ -41,6 +42,7 @@ def obtener_modulos_y_permisos():
     permisos = ["oculto", "ver", "crear", "editar", "eliminar"]
 
     return {"modulos": modulos, "permisos": permisos}
+
 
 # ---------------------------------------------------------
 # SUBIR FOTO DE EMPLEADO
@@ -66,6 +68,7 @@ def subir_foto(empleado_id: int, archivo: UploadFile = File(...), db: Session = 
 
     return empleado
 
+
 # ---------------------------------------------------------
 # ACTUALIZAR PERMISOS Y MÓDULOS
 # ---------------------------------------------------------
@@ -87,12 +90,14 @@ def actualizar_permisos(
 
     return empleado
 
+
 # ---------------------------------------------------------
 # LISTAR TODOS
 # ---------------------------------------------------------
 @router.get("/", response_model=list[EmpleadoResponse])
 def listar(db: Session = Depends(get_db)):
     return listar_empleados(db)
+
 
 # ---------------------------------------------------------
 # BÚSQUEDA + FILTROS + PAGINACIÓN
@@ -112,15 +117,15 @@ def buscar_empleados(
 ):
     query = db.query(Empleado)
 
-    # 🔍 Búsqueda por ID (rápida y exacta)
+    # 🔍 Búsqueda por ID
     if id is not None:
         query = query.filter(Empleado.id == id)
 
-    # 🔍 Búsqueda por DNI (exacta)
+    # 🔍 Búsqueda por DNI
     if dni:
         query = query.filter(Empleado.dni.ilike(f"%{dni}%"))
 
-    # 🔍 Búsqueda general (nombre, apellidos, dni)
+    # 🔍 Búsqueda general
     if q:
         query = query.filter(
             or_(
@@ -170,6 +175,7 @@ def obtener(empleado_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Empleado no encontrado")
     return empleado
 
+
 # ---------------------------------------------------------
 # CREAR EMPLEADO
 # ---------------------------------------------------------
@@ -177,8 +183,9 @@ def obtener(empleado_id: int, db: Session = Depends(get_db)):
 def crear(data: EmpleadoCreate, db: Session = Depends(get_db)):
     return crear_empleado(db, data)
 
+
 # ---------------------------------------------------------
-# EDITAR EMPLEADO (FIX DEFINITIVO)
+# EDITAR EMPLEADO
 # ---------------------------------------------------------
 @router.put("/{empleado_id}", response_model=EmpleadoResponse)
 def editar(empleado_id: int, data: EmpleadoUpdate, db: Session = Depends(get_db)):
@@ -186,6 +193,7 @@ def editar(empleado_id: int, data: EmpleadoUpdate, db: Session = Depends(get_db)
     if not empleado:
         raise HTTPException(status_code=404, detail="Empleado no encontrado")
     return empleado
+
 
 # ---------------------------------------------------------
 # ELIMINAR EMPLEADO
@@ -199,3 +207,21 @@ def eliminar(empleado_id: int, db: Session = Depends(get_db)):
     db.delete(empleado)
     db.commit()
     return {"detail": "Empleado eliminado correctamente"}
+
+
+# ---------------------------------------------------------
+# LISTAS PARA SELECTS (DEPARTAMENTOS / SECCIONES / CARGOS)
+# ---------------------------------------------------------
+@router.get("/departamentos")
+def listar_departamentos(db: Session = Depends(get_db)):
+    return db.query(Departamento).all()
+
+
+@router.get("/secciones")
+def listar_secciones(db: Session = Depends(get_db)):
+    return db.query(Seccion).all()
+
+
+@router.get("/cargos")
+def listar_cargos(db: Session = Depends(get_db)):
+    return db.query(Cargo).all()

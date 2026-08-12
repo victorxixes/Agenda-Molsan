@@ -17,7 +17,8 @@ app = FastAPI(title="Agenda Intranet Backend")
 # ---------------------------------------------------------
 origins = [
     "https://agenda-intranet-f.onrender.com",
-    "http://localhost:5173",  # para desarrollo
+    "https://agenda-intranet-front.onrender.com",
+    "http://localhost:5173",
 ]
 
 app.add_middleware(
@@ -27,7 +28,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 # ---------------------------------------------------------
 # IMPORTAR ROUTERS
 # ---------------------------------------------------------

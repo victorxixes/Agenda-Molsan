@@ -15,6 +15,9 @@ class CitaBase(BaseModel):
     estado: str = "Pendiente"
     observaciones: str | None = None
 
+
+class CitaCreate(CitaBase):
+
     @validator("notario_id")
     def validar_notario(cls, v, values):
         tipo = (values.get("tipo_cita") or "").lower()
@@ -28,10 +31,6 @@ class CitaBase(BaseModel):
         if "firma" in tipo and not v:
             raise ValueError("El campo tipo_firma es obligatorio para citas de firma")
         return v
-
-
-class CitaCreate(CitaBase):
-    pass
 
 
 class CitaUpdate(BaseModel):

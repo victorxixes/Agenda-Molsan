@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String
-from app.database import Base
+from backend.app.database import Base
 
 class Notaria(Base):
     __tablename__ = "ctn_notarios"
@@ -27,5 +27,6 @@ class Notaria(Base):
     apoderado_s = Column(String, nullable=True)
 
     observacion = Column(String, nullable=True)
+
 # Alias para compatibilidad con informes
 Notario = Notaria

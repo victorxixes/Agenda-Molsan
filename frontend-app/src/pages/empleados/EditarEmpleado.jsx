@@ -3,7 +3,7 @@ import axios from "axios";
 
 export default function EditarEmpleado({ empleadoId }) {
   const [form, setForm] = useState({});
-  const API = "https://agenda-intranet-backend.onrender.com";
+  const API = "https://agenda-intranet-b.onrender.com";
 
   useEffect(() => {
     axios.get(`${API}/empleados/${empleadoId}`).then((res) => {

@@ -4,7 +4,7 @@ import axios from "axios";
 export default function PermisosEmpleado({ empleadoId }) {
   const API = "https://agenda-intranet-b.onrender.com";
 
-  // 🔥 Módulos disponibles
+  // Módulos disponibles
   const MODULOS = [
     "dashboard",
     "agenda",
@@ -16,12 +16,13 @@ export default function PermisosEmpleado({ empleadoId }) {
     "seguridad"
   ];
 
-  // 🔥 Permisos disponibles
+  // Permisos disponibles
   const PERMISOS = ["ver", "crear", "editar", "borrar"];
 
   const [modulosVisibles, setModulosVisibles] = useState([]);
   const [permisosModulo, setPermisosModulo] = useState({});
 
+  // Cargar datos del empleado
   useEffect(() => {
     axios.get(`${API}/empleados/${empleadoId}`).then((res) => {
       setModulosVisibles(res.data.modulos_visibles || []);
@@ -29,6 +30,7 @@ export default function PermisosEmpleado({ empleadoId }) {
     });
   }, [empleadoId]);
 
+  // Toggle módulo visible
   const toggleModulo = (modulo) => {
     let nuevos = [...modulosVisibles];
     if (nuevos.includes(modulo)) {
@@ -39,6 +41,7 @@ export default function PermisosEmpleado({ empleadoId }) {
     setModulosVisibles(nuevos);
   };
 
+  // Toggle permiso por módulo
   const togglePermiso = (modulo, permiso) => {
     const actuales = permisosModulo[modulo] || [];
     let nuevos = [...actuales];
@@ -55,9 +58,10 @@ export default function PermisosEmpleado({ empleadoId }) {
     });
   };
 
+  // Guardar cambios (endpoint correcto)
   const guardarCambios = () => {
     axios
-      .put(`${API}/empleados/${empleadoId}/permisos`, {
+      .put(`${API}/empleados/${empleadoId}`, {
         modulos_visibles: modulosVisibles,
         permisos_modulo: permisosModulo,
       })

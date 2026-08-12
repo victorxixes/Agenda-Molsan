@@ -2,78 +2,67 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 
 export default function PermisosEmpleado({ empleadoId }) {
-  const [modulosDisponibles, setModulosDisponibles] = useState([]);
-  const [permisosDisponibles, setPermisosDisponibles] = useState([]);
+  const API = "https://agenda-intranet-b.onrender.com";
+
+  // 🔥 Módulos disponibles
+  const MODULOS = [
+    "dashboard",
+    "agenda",
+    "empleados",
+    "ctn",
+    "documentos",
+    "intranet",
+    "mensajes",
+    "seguridad"
+  ];
+
+  // 🔥 Permisos disponibles
+  const PERMISOS = ["ver", "crear", "editar", "borrar"];
 
   const [modulosVisibles, setModulosVisibles] = useState([]);
   const [permisosModulo, setPermisosModulo] = useState({});
 
-  const API = "https://agenda-intranet-b.onrender.com";
-
-  // ---------------------------------------------------------
-  // CARGAR MÓDULOS Y PERMISOS DISPONIBLES
-  // ---------------------------------------------------------
   useEffect(() => {
-    axios.get(`${API}/empleados/modulos`).then((res) => {
-      setModulosDisponibles(res.data.modulos);
-      setPermisosDisponibles(res.data.permisos);
-    });
-
     axios.get(`${API}/empleados/${empleadoId}`).then((res) => {
       setModulosVisibles(res.data.modulos_visibles || []);
       setPermisosModulo(res.data.permisos_modulo || {});
     });
   }, [empleadoId]);
 
-  // ---------------------------------------------------------
-  // MARCAR / DESMARCAR MÓDULO
-  // ---------------------------------------------------------
   const toggleModulo = (modulo) => {
-    let nuevosModulos = [...modulosVisibles];
-
-    if (nuevosModulos.includes(modulo)) {
-      nuevosModulos = nuevosModulos.filter((m) => m !== modulo);
+    let nuevos = [...modulosVisibles];
+    if (nuevos.includes(modulo)) {
+      nuevos = nuevos.filter((m) => m !== modulo);
     } else {
-      nuevosModulos.push(modulo);
+      nuevos.push(modulo);
     }
-
-    setModulosVisibles(nuevosModulos);
+    setModulosVisibles(nuevos);
   };
 
-  // ---------------------------------------------------------
-  // MARCAR / DESMARCAR PERMISO DE UN MÓDULO
-  // ---------------------------------------------------------
   const togglePermiso = (modulo, permiso) => {
-    const permisosActuales = permisosModulo[modulo] || [];
-    let nuevosPermisos = [...permisosActuales];
+    const actuales = permisosModulo[modulo] || [];
+    let nuevos = [...actuales];
 
-    if (nuevosPermisos.includes(permiso)) {
-      nuevosPermisos = nuevosPermisos.filter((p) => p !== permiso);
+    if (nuevos.includes(permiso)) {
+      nuevos = nuevos.filter((p) => p !== permiso);
     } else {
-      nuevosPermisos.push(permiso);
+      nuevos.push(permiso);
     }
 
     setPermisosModulo({
       ...permisosModulo,
-      [modulo]: nuevosPermisos,
+      [modulo]: nuevos,
     });
   };
 
-  // ---------------------------------------------------------
-  // GUARDAR CAMBIOS
-  // ---------------------------------------------------------
   const guardarCambios = () => {
     axios
       .put(`${API}/empleados/${empleadoId}/permisos`, {
         modulos_visibles: modulosVisibles,
         permisos_modulo: permisosModulo,
       })
-      .then(() => {
-        alert("Permisos actualizados correctamente");
-      })
-      .catch(() => {
-        alert("Error al guardar permisos");
-      });
+      .then(() => alert("Permisos actualizados correctamente"))
+      .catch(() => alert("Error al guardar permisos"));
   };
 
   return (
@@ -85,7 +74,7 @@ export default function PermisosEmpleado({ empleadoId }) {
         <h3 className="text-lg font-semibold mb-2">Módulos visibles</h3>
 
         <div className="grid grid-cols-2 gap-3">
-          {modulosDisponibles.map((modulo) => (
+          {MODULOS.map((modulo) => (
             <label key={modulo} className="flex items-center gap-2">
               <input
                 type="checkbox"
@@ -111,13 +100,11 @@ export default function PermisosEmpleado({ empleadoId }) {
             <h4 className="font-medium mb-2">{modulo}</h4>
 
             <div className="flex gap-4 flex-wrap">
-              {permisosDisponibles.map((permiso) => (
+              {PERMISOS.map((permiso) => (
                 <label key={permiso} className="flex items-center gap-2">
                   <input
                     type="checkbox"
-                    checked={
-                      permisosModulo[modulo]?.includes(permiso) || false
-                    }
+                    checked={permisosModulo[modulo]?.includes(permiso) || false}
                     onChange={() => togglePermiso(modulo, permiso)}
                   />
                   {permiso}

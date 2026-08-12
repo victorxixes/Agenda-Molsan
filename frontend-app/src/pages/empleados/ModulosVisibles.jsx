@@ -2,15 +2,23 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 
 export default function ModulosVisibles({ empleadoId }) {
-  const [modulosDisponibles, setModulosDisponibles] = useState([]);
-  const [modulosVisibles, setModulosVisibles] = useState([]);
   const API = "https://agenda-intranet-b.onrender.com";
 
-  useEffect(() => {
-    axios.get(`${API}/empleados/modulos`).then((res) => {
-      setModulosDisponibles(res.data.modulos);
-    });
+  // 🔥 Módulos disponibles (definidos en tu ERP)
+  const MODULOS = [
+    "dashboard",
+    "agenda",
+    "empleados",
+    "ctn",
+    "documentos",
+    "intranet",
+    "mensajes",
+    "seguridad"
+  ];
 
+  const [modulosVisibles, setModulosVisibles] = useState([]);
+
+  useEffect(() => {
     axios.get(`${API}/empleados/${empleadoId}`).then((res) => {
       setModulosVisibles(res.data.modulos_visibles || []);
     });
@@ -30,7 +38,7 @@ export default function ModulosVisibles({ empleadoId }) {
     axios
       .put(`${API}/empleados/${empleadoId}/permisos`, {
         modulos_visibles: modulosVisibles,
-        permisos_modulo: {}, // aquí solo módulos, permisos los manejas en otro panel
+        permisos_modulo: {}, // permisos se gestionan en otro panel
       })
       .then(() => alert("Módulos visibles actualizados"))
       .catch(() => alert("Error al guardar módulos"));
@@ -41,7 +49,7 @@ export default function ModulosVisibles({ empleadoId }) {
       <h2 className="text-xl font-bold mb-4">Módulos visibles</h2>
 
       <div className="grid grid-cols-2 gap-3 mb-4">
-        {modulosDisponibles.map((modulo) => (
+        {MODULOS.map((modulo) => (
           <label key={modulo} className="flex items-center gap-2">
             <input
               type="checkbox"

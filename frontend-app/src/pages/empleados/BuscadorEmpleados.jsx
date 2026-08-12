@@ -4,12 +4,14 @@ export default function BuscadorEmpleados({ onBuscar }) {
   const [id, setId] = useState("");
   const [dni, setDni] = useState("");
   const [q, setQ] = useState("");
+  const [activo, setActivo] = useState("");
 
   const buscar = () => {
     onBuscar({
       id: id || null,
       dni: dni || null,
       q: q || "",
+      activo: activo === "" ? null : activo === "true"
     });
   };
 
@@ -47,6 +49,19 @@ export default function BuscadorEmpleados({ onBuscar }) {
           className="input border rounded px-2 py-1"
           placeholder="Ej: Víctor"
         />
+      </div>
+
+      <div className="flex flex-col">
+        <label className="text-sm font-semibold text-[#1F3A5F]">Estado</label>
+        <select
+          value={activo}
+          onChange={(e) => setActivo(e.target.value)}
+          className="input border rounded px-2 py-1"
+        >
+          <option value="">Todos</option>
+          <option value="true">Activo</option>
+          <option value="false">Inactivo</option>
+        </select>
       </div>
 
       <button

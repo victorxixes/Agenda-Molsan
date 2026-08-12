@@ -8,7 +8,13 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
   const { cargarCita, citaActual, editar, cambiarEstado } = useAgendaStore();
   const { notarias, cargarNotarias } = useCTNStore();
 
-  const [tiposCita, setTiposCita] = useState([]);
+  // 🔥 Tipos de cita definidos localmente (ya no vienen del backend)
+  const TIPOS_CITA = [
+    "Firma notarial",
+    "Reunión",
+    "Visita",
+    "Otros"
+  ];
 
   const [form, setForm] = useState({
     fecha: "",
@@ -23,16 +29,12 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
   });
 
   // ---------------------------------------------------------
-  // CARGAR CITA + CATÁLOGOS
+  // CARGAR CITA + NOTARIAS
   // ---------------------------------------------------------
   useEffect(() => {
     if (open && citaId) {
       cargarCita(citaId);
       cargarNotarias();
-
-      fetch(`${import.meta.env.VITE_API_URL}/agenda/tipos-cita`)
-        .then((r) => r.json())
-        .then((data) => setTiposCita(data.map((t) => t.nombre)));
     }
   }, [open, citaId]);
 
@@ -48,7 +50,7 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
         tipo_cita: citaActual.tipo_cita,
         notario_id: citaActual.notario_id,
         tipo_firma: citaActual.tipo_firma,
-        apoderado: citaActual.apoderado, // ahora texto
+        apoderado: citaActual.apoderado,
         estado: citaActual.estado,
         observaciones: citaActual.observaciones || "",
       });
@@ -56,7 +58,7 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
   }, [citaActual]);
 
   // ---------------------------------------------------------
-  // SELECCIONAR NOTARIA (solo usar Apoderado y VC del Excel)
+  // SELECCIONAR NOTARIA
   // ---------------------------------------------------------
   const seleccionarNotaria = (n) => {
     const tipoFirmaTraducida =
@@ -74,7 +76,7 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
   };
 
   // ---------------------------------------------------------
-  // GUARDAR
+  // GUARDAR CAMBIOS
   // ---------------------------------------------------------
   const guardar = async () => {
     await editar(citaId, form);
@@ -138,7 +140,8 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
           value={form.tipo_cita}
           onChange={(e) => setForm({ ...form, tipo_cita: e.target.value })}
         >
-          {tiposCita.map((t) => (
+          <option value="">Selecciona tipo de cita</option>
+          {TIPOS_CITA.map((t) => (
             <option key={t} value={t}>{t}</option>
           ))}
         </select>
@@ -169,7 +172,7 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
           </div>
         )}
 
-        {/* Apoderado (solo lectura) */}
+        {/* Apoderado */}
         <input
           type="text"
           className="input bg-gray-100"
@@ -177,7 +180,7 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
           readOnly
         />
 
-        {/* Tipo de firma (solo lectura) */}
+        {/* Tipo de firma */}
         <input
           type="text"
           className="input bg-gray-100"

@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import os
 
-from backend.database import Base, engine
+from backend.app.database import Base, engine
 
 # ---------------------------------------------------------
 # CREAR TABLAS
@@ -34,46 +34,46 @@ app.add_middleware(
 # ---------------------------------------------------------
 
 # Admin Noticias (PostgreSQL)
-from backend.intranet.noticias.router_reset_pg import router as router_reset_pg
-from backend.intranet.noticias.router_fix_pg import router as router_fix_pg
-from backend.intranet.noticias.router_fix_schema import router as router_fix_noticias
+from backend.app.intranet.noticias.router_reset_pg import router as router_reset_pg
+from backend.app.intranet.noticias.router_fix_pg import router as router_fix_pg
+from backend.app.intranet.noticias.router_fix_schema import router as router_fix_noticias
 
 # Seguridad / Auth
-from backend.seguridad.router import router as seguridad_router
-from backend.seguridad.permisos_router import router as permisos_router
-from backend.auth.router import router as auth_router
+from backend.app.seguridad.router import router as seguridad_router
+from backend.app.seguridad.permisos_router import router as permisos_router
+from backend.app.auth.router import router as auth_router
 
 # Empleados
-from backend.empleados.router import router as empleados_router
+from backend.app.empleados.router import router as empleados_router
 
 # Maestros
-from backend.maestros.router import router as maestros_router
+from backend.app.maestros.router import router as maestros_router
 
 # CTN
-from backend.ctn.router import router as ctn_router
+from backend.app.ctn.router import router as ctn_router
 
 # Agenda
-from backend.agenda.router import router as agenda_router
-from backend.agenda.notarios_router import router as agenda_notarios_router
+from backend.app.agenda.router import router as agenda_router
+from backend.app.agenda.notarios_router import router as agenda_notarios_router
 
 # Auditoría / Dashboard / Informes
-from backend.auditoria.router import router as auditoria_router
-from backend.dashboard.router import router as dashboard_router
-from backend.informes.router import router as informes_router
+from backend.app.auditoria.router import router as auditoria_router
+from backend.app.dashboard.router import router as dashboard_router
+from backend.app.informes.router import router as informes_router
 
 # Intranet
-from backend.intranet.noticias.router import router as noticias_router
-from backend.intranet.documentos.router import router as documentos_router
+from backend.app.intranet.noticias.router import router as noticias_router
+from backend.app.intranet.documentos.router import router as documentos_router
 
 # Logs / Mensajes / Realtime
-from backend.logs.router import router as logs_router
-from backend.mensajes.router import router as mensajes_router
-from backend.realtime.router import router as realtime_router
+from backend.app.logs.router import router as logs_router
+from backend.app.mensajes.router import router as mensajes_router
+from backend.app.realtime.router import router as realtime_router
 
 # Utilidades
-from backend.utilidades.router import router as utilidades_router
-from backend.utilidades.router_create import router as create_router
-from backend.utilidades.router_force import router as force_router
+from backend.app.utilidades.router import router as utilidades_router
+from backend.app.utilidades.router_create import router as create_router
+from backend.app.utilidades.router_force import router as force_router
 
 # ---------------------------------------------------------
 # INCLUIR ROUTERS

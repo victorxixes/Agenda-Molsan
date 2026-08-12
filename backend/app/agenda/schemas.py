@@ -14,8 +14,7 @@ class CitaBase(BaseModel):
     # tipo_firma opcional (solo obligatorio si tipo_cita contiene "firma")
     tipo_firma: str | None = None
 
-    # apoderado_id OBLIGATORIO en creación
-    apoderado_id: int
+  apoderado: str | None = None
 
     estado: str = "Pendiente"
     observaciones: str | None = None

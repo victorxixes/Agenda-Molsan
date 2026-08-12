@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, Date, Time, ForeignKey
-from app.database import Base
+from backend.app.database import Base
 
 class Cita(Base):
     __tablename__ = "agenda_citas"
@@ -13,7 +13,7 @@ class Cita(Base):
     hora_fin = Column(Time, nullable=False)
 
     # Tipo de cita (Firma notarial, Reunión, Visita, Otros)
-    tipo_cita = Column(String, nullable=False, default="Otros")  # NUEVO
+    tipo_cita = Column(String, nullable=False, default="Otros")
 
     # Notario (solo obligatorio si tipo_cita = Firma notarial)
     notario_id = Column(Integer, ForeignKey("ctn_notaria.id"), nullable=True)
@@ -22,12 +22,11 @@ class Cita(Base):
     tipo_firma = Column(String, nullable=True)
 
     # Apoderado asignado (relación con Empleados)
-    apoderado = Column(String, nullable=True)
+    apoderado = Column(Integer, ForeignKey("empleados.id"), nullable=True)
 
     # Estado de la cita
-    estado = Column(String, nullable=False, default="Pendiente")  
+    estado = Column(String, nullable=False, default="Pendiente")
     # Pendiente, Confirmada, En curso, Finalizada, Cancelada
 
     # Observaciones del apoderado
     observaciones = Column(String, nullable=True)
-

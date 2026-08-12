@@ -8,9 +8,7 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
   const { cargarCita, citaActual, editar, cambiarEstado } = useAgendaStore();
   const { notarias, cargarNotarias } = useCTNStore();
 
-  const [apoderados, setApoderados] = useState([]);
   const [tiposCita, setTiposCita] = useState([]);
-  const [tiposFirma, setTiposFirma] = useState([]);
 
   const [form, setForm] = useState({
     fecha: "",
@@ -19,7 +17,7 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
     tipo_cita: "",
     notario_id: null,
     tipo_firma: "",
-    apoderado_id: null,
+    apoderado: "",
     estado: "",
     observaciones: "",
   });
@@ -32,17 +30,9 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
       cargarCita(citaId);
       cargarNotarias();
 
-      fetch(`${import.meta.env.VITE_API_URL}/agenda/apoderados`)
-        .then((r) => r.json())
-        .then(setApoderados);
-
       fetch(`${import.meta.env.VITE_API_URL}/agenda/tipos-cita`)
         .then((r) => r.json())
         .then((data) => setTiposCita(data.map((t) => t.nombre)));
-
-      fetch(`${import.meta.env.VITE_API_URL}/agenda/tipos-firma`)
-        .then((r) => r.json())
-        .then((data) => setTiposFirma(data.map((t) => t.nombre)));
     }
   }, [open, citaId]);
 
@@ -58,7 +48,7 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
         tipo_cita: citaActual.tipo_cita,
         notario_id: citaActual.notario_id,
         tipo_firma: citaActual.tipo_firma,
-        apoderado_id: citaActual.apoderado_id,
+        apoderado: citaActual.apoderado, // ahora texto
         estado: citaActual.estado,
         observaciones: citaActual.observaciones || "",
       });
@@ -66,29 +56,21 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
   }, [citaActual]);
 
   // ---------------------------------------------------------
-  // SELECCIONAR NOTARIA
+  // SELECCIONAR NOTARIA (solo usar Apoderado y VC del Excel)
   // ---------------------------------------------------------
   const seleccionarNotaria = (n) => {
     const tipoFirmaTraducida =
       n.vc === "SI" ? "Videoconferencia" :
       n.vc === "NO" ? "Presencial" :
-      "";
+      n.vc || "";
 
-    const apoderadoEncontrado =
-      apoderados.find((a) =>
-        `${a.nombre} ${a.apellidos}`.trim() === (n.apoderado || "").trim()
-      ) ||
-      apoderados.find((a) =>
-        `${a.nombre} ${a.apellidos}`.trim() === (n.apoderado_s || "").trim()
-      );
-
-    setForm({
-      ...form,
+    setForm(prev => ({
+      ...prev,
       notario_id: n.id,
       tipo_firma: tipoFirmaTraducida,
-      apoderado_id: apoderadoEncontrado ? apoderadoEncontrado.id : null,
-      observaciones: n.observacion || form.observaciones,
-    });
+      apoderado: n.apoderado || "",
+      observaciones: n.observacion || prev.observaciones,
+    }));
   };
 
   // ---------------------------------------------------------
@@ -125,6 +107,7 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
 
         <h2 className="text-2xl font-bold">Editar cita</h2>
 
+        {/* Fecha */}
         <input
           type="date"
           className="input"
@@ -132,6 +115,7 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
           onChange={(e) => setForm({ ...form, fecha: e.target.value })}
         />
 
+        {/* Horas */}
         <div className="grid grid-cols-2 gap-3">
           <input
             type="time"
@@ -148,6 +132,7 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
           />
         </div>
 
+        {/* Tipo de cita */}
         <select
           className="input"
           value={form.tipo_cita}
@@ -158,11 +143,13 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
           ))}
         </select>
 
+        {/* Buscador de notaria */}
         <BuscadorNotariaPremium
           notarios={notarias}
           onSelect={seleccionarNotaria}
         />
 
+        {/* Datos del notario */}
         {notarioSeleccionado && (
           <div className="space-y-2 bg-white/40 p-3 rounded-lg">
             <div className="font-semibold">
@@ -182,28 +169,23 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
           </div>
         )}
 
-        <select
-          className="input"
-          value={form.apoderado_id}
-          onChange={(e) => setForm({ ...form, apoderado_id: Number(e.target.value) })}
-        >
-          {apoderados.map((a) => (
-            <option key={a.id} value={a.id}>
-              {a.nombre} {a.apellidos}
-            </option>
-          ))}
-        </select>
+        {/* Apoderado (solo lectura) */}
+        <input
+          type="text"
+          className="input bg-gray-100"
+          value={form.apoderado || ""}
+          readOnly
+        />
 
-        <select
-          className="input"
-          value={form.tipo_firma}
-          onChange={(e) => setForm({ ...form, tipo_firma: e.target.value })}
-        >
-          {tiposFirma.map((t) => (
-            <option key={t} value={t}>{t}</option>
-          ))}
-        </select>
+        {/* Tipo de firma (solo lectura) */}
+        <input
+          type="text"
+          className="input bg-gray-100"
+          value={form.tipo_firma || ""}
+          readOnly
+        />
 
+        {/* Estado */}
         <div className="flex gap-2">
           {["Pendiente", "Confirmada", "En curso", "Finalizada", "Cancelada"].map((estado) => (
             <button
@@ -216,6 +198,7 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
           ))}
         </div>
 
+        {/* Observaciones */}
         <textarea
           className="input"
           placeholder="Observaciones"
@@ -223,6 +206,7 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
           onChange={(e) => setForm({ ...form, observaciones: e.target.value })}
         />
 
+        {/* Botón guardar */}
         <button className="btn-primary w-full" onClick={guardar}>
           Guardar cambios
         </button>

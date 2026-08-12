@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
+from datetime import date, time
 
 from app.database import get_db
 from app.agenda.schemas import CitaCreate, CitaUpdate
@@ -21,11 +22,13 @@ router = APIRouter(prefix="/agenda", tags=["Agenda"])
 # ---------------------------------------------------------
 @router.get("/dia/{fecha}")
 def citas_dia(fecha: str, db: Session = Depends(get_db)):
-    return listar_citas_dia(db, fecha)
+    fecha_dt = date.fromisoformat(fecha)
+    return listar_citas_dia(db, fecha_dt)
 
 @router.get("/semana/{fecha}")
 def citas_semana(fecha: str, db: Session = Depends(get_db)):
-    return listar_citas_semana(db, fecha)
+    fecha_dt = date.fromisoformat(fecha)
+    return listar_citas_semana(db, fecha_dt)
 
 @router.get("/mes/{year}/{month}")
 def citas_mes(year: int, month: int, db: Session = Depends(get_db)):
@@ -57,7 +60,10 @@ def eliminar(id: int, db: Session = Depends(get_db)):
 # ---------------------------------------------------------
 @router.put("/mover/{id}")
 def mover(id: int, nueva_fecha: str, nueva_hora_inicio: str, nueva_hora_fin: str, db: Session = Depends(get_db)):
-    return mover_cita(db, id, nueva_fecha, nueva_hora_inicio, nueva_hora_fin)
+    fecha_dt = date.fromisoformat(nueva_fecha)
+    hora_inicio_dt = time.fromisoformat(nueva_hora_inicio)
+    hora_fin_dt = time.fromisoformat(nueva_hora_fin)
+    return mover_cita(db, id, fecha_dt, hora_inicio_dt, hora_fin_dt)
 
 # ---------------------------------------------------------
 # CAMBIAR ESTADO

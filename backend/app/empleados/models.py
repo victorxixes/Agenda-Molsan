@@ -1,13 +1,9 @@
-from sqlalchemy import Column, Integer, String, Boolean, Text
+from sqlalchemy import Column, Integer, String, Boolean, Text, ForeignKey
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.orm import relationship
 from app.database import Base
 
-class Empleado(Base):
-    __tablename__ = "empleados_v2"   # 🔥 TABLA NUEVA
-
-    id = Column(Integer, primary_key=True, index=True)
-
-    # ---------------------------------------------------------
+# ---------------------------------------------------------
 # TABLAS MAESTRAS
 # ---------------------------------------------------------
 
@@ -39,6 +35,17 @@ class Cargo(Base):
     descripcion = Column(String, nullable=True)
 
     empleados = relationship("Empleado", back_populates="cargo")
+
+
+# ---------------------------------------------------------
+# EMPLEADOS (empleados_v2)
+# ---------------------------------------------------------
+
+class Empleado(Base):
+    __tablename__ = "empleados_v2"
+
+    id = Column(Integer, primary_key=True, index=True)
+
     # -----------------------------
     # DATOS PERSONALES
     # -----------------------------
@@ -58,9 +65,13 @@ class Cargo(Base):
     # -----------------------------
     # DATOS LABORALES
     # -----------------------------
-    departamento_id = Column(Integer, nullable=True)
-    seccion_id = Column(Integer, nullable=True)
-    cargo_id = Column(Integer, nullable=True)
+    departamento_id = Column(Integer, ForeignKey("departamentos.id"), nullable=True)
+    seccion_id = Column(Integer, ForeignKey("secciones.id"), nullable=True)
+    cargo_id = Column(Integer, ForeignKey("cargos.id"), nullable=True)
+
+    departamento = relationship("Departamento", back_populates="empleados")
+    seccion = relationship("Seccion", back_populates="empleados")
+    cargo = relationship("Cargo", back_populates="empleados")
 
     email_empresa = Column(String(150), nullable=True)
     extension = Column(String(20), nullable=True)

@@ -3,9 +3,8 @@ from sqlalchemy.orm import Session
 from fastapi.responses import FileResponse
 import os
 
-from app.database import get_db
-
-from app.intranet.documentos.service import (
+from backend.app.database import get_db
+from backend.app.intranet.documentos.service import (
     listar_documentos,
     obtener_documento,
     crear_documento,
@@ -21,7 +20,6 @@ router = APIRouter(
 # ---------------------------------------------------------
 # LISTAR DOCUMENTOS
 # ---------------------------------------------------------
-@router.get("")
 @router.get("/")
 def listar(db: Session = Depends(get_db)):
     return listar_documentos(db)
@@ -36,7 +34,6 @@ def obtener(documento_id: int, db: Session = Depends(get_db)):
 # ---------------------------------------------------------
 # CREAR DOCUMENTO
 # ---------------------------------------------------------
-@router.post("")
 @router.post("/")
 def crear(
     titulo: str = Form(...),

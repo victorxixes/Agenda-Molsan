@@ -1,14 +1,18 @@
 from fastapi import APIRouter, UploadFile, File, Depends, Form
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 from pydantic import BaseModel
 
-from app.database import get_db
-from app.ctn.importer import importar_excel_ctn
-from app.intranet.noticias.service import crear_noticia
-from app.intranet.documentos.service import crear_documento
+from backend.app.database import get_db, Base
+from backend.app.ctn.importer import importar_excel_ctn
+from backend.app.intranet.noticias.service import crear_noticia
+from backend.app.intranet.documentos.service import crear_documento
 
 router = APIRouter(prefix="/utilidades", tags=["Utilidades"])
 
+# ---------------------------------------------------------
+# RESET EMPLEADOS
+# ---------------------------------------------------------
 @router.delete("/reset_empleados")
 def reset_empleados(db: Session = Depends(get_db)):
 
@@ -23,7 +27,7 @@ def reset_empleados(db: Session = Depends(get_db)):
         "status": "ok",
         "message": "Tabla empleados eliminada y recreada correctamente"
     }
-    
+
 # ---------------------------------------------------------
 # IMPORTAR CTN (Excel)
 # ---------------------------------------------------------

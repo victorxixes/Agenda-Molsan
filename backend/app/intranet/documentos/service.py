@@ -1,7 +1,8 @@
 import os
 from datetime import datetime
 from sqlalchemy.orm import Session
-from app.intranet.documentos.models import Documento
+
+from backend.app.intranet.documentos.models import Documento
 
 UPLOAD_DIR = "/tmp/documentos"
 os.makedirs(UPLOAD_DIR, exist_ok=True)

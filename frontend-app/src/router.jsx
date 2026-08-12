@@ -84,7 +84,7 @@ export default function AppRouter() {
         <Route element={<Layout />}>
           <Route path="/empleados" element={<EmpleadosList />} />
           <Route path="/empleados/nuevo" element={<EmpleadoForm />} />
-          <Route path="/empleados/:id" element={<EmpleadoDetalle />} />
+          <Route path="/empleados/:empleadoId" element={<EmpleadoDetalle />} />
           <Route path="/perfil" element={<MiPerfil />} />
         </Route>
       </Route>

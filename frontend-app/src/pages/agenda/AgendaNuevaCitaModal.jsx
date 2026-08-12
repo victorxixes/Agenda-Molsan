@@ -71,32 +71,33 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
   }, [open, apoderados]);
 
   // ---------------------------------------------------------
-  // SELECCIONAR NOTARIA
-  // ---------------------------------------------------------
-  const seleccionarNotaria = (n) => {
-    const tipoFirmaTraducida =
-      n.vc === "SI" ? "Videoconferencia" :
-      n.vc === "NO" ? "Presencial" :
-      "";
+// SELECCIONAR NOTARIA
+// ---------------------------------------------------------
+const seleccionarNotaria = (n) => {
+  const tipoFirmaTraducida =
+    n.vc === "SI" ? "Videoconferencia" :
+    n.vc === "NO" ? "Presencial" :
+    "";
 
-    const apoderadoEncontrado =
-      apoderados.find((a) =>
-        normalize(`${a.nombre} ${a.apellidos}`) === normalize(n.apoderado || "")
-      ) ||
-      apoderados.find((a) =>
-        normalize(`${a.nombre} ${a.apellidos}`) === normalize(n.apoderado_s || "")
-      );
+  const apoderadoEncontrado =
+    apoderados.find((a) =>
+      normalize(`${a.nombre} ${a.apellidos}`) === normalize(n.apoderado || "")
+    ) ||
+    apoderados.find((a) =>
+      normalize(`${a.nombre} ${a.apellidos}`) === normalize(n.apoderado_s || "")
+    );
 
-    setForm({
-      ...form,
-      notario_id: n.id,
-      tipo_firma: tipoFirmaTraducida,
-      apoderado_id: apoderadoEncontrado
-        ? apoderadoEncontrado.id
-        : (form.apoderado_id ?? 2), // fallback seguro
-      observaciones: n.observacion || form.observaciones,
-    });
-  };
+  setForm(prev => ({
+    ...prev,
+    notario_id: n.id,
+    tipo_firma: tipoFirmaTraducida,
+    apoderado_id: apoderadoEncontrado
+      ? apoderadoEncontrado.id
+      : (prev.apoderado_id ?? 2),
+    observaciones: n.observacion || prev.observaciones,
+  }));
+};
+
 
   // ---------------------------------------------------------
   // GUARDAR

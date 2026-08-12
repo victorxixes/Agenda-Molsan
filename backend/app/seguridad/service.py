@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from app.seguridad.models import Rol, Permiso
+from backend.app.seguridad.models import Rol, Permiso
 
 def crear_rol(db: Session, data):
     rol = Rol(nombre=data.nombre, descripcion=data.descripcion)

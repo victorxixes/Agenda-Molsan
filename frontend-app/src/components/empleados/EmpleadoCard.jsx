@@ -1,6 +1,25 @@
 import GlassCard from "../ui/GlassCard.jsx";
 import IconEmpleados from "../icons/IconEmpleados.jsx";
 
+const getFotoURL = (foto) => {
+  if (
+    !foto ||
+    foto === "string" ||
+    foto.trim() === "" ||
+    foto === null
+  ) {
+    return "/placeholder.png";
+  }
+
+  // Si ya es una URL completa
+  if (foto.startsWith("http")) {
+    return foto;
+  }
+
+  // Si es ruta relativa del backend
+  return `${import.meta.env.VITE_API_URL}${foto}`;
+};
+
 export default function EmpleadoCard({ empleado, onClick }) {
   return (
     <GlassCard
@@ -8,7 +27,7 @@ export default function EmpleadoCard({ empleado, onClick }) {
       onClick={onClick}
     >
       <img
-        src={empleado.foto || "/placeholder.png"}
+        src={getFotoURL(empleado.foto)}
         alt="Foto empleado"
         className="w-12 h-12 rounded-full object-cover border"
       />

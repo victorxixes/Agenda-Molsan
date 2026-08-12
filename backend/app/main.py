@@ -125,8 +125,8 @@ app.include_router(force_router)
 # ---------------------------------------------------------
 # STATIC FILES
 # ---------------------------------------------------------
-STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
-app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+FOTOS_DIR = os.path.join(os.path.dirname(__file__), "fotos")
+app.mount("/fotos", StaticFiles(directory=FOTOS_DIR), name="fotos")
 
 
 

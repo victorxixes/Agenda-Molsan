@@ -64,11 +64,16 @@ export default function AgendaPage() {
       />
 
       {/* Modal: Editar cita */}
-      <AgendaNuevaEditarCitaModal
-        open={editarId !== null}
-        citaId={editarId}
-        onClose={() => setEditarId(null)}
-      />
+{/* Modal: Editar cita */}
+<AgendaNuevaEditarCitaModal
+  open={editarId !== null}
+  citaId={editarId}
+  onClose={() => {
+    setEditarId(null);
+    cargarDia(selectedDate.toISOString().split("T")[0]); // refresco automático
+  }}
+/>
+
 
     </div>
   );

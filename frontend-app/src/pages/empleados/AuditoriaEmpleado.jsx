@@ -3,7 +3,7 @@ import axios from "axios";
 
 export default function AuditoriaEmpleado({ empleadoId }) {
   const [eventos, setEventos] = useState([]);
-  const API = "https://agenda-intranet-backend.onrender.com";
+  const API = "https://agenda-intranet-b.onrender.com";
 
   useEffect(() => {
     axios

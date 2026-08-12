@@ -1,10 +1,11 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useEmpleadosStore } from "../../store/empleadosStore";
+import BuscadorEmpleados from "../../components/empleados/BuscadorEmpleados";
 
 export default function EmpleadosList() {
   const navigate = useNavigate();
-  const { empleados, cargarEmpleados } = useEmpleadosStore();
+  const { empleados, cargarEmpleados, buscarEmpleados } = useEmpleadosStore();
 
   useEffect(() => {
     cargarEmpleados();
@@ -16,7 +17,8 @@ export default function EmpleadosList() {
       <h1 className="text-2xl font-bold text-neutral-800">Empleados</h1>
       <p className="text-neutral-600">Listado de empleados</p>
 
-      {/* 🔥 Botón eliminado — ahora solo se crean desde Utilidades */}
+      {/* 🔥 Buscador en el hueco amarillo */}
+      <BuscadorEmpleados onBuscar={buscarEmpleados} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {empleados.map((empleado) => (

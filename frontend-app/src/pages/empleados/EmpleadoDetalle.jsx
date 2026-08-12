@@ -80,13 +80,13 @@ export default function EmpleadoDetalle() {
   };
 
   // 🔥 Foto corregida
-  const getFotoURL = (foto) => {
-    if (!foto || foto === "string" || foto.trim() === "") {
-      return "/placeholder.png";
-    }
-    if (foto.startsWith("http")) return foto;
-    return `${API}${foto}`;
-  };
+ const getFotoURL = (foto) => {
+  if (!foto || foto === "string" || foto.trim() === "") {
+    return "/placeholder.png";
+  }
+  return `${API}/fotos/${foto}`;
+};
+
 
   if (!empleado) return <div className="p-6">Cargando empleado...</div>;
 

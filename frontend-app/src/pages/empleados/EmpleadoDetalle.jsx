@@ -149,7 +149,15 @@ export default function EmpleadoDetalle() {
       </div>
 
       {/* CONTENIDO SEGÚN PESTAÑA */}
-      {tab === "resumen" && <ResumenEmpleado empleadoId={empleadoId} />}
+     {tab === "resumen" && (
+  <ResumenEmpleado
+    empleadoId={empleadoId}
+    getSeccionNombre={getSeccionNombre}
+    getDepartamentoNombre={getDepartamentoNombre}
+    getCargoNombre={getCargoNombre}
+  />
+)}
+
     {tab === "datos" && (
   <DatosPersonales
     empleadoId={empleadoId}

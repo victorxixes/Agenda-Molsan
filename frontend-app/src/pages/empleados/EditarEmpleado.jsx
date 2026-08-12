@@ -32,11 +32,19 @@ export default function EditarEmpleado({ empleadoId }) {
     });
   }, [empleadoId]);
 
-  // 🔥 Cargar listas para selects
+  // 🔥 Cargar listas para selects (CORREGIDO)
   useEffect(() => {
-    fetch(`${API}/departamentos`).then((r) => r.json()).then(setDepartamentos);
-    fetch(`${API}/secciones`).then((r) => r.json()).then(setSecciones);
-    fetch(`${API}/cargos`).then((r) => r.json()).then(setCargos);
+    fetch(`${API}/empleados/departamentos`)
+      .then((r) => r.json())
+      .then(setDepartamentos);
+
+    fetch(`${API}/empleados/secciones`)
+      .then((r) => r.json())
+      .then(setSecciones);
+
+    fetch(`${API}/empleados/cargos`)
+      .then((r) => r.json())
+      .then(setCargos);
   }, []);
 
   const handleChange = (field, value) => {

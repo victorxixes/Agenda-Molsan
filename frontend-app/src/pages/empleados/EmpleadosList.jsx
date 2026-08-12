@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useEmpleadosStore } from "../../store/empleadosStore";
-import BuscadorEmpleados from "../../components/empleados/BuscadorEmpleados";
+import BuscadorEmpleados from "./BuscadorEmpleados";
 
 export default function EmpleadosList() {
   const navigate = useNavigate();

@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from app.database import get_db
 
-from app.informes.service import (
+from backend.app.database import get_db
+
+from backend.app.informes.service import (
     resumen_agenda,
     resumen_apoderados,
     mapa_calor_zonas

@@ -2,8 +2,6 @@ from sqlalchemy.orm import Session
 from datetime import date, timedelta, time
 from app.agenda.models import Cita
 from app.ctn.models import Notaria
-from app.empleados.models import Empleado
-
 
 # ---------------------------------------------------------
 # CONVERTIR CITA → OBJETO COMPLETO PARA EL FRONTEND
@@ -27,24 +25,8 @@ def cita_con_relaciones(db: Session, cita: Cita):
         "estado": cita.estado,
         "observaciones": cita.observaciones,
         "notario": notario,
-
-        # 🔥 CAMBIO IMPORTANTE
         "apoderado": cita.apoderado
     }
-
-    return {
-        "id": cita.id,
-        "fecha": cita.fecha,
-        "hora_inicio": cita.hora_inicio,
-        "hora_fin": cita.hora_fin,
-        "tipo_cita": cita.tipo_cita,
-        "tipo_firma": cita.tipo_firma,
-        "estado": cita.estado,
-        "observaciones": cita.observaciones,
-        "notario": notario,
-        "apoderado": apoderado
-    }
-
 
 # ---------------------------------------------------------
 # LISTAR CITAS POR DÍA
@@ -57,7 +39,6 @@ def listar_citas_dia(db: Session, fecha: date):
         .all()
     )
     return [cita_con_relaciones(db, c) for c in citas]
-
 
 # ---------------------------------------------------------
 # LISTAR CITAS POR SEMANA
@@ -75,7 +56,6 @@ def listar_citas_semana(db: Session, fecha: date):
     )
     return [cita_con_relaciones(db, c) for c in citas]
 
-
 # ---------------------------------------------------------
 # LISTAR CITAS POR MES
 # ---------------------------------------------------------
@@ -92,7 +72,6 @@ def listar_citas_mes(db: Session, year: int, month: int):
     )
     return [cita_con_relaciones(db, c) for c in citas]
 
-
 # ---------------------------------------------------------
 # CREAR CITA
 # ---------------------------------------------------------
@@ -103,18 +82,20 @@ def crear_cita(db: Session, data):
     db.refresh(cita)
     return cita_con_relaciones(db, cita)
 
-
 # ---------------------------------------------------------
 # EDITAR CITA
 # ---------------------------------------------------------
-def crear_cita(db: Session, data):
-    cita = Cita(**data.dict())
-    db.add(cita)
+def editar_cita(db: Session, cita_id: int, data):
+    cita = db.query(Cita).filter(Cita.id == cita_id).first()
+    if not cita:
+        return None
+
+    for key, value in data.dict(exclude_unset=True).items():
+        setattr(cita, key, value)
+
     db.commit()
     db.refresh(cita)
     return cita_con_relaciones(db, cita)
-
-
 
 # ---------------------------------------------------------
 # ELIMINAR CITA
@@ -127,7 +108,6 @@ def eliminar_cita(db: Session, cita_id: int):
     db.delete(cita)
     db.commit()
     return True
-
 
 # ---------------------------------------------------------
 # MOVER CITA (drag & drop)
@@ -144,7 +124,6 @@ def mover_cita(db: Session, cita_id: int, nueva_fecha: date, nueva_hora_inicio: 
     db.commit()
     db.refresh(cita)
     return cita_con_relaciones(db, cita)
-
 
 # ---------------------------------------------------------
 # CAMBIAR ESTADO

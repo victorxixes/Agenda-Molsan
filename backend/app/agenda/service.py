@@ -107,17 +107,13 @@ def crear_cita(db: Session, data):
 # ---------------------------------------------------------
 # EDITAR CITA
 # ---------------------------------------------------------
-def editar_cita(db: Session, cita_id: int, data):
-    cita = db.query(Cita).filter(Cita.id == cita_id).first()
-    if not cita:
-        return None
-
-    for key, value in data.dict(exclude_unset=True).items():
-        setattr(cita, key, value)
-
+def crear_cita(db: Session, data):
+    cita = Cita(**data.dict())
+    db.add(cita)
     db.commit()
     db.refresh(cita)
     return cita_con_relaciones(db, cita)
+
 
 
 # ---------------------------------------------------------

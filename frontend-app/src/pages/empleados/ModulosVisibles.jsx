@@ -4,7 +4,6 @@ import axios from "axios";
 export default function ModulosVisibles({ empleadoId }) {
   const API = "https://agenda-intranet-b.onrender.com";
 
-  // 🔥 Módulos disponibles (definidos en tu ERP)
   const MODULOS = [
     "dashboard",
     "agenda",
@@ -36,9 +35,8 @@ export default function ModulosVisibles({ empleadoId }) {
 
   const guardarCambios = () => {
     axios
-      .put(`${API}/empleados/${empleadoId}/permisos`, {
+      .put(`${API}/empleados/${empleadoId}`, {
         modulos_visibles: modulosVisibles,
-        permisos_modulo: {}, // permisos se gestionan en otro panel
       })
       .then(() => alert("Módulos visibles actualizados"))
       .catch(() => alert("Error al guardar módulos"));

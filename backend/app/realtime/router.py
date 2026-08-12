@@ -1,5 +1,5 @@
 from fastapi import APIRouter, WebSocket
-from app.realtime.manager import ConnectionManager
+from backend.app.realtime.manager import ConnectionManager
 
 router = APIRouter(prefix="/ws", tags=["Realtime"])
 manager = ConnectionManager()

@@ -1,13 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from app.database import get_db
-from app.maestros.service import (
+from backend.app.database import get_db
+from backend.app.maestros.service import (
     listar_departamentos, crear_departamento, editar_departamento, eliminar_departamento,
     listar_secciones, crear_seccion, editar_seccion, eliminar_seccion,
     listar_cargos, crear_cargo, editar_cargo, eliminar_cargo
 )
-from app.maestros.schemas import (
+from backend.app.maestros.schemas import (
     DepartamentoCreate, SeccionCreate, CargoCreate
 )
 

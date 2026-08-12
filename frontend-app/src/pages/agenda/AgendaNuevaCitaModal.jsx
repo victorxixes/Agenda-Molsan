@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAgendaStore } from "../../store/agendaStore";
 import { useCTNStore } from "../../store/ctnStore";
+
 import GlassCard from "../../components/ui/GlassCard.jsx";
 import BuscadorNotariaPremium from "../../components/agenda/BuscadorNotariaPremium.jsx";
 
@@ -8,7 +9,13 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
   const { crear } = useAgendaStore();
   const { notarias, cargarNotarias } = useCTNStore();
 
-  const [tiposCita, setTiposCita] = useState([]);
+  // 🔥 Tipos de cita definidos localmente (backend ya no los sirve)
+  const TIPOS_CITA = [
+    "Firma notarial",
+    "Reunión",
+    "Visita",
+    "Otros"
+  ];
 
   const [form, setForm] = useState({
     fecha: "",
@@ -17,21 +24,17 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
     tipo_cita: "",
     notario_id: null,
     tipo_firma: "",
-    apoderado: "",   // ahora es texto, no ID
+    apoderado: "",   // texto del Excel
     estado: "Pendiente",
     observaciones: "",
   });
 
   // ---------------------------------------------------------
-  // CARGAR CATÁLOGOS
+  // CARGAR NOTARIAS + FECHA
   // ---------------------------------------------------------
   useEffect(() => {
     if (open) {
       cargarNotarias();
-
-      fetch(`${import.meta.env.VITE_API_URL}/agenda/tipos-cita`)
-        .then((r) => r.json())
-        .then((data) => setTiposCita(data.map((t) => t.nombre)));
 
       setForm((f) => ({
         ...f,
@@ -116,7 +119,7 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
           onChange={(e) => setForm({ ...form, tipo_cita: e.target.value })}
         >
           <option value="">Selecciona tipo de cita</option>
-          {tiposCita.map((t) => (
+          {TIPOS_CITA.map((t) => (
             <option key={t} value={t}>{t}</option>
           ))}
         </select>
@@ -147,7 +150,7 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
           </div>
         )}
 
-        {/* Apoderado (solo lectura) */}
+        {/* Apoderado */}
         <input
           type="text"
           className="input bg-gray-100"
@@ -155,7 +158,7 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
           readOnly
         />
 
-        {/* Tipo de firma (solo lectura) */}
+        {/* Tipo de firma */}
         <input
           type="text"
           className="input bg-gray-100"

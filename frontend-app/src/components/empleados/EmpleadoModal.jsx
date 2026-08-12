@@ -15,7 +15,7 @@ export default function EmpleadoModal({ empleado, onClose, onSave }) {
     }
   );
 
-  const API = "https://agenda-intranet-backend.onrender.com";
+  const API = "https://agenda-intranet-b.onrender.com";
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });

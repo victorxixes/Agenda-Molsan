@@ -33,40 +33,33 @@ export default function AgendaSidebar({ date, citas, onEditarCita }) {
           )}
 
           {citas.map(c => (
-            <tr key={c.id}>
-              <td>{c.hora_inicio}</td>
-              <td>{c.hora_fin}</td>
-              <td>{c.tipo_cita}</td>
+  <div key={c.id} className="p-3 bg-white/60 rounded-lg shadow flex justify-between items-center">
 
-              {/* Notario */}
-              <td>
-                {c.notario
-                  ? `${c.notario.nombre} ${c.notario.apellidos}`
-                  : "-"}
-              </td>
+    <div>
+      <div className="font-semibold">{c.tipo_cita}</div>
+      <div className="text-sm">{c.hora_inicio} - {c.hora_fin}</div>
+      <div className="text-xs text-gray-600">{c.apoderado}</div>
+    </div>
 
-              {/* Tipo firma */}
-              <td>{c.tipo_firma || "-"}</td>
+    <div className="flex gap-2">
+      <button
+        className="btn btn-sm btn-primary"
+        onClick={() => onEditarCita(c.id)}
+      >
+        Editar
+      </button>
 
-              {/* Apoderado */}
-              <td>
-                {c.apoderado
-                  ? `${c.apoderado.nombre} ${c.apoderado.apellidos}`
-                  : "-"}
-              </td>
+      <button
+        className="btn btn-sm btn-danger"
+        onClick={() => onEliminarCita(c.id)}
+      >
+        Eliminar
+      </button>
+    </div>
 
-              <td>{c.estado}</td>
+  </div>
+))}
 
-              <td>
-                <button
-                  className="btn"
-                  onClick={() => onEditarCita(c.id)}
-                >
-                  Editar
-                </button>
-              </td>
-            </tr>
-          ))}
         </tbody>
       </table>
 

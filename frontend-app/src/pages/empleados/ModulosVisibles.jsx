@@ -4,7 +4,7 @@ import axios from "axios";
 export default function ModulosVisibles({ empleadoId }) {
   const [modulosDisponibles, setModulosDisponibles] = useState([]);
   const [modulosVisibles, setModulosVisibles] = useState([]);
-  const API = "https://agenda-intranet-backend.onrender.com";
+  const API = "https://agenda-intranet-b.onrender.com";
 
   useEffect(() => {
     axios.get(`${API}/empleados/modulos`).then((res) => {

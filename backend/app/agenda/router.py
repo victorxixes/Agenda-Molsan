@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from datetime import date, time
 
-from app.database import get_db
-from app.agenda.schemas import CitaCreate, CitaUpdate
-from app.agenda.service import (
+from backend.app.database import get_db
+from backend.app.agenda.schemas import CitaCreate, CitaUpdate
+from backend.app.agenda.service import (
     listar_citas_dia,
     listar_citas_semana,
     listar_citas_mes,

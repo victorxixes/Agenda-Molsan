@@ -5,7 +5,7 @@ class NoticiaBase(BaseModel):
     titulo: str
     descripcion: str
     fichero: str | None = None
-    usuario_id: int
+    usuario_id: int | None = None
 
 class NoticiaCreate(NoticiaBase):
     pass

@@ -150,8 +150,23 @@ export default function EmpleadoDetalle() {
 
       {/* CONTENIDO SEGÚN PESTAÑA */}
       {tab === "resumen" && <ResumenEmpleado empleadoId={empleadoId} />}
-      {tab === "datos" && <DatosPersonales empleadoId={empleadoId} />}
-      {tab === "laboral" && <DatosLaborales empleadoId={empleadoId} />}
+    {tab === "datos" && (
+  <DatosPersonales
+    empleadoId={empleadoId}
+    getSeccionNombre={getSeccionNombre}
+    getDepartamentoNombre={getDepartamentoNombre}
+    getCargoNombre={getCargoNombre}
+  />
+)}
+
+{tab === "laboral" && (
+  <DatosLaborales
+    empleadoId={empleadoId}
+    getSeccionNombre={getSeccionNombre}
+    getDepartamentoNombre={getDepartamentoNombre}
+    getCargoNombre={getCargoNombre}
+  />
+)}
       {tab === "rol" && <RolEmpleado empleadoId={empleadoId} />}
       {tab === "modulos" && <ModulosVisibles empleadoId={empleadoId} />}
       {tab === "permisos" && <PermisosEmpleado empleadoId={empleadoId} />}

@@ -6,7 +6,7 @@ const ROLES = ["Administrador", "Gestor", "Apoderado", "Usuario básico"];
 export default function RolEmpleado({ empleadoId }) {
   const [empleado, setEmpleado] = useState(null);
   const [rol, setRol] = useState("");
-  const API = "https://agenda-intranet-backend.onrender.com";
+  const API = "https://agenda-intranet-b.onrender.com";
 
   useEffect(() => {
     axios.get(`${API}/empleados/${empleadoId}`).then((res) => {

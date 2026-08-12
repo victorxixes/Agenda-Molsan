@@ -6,7 +6,6 @@ import EmpleadosSection from "../../components/empleados/EmpleadosSection.jsx";
 import GlassCard from "../../components/ui/GlassCard.jsx";
 import IconEmpleados from "../../components/icons/IconEmpleados.jsx";
 
-
 export default function EmpleadoForm() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -28,7 +27,7 @@ export default function EmpleadoForm() {
 
   useEffect(() => {
     if (empleado && id) setForm(empleado);
-  }, [empleado]);
+  }, [empleado, id]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

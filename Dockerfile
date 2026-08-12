@@ -6,9 +6,10 @@ COPY requirements.txt .
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY backend/app ./app
+# COPIAR TODO EL BACKEND
+COPY backend ./backend
 
-EXPOSE 10000
+# Ejecutar FastAPI desde backend/app/main.py
+CMD ["uvicorn", "backend.app.main:app", "--host", "0.0.0.0", "--port", "10000"]
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "10000"]
 

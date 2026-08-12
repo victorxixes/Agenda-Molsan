@@ -16,7 +16,7 @@ export default function EmpleadoDetalle() {
   const [empleado, setEmpleado] = useState(null);
   const [tab, setTab] = useState("resumen");
 
-  const API = "https://agenda-intranet-backend.onrender.com";
+  const API = "https://agenda-intranet-b.onrender.com";
 
   // Obtener ID desde la URL
   const empleadoId = window.location.pathname.split("/").pop();

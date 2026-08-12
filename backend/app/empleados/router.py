@@ -12,6 +12,14 @@ from app.empleados.schemas import (
     EmpleadoSearchResponse
 )
 
+# 🔥 IMPORTAR FUNCIONES DEL SERVICE (ESTO ES LO QUE FALTABA)
+from app.empleados.service import (
+    crear_empleado,
+    editar_empleado as editar_empleado_service,
+    eliminar_empleado,
+    listar_empleados
+)
+
 router = APIRouter(prefix="/empleados", tags=["Empleados"])
 
 # ---------------------------------------------------------
@@ -59,7 +67,7 @@ def subir_foto(empleado_id: int, archivo: UploadFile = File(...), db: Session = 
     return empleado
 
 # ---------------------------------------------------------
-# ACTUALIZAR PERMISOS Y MÓDULOS (BODY JSON)
+# ACTUALIZAR PERMISOS Y MÓDULOS
 # ---------------------------------------------------------
 @router.put("/{empleado_id}/permisos", response_model=EmpleadoResponse)
 def actualizar_permisos(
@@ -84,7 +92,7 @@ def actualizar_permisos(
 # ---------------------------------------------------------
 @router.get("/", response_model=list[EmpleadoResponse])
 def listar(db: Session = Depends(get_db)):
-    return db.query(Empleado).all()
+    return listar_empleados(db)
 
 # ---------------------------------------------------------
 # BÚSQUEDA + FILTROS + PAGINACIÓN
@@ -156,11 +164,11 @@ def crear(data: EmpleadoCreate, db: Session = Depends(get_db)):
     return crear_empleado(db, data)
 
 # ---------------------------------------------------------
-# EDITAR EMPLEADO
+# EDITAR EMPLEADO (FIX DEFINITIVO)
 # ---------------------------------------------------------
 @router.put("/{empleado_id}", response_model=EmpleadoResponse)
 def editar(empleado_id: int, data: EmpleadoUpdate, db: Session = Depends(get_db)):
-    empleado = editar_empleado(db, empleado_id, data)
+    empleado = editar_empleado_service(db, empleado_id, data)
     if not empleado:
         raise HTTPException(status_code=404, detail="Empleado no encontrado")
     return empleado

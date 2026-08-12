@@ -20,10 +20,16 @@ export default function AgendaPage() {
   const year = selectedDate.getFullYear();
   const month = selectedDate.getMonth() + 1;
 
+  // ---------------------------------------------------------
+  // CARGAR CITAS DEL MES
+  // ---------------------------------------------------------
   useEffect(() => {
     cargarMes(year, month);
   }, [year, month]);
 
+  // ---------------------------------------------------------
+  // SELECCIONAR DÍA DEL CALENDARIO
+  // ---------------------------------------------------------
   const handleSelectDay = (day) => {
     setSelectedDate(day);
     cargarDia(day.toISOString().split("T")[0]);
@@ -64,16 +70,14 @@ export default function AgendaPage() {
       />
 
       {/* Modal: Editar cita */}
-{/* Modal: Editar cita */}
-<AgendaNuevaEditarCitaModal
-  open={editarId !== null}
-  citaId={editarId}
-  onClose={() => {
-    setEditarId(null);
-    cargarDia(selectedDate.toISOString().split("T")[0]); // refresco automático
-  }}
-/>
-
+      <AgendaNuevaEditarCitaModal
+        open={editarId !== null}
+        citaId={editarId}
+        onClose={() => {
+          setEditarId(null);
+          cargarDia(selectedDate.toISOString().split("T")[0]); // refresco automático
+        }}
+      />
 
     </div>
   );

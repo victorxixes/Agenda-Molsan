@@ -1,12 +1,29 @@
 import { useState } from "react";
 import GlassCard from "../ui/GlassCard";
 
+const getFotoURL = (foto) => {
+  if (
+    !foto ||
+    foto === "string" ||
+    foto.trim() === "" ||
+    foto === null
+  ) {
+    return "/placeholder.png";
+  }
+
+  if (foto.startsWith("http")) {
+    return foto;
+  }
+
+  return `${import.meta.env.VITE_API_URL}${foto}`;
+};
+
 export default function EmpleadoFoto({ empleado, onUploaded }) {
   const [archivo, setArchivo] = useState(null);
   const [subiendo, setSubiendo] = useState(false);
   const [error, setError] = useState(null);
 
-  const API = "https://agenda-intranet-b.onrender.com";
+  const API = import.meta.env.VITE_API_URL;
 
   const subirFoto = async () => {
     if (!archivo) return;
@@ -48,7 +65,7 @@ export default function EmpleadoFoto({ empleado, onUploaded }) {
       <h3 className="text-xl font-bold text-[#1F3A5F]">Foto del empleado</h3>
 
       <img
-        src={empleado.foto || "/placeholder.png"}
+        src={getFotoURL(empleado.foto)}
         alt="Foto empleado"
         className="w-40 h-40 rounded-lg object-cover border"
       />

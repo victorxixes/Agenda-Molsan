@@ -32,7 +32,7 @@ export default function EditarEmpleado({ empleadoId }) {
     });
   }, [empleadoId]);
 
-  // 🔥 Cargar listas para selects (CORREGIDO)
+  // 🔥 Cargar listas para selects
   useEffect(() => {
     fetch(`${API}/empleados/departamentos`)
       .then((r) => r.json())
@@ -119,18 +119,23 @@ export default function EditarEmpleado({ empleadoId }) {
         </div>
       </div>
 
-      {/* 🔥 Campos del empleado */}
+      {/* 🔥 Campos del empleado (EXCLUYENDO los IDs) */}
       <div className="grid grid-cols-2 gap-4">
-        {Object.keys(form).map((key) => (
-          <div key={key}>
-            <label className="font-semibold">{key}</label>
-            <input
-              className="border rounded px-2 py-1 w-full"
-              value={form[key] || ""}
-              onChange={(e) => handleChange(key, e.target.value)}
-            />
-          </div>
-        ))}
+        {Object.keys(form)
+          .filter(
+            (key) =>
+              !["seccion_id", "departamento_id", "cargo_id"].includes(key)
+          )
+          .map((key) => (
+            <div key={key}>
+              <label className="font-semibold">{key}</label>
+              <input
+                className="border rounded px-2 py-1 w-full"
+                value={form[key] || ""}
+                onChange={(e) => handleChange(key, e.target.value)}
+              />
+            </div>
+          ))}
       </div>
 
       <button

@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
 from datetime import datetime
-from app.database import Base
+
+from backend.app.database import Base
 
 class Noticia(Base):
     __tablename__ = "intranet_noticias"

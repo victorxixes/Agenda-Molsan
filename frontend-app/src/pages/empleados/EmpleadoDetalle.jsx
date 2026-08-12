@@ -14,17 +14,71 @@ import FotoEmpleado from "./FotoEmpleado";
 import EstadoEmpleado from "./EstadoEmpleado";
 
 export default function EmpleadoDetalle() {
-  const { empleadoId } = useParams();   // ← AHORA SÍ LLEGA EL ID
+  const { empleadoId } = useParams();
   const [empleado, setEmpleado] = useState(null);
   const [tab, setTab] = useState("resumen");
 
   const API = "https://agenda-intranet-b.onrender.com";
 
+  // 🔥 Listas para convertir IDs → nombres
+  const [departamentos, setDepartamentos] = useState([]);
+  const [secciones, setSecciones] = useState([]);
+  const [cargos, setCargos] = useState([]);
+
+  // 🔥 Limpia valores "string", null, undefined
+  const limpiar = (obj) => {
+    const limpio = { ...obj };
+    for (const key in limpio) {
+      if (
+        limpio[key] === "string" ||
+        limpio[key] === null ||
+        limpio[key] === "null" ||
+        limpio[key] === undefined
+      ) {
+        limpio[key] = "";
+      }
+    }
+    return limpio;
+  };
+
+  // 🔥 Cargar empleado
   useEffect(() => {
     axios.get(`${API}/empleados/${empleadoId}`).then((res) => {
-      setEmpleado(res.data);
+      setEmpleado(limpiar(res.data));
     });
   }, [empleadoId]);
+
+  // 🔥 Cargar listas para mostrar nombres reales
+  useEffect(() => {
+    fetch(`${API}/departamentos`).then((r) => r.json()).then(setDepartamentos);
+    fetch(`${API}/secciones`).then((r) => r.json()).then(setSecciones);
+    fetch(`${API}/cargos`).then((r) => r.json()).then(setCargos);
+  }, []);
+
+  // 🔥 Convertir IDs → nombres
+  const getDepartamentoNombre = (id) => {
+    const d = departamentos.find((dep) => dep.id === id);
+    return d ? d.nombre : "Sin departamento";
+  };
+
+  const getSeccionNombre = (id) => {
+    const s = secciones.find((sec) => sec.id === id);
+    return s ? s.nombre : "Sin sección";
+  };
+
+  const getCargoNombre = (id) => {
+    const c = cargos.find((cg) => cg.id === id);
+    return c ? c.nombre : "Sin cargo";
+  };
+
+  // 🔥 Foto corregida
+  const getFotoURL = (foto) => {
+    if (!foto || foto === "string" || foto.trim() === "") {
+      return "/placeholder.png";
+    }
+    if (foto.startsWith("http")) return foto;
+    return `${API}${foto}`;
+  };
 
   if (!empleado) return <div className="p-6">Cargando empleado...</div>;
 
@@ -33,7 +87,7 @@ export default function EmpleadoDetalle() {
       {/* CABECERA */}
       <div className="flex items-center gap-4 mb-6">
         <img
-          src={empleado.foto || "/placeholder.png"}
+          src={getFotoURL(empleado.foto)}
           alt="Foto empleado"
           className="w-20 h-20 rounded-full object-cover border"
         />
@@ -45,6 +99,17 @@ export default function EmpleadoDetalle() {
 
           <p className={empleado.activo ? "text-green-600" : "text-red-600"}>
             Estado: {empleado.activo ? "Activo" : "Inactivo"}
+          </p>
+
+          {/* 🔥 Mostrar nombres reales */}
+          <p className="text-neutral-700 text-sm">
+            Sección: {getSeccionNombre(empleado.seccion_id)}
+          </p>
+          <p className="text-neutral-700 text-sm">
+            Departamento: {getDepartamentoNombre(empleado.departamento_id)}
+          </p>
+          <p className="text-neutral-700 text-sm">
+            Cargo: {getCargoNombre(empleado.cargo_id)}
           </p>
         </div>
       </div>

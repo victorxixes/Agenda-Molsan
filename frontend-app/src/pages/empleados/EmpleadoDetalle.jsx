@@ -48,11 +48,19 @@ export default function EmpleadoDetalle() {
     });
   }, [empleadoId]);
 
-  // 🔥 Cargar listas para mostrar nombres reales
+  // 🔥 Cargar listas para mostrar nombres reales (CORREGIDO)
   useEffect(() => {
-    fetch(`${API}/departamentos`).then((r) => r.json()).then(setDepartamentos);
-    fetch(`${API}/secciones`).then((r) => r.json()).then(setSecciones);
-    fetch(`${API}/cargos`).then((r) => r.json()).then(setCargos);
+    fetch(`${API}/empleados/departamentos`)
+      .then((r) => r.json())
+      .then(setDepartamentos);
+
+    fetch(`${API}/empleados/secciones`)
+      .then((r) => r.json())
+      .then(setSecciones);
+
+    fetch(`${API}/empleados/cargos`)
+      .then((r) => r.json())
+      .then(setCargos);
   }, []);
 
   // 🔥 Convertir IDs → nombres

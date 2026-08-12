@@ -1,10 +1,20 @@
+import { useAgendaStore } from "../store/agendaStore";
+
 export default function AgendaSidebar({ date, citas, onEditarCita }) {
   const fecha = date.toISOString().split("T")[0];
+  const { eliminar, cargarDia } = useAgendaStore();
+
+  const onEliminarCita = async (id) => {
+    if (!confirm("¿Eliminar esta cita?")) return;
+
+    await eliminar(id);
+    cargarDia(date.toISOString().split("T")[0]); // refresco automático
+  };
 
   return (
     <div className="bg-white rounded-xl shadow p-4 space-y-4">
 
-      {/* Cabecera sin botón */}
+      {/* Cabecera */}
       <div className="flex justify-between items-center">
         <h3 className="text-xl font-bold">{fecha}</h3>
       </div>
@@ -32,34 +42,33 @@ export default function AgendaSidebar({ date, citas, onEditarCita }) {
             </tr>
           )}
 
-          {citas.map(c => (
-  <div key={c.id} className="p-3 bg-white/60 rounded-lg shadow flex justify-between items-center">
+          {citas.map((c) => (
+            <tr key={c.id}>
+              <td>{c.hora_inicio}</td>
+              <td>{c.hora_fin}</td>
+              <td>{c.tipo_cita}</td>
+              <td>{c.notario_nombre}</td>
+              <td>{c.tipo_firma}</td>
+              <td>{c.apoderado}</td>
+              <td>{c.estado}</td>
 
-    <div>
-      <div className="font-semibold">{c.tipo_cita}</div>
-      <div className="text-sm">{c.hora_inicio} - {c.hora_fin}</div>
-      <div className="text-xs text-gray-600">{c.apoderado}</div>
-    </div>
+              <td className="flex gap-2">
+                <button
+                  className="btn btn-sm btn-primary"
+                  onClick={() => onEditarCita(c.id)}
+                >
+                  Editar
+                </button>
 
-    <div className="flex gap-2">
-      <button
-        className="btn btn-sm btn-primary"
-        onClick={() => onEditarCita(c.id)}
-      >
-        Editar
-      </button>
-
-      <button
-        className="btn btn-sm btn-danger"
-        onClick={() => onEliminarCita(c.id)}
-      >
-        Eliminar
-      </button>
-    </div>
-
-  </div>
-))}
-
+                <button
+                  className="btn btn-sm btn-danger"
+                  onClick={() => onEliminarCita(c.id)}
+                >
+                  Eliminar
+                </button>
+              </td>
+            </tr>
+          ))}
         </tbody>
       </table>
 

@@ -1,11 +1,11 @@
 import hashlib
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
-
-from app.database import get_db
-from app.empleados.models import Empleado
-from app.auth.utils import create_access_token
 from pydantic import BaseModel
+
+from backend.app.database import get_db
+from backend.app.empleados.models import Empleado
+from backend.app.auth.utils import create_access_token
 
 router = APIRouter(prefix="/auth", tags=["Autenticación"])
 

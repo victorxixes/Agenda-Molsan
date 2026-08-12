@@ -101,6 +101,8 @@ def listar(db: Session = Depends(get_db)):
 def buscar_empleados(
     db: Session = Depends(get_db),
     q: str = "",
+    id: int = None,
+    dni: str = None,
     departamento_id: int = None,
     seccion_id: int = None,
     cargo_id: int = None,
@@ -110,6 +112,15 @@ def buscar_empleados(
 ):
     query = db.query(Empleado)
 
+    # 🔍 Búsqueda por ID (rápida y exacta)
+    if id is not None:
+        query = query.filter(Empleado.id == id)
+
+    # 🔍 Búsqueda por DNI (exacta)
+    if dni:
+        query = query.filter(Empleado.dni.ilike(f"%{dni}%"))
+
+    # 🔍 Búsqueda general (nombre, apellidos, dni)
     if q:
         query = query.filter(
             or_(
@@ -119,6 +130,7 @@ def buscar_empleados(
             )
         )
 
+    # 🔍 Filtros adicionales
     if departamento_id is not None:
         query = query.filter(Empleado.departamento_id == departamento_id)
 
@@ -131,6 +143,7 @@ def buscar_empleados(
     if activo is not None:
         query = query.filter(Empleado.activo == activo)
 
+    # 📄 Paginación
     total = query.count()
     pages = (total + limit - 1) // limit
     offset = (page - 1) * limit
@@ -145,6 +158,7 @@ def buscar_empleados(
         offset=offset,
         items=empleados
     )
+
 
 # ---------------------------------------------------------
 # OBTENER UNO POR ID

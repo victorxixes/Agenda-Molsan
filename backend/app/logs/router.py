@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from datetime import date
-from app.database import get_db
 
-from app.logs.service import (
+from backend.app.database import get_db
+
+from backend.app.logs.service import (
     crear_log,
     listar_logs,
     logs_por_usuario,
@@ -11,7 +12,8 @@ from app.logs.service import (
     logs_por_nivel,
     logs_por_fecha
 )
-from app.logs.schemas import LogCreate
+
+from backend.app.logs.schemas import LogCreate
 
 router = APIRouter(prefix="/logs", tags=["Logs"])
 

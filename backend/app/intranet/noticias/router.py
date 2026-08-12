@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
-from app.database import get_db
 
-from app.intranet.noticias.service import (
+from backend.app.database import get_db
+from backend.app.intranet.noticias.service import (
     listar_noticias,
     obtener_noticia,
     crear_noticia,
@@ -23,7 +23,6 @@ class NoticiaPayload(BaseModel):
 # ---------------------------------------------------------
 # LISTAR NOTICIAS
 # ---------------------------------------------------------
-@router.get("")
 @router.get("/")
 def listar(db: Session = Depends(get_db)):
     return listar_noticias(db)
@@ -31,7 +30,6 @@ def listar(db: Session = Depends(get_db)):
 # ---------------------------------------------------------
 # CREAR NOTICIA
 # ---------------------------------------------------------
-@router.post("")
 @router.post("/")
 def crear(payload: NoticiaPayload, db: Session = Depends(get_db)):
     return crear_noticia(db, payload.titulo, payload.descripcion)

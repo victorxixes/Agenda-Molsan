@@ -22,7 +22,7 @@ class Cita(Base):
     tipo_firma = Column(String, nullable=True)
 
     # Apoderado asignado (relación con Empleados)
-    apoderado_id = Column(Integer, ForeignKey("empleados.id"), nullable=False)
+    apoderado = Column(String, nullable=True)
 
     # Estado de la cita
     estado = Column(String, nullable=False, default="Pendiente")  

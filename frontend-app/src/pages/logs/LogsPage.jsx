@@ -17,7 +17,6 @@ export default function LogsPage() {
 
   return (
     <div className="p-4 space-y-6">
-      {/* Título principal */}
       <h1
         className="text-3xl font-bold flex items-center gap-3"
         style={{ color: "#1F3A5F" }}
@@ -26,7 +25,6 @@ export default function LogsPage() {
         Actividad del sistema (Logs)
       </h1>
 
-      {/* Sección filtros */}
       <GlassSectionTitle
         icon={<IconSeguridad size={26} />}
         title="Filtros de búsqueda"
@@ -36,7 +34,6 @@ export default function LogsPage() {
         <LogsFilters />
       </GlassCard>
 
-      {/* Sección resultados */}
       <GlassSectionTitle
         icon={<IconSeguridad size={26} />}
         title="Resultados"

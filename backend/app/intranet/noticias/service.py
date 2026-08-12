@@ -1,6 +1,7 @@
 from datetime import datetime
 from sqlalchemy.orm import Session
-from app.intranet.noticias.models import Noticia
+
+from backend.app.intranet.noticias.models import Noticia
 
 # ---------------------------------------------------------
 # LISTAR NOTICIAS
@@ -38,7 +39,6 @@ def crear_noticia(db: Session, titulo: str, descripcion: str):
     db.refresh(noticia)
 
     return noticia
-
 
 # ---------------------------------------------------------
 # ACTUALIZAR NOTICIA

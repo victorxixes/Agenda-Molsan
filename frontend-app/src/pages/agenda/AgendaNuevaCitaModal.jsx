@@ -70,8 +70,8 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
     }
   }, [open, apoderados]);
 
-  // ---------------------------------------------------------
-// SELECCIONAR NOTARIA
+// ---------------------------------------------------------
+// SELECCIONAR NOTARIA (solo usar columna Apoderado)
 // ---------------------------------------------------------
 const seleccionarNotaria = (n) => {
   const tipoFirmaTraducida =
@@ -79,12 +79,10 @@ const seleccionarNotaria = (n) => {
     n.vc === "NO" ? "Presencial" :
     "";
 
+  // Buscar SOLO por la columna Apoderado
   const apoderadoEncontrado =
     apoderados.find((a) =>
       normalize(`${a.nombre} ${a.apellidos}`) === normalize(n.apoderado || "")
-    ) ||
-    apoderados.find((a) =>
-      normalize(`${a.nombre} ${a.apellidos}`) === normalize(n.apoderado_s || "")
     );
 
   setForm(prev => ({
@@ -93,7 +91,7 @@ const seleccionarNotaria = (n) => {
     tipo_firma: tipoFirmaTraducida,
     apoderado_id: apoderadoEncontrado
       ? apoderadoEncontrado.id
-      : (prev.apoderado_id ?? 2),
+      : "", // si no coincide, dejar vacío para que el usuario elija
     observaciones: n.observacion || prev.observaciones,
   }));
 };

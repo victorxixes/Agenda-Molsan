@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 from datetime import date, timedelta, time
 from app.agenda.models import Cita
 from app.ctn.models import Notaria
+from calendar import monthrange
 
 # ---------------------------------------------------------
 # CONVERTIR CITA → OBJETO COMPLETO PARA EL FRONTEND
@@ -60,8 +61,11 @@ def listar_citas_semana(db: Session, fecha: date):
 # LISTAR CITAS POR MES
 # ---------------------------------------------------------
 def listar_citas_mes(db: Session, year: int, month: int):
+    # Día final correcto del mes
+    last_day = monthrange(year, month)[1]
+
     inicio = date(year, month, 1)
-    fin = date(year, month, 31)
+    fin = date(year, month, last_day)
 
     citas = (
         db.query(Cita)

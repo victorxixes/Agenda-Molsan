@@ -6,7 +6,7 @@ export default function EmpleadoFoto({ empleado, onUploaded }) {
   const [subiendo, setSubiendo] = useState(false);
   const [error, setError] = useState(null);
 
-  const API = "https://agenda-intranet-backend.onrender.com";
+  const API = "https://agenda-intranet-b.onrender.com";
 
   const subirFoto = async () => {
     if (!archivo) return;

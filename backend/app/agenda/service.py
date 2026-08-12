@@ -13,13 +13,24 @@ def cita_con_relaciones(db: Session, cita: Cita):
         return None
 
     notario = None
-    apoderado = None
 
     if cita.notario_id:
         notario = db.query(Notaria).filter(Notaria.id == cita.notario_id).first()
 
-    if cita.apoderado_id:
-        apoderado = db.query(Empleado).filter(Empleado.id == cita.apoderado_id).first()
+    return {
+        "id": cita.id,
+        "fecha": cita.fecha,
+        "hora_inicio": cita.hora_inicio,
+        "hora_fin": cita.hora_fin,
+        "tipo_cita": cita.tipo_cita,
+        "tipo_firma": cita.tipo_firma,
+        "estado": cita.estado,
+        "observaciones": cita.observaciones,
+        "notario": notario,
+
+        # 🔥 CAMBIO IMPORTANTE
+        "apoderado": cita.apoderado
+    }
 
     return {
         "id": cita.id,

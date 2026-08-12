@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import axios from "axios";
 
 import ResumenEmpleado from "./ResumenEmpleado";
@@ -13,13 +14,11 @@ import FotoEmpleado from "./FotoEmpleado";
 import EstadoEmpleado from "./EstadoEmpleado";
 
 export default function EmpleadoDetalle() {
+  const { empleadoId } = useParams();   // ← AHORA SÍ LLEGA EL ID
   const [empleado, setEmpleado] = useState(null);
   const [tab, setTab] = useState("resumen");
 
   const API = "https://agenda-intranet-b.onrender.com";
-
-  // Obtener ID desde la URL
-  const empleadoId = window.location.pathname.split("/").pop();
 
   useEffect(() => {
     axios.get(`${API}/empleados/${empleadoId}`).then((res) => {

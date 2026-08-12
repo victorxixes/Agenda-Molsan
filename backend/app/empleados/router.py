@@ -3,18 +3,18 @@ from sqlalchemy.orm import Session
 from sqlalchemy import or_
 import os
 
-from app.database import get_db
-from app.empleados.models import Empleado
-from app.maestros.models import Departamento, Seccion, Cargo
+from backend.app.database import get_db
+from backend.app.empleados.models import Empleado
+from backend.app.maestros.models import Departamento, Seccion, Cargo
 
-from app.empleados.schemas import (
+from backend.app.empleados.schemas import (
     EmpleadoCreate,
     EmpleadoUpdate,
     EmpleadoResponse,
     EmpleadoSearchResponse
 )
 
-from app.empleados.service import (
+from backend.app.empleados.service import (
     crear_empleado,
     editar_empleado as editar_empleado_service,
     eliminar_empleado,
@@ -178,7 +178,6 @@ def actualizar_modulos(empleado_id: int, data: dict, db: Session = Depends(get_d
     if not empleado:
         raise HTTPException(status_code=404, detail="Empleado no encontrado")
 
-    # data = { "modulos": ["dashboard", "empleados", ...] }
     if "modulos" not in data:
         raise HTTPException(status_code=400, detail="Faltan los módulos")
 
@@ -207,4 +206,3 @@ def actualizar_permisos(empleado_id: int, data: dict, db: Session = Depends(get_
     db.refresh(empleado)
 
     return {"detail": "Permisos actualizados correctamente"}
-

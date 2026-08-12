@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from app.database import get_db
 
-from app.mensajes.service import (
+from backend.app.database import get_db
+
+from backend.app.mensajes.service import (
     usuario_conectado,
     usuario_desconectado,
     listar_usuarios_conectados,
@@ -12,7 +13,7 @@ from app.mensajes.service import (
     mensajes_no_leidos
 )
 
-from app.mensajes.schemas import MensajeCreate
+from backend.app.mensajes.schemas import MensajeCreate
 
 router = APIRouter(prefix="/mensajes", tags=["Mensajes"])
 

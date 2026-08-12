@@ -38,6 +38,7 @@ export default function EmpleadoModal({ empleado, onClose, onSave }) {
     if (form.fotoFile) {
       const fd = new FormData();
       fd.append("archivo", form.fotoFile);
+
       await fetch(`${API}/empleados/${saved.id}/foto`, {
         method: "POST",
         body: fd,
@@ -78,6 +79,7 @@ export default function EmpleadoModal({ empleado, onClose, onSave }) {
           value={form.nombre}
           onChange={handleChange}
         />
+
         <input
           className="input"
           name="apellidos"
@@ -85,6 +87,7 @@ export default function EmpleadoModal({ empleado, onClose, onSave }) {
           value={form.apellidos}
           onChange={handleChange}
         />
+
         <input
           className="input"
           name="telefono"
@@ -92,6 +95,7 @@ export default function EmpleadoModal({ empleado, onClose, onSave }) {
           value={form.telefono}
           onChange={handleChange}
         />
+
         <input
           className="input"
           name="email_empresa"
@@ -99,6 +103,7 @@ export default function EmpleadoModal({ empleado, onClose, onSave }) {
           value={form.email_empresa}
           onChange={handleChange}
         />
+
         <input
           className="input"
           name="rol"
@@ -106,6 +111,7 @@ export default function EmpleadoModal({ empleado, onClose, onSave }) {
           value={form.rol}
           onChange={handleChange}
         />
+
         <textarea
           className="input"
           name="observaciones"

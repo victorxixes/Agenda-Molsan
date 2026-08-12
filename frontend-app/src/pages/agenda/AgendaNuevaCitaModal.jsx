@@ -8,9 +8,7 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
   const { crear } = useAgendaStore();
   const { notarias, cargarNotarias } = useCTNStore();
 
-  const [apoderados, setApoderados] = useState([]);
   const [tiposCita, setTiposCita] = useState([]);
-  const [tiposFirma, setTiposFirma] = useState([]);
 
   const [form, setForm] = useState({
     fecha: "",
@@ -19,18 +17,10 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
     tipo_cita: "",
     notario_id: null,
     tipo_firma: "",
-    apoderado_id: null,
+    apoderado: "",   // ahora es texto, no ID
     estado: "Pendiente",
     observaciones: "",
   });
-
-  // Normalizar nombres (sin tildes)
-  const normalize = (str) =>
-    str
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .toLowerCase()
-      .trim();
 
   // ---------------------------------------------------------
   // CARGAR CATÁLOGOS
@@ -39,17 +29,9 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
     if (open) {
       cargarNotarias();
 
-      fetch(`${import.meta.env.VITE_API_URL}/agenda/apoderados`)
-        .then((r) => r.json())
-        .then(setApoderados);
-
       fetch(`${import.meta.env.VITE_API_URL}/agenda/tipos-cita`)
         .then((r) => r.json())
         .then((data) => setTiposCita(data.map((t) => t.nombre)));
-
-      fetch(`${import.meta.env.VITE_API_URL}/agenda/tipos-firma`)
-        .then((r) => r.json())
-        .then((data) => setTiposFirma(data.map((t) => t.nombre)));
 
       setForm((f) => ({
         ...f,
@@ -59,50 +41,28 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
   }, [open]);
 
   // ---------------------------------------------------------
-  // AUTOSELECCIONAR APODERADO (fallback si no coincide)
+  // SELECCIONAR NOTARIA (solo usar Apoderado y VC del Excel)
   // ---------------------------------------------------------
-  useEffect(() => {
-    if (open && apoderados.length > 0) {
-      const yo = apoderados.find(a => a.id === 2); // tu ID real
-      if (yo) {
-        setForm(f => ({ ...f, apoderado_id: yo.id }));
-      }
-    }
-  }, [open, apoderados]);
+  const seleccionarNotaria = (n) => {
+    const tipoFirmaTraducida =
+      n.vc === "SI" ? "Videoconferencia" :
+      n.vc === "NO" ? "Presencial" :
+      n.vc || "";
 
-// ---------------------------------------------------------
-// SELECCIONAR NOTARIA (solo usar columna Apoderado)
-// ---------------------------------------------------------
-const seleccionarNotaria = (n) => {
-  const tipoFirmaTraducida =
-    n.vc === "SI" ? "Videoconferencia" :
-    n.vc === "NO" ? "Presencial" :
-    "";
-
-  // Buscar SOLO por la columna Apoderado
-  const apoderadoEncontrado =
-    apoderados.find((a) =>
-      normalize(`${a.nombre} ${a.apellidos}`) === normalize(n.apoderado || "")
-    );
-
-  setForm(prev => ({
-    ...prev,
-    notario_id: n.id,
-    tipo_firma: tipoFirmaTraducida,
-    apoderado_id: apoderadoEncontrado
-      ? apoderadoEncontrado.id
-      : "", // si no coincide, dejar vacío para que el usuario elija
-    observaciones: n.observacion || prev.observaciones,
-  }));
-};
-
+    setForm(prev => ({
+      ...prev,
+      notario_id: n.id,
+      tipo_firma: tipoFirmaTraducida,
+      apoderado: n.apoderado || "",
+      observaciones: n.observacion || prev.observaciones,
+    }));
+  };
 
   // ---------------------------------------------------------
   // GUARDAR
   // ---------------------------------------------------------
   const guardar = async () => {
     await crear(form);
-
     alert("Cita creada correctamente");
     onClose();
   };
@@ -187,31 +147,21 @@ const seleccionarNotaria = (n) => {
           </div>
         )}
 
-        {/* Apoderado */}
-        <select
-          className="input"
-          value={form.apoderado_id || ""}
-          onChange={(e) => setForm({ ...form, apoderado_id: Number(e.target.value) })}
-        >
-          <option value="">Selecciona apoderado</option>
-          {apoderados.map((a) => (
-            <option key={a.id} value={a.id}>
-              {a.nombre} {a.apellidos}
-            </option>
-          ))}
-        </select>
+        {/* Apoderado (solo lectura) */}
+        <input
+          type="text"
+          className="input bg-gray-100"
+          value={form.apoderado || ""}
+          readOnly
+        />
 
-        {/* Tipo de firma */}
-        <select
-          className="input"
-          value={form.tipo_firma}
-          onChange={(e) => setForm({ ...form, tipo_firma: e.target.value })}
-        >
-          <option value="">Selecciona tipo de firma</option>
-          {tiposFirma.map((t) => (
-            <option key={t} value={t}>{t}</option>
-          ))}
-        </select>
+        {/* Tipo de firma (solo lectura) */}
+        <input
+          type="text"
+          className="input bg-gray-100"
+          value={form.tipo_firma || ""}
+          readOnly
+        />
 
         {/* Observaciones */}
         <textarea

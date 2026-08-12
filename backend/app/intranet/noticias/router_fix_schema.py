@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from app.database import get_db
+
+from backend.app.database import get_db
 
 router = APIRouter(prefix="/admin/noticias", tags=["Admin Noticias"])
 
@@ -12,6 +13,14 @@ def fix_noticias_schema(db: Session = Depends(get_db)):
             ALTER COLUMN usuario_id DROP NOT NULL;
         """)
         db.commit()
-        return {"status": "ok", "mensaje": "usuario_id ahora permite NULL"}
+
+        return {
+            "status": "ok",
+            "mensaje": "usuario_id ahora permite NULL"
+        }
+
     except Exception as e:
-        return {"status": "error", "detalle": str(e)}
+        return {
+            "status": "error",
+            "detalle": str(e)
+        }

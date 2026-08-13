@@ -7,6 +7,12 @@ export const useMensajesStore = create((set, get) => ({
   conversacion: [],
   noLeidos: 0,
   usuarioActual: null,
+  typing: false,
+
+  // ---------------------------------------------------------
+  // SET TYPING (WebSocket)
+  // ---------------------------------------------------------
+  setTyping: (estado) => set({ typing: estado }),
 
   // ---------------------------------------------------------
   // USUARIOS CONECTADOS
@@ -30,7 +36,6 @@ export const useMensajesStore = create((set, get) => ({
       const data = await mensajesAPI.conversacion(u1, u2);
       const safe = Array.isArray(data) ? data : [];
 
-      // Normalización por si el backend devuelve campos inconsistentes
       const normalizados = safe.map((m) => ({
         id: m.id,
         texto: m.texto,
@@ -46,6 +51,24 @@ export const useMensajesStore = create((set, get) => ({
       set({ conversacion: [] });
     }
   },
+
+  // ---------------------------------------------------------
+  // AÑADIR MENSAJE EN TIEMPO REAL (WebSocket)
+  // ---------------------------------------------------------
+  agregarMensajeRealtime: (msg) =>
+    set((state) => ({
+      conversacion: [
+        ...state.conversacion,
+        {
+          id: msg.id || Date.now(),
+          texto: msg.texto,
+          remitente_id: msg.remitente_id,
+          destinatario_id: msg.destinatario_id,
+          fecha: new Date().toISOString(),
+          hora: "",
+        },
+      ],
+    })),
 
   // ---------------------------------------------------------
   // ENVIAR MENSAJE

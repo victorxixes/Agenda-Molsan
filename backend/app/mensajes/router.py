@@ -2,7 +2,6 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from backend.app.database import get_db
-
 from backend.app.mensajes.service import (
     usuario_conectado,
     usuario_desconectado,
@@ -17,10 +16,6 @@ from backend.app.mensajes.schemas import MensajeCreate
 
 router = APIRouter(prefix="/mensajes", tags=["Mensajes"])
 
-# ---------------------------------------------------------
-# USUARIOS CONECTADOS
-# ---------------------------------------------------------
-
 @router.post("/conectar/{usuario_id}")
 def conectar(usuario_id: int, db: Session = Depends(get_db)):
     return usuario_conectado(db, usuario_id)
@@ -32,10 +27,6 @@ def desconectar(usuario_id: int, db: Session = Depends(get_db)):
 @router.get("/conectados")
 def conectados(db: Session = Depends(get_db)):
     return listar_usuarios_conectados(db)
-
-# ---------------------------------------------------------
-# MENSAJES
-# ---------------------------------------------------------
 
 @router.get("/conversacion/{usuario1}/{usuario2}")
 def conversacion(usuario1: int, usuario2: int, db: Session = Depends(get_db)):

@@ -1,13 +1,18 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import UsuariosSidebar from "../../sidebar/UsuariosSidebar";
 import ConversacionPanel from "../../components/mensajes/ConversacionPanel";
 import { useMensajesStore } from "../../store/mensajesStore";
 
 export default function MensajesChat() {
-  const { conectados } = useMensajesStore();
+  const { conectados, cargarConectados } = useMensajesStore();
   const [destinatarioId, setDestinatarioId] = useState(null);
 
-  const destinatario = conectados.find((u) => u.id === destinatarioId);
+  // Cargar conectados al entrar
+  useEffect(() => {
+    cargarConectados();
+  }, []);
+
+  const destinatario = conectados.find((u) => u.id === destinatarioId) || null;
 
   return (
     <div className="flex h-full bg-neutral-100">

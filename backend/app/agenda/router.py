@@ -57,24 +57,13 @@ def citas_mes(year: int, month: int, db: Session = Depends(get_db)):
 # CREAR CITA
 # ---------------------------------------------------------
 @router.post("/", response_model=CitaResponse)
-def crear_cita_endpoint(cita: CitaCreate, db: Session = Depends(get_db)):
-    db_cita = Cita(
-        fecha=cita.fecha,
-        hora_inicio=cita.hora_inicio,
-        hora_fin=cita.hora_fin,
-        tipo_cita=cita.tipo_cita,
-        notario_id=cita.notario_id,
-        tipo_firma=cita.tipo_firma,
-        apoderado_id=cita.apoderado_id,
-        estado=cita.estado,
-        observaciones=cita.observaciones
-    )
-
-    db.add(db_cita)
+def create_cita(cita: CitaCreate, db: Session = Depends(get_db)):
+    nueva = Cita(**cita.dict())
+    db.add(nueva)
     db.commit()
-    db.refresh(db_cita)
+    db.refresh(nueva)
+    return nueva
 
-    return cita_con_relaciones(db, db_cita)
 
 # ---------------------------------------------------------
 # EDITAR CITA

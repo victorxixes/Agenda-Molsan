@@ -2,16 +2,16 @@ from datetime import date, timedelta
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 
-from app.agenda.models import Cita
-from app.empleados.models import Empleado
-from app.mensajes.models import Mensaje
-from app.logs.models import Log
+from backend.app.agenda.models import Cita
+from backend.app.empleados.models import Empleado
+from backend.app.mensajes.models import Mensaje
+from backend.app.logs.models import Log
 
 # ---------------------------------------------------------
 # IMPORTAR CTN DE FORMA SEGURA
 # ---------------------------------------------------------
 try:
-    from app.ctn.models import Notario, Zona, Firma
+    from backend.app.ctn.models import Notaria as Notario, Zona, Firma
     CTN_ENABLED = True
 except Exception:
     CTN_ENABLED = False
@@ -81,7 +81,6 @@ def resumen_agenda(db: Session, empleado_id: int):
             "p": q_mes.filter(Cita.tipo_firma == "Presencial").count()
         }
 
-    # 🔥 Convertir dict → array
     firmas_por_mes_array = [
         {"mes": mes, "vc": valores["vc"], "p": valores["p"]}
         for mes, valores in firmas_por_mes.items()

@@ -3,6 +3,16 @@ import { useNavigate } from "react-router-dom";
 import { useEmpleadosStore } from "../../store/empleadosStore";
 import BuscadorEmpleados from "./BuscadorEmpleados";
 
+const EstadoBadge = ({ activo }) => {
+  return (
+    <span
+      className={`inline-block w-3 h-3 rounded-full ${
+        activo ? "bg-green-500" : "bg-red-500"
+      }`}
+    ></span>
+  );
+};
+
 export default function EmpleadosList() {
   const navigate = useNavigate();
   const { empleados, cargarEmpleados, buscarEmpleados } = useEmpleadosStore();
@@ -27,10 +37,15 @@ export default function EmpleadosList() {
             className="bg-white p-4 rounded-xl border border-neutral-300 shadow-md cursor-pointer hover:bg-neutral-50"
             onClick={() => navigate(`/empleados/${empleado.id}`)}
           >
-            <h3 className="font-semibold text-neutral-800">
-              {empleado.nombre}
-            </h3>
-            <p className="text-neutral-600 text-sm">{empleado.rol}</p>
+<div className="flex items-center gap-2">
+  <EstadoBadge activo={empleado.registrado} />
+  <h3 className="font-semibold text-neutral-800">
+    {empleado.nombre}
+  </h3>
+</div>
+
+<p className="text-neutral-600 text-sm">{empleado.rol}</p>
+
           </div>
         ))}
       </div>

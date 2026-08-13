@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, UploadFile, File
 from sqlalchemy.orm import Session
 
-from app.database import get_db
+from backend.app.database import get_db
 
-from app.ctn.service import (
+from backend.app.ctn.service import (
     listar_notarias,
     obtener_notaria,
     crear_notaria,
@@ -11,14 +11,14 @@ from app.ctn.service import (
     eliminar_notaria
 )
 
-from app.ctn.schemas import NotariaCreate
-from app.ctn.importer import importar_excel_ctn
+from backend.app.ctn.schemas import NotariaCreate
+from backend.app.ctn.importer import importar_excel_ctn
 
-# 🔥 IMPORTANTE: importar el modelo Notaria
-from app.ctn.models import Notaria
+# IMPORTANTE: importar el modelo Notaria
+from backend.app.ctn.models import Notaria
 
-# 🔥 IMPORTANTE: importar el modelo Cita
-from app.agenda.models import Cita
+# IMPORTANTE: importar el modelo Cita
+from backend.app.agenda.models import Cita
 
 router = APIRouter(prefix="/ctn", tags=["CTN"])
 

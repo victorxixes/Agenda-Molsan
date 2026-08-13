@@ -59,7 +59,7 @@ def crear_cita_endpoint(cita: CitaCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(db_cita)
 
-    return db_cita
+    return cita_con_relaciones(db, db_cita)
 
 # ---------------------------------------------------------
 # EDITAR CITA

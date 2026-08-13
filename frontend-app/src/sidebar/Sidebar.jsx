@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 
+import { connectEmpleados } from "../realtime/empleados";
+import { connectIntranet } from "../realtime/intranet";
+import { connectNotificaciones } from "../realtime/notificaciones";
+
+import { useEmpleadosStore } from "../store/empleadosStore";
 import { useAuthStore } from "../store/authStore";
 import { useMensajesStore } from "../store/mensajesStore";
 import { useIntranetStore } from "../store/intranetStore";
@@ -19,13 +24,15 @@ export default function Sidebar() {
   const navigate = useNavigate();
 
   const { user, logout } = useAuthStore();
-  const { noLeidos = 0, cargarNoLeidos, conectados = [] } = useMensajesStore();
+  const { noLeidos = 0, cargarNoLeidos } = useMensajesStore();
   const { notificaciones = [] } = useIntranetStore();
 
   const [collapsed, setCollapsed] = useState(false);
   const toggle = () => setCollapsed(!collapsed);
 
+  // ---------------------------------------------------------
   // Cargar no leídos cada 10s
+  // ---------------------------------------------------------
   useEffect(() => {
     if (user?.id) {
       cargarNoLeidos(user.id);
@@ -34,6 +41,59 @@ export default function Sidebar() {
     }
   }, [user]);
 
+  // ---------------------------------------------------------
+  // WebSockets: Empleados + Intranet + Notificaciones
+  // ---------------------------------------------------------
+  useEffect(() => {
+    if (!user?.id) return;
+
+    // WS Empleados
+    const wsEmpleados = connectEmpleados(user.id, (msg) => {
+      const store = useEmpleadosStore.getState();
+
+      if (msg.tipo === "empleado_conectado") {
+        store.marcarConectado(msg.empleado_id);
+      }
+
+      if (msg.tipo === "empleado_desconectado") {
+        store.marcarDesconectado(msg.empleado_id);
+      }
+    });
+
+    // WS Intranet
+    const wsIntranet = connectIntranet(user.id, (msg) => {
+      const store = useIntranetStore.getState();
+
+      if (msg.tipo === "nueva_noticia") {
+        store.nuevaNoticia(msg);
+      }
+
+      if (msg.tipo === "nuevo_documento") {
+        store.nuevoDocumento(msg);
+      }
+
+      if (msg.tipo === "noticia_eliminada") {
+        store.eliminarNoticia(msg.id);
+      }
+    });
+
+    // WS Notificaciones
+    const wsNotificaciones = connectNotificaciones(user.id, (msg) => {
+      const store = useIntranetStore.getState();
+      store.agregarNotificacion(msg);
+    });
+
+    // Cerrar conexiones al desmontar
+    return () => {
+      wsEmpleados.close();
+      wsIntranet.close();
+      wsNotificaciones.close();
+    };
+  }, [user]);
+
+  // ---------------------------------------------------------
+  // Secciones del sidebar
+  // ---------------------------------------------------------
   const sections = [
     {
       title: "Dashboard",

@@ -6,6 +6,7 @@ from pydantic import BaseModel
 from backend.app.database import get_db
 from backend.app.empleados.models import Empleado
 from backend.app.auth.utils import create_access_token
+from backend.app.auth.schemas import LoginRequest
 
 router = APIRouter(prefix="/empleados", tags=["Empleados"])
 
@@ -15,16 +16,16 @@ def hash_password(password: str) -> str:
 
 
 # ---------------------------------------------------------
-# LOGIN EMPLEADOS
+# LOGIN EMPLEADOS (CORREGIDO)
 # ---------------------------------------------------------
 @router.post("/login")
-def login_empleado(usuario: str, password: str, db: Session = Depends(get_db)):
-    empleado = db.query(Empleado).filter(Empleado.usuario == usuario).first()
+def login_empleado(data: LoginRequest, db: Session = Depends(get_db)):
+    empleado = db.query(Empleado).filter(Empleado.usuario == data.usuario).first()
 
     if not empleado:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
 
-    if empleado.password != hash_password(password):
+    if empleado.password != hash_password(data.password):
         raise HTTPException(status_code=401, detail="Contraseña incorrecta")
 
     token = create_access_token({"empleado_id": empleado.id})
@@ -42,11 +43,6 @@ def login_empleado(usuario: str, password: str, db: Session = Depends(get_db)):
 # ---------------------------------------------------------
 # LOGIN ADMIN
 # ---------------------------------------------------------
-class LoginRequest(BaseModel):
-    usuario: str
-    password: str
-
-
 @router.options("/admin/login")
 def options_login():
     return {}
@@ -54,7 +50,6 @@ def options_login():
 
 @router.post("/admin/login")
 def login_admin(data: LoginRequest):
-    # Usuario y contraseña fijos: admin / admin
     if data.usuario != "admin":
         raise HTTPException(status_code=400, detail="Usuario no encontrado")
 

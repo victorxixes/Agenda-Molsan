@@ -13,13 +13,19 @@ export const useAuthStore = create((set, get) => ({
     try {
       const data = await loginRequest(usuario, password);
 
+      // 🔥 Validar que empleado_id existe y es número
+      const empleadoId = Number(data.empleado_id);
+      if (!empleadoId || isNaN(empleadoId)) {
+        throw new Error("ID de empleado inválido en respuesta del backend");
+      }
+
       const userData = {
-  id: Number(data.empleado_id),   // 🔥 fuerza integer
-  nombre: data.nombre,
-  rol: data.rol || "empleado",
-  foto: data.foto || null,
-  token: data.token,
-};
+        id: empleadoId,
+        nombre: data.nombre,
+        rol: data.rol || "empleado",
+        foto: data.foto || null,
+        token: data.token,
+      };
 
       set({ user: userData, loading: false });
 

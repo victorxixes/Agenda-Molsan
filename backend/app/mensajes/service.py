@@ -1,8 +1,9 @@
 from sqlalchemy.orm import Session
 from datetime import datetime
 
-from app.mensajes.models import Mensaje, UsuarioEstado
-from app.mensajes.schemas import MensajeCreate
+from backend.app.mensajes.models import Mensaje, UsuarioEstado
+from backend.app.mensajes.schemas import MensajeCreate
+
 
 # ---------------------------------------------------------
 # USUARIOS CONECTADOS

@@ -1,7 +1,6 @@
 import axios from "axios";
 const API = import.meta.env.VITE_API_URL;
 
-// Usuarios conectados
 export const mensajesAPI = {
   conectar: (usuarioId) =>
     axios.post(`${API}/mensajes/conectar/${usuarioId}`).then(r => r.data),
@@ -12,7 +11,6 @@ export const mensajesAPI = {
   conectados: () =>
     axios.get(`${API}/mensajes/conectados`).then(r => r.data),
 
-  // Conversación
   conversacion: (u1, u2) =>
     axios.get(`${API}/mensajes/conversacion/${u1}/${u2}`).then(r => r.data),
 

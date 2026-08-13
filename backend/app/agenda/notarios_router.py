@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from app.database import get_db
-from app.ctn.service import listar_notarias
-from app.agenda.geocode import geocode_cp
+
+from backend.app.database import get_db
+from backend.app.ctn.service import listar_notarias
+from backend.app.agenda.geocode import geocode_cp
 
 router = APIRouter(prefix="/agenda", tags=["Agenda"])
 

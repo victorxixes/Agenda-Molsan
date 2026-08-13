@@ -1,9 +1,9 @@
 from sqlalchemy import text
 from backend.app.database import engine
 
-
 def bootstrap_agenda():
-    with engine.connect() as conn:
+    # engine.begin() crea una transacción y hace commit automáticamente
+    with engine.begin() as conn:
         conn.execute(text("""
             CREATE TABLE IF NOT EXISTS agenda_citas (
                 id SERIAL PRIMARY KEY,
@@ -18,4 +18,3 @@ def bootstrap_agenda():
                 estado VARCHAR DEFAULT 'Pendiente'
             );
         """))
-        conn.commit()

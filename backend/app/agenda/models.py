@@ -2,7 +2,7 @@ from sqlalchemy import Column, Integer, String, Date, Time, ForeignKey
 from backend.app.database import Base
 
 class Cita(Base):
-    __tablename__ = "agenda_citas_new"
+    __tablename__ = "agenda_citas_2026"
     __allow_unmapped__ = True
 
     id = Column(Integer, primary_key=True, index=True)

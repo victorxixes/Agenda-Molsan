@@ -2,6 +2,15 @@ import React, { useState, useEffect, useRef } from "react";
 import { useMensajesStore } from "../../store/mensajesStore";
 import { useAuthStore } from "../../store/authStore";
 
+function formatearFecha(fecha) {
+  const d = new Date(fecha);
+  return d.toLocaleDateString("es-ES", {
+    day: "numeric",
+    month: "long",
+    year: "numeric"
+  });
+}
+
 export default function ConversacionPanel({ destinatario }) {
   const {
     conversacion,
@@ -14,20 +23,32 @@ export default function ConversacionPanel({ destinatario }) {
   const remitenteId = user?.id;
 
   const [texto, setTexto] = useState("");
+  const [typing, setTyping] = useState(false);
+  const typingTimeoutRef = useRef(null);
+
   const chatRef = useRef(null);
 
   // Cargar conversación
   useEffect(() => {
     if (remitenteId && destinatario) {
-      cargarConversacion(remitenteId, destinatario);
-      marcarLeido(destinatario, remitenteId);
+      cargarConversacion(remitenteId, destinatario.id);
+      marcarLeido(destinatario.id, remitenteId);
     }
   }, [remitenteId, destinatario]);
 
-  // Auto-scroll
+  // Auto-scroll + sonido
   useEffect(() => {
     if (chatRef.current) {
-      chatRef.current.scrollTop = chatRef.current.scrollHeight;
+      chatRef.current.scrollTo({
+        top: chatRef.current.scrollHeight,
+        behavior: "smooth"
+      });
+    }
+
+    // sonido si el mensaje NO es mío
+    const ultimo = conversacion[conversacion.length - 1];
+    if (ultimo && ultimo.remitente_id !== remitenteId) {
+      new Audio("/sounds/message.mp3").play();
     }
   }, [conversacion]);
 
@@ -55,24 +76,57 @@ export default function ConversacionPanel({ destinatario }) {
           <span className="text-sm text-neutral-500">
             {destinatario.logeado ? "Conectado" : "Desconectado"}
           </span>
+
+          {typing && (
+            <span className="text-xs text-neutral-400 block mt-1">
+              Escribiendo…
+            </span>
+          )}
         </div>
       </div>
 
       {/* Mensajes */}
       <div ref={chatRef} className="flex-1 overflow-y-auto p-4 space-y-3">
-        {conversacion.map((m) => (
-          <div
-            key={m.id}
-            className={`max-w-[70%] p-3 rounded-xl shadow-sm text-sm ${
-              m.remitente_id === remitenteId
-                ? "ml-auto bg-[#D9E8FF] text-neutral-800"
-                : "bg-white border border-neutral-200 text-neutral-700"
-            }`}
-          >
-            {m.texto}
-            <div className="text-xs text-neutral-400 mt-1">{m.hora}</div>
-          </div>
-        ))}
+        {(() => {
+          let ultimaFecha = null;
+
+          return conversacion.map((m) => {
+            const fechaActual = formatearFecha(m.fecha);
+            const mostrarSeparador = fechaActual !== ultimaFecha;
+            ultimaFecha = fechaActual;
+
+            return (
+              <React.Fragment key={m.id}>
+                {mostrarSeparador && (
+                  <div className="text-center text-neutral-500 text-xs my-2">
+                    {fechaActual}
+                  </div>
+                )}
+
+                <div
+                  className={`max-w-[70%] p-3 rounded-xl shadow-sm text-sm ${
+                    m.remitente_id === remitenteId
+                      ? "ml-auto bg-[#D9E8FF] text-neutral-800"
+                      : "bg-white border border-neutral-200 text-neutral-700 flex items-start gap-2"
+                  }`}
+                >
+                  {/* avatar en mensajes recibidos */}
+                  {m.remitente_id !== remitenteId && (
+                    <img
+                      src={destinatario.foto}
+                      className="w-6 h-6 rounded-full object-cover"
+                    />
+                  )}
+
+                  <div>
+                    {m.texto}
+                    <div className="text-xs text-neutral-400 mt-1">{m.hora}</div>
+                  </div>
+                </div>
+              </React.Fragment>
+            );
+          });
+        })()}
       </div>
 
       {/* Input */}
@@ -80,7 +134,15 @@ export default function ConversacionPanel({ destinatario }) {
         <input
           type="text"
           value={texto}
-          onChange={(e) => setTexto(e.target.value)}
+          onChange={(e) => {
+            setTexto(e.target.value);
+
+            setTyping(true);
+            clearTimeout(typingTimeoutRef.current);
+            typingTimeoutRef.current = setTimeout(() => {
+              setTyping(false);
+            }, 1500);
+          }}
           placeholder="Escribe un mensaje..."
           className="flex-1 p-3 rounded-xl border border-neutral-300 focus:outline-none"
         />
@@ -94,7 +156,7 @@ export default function ConversacionPanel({ destinatario }) {
             });
             setTexto("");
           }}
-          className="bg-[#0A2E5C] text-white p-3 rounded-full hover:bg-[#08305A]"
+          className="bg-[#0A2E5C] text-white p-3 rounded-full hover:bg-[#08305A] active:scale-90 transition-transform"
         >
           ➤
         </button>

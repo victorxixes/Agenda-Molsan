@@ -1,69 +1,45 @@
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
-from typing import Dict
+from backend.app.mensajes.service import crear_mensaje
+from backend.app.database import get_db
+from sqlalchemy.orm import Session
 
-router = APIRouter()
+router = APIRouter(prefix="/ws/chat", tags=["WebSocket Chat"])
 
-# Diccionario global de usuarios conectados
-connected_users: Dict[int, WebSocket] = {}
+conexiones = {}  # usuario_id → websocket
 
-@router.websocket("/ws/chat/{user_id}")
-async def chat_ws(websocket: WebSocket, user_id: int):
+@router.websocket("/{usuario_id}")
+async def chat_ws(websocket: WebSocket, usuario_id: int):
     await websocket.accept()
-
-    # Registrar usuario
-    connected_users[user_id] = websocket
-    print(f"[WS-CHAT] Usuario conectado: {user_id}")
+    conexiones[usuario_id] = websocket
 
     try:
         while True:
-            try:
-                data = await websocket.receive_json()
-            except Exception:
-                # Si el cliente envía texto o basura, ignoramos
-                continue
+            data = await websocket.receive_json()
 
-            tipo = data.get("tipo")
-            remitente = data.get("remitente_id")
-            destinatario = data.get("destinatario_id")
-            texto = data.get("texto")
+            # Mensaje recibido
+            if data["tipo"] == "mensaje":
+                db: Session = next(get_db())
+                nuevo = crear_mensaje(db, data)
 
-            # Validación mínima
-            if not tipo:
-                continue
+                # Enviar al destinatario si está conectado
+                dest = data["destinatario_id"]
+                if dest in conexiones:
+                    await conexiones[dest].send_json({
+                        "tipo": "mensaje",
+                        "id": nuevo.id,
+                        "mensaje": nuevo.mensaje,
+                        "remitente_id": nuevo.remitente_id,
+                        "destinatario_id": nuevo.destinatario_id,
+                    })
 
-            # ---------------------------------------------------------
-            # 🔥 Evento: typing
-            # ---------------------------------------------------------
-            if tipo == "typing":
-                if destinatario in connected_users:
-                    try:
-                        await connected_users[destinatario].send_json({
-                            "tipo": "typing",
-                            "remitente_id": remitente
-                        })
-                    except Exception:
-                        pass
-
-            # ---------------------------------------------------------
-            # 🔥 Evento: nuevo mensaje
-            # ---------------------------------------------------------
-            if tipo == "mensaje":
-                if destinatario in connected_users:
-                    try:
-                        await connected_users[destinatario].send_json({
-                            "tipo": "nuevo_mensaje",
-                            "remitente_id": remitente,
-                            "destinatario_id": destinatario,
-                            "texto": texto
-                        })
-                    except Exception:
-                        pass
+            # Indicador typing
+            if data["tipo"] == "typing":
+                dest = data["destinatario_id"]
+                if dest in conexiones:
+                    await conexiones[dest].send_json({
+                        "tipo": "typing",
+                        "remitente_id": usuario_id
+                    })
 
     except WebSocketDisconnect:
-        print(f"[WS-CHAT] Usuario desconectado: {user_id}")
-
-    finally:
-        # Eliminar usuario del diccionario
-        if user_id in connected_users:
-            del connected_users[user_id]
-            print(f"[WS-CHAT] Usuario eliminado del registro: {user_id}")
+        conexiones.pop(usuario_id, None)

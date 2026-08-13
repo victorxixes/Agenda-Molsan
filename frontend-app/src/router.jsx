@@ -21,6 +21,7 @@ import IntranetPage from "./pages/intranet/IntranetPage.jsx";
 // MENSAJES
 import MensajesPage from "./pages/mensajes/MensajesPage.jsx";
 import ConversacionPage from "./pages/mensajes/Conversacion.jsx";
+import MensajesChat from "./pages/mensajes/MensajesChat.jsx";   // ⭐ NUEVO CHAT
 
 // EMPLEADOS
 import EmpleadosList from "./pages/empleados/EmpleadosList.jsx";
@@ -76,6 +77,9 @@ export default function AppRouter() {
         <Route element={<Layout />}>
           <Route path="/mensajes" element={<MensajesPage />} />
           <Route path="/mensajes/:id" element={<ConversacionPage />} />
+
+          {/* ⭐ NUEVO CHAT MODERNO */}
+          <Route path="/mensajes/chat" element={<MensajesChat />} />
         </Route>
       </Route>
 

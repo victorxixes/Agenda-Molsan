@@ -1,30 +1,23 @@
-from backend.app.agenda.fix_table import fix_table
-fix_table()
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import os
 
-from backend.app.agenda.models import Cita
-from backend.app.ctn.models import Notaria
-from backend.app.empleados.models import Empleado
-from backend.app.maestros.models import Departamento, Seccion, Cargo
+# ---------------------------------------------------------
+# FIX TABLES / BOOTSTRAP
+# ---------------------------------------------------------
+from backend.app.agenda.fix_table import fix_table
+fix_table()
+
 from backend.app.database import Base, engine
-
-from app.websockets.chat_ws import router as chat_ws_router
-app = FastAPI()
-
-app.include_router(chat_ws_router)
-
-# ---------------------------------------------------------
-# CREAR TABLAS
-# ---------------------------------------------------------
 Base.metadata.create_all(bind=engine)
 
-from app.agenda.bootstrap import bootstrap_agenda
+from backend.app.agenda.bootstrap import bootstrap_agenda
 bootstrap_agenda()
 
+# ---------------------------------------------------------
+# APP
+# ---------------------------------------------------------
 app = FastAPI(title="Agenda Intranet Backend")
 
 # ---------------------------------------------------------
@@ -45,7 +38,7 @@ app.add_middleware(
 )
 
 # ---------------------------------------------------------
-# IMPORTAR ROUTERS
+# ROUTERS NORMALES (REST)
 # ---------------------------------------------------------
 
 # Admin Noticias (PostgreSQL)
@@ -80,7 +73,7 @@ from backend.app.informes.router import router as informes_router
 from backend.app.intranet.noticias.router import router as noticias_router
 from backend.app.intranet.documentos.router import router as documentos_router
 
-# Logs / Mensajes / Realtime
+# Logs / Mensajes / Realtime REST
 from backend.app.logs.router import router as logs_router
 from backend.app.mensajes.router import router as mensajes_router
 from backend.app.realtime.router import router as realtime_router
@@ -91,7 +84,7 @@ from backend.app.utilidades.router_create import router as create_router
 from backend.app.utilidades.router_force import router as force_router
 
 # ---------------------------------------------------------
-# INCLUIR ROUTERS
+# INCLUIR ROUTERS REST
 # ---------------------------------------------------------
 app.include_router(router_reset_pg)
 app.include_router(router_fix_pg)
@@ -123,6 +116,19 @@ app.include_router(realtime_router)
 app.include_router(utilidades_router)
 app.include_router(create_router)
 app.include_router(force_router)
+
+# ---------------------------------------------------------
+# WEBSOCKETS
+# ---------------------------------------------------------
+from app.websockets.chat_ws import router as chat_ws_router
+from app.websockets.empleados_ws import router as empleados_ws_router
+from app.websockets.intranet_ws import router as intranet_ws_router
+from app.websockets.notificaciones_ws import router as notificaciones_ws_router
+
+app.include_router(chat_ws_router)
+app.include_router(empleados_ws_router)
+app.include_router(intranet_ws_router)
+app.include_router(notificaciones_ws_router)
 
 # ---------------------------------------------------------
 # STATIC FILES

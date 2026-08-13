@@ -36,6 +36,30 @@ def remove_fk_apoderado(db: Session = Depends(get_db)):
     db.commit()
     return {"status": "OK", "message": "Foreign key apoderado_id eliminado"}
 
+@router.post("/debug/recreate-table")
+def recreate_table(db: Session = Depends(get_db)):
+    db.execute(text("""
+        DROP TABLE IF EXISTS agenda_citas CASCADE;
+    """))
+
+    db.execute(text("""
+        CREATE TABLE agenda_citas (
+            id SERIAL PRIMARY KEY,
+            fecha DATE NOT NULL,
+            hora_inicio TIME NOT NULL,
+            hora_fin TIME NOT NULL,
+            tipo_cita VARCHAR NOT NULL,
+            notario_id INTEGER,
+            tipo_firma VARCHAR,
+            apoderado_id INTEGER,
+            observaciones VARCHAR,
+            estado VARCHAR DEFAULT 'Pendiente'
+        );
+    """))
+
+    db.commit()
+    return {"status": "OK", "message": "Tabla agenda_citas recreada correctamente"}
+    
 # ---------------------------------------------------------
 # LISTAR CITAS
 # ---------------------------------------------------------

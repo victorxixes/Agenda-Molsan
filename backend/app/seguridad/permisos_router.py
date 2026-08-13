@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from app.database import get_db
-from app.seguridad.service import obtener_permisos_por_rol
+
+from backend.app.database import get_db
+from backend.app.seguridad.service import obtener_permisos_por_rol
 
 router = APIRouter(prefix="/seguridad", tags=["Seguridad"])
 

@@ -1,7 +1,9 @@
 from sqlalchemy.orm import Session
 from datetime import datetime, date
-from app.logs.models import Log
-from app.logs.schemas import LogCreate
+
+from backend.app.logs.models import Log
+from backend.app.logs.schemas import LogCreate
+
 
 # ---------------------------------------------------------
 # CREAR LOG
@@ -13,11 +15,13 @@ def crear_log(db: Session, data: LogCreate):
     db.refresh(log)
     return log
 
+
 # ---------------------------------------------------------
 # LISTAR TODOS LOS LOGS
 # ---------------------------------------------------------
 def listar_logs(db: Session):
     return db.query(Log).order_by(Log.fecha.desc()).all()
+
 
 # ---------------------------------------------------------
 # FILTRAR POR USUARIO
@@ -30,6 +34,7 @@ def logs_por_usuario(db: Session, usuario_id: int):
         .all()
     )
 
+
 # ---------------------------------------------------------
 # FILTRAR POR MÓDULO
 # ---------------------------------------------------------
@@ -41,6 +46,7 @@ def logs_por_modulo(db: Session, modulo: str):
         .all()
     )
 
+
 # ---------------------------------------------------------
 # FILTRAR POR NIVEL (INFO, WARNING, ERROR)
 # ---------------------------------------------------------
@@ -51,6 +57,7 @@ def logs_por_nivel(db: Session, nivel: str):
         .order_by(Log.fecha.desc())
         .all()
     )
+
 
 # ---------------------------------------------------------
 # FILTRAR POR FECHA

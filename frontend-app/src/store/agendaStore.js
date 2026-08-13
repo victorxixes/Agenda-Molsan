@@ -11,6 +11,11 @@ export const useAgendaStore = create((set, get) => ({
   mesActual: null,   // 🔥 Necesario para recargar el calendario
 
   // ---------------------------------------------------------
+  // SET CITA ACTUAL (para abrir el modal)
+  // ---------------------------------------------------------
+  setCitaActual: (cita) => set({ citaActual: cita }),
+
+  // ---------------------------------------------------------
   // CARGAR CITAS DEL DÍA
   // ---------------------------------------------------------
   cargarDia: async (fecha) => {

@@ -3,7 +3,10 @@ from sqlalchemy.orm import Session
 from datetime import date, time
 
 from backend.app.database import get_db
-from backend.app.agenda.schemas import CitaCreate, CitaUpdate
+
+from backend.app.agenda.models import Cita
+from backend.app.agenda.schemas import CitaCreate, CitaUpdate, CitaResponse
+
 from backend.app.agenda.service import (
     listar_citas_dia,
     listar_citas_semana,
@@ -37,9 +40,25 @@ def citas_mes(year: int, month: int, db: Session = Depends(get_db)):
 # ---------------------------------------------------------
 # CREAR CITA
 # ---------------------------------------------------------
-@router.post("")
-def crear(data: CitaCreate, db: Session = Depends(get_db)):
-    return crear_cita(db, data)
+@router.post("/", response_model=CitaResponse)
+def crear_cita_endpoint(cita: CitaCreate, db: Session = Depends(get_db)):
+    db_cita = Cita(
+        fecha=cita.fecha,
+        hora_inicio=cita.hora_inicio,
+        hora_fin=cita.hora_fin,
+        tipo_cita=cita.tipo_cita,
+        notario_id=cita.notario_id,
+        tipo_firma=cita.tipo_firma,
+        apoderado_id=cita.apoderado_id,
+        estado=cita.estado,
+        observaciones=cita.observaciones
+    )
+
+    db.add(db_cita)
+    db.commit()
+    db.refresh(db_cita)
+
+    return db_cita
 
 # ---------------------------------------------------------
 # EDITAR CITA

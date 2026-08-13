@@ -8,3 +8,4 @@ export const usePermisosStore = create((set) => ({
   setModulos: (modulos) => set({ modulos }),
   setAcciones: (acciones) => set({ acciones }),
 }));
+

@@ -17,7 +17,7 @@ class Cita(Base):
 
     # Notario (solo obligatorio si tipo_cita = Firma notarial)
     # CORREGIDO: la tabla correcta es ctn_notarios
-    notario_id = Column(Integer, ForeignKey("ctn_notaria.id"), nullable=True)
+    notario_id = Column(Integer, ForeignKey("ctn_notarios.id"), nullable=True)
 
     # Tipo de firma (VideoConferencia / Presencial)
     tipo_firma = Column(String, nullable=True)

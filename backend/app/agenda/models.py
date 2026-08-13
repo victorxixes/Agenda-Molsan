@@ -13,7 +13,7 @@ class Cita(Base):
 
     tipo_cita = Column(String, nullable=False, default="Otros")
 
-    notario_id = Column(Integer, ForeignKey("ctn_notarios.id"), nullable=True)
+    notario_id = Column(Integer, nullable=True)
 
     tipo_firma = Column(String, nullable=True)
 

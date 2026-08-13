@@ -45,4 +45,9 @@ export const useAuthStore = create((set, get) => ({
   logout: async () => {
     set({ user: null });
   },
+
 }));
+
+// ❌ NO activar WS durante login
+// conectarChatWS(userData.id);
+// conectarEmpleadosWS(userData.id);

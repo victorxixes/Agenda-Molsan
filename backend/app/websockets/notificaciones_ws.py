@@ -10,17 +10,18 @@ notificaciones_connections: Dict[int, WebSocket] = {}
 async def notificaciones_ws(websocket: WebSocket, usuario_id: int):
     await websocket.accept()
 
-    # Registrar usuario
     notificaciones_connections[usuario_id] = websocket
-    print(f"Usuario conectado a NOTIFICACIONES WS: {usuario_id}")
+    print(f"[WS-NOTIF] Conectado: {usuario_id}")
 
     try:
         while True:
-            # Mantener conexión viva
-            await websocket.receive_text()
+            try:
+                await websocket.receive_text()
+            except Exception:
+                continue
 
     except WebSocketDisconnect:
-        print(f"Usuario desconectado de NOTIFICACIONES WS: {usuario_id}")
+        print(f"[WS-NOTIF] Desconectado: {usuario_id}")
 
     finally:
         if usuario_id in notificaciones_connections:
@@ -33,14 +34,14 @@ async def enviar_notificacion(usuario_id: int, evento: dict):
     if ws:
         try:
             await ws.send_json(evento)
-        except:
+        except Exception:
             pass
 
 
 async def broadcast_notificacion(evento: dict):
     """Enviar notificación a todos los usuarios conectados."""
-    for ws in notificaciones_connections.values():
+    for ws in list(notificaciones_connections.values()):
         try:
             await ws.send_json(evento)
-        except:
+        except Exception:
             pass

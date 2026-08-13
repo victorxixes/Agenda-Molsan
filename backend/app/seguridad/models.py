@@ -3,8 +3,10 @@ from sqlalchemy.orm import relationship
 
 from backend.app.database import Base
 
+
 class Rol(Base):
     __tablename__ = "roles2"
+    __allow_unmapped__ = True
 
     id = Column(Integer, primary_key=True, index=True)
     nombre = Column(String, unique=True)
@@ -12,8 +14,10 @@ class Rol(Base):
 
     permisos = relationship("Permiso", back_populates="rol", cascade="all, delete")
 
+
 class Permiso(Base):
     __tablename__ = "permisos2"
+    __allow_unmapped__ = True
 
     id = Column(Integer, primary_key=True, index=True)
     rol_id = Column(Integer, ForeignKey("roles2.id"))
@@ -22,8 +26,10 @@ class Permiso(Base):
 
     rol = relationship("Rol", back_populates="permisos")
 
+
 class RolPermiso(Base):
     __tablename__ = "roles_permisos2"
+    __allow_unmapped__ = True
 
     id = Column(Integer, primary_key=True, index=True)
     rol_id = Column(Integer, ForeignKey("roles2.id"))

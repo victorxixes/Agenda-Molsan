@@ -16,10 +16,6 @@ export function conectarEmpleadosWS(usuarioId) {
       useMensajesStore.getState().cargarConectados();
     }
   };
-
-  wsEmpleados.onclose = () => {
-    console.log("[WS-EMP] desconectado");
-  };
 }
 
 export function desconectarEmpleadosWS() {

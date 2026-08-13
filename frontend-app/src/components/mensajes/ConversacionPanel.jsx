@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useMensajesStore } from "../../store/mensajesStore";
 import { useAuthStore } from "../../store/authStore";
+import { connectChat } from "../../realtime/chat";
 
 function formatearFecha(fecha) {
   const d = new Date(fecha);
@@ -16,19 +17,42 @@ export default function ConversacionPanel({ destinatario }) {
     conversacion,
     cargarConversacion,
     enviarMensaje,
-    marcarLeido
+    marcarLeido,
+    agregarMensajeRealtime,
+    typing,
+    setTyping
   } = useMensajesStore();
 
   const { user } = useAuthStore();
   const remitenteId = user?.id;
 
   const [texto, setTexto] = useState("");
-  const [typing, setTyping] = useState(false);
-  const typingTimeoutRef = useRef(null);
-
   const chatRef = useRef(null);
+  const wsRef = useRef(null);
 
+  // ---------------------------------------------------------
+  // WebSocket del chat
+  // ---------------------------------------------------------
+  useEffect(() => {
+    if (!remitenteId) return;
+
+    wsRef.current = connectChat(remitenteId, (msg) => {
+      if (msg.tipo === "typing") {
+        setTyping(true);
+        setTimeout(() => setTyping(false), 1500);
+      }
+
+      if (msg.tipo === "nuevo_mensaje") {
+        agregarMensajeRealtime(msg);
+      }
+    });
+
+    return () => wsRef.current?.close();
+  }, [remitenteId]);
+
+  // ---------------------------------------------------------
   // Cargar conversación
+  // ---------------------------------------------------------
   useEffect(() => {
     if (remitenteId && destinatario) {
       cargarConversacion(remitenteId, destinatario.id);
@@ -36,7 +60,9 @@ export default function ConversacionPanel({ destinatario }) {
     }
   }, [remitenteId, destinatario]);
 
+  // ---------------------------------------------------------
   // Auto-scroll + sonido
+  // ---------------------------------------------------------
   useEffect(() => {
     if (chatRef.current) {
       chatRef.current.scrollTo({
@@ -45,7 +71,6 @@ export default function ConversacionPanel({ destinatario }) {
       });
     }
 
-    // sonido si el mensaje NO es mío
     const ultimo = conversacion[conversacion.length - 1];
     if (ultimo && ultimo.remitente_id !== remitenteId) {
       new Audio("/sounds/message.mp3").play();
@@ -60,7 +85,6 @@ export default function ConversacionPanel({ destinatario }) {
     );
   }
 
-  // Detectar si el último mensaje es recibido
   const ultimo = conversacion[conversacion.length - 1];
   const nuevoMensajeRecibido =
     ultimo && ultimo.remitente_id !== remitenteId;
@@ -89,7 +113,6 @@ export default function ConversacionPanel({ destinatario }) {
             </span>
           )}
 
-          {/* ⭐ Indicador de nuevo mensaje recibido */}
           {nuevoMensajeRecibido && (
             <span className="text-xs text-blue-600 font-semibold block mt-1">
               Nuevo mensaje recibido
@@ -125,7 +148,6 @@ export default function ConversacionPanel({ destinatario }) {
                       : "bg-white border border-neutral-200 text-neutral-700 flex items-start gap-2 animate-pulse"
                   }`}
                 >
-                  {/* avatar en mensajes recibidos */}
                   {!esMio && (
                     <img
                       src={destinatario.foto}
@@ -152,11 +174,19 @@ export default function ConversacionPanel({ destinatario }) {
           onChange={(e) => {
             setTexto(e.target.value);
 
+            // Enviar evento typing
+            try {
+              wsRef.current?.socket?.send(
+                JSON.stringify({
+                  tipo: "typing",
+                  remitente_id: remitenteId,
+                  destinatario_id: destinatario.id
+                })
+              );
+            } catch {}
+
             setTyping(true);
-            clearTimeout(typingTimeoutRef.current);
-            typingTimeoutRef.current = setTimeout(() => {
-              setTyping(false);
-            }, 1500);
+            setTimeout(() => setTyping(false), 1500);
           }}
           placeholder="Escribe un mensaje..."
           className="flex-1 p-3 rounded-xl border border-neutral-300 focus:outline-none"
@@ -169,6 +199,19 @@ export default function ConversacionPanel({ destinatario }) {
               destinatario_id: destinatario.id,
               texto,
             });
+
+            // Enviar por WebSocket
+            try {
+              wsRef.current?.socket?.send(
+                JSON.stringify({
+                  tipo: "mensaje",
+                  remitente_id: remitenteId,
+                  destinatario_id: destinatario.id,
+                  texto
+                })
+              );
+            } catch {}
+
             setTexto("");
           }}
           className="bg-[#0A2E5C] text-white p-3 rounded-full hover:bg-[#08305A] active:scale-90 transition-transform"

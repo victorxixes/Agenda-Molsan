@@ -1,10 +1,14 @@
-FROM python:3.11-slim
+FROM python:3.11
 
+# Carpeta de trabajo dentro del contenedor
 WORKDIR /app
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Copiar SOLO el backend dentro de /app/backend
+COPY backend /app/backend
 
-COPY backend ./backend
+# Instalar dependencias del backend
+RUN pip install -r /app/backend/requirements.txt
 
-CMD ["bash", "-c", "python backend/prestart.py && uvicorn backend.app.main:app --host 0.0.0.0 --port 10000"]
+# Comando de arranque
+CMD ["uvicorn", "backend.app.main:app", "--host", "0.0.0.0", "--port", "10000"]
+

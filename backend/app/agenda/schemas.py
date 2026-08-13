@@ -10,7 +10,7 @@ class CitaBase(BaseModel):
     notario_id: int | None = None
     tipo_firma: str | None = None
 
-    apoderado: str | None = None
+    apoderado: int | None = None
 
     estado: str = "Pendiente"
     observaciones: str | None = None

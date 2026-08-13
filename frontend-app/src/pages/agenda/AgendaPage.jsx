@@ -7,6 +7,7 @@ import CalendarGrid from "./CalendarGrid";
 import AgendaSidebar from "../../sidebar/AgendaSidebar.jsx";
 import AgendaNuevaCitaModal from "./AgendaNuevaCitaModal";
 import AgendaNuevaEditarCitaModal from "./AgendaNuevaEditarCitaModal.jsx";
+import AgendaCitaDetalleModal from "./AgendaCitaDetalleModal.jsx";   // 🔥 Modal de detalle
 
 export default function AgendaPage() {
   const { citasDia, cargarDia, cargarMes } = useAgendaStore();
@@ -78,6 +79,9 @@ export default function AgendaPage() {
           cargarDia(selectedDate.toISOString().split("T")[0]); // refresco automático
         }}
       />
+
+      {/* 🔥 Modal: Detalle de cita */}
+      <AgendaCitaDetalleModal />
 
     </div>
   );

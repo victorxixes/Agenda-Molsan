@@ -3,6 +3,8 @@ import { useMensajesStore } from "../store/mensajesStore";
 let wsEmpleados = null;
 
 export function conectarEmpleadosWS(usuarioId) {
+  if (!usuarioId || isNaN(usuarioId)) return; // 🔥 evita URLs inválidas
+
   wsEmpleados = new WebSocket(`${import.meta.env.VITE_WS_URL}/ws/empleados`);
 
   wsEmpleados.onopen = () => {

@@ -4,14 +4,25 @@ import { crearLog } from "../lib/log";
 import { useAuthStore } from "../store/authStore";
 
 export const useIntranetStore = create((set, get) => ({
+  // ---------------------------------------------------------
+  // ESTADO
+  // ---------------------------------------------------------
   noticias: [],
   documentos: [],
+  notificaciones: [],
   loading: false,
+
+  // ---------------------------------------------------------
+  // NOTIFICACIONES (WebSocket)
+  // ---------------------------------------------------------
+  agregarNotificacion: (notif) =>
+    set((state) => ({
+      notificaciones: [notif, ...state.notificaciones]
+    })),
 
   // ---------------------------------------------------------
   // NOTICIAS
   // ---------------------------------------------------------
-
   cargarNoticias: async () => {
     set({ loading: true });
     const data = await intranetAPI.listarNoticias();
@@ -83,7 +94,6 @@ export const useIntranetStore = create((set, get) => ({
   // ---------------------------------------------------------
   // DOCUMENTOS
   // ---------------------------------------------------------
-
   cargarDocumentos: async () => {
     set({ loading: true });
     const data = await intranetAPI.listarDocumentos();

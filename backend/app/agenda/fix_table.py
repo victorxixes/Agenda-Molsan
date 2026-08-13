@@ -2,7 +2,7 @@ from sqlalchemy import text
 from backend.app.database import engine
 
 def fix_table():
-    with engine.connect() as conn:
+    with engine.begin() as conn:
         conn.execute(text("""
             DROP TABLE IF EXISTS agenda_citas CASCADE;
         """))
@@ -21,5 +21,3 @@ def fix_table():
                 estado VARCHAR DEFAULT 'Pendiente'
             );
         """))
-
-        conn.commit()

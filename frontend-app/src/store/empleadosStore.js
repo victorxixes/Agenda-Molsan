@@ -3,10 +3,29 @@ import { empleadosAPI } from "../api/empleados";
 import { crearLog } from "../lib/log";
 
 export const useEmpleadosStore = create((set, get) => ({
+  // ---------------------------------------------------------
+  // ESTADO
+  // ---------------------------------------------------------
   empleados: [],
   empleadoActual: null,
   loading: false,
   error: null,
+
+  // Empleados conectados (WebSocket)
+  conectados: [],
+
+  // ---------------------------------------------------------
+  // WEBSOCKET: CONECTADOS
+  // ---------------------------------------------------------
+  marcarConectado: (id) =>
+    set((state) => ({
+      conectados: [...new Set([...state.conectados, id])]
+    })),
+
+  marcarDesconectado: (id) =>
+    set((state) => ({
+      conectados: state.conectados.filter((x) => x !== id)
+    })),
 
   // ---------------------------------------------------------
   // LISTAR EMPLEADOS
@@ -36,24 +55,24 @@ export const useEmpleadosStore = create((set, get) => ({
       set({ loading: false, error: "Error cargando empleado" });
     }
   },
-  
+
   // ---------------------------------------------------------
-  // BUSCAR EMPLEADO
- // ---------------------------------------------------------
+  // BUSCAR EMPLEADOS
+  // ---------------------------------------------------------
   buscarEmpleados: async (filtros) => {
-  const params = new URLSearchParams();
+    const params = new URLSearchParams();
 
-  if (filtros.id) params.append("id", filtros.id);
-  if (filtros.dni) params.append("dni", filtros.dni);
-  if (filtros.q) params.append("q", filtros.q);
-  if (filtros.activo !== null) params.append("activo", filtros.activo);
+    if (filtros.id) params.append("id", filtros.id);
+    if (filtros.dni) params.append("dni", filtros.dni);
+    if (filtros.q) params.append("q", filtros.q);
+    if (filtros.activo !== null) params.append("activo", filtros.activo);
 
-  const API = import.meta.env.VITE_API_URL;
-  const res = await fetch(`${API}/empleados/search?${params.toString()}`);
-  const data = await res.json();
+    const API = import.meta.env.VITE_API_URL;
+    const res = await fetch(`${API}/empleados/search?${params.toString()}`);
+    const data = await res.json();
 
-  set({ empleados: data.items });
-},
+    set({ empleados: data.items });
+  },
 
   // ---------------------------------------------------------
   // CREAR EMPLEADO

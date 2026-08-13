@@ -2,14 +2,16 @@ import pandas as pd
 from io import BytesIO
 from sqlalchemy.orm import Session
 
-from app.ctn.models import Notaria
-from app.ctn.utils.normalizador_excel import normalizar_excel
-from app.agenda.models import Cita
+from backend.app.ctn.models import Notaria
+from backend.app.ctn.utils.normalizador_excel import normalizar_excel
+from backend.app.agenda.models import Cita
+
 
 def limpiar(valor):
     if pd.isna(valor):
         return ""
     return str(valor).strip()
+
 
 def importar_excel_ctn(db: Session, file):
     try:

@@ -120,15 +120,16 @@ app.include_router(force_router)
 # ---------------------------------------------------------
 # WEBSOCKETS
 # ---------------------------------------------------------
-from app.websockets.chat_ws import router as chat_ws_router
-from app.websockets.empleados_ws import router as empleados_ws_router
-from app.websockets.intranet_ws import router as intranet_ws_router
-from app.websockets.notificaciones_ws import router as notificaciones_ws_router
+from backend.app.websockets.chat_ws import router as chat_ws_router
+from backend.app.websockets.empleados_ws import router as empleados_ws_router
+from backend.app.websockets.intranet_ws import router as intranet_ws_router
+from backend.app.websockets.notificaciones_ws import router as notificaciones_ws_router
 
 app.include_router(chat_ws_router)
 app.include_router(empleados_ws_router)
 app.include_router(intranet_ws_router)
 app.include_router(notificaciones_ws_router)
+
 
 # ---------------------------------------------------------
 # STATIC FILES

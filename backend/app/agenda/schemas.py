@@ -10,7 +10,7 @@ class CitaBase(BaseModel):
     notario_id: int | None = None
     tipo_firma: str | None = None
 
-    apoderado: int | None = None
+    apoderado_id: int | None = None
 
     estado: str = "Pendiente"
     observaciones: str | None = None
@@ -42,24 +42,10 @@ class CitaUpdate(BaseModel):
     notario_id: int | None = None
     tipo_firma: str | None = None
 
-    apoderado: str | None = None
+    apoderado_id: int | None = None
 
     estado: str | None = None
     observaciones: str | None = None
-
-    @validator("notario_id")
-    def validar_notario_update(cls, v, values):
-        tipo = (values.get("tipo_cita") or "").lower()
-        if "firma" in tipo and v is None:
-            raise ValueError("El campo notario_id es obligatorio para citas de firma")
-        return v
-
-    @validator("tipo_firma")
-    def validar_tipo_firma_update(cls, v, values):
-        tipo = (values.get("tipo_cita") or "").lower()
-        if "firma" in tipo and not v:
-            raise ValueError("El campo tipo_firma es obligatorio para citas de firma")
-        return v
 
 
 class CitaResponse(CitaBase):

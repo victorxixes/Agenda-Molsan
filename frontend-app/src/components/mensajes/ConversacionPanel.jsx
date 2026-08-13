@@ -60,6 +60,11 @@ export default function ConversacionPanel({ destinatario }) {
     );
   }
 
+  // Detectar si el último mensaje es recibido
+  const ultimo = conversacion[conversacion.length - 1];
+  const nuevoMensajeRecibido =
+    ultimo && ultimo.remitente_id !== remitenteId;
+
   return (
     <div className="flex-1 flex flex-col bg-neutral-50">
       {/* Header */}
@@ -73,6 +78,7 @@ export default function ConversacionPanel({ destinatario }) {
           <h2 className="text-lg font-semibold text-neutral-800">
             {destinatario.nombre}
           </h2>
+
           <span className="text-sm text-neutral-500">
             {destinatario.logeado ? "Conectado" : "Desconectado"}
           </span>
@@ -80,6 +86,13 @@ export default function ConversacionPanel({ destinatario }) {
           {typing && (
             <span className="text-xs text-neutral-400 block mt-1">
               Escribiendo…
+            </span>
+          )}
+
+          {/* ⭐ Indicador de nuevo mensaje recibido */}
+          {nuevoMensajeRecibido && (
+            <span className="text-xs text-blue-600 font-semibold block mt-1">
+              Nuevo mensaje recibido
             </span>
           )}
         </div>
@@ -95,6 +108,8 @@ export default function ConversacionPanel({ destinatario }) {
             const mostrarSeparador = fechaActual !== ultimaFecha;
             ultimaFecha = fechaActual;
 
+            const esMio = m.remitente_id === remitenteId;
+
             return (
               <React.Fragment key={m.id}>
                 {mostrarSeparador && (
@@ -105,13 +120,13 @@ export default function ConversacionPanel({ destinatario }) {
 
                 <div
                   className={`max-w-[70%] p-3 rounded-xl shadow-sm text-sm ${
-                    m.remitente_id === remitenteId
+                    esMio
                       ? "ml-auto bg-[#D9E8FF] text-neutral-800"
-                      : "bg-white border border-neutral-200 text-neutral-700 flex items-start gap-2"
+                      : "bg-white border border-neutral-200 text-neutral-700 flex items-start gap-2 animate-pulse"
                   }`}
                 >
                   {/* avatar en mensajes recibidos */}
-                  {m.remitente_id !== remitenteId && (
+                  {!esMio && (
                     <img
                       src={destinatario.foto}
                       className="w-6 h-6 rounded-full object-cover"

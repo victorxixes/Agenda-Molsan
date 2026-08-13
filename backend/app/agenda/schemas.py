@@ -1,7 +1,11 @@
 from pydantic import BaseModel, validator
 from datetime import date, time
+from typing import Optional
 
-class CitaCreate(BaseModel):
+# -------------------------
+# BASE
+# -------------------------
+class CitaBase(BaseModel):
     fecha: date
     hora_inicio: time
     hora_fin: time
@@ -14,6 +18,10 @@ class CitaCreate(BaseModel):
 
     estado: Optional[str] = "Pendiente"
 
+
+# -------------------------
+# CREATE
+# -------------------------
 class CitaCreate(CitaBase):
 
     @validator("notario_id")
@@ -31,24 +39,28 @@ class CitaCreate(CitaBase):
         return v
 
 
+# -------------------------
+# UPDATE
+# -------------------------
 class CitaUpdate(BaseModel):
-    fecha: date | None = None
-    hora_inicio: time | None = None
-    hora_fin: time | None = None
+    fecha: Optional[date] = None
+    hora_inicio: Optional[time] = None
+    hora_fin: Optional[time] = None
 
-    tipo_cita: str | None = None
-    notario_id: int | None = None
-    tipo_firma: str | None = None
+    tipo_cita: Optional[str] = None
+    notario_id: Optional[int] = None
+    tipo_firma: Optional[str] = None
 
-    apoderado_id: int | None = None
+    apoderado_id: Optional[int] = None
+    estado: Optional[str] = None
+    observaciones: Optional[str] = None
 
-    estado: str | None = None
-    observaciones: str | None = None
 
-
+# -------------------------
+# RESPONSE
+# -------------------------
 class CitaResponse(CitaBase):
     id: int
 
-    model_config = {
-        "from_attributes": True
-    }
+    class Config:
+        orm_mode = True

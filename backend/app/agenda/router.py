@@ -22,6 +22,20 @@ from backend.app.agenda.service import (
 
 router = APIRouter(prefix="/agenda", tags=["Agenda"])
 
+from sqlalchemy import text
+
+@router.post("/debug/remove-fk-notario")
+def remove_fk_notario(db: Session = Depends(get_db)):
+    db.execute(text("ALTER TABLE agenda_citas DROP CONSTRAINT IF EXISTS agenda_citas_notario_id_fkey;"))
+    db.commit()
+    return {"status": "OK", "message": "Foreign key notario_id eliminado"}
+
+@router.post("/debug/remove-fk-apoderado")
+def remove_fk_apoderado(db: Session = Depends(get_db)):
+    db.execute(text("ALTER TABLE agenda_citas DROP CONSTRAINT IF EXISTS agenda_citas_apoderado_id_fkey;"))
+    db.commit()
+    return {"status": "OK", "message": "Foreign key apoderado_id eliminado"}
+
 # ---------------------------------------------------------
 # LISTAR CITAS
 # ---------------------------------------------------------
@@ -93,14 +107,4 @@ def mover(id: int, nueva_fecha: str, nueva_hora_inicio: str, nueva_hora_fin: str
 def cambiar_estado(id: int, nuevo_estado: str, db: Session = Depends(get_db)):
     return cambiar_estado_cita(db, id, nuevo_estado)
 
-@router.post("/debug/remove-fk-notario")
-def remove_fk_notario(db: Session = Depends(get_db)):
-    db.execute(text("ALTER TABLE agenda_citas DROP CONSTRAINT IF EXISTS agenda_citas_notario_id_fkey;"))
-    db.commit()
-    return {"status": "OK", "message": "Foreign key notario_id eliminado"}
 
-@router.post("/debug/remove-fk-apoderado")
-def remove_fk_apoderado(db: Session = Depends(get_db)):
-    db.execute(text("ALTER TABLE agenda_citas DROP CONSTRAINT IF EXISTS agenda_citas_apoderado_id_fkey;"))
-    db.commit()
-    return {"status": "OK", "message": "Foreign key apoderado_id eliminado"}

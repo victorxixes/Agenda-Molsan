@@ -1,6 +1,6 @@
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
-from backend.app.mensajes.service import crear_mensaje
 from backend.app.database import get_db
+from backend.app.mensajes.service import crear_mensaje
 from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/ws/chat", tags=["WebSocket Chat"])
@@ -16,12 +16,11 @@ async def chat_ws(websocket: WebSocket, usuario_id: int):
         while True:
             data = await websocket.receive_json()
 
-            # Mensaje recibido
+            # MENSAJE NORMAL
             if data["tipo"] == "mensaje":
                 db: Session = next(get_db())
                 nuevo = crear_mensaje(db, data)
 
-                # Enviar al destinatario si está conectado
                 dest = data["destinatario_id"]
                 if dest in conexiones:
                     await conexiones[dest].send_json({
@@ -32,7 +31,7 @@ async def chat_ws(websocket: WebSocket, usuario_id: int):
                         "destinatario_id": nuevo.destinatario_id,
                     })
 
-            # Indicador typing
+            # TYPING
             if data["tipo"] == "typing":
                 dest = data["destinatario_id"]
                 if dest in conexiones:

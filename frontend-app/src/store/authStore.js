@@ -14,12 +14,12 @@ export const useAuthStore = create((set, get) => ({
       const data = await loginRequest(usuario, password);
 
       const userData = {
-        id: data.empleado_id,
-        nombre: data.nombre,
-        rol: data.rol || "empleado",
-        foto: data.foto || null,
-        token: data.token,
-      };
+  id: Number(data.empleado_id),   // 🔥 fuerza integer
+  nombre: data.nombre,
+  rol: data.rol || "empleado",
+  foto: data.foto || null,
+  token: data.token,
+};
 
       set({ user: userData, loading: false });
 

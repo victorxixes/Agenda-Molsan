@@ -1,12 +1,9 @@
-from sqlalchemy import Column, Integer, String, Date, Time, ForeignKey
+from sqlalchemy import Column, Integer, String, Date, Time
 from backend.app.database import Base
 
 class Cita(Base):
     __tablename__ = "agenda_citas"
     __allow_unmapped__ = True
-
-class Cita(Base):
-    __tablename__ = "agenda_citas"
 
     id = Column(Integer, primary_key=True, index=True)
 
@@ -15,7 +12,7 @@ class Cita(Base):
     hora_fin = Column(Time, nullable=False)
     tipo_cita = Column(String, nullable=False)
 
-    # Campos opcionales (sin FK)
+    # Campos opcionales
     notario_id = Column(Integer, nullable=True)
     tipo_firma = Column(String, nullable=True)
     apoderado_id = Column(Integer, nullable=True)

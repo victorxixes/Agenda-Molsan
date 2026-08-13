@@ -1,5 +1,13 @@
+fimport sys
+import os
 from sqlalchemy import text
-from backend.app.database import engine
+
+# Añadir /app/backend al PYTHONPATH
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # /app/backend
+sys.path.append(BASE_DIR)                              # añade /app/backend
+sys.path.append(os.path.join(BASE_DIR, "app"))         # añade /app/backend/app
+
+from app.database import engine
 
 print(">>> Ejecutando prestart.py para recrear agenda_citas...")
 

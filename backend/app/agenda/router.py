@@ -8,7 +8,6 @@ from backend.app.database import get_db
 from backend.app.agenda.schemas import CitaCreate, CitaUpdate, CitaResponse
 from backend.app.agenda.models import Cita
 
-
 from backend.app.agenda.service import (
     listar_citas_dia,
     listar_citas_semana,
@@ -22,8 +21,9 @@ from backend.app.agenda.service import (
 
 router = APIRouter(prefix="/agenda", tags=["Agenda"])
 
-from sqlalchemy import text
-
+# ---------------------------------------------------------
+# DEBUG
+# ---------------------------------------------------------
 @router.post("/debug/remove-fk-notario")
 def remove_fk_notario(db: Session = Depends(get_db)):
     db.execute(text("ALTER TABLE agenda_citas DROP CONSTRAINT IF EXISTS agenda_citas_notario_id_fkey;"))
@@ -38,10 +38,7 @@ def remove_fk_apoderado(db: Session = Depends(get_db)):
 
 @router.post("/debug/recreate-table")
 def recreate_table(db: Session = Depends(get_db)):
-    db.execute(text("""
-        DROP TABLE IF EXISTS agenda_citas CASCADE;
-    """))
-
+    db.execute(text("DROP TABLE IF EXISTS agenda_citas CASCADE;"))
     db.execute(text("""
         CREATE TABLE agenda_citas (
             id SERIAL PRIMARY KEY,
@@ -56,7 +53,6 @@ def recreate_table(db: Session = Depends(get_db)):
             estado VARCHAR DEFAULT 'Pendiente'
         );
     """))
-
     db.commit()
     return {"status": "OK", "message": "Tabla agenda_citas recreada correctamente"}
 
@@ -64,7 +60,7 @@ def recreate_table(db: Session = Depends(get_db)):
 def debug_schema(db: Session = Depends(get_db)):
     result = db.execute(text("SELECT column_name, data_type FROM information_schema.columns WHERE table_name='agenda_citas';"))
     return {"schema": [dict(row) for row in result]}
-    
+
 # ---------------------------------------------------------
 # LISTAR CITAS
 # ---------------------------------------------------------
@@ -87,12 +83,7 @@ def citas_mes(year: int, month: int, db: Session = Depends(get_db)):
 # ---------------------------------------------------------
 @router.post("/", response_model=CitaResponse)
 def create_cita(cita: CitaCreate, db: Session = Depends(get_db)):
-    nueva = Cita(**cita.dict())
-    db.add(nueva)
-    db.commit()
-    db.refresh(nueva)
-    return nueva
-
+    return crear_cita(db, cita)
 
 # ---------------------------------------------------------
 # EDITAR CITA
@@ -124,5 +115,3 @@ def mover(id: int, nueva_fecha: str, nueva_hora_inicio: str, nueva_hora_fin: str
 @router.put("/estado/{id}")
 def cambiar_estado(id: int, nuevo_estado: str, db: Session = Depends(get_db)):
     return cambiar_estado_cita(db, id, nuevo_estado)
-
-

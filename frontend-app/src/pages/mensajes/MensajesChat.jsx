@@ -1,15 +1,19 @@
-import React from "react";
-import UsuariosSidebar from "../../components/mensajes/UsuariosSidebar";
+import React, { useState } from "react";
+import UsuariosSidebar from "../../sidebar/UsuariosSidebar";
 import ConversacionPanel from "../../components/mensajes/ConversacionPanel";
+import { useMensajesStore } from "../../store/mensajesStore";
 
 export default function MensajesChat() {
+  const { conectados } = useMensajesStore();
+  const [destinatarioId, setDestinatarioId] = useState(null);
+
+  const destinatario = conectados.find((u) => u.id === destinatarioId);
+
   return (
     <div className="flex h-full bg-neutral-100">
-      {/* Sidebar */}
-      <UsuariosSidebar />
+      <UsuariosSidebar seleccionar={setDestinatarioId} />
 
-      {/* Panel de conversación */}
-      <ConversacionPanel />
+      <ConversacionPanel destinatario={destinatario} />
     </div>
   );
 }

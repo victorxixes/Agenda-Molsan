@@ -7,7 +7,7 @@ from backend.app.database import get_db
 from backend.app.empleados.models import Empleado
 from backend.app.auth.utils import create_access_token
 
-router = APIRouter(prefix="/auth", tags=["Autenticación"])
+router = APIRouter(prefix="/empleados", tags=["Empleados"])
 
 
 def hash_password(password: str) -> str:
@@ -17,7 +17,7 @@ def hash_password(password: str) -> str:
 # ---------------------------------------------------------
 # LOGIN EMPLEADOS
 # ---------------------------------------------------------
-@router.post("/empleados/login")
+@router.post("/login")
 def login_empleado(usuario: str, password: str, db: Session = Depends(get_db)):
     empleado = db.query(Empleado).filter(Empleado.usuario == usuario).first()
 
@@ -47,12 +47,12 @@ class LoginRequest(BaseModel):
     password: str
 
 
-@router.options("/login")
+@router.options("/admin/login")
 def options_login():
     return {}
 
 
-@router.post("/login")
+@router.post("/admin/login")
 def login_admin(data: LoginRequest):
     # Usuario y contraseña fijos: admin / admin
     if data.usuario != "admin":

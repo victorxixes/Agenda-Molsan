@@ -1,5 +1,6 @@
 from sqlalchemy import text
-from app.database import engine
+from backend.app.database import engine
+
 
 def bootstrap_agenda():
     with engine.connect() as conn:

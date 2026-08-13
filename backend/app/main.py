@@ -14,6 +14,9 @@ from backend.app.database import Base, engine
 # ---------------------------------------------------------
 Base.metadata.create_all(bind=engine)
 
+from app.agenda.bootstrap import bootstrap_agenda
+bootstrap_agenda()
+
 app = FastAPI(title="Agenda Intranet Backend")
 
 # ---------------------------------------------------------

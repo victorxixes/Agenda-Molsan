@@ -1,0 +1,44 @@
+import React from "react";
+import { useMensajesStore } from "../../store/mensajesStore";
+
+export default function UsuariosSidebar() {
+  const { usuarios, seleccionarUsuario, usuarioSeleccionado } = useMensajesStore();
+
+  return (
+    <div className="w-72 bg-[#0A2E5C] text-white p-4 flex flex-col">
+      <h2 className="text-lg font-semibold mb-4">Usuarios registrados</h2>
+
+      <div className="space-y-3 overflow-y-auto">
+        {usuarios.map((u) => (
+          <div
+            key={u.id}
+            onClick={() => seleccionarUsuario(u.id)}
+            className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer 
+              ${usuarioSeleccionado === u.id ? "bg-[#0D3A73]" : "hover:bg-[#0D3A73]"}`}
+          >
+            {/* Avatar redondo */}
+            <img
+              src={u.foto}
+              alt={u.nombre}
+              className="w-10 h-10 rounded-full object-cover border border-white/20"
+            />
+
+            <div className="flex flex-col">
+              <span className="font-medium">{u.nombre}</span>
+
+              {/* Indicador verde/rojo */}
+              <span className="flex items-center gap-1 text-sm">
+                <span
+                  className={`inline-block w-2 h-2 rounded-full ${
+                    u.logeado ? "bg-green-400" : "bg-red-400"
+                  }`}
+                ></span>
+                {u.logeado ? "Conectado" : "Desconectado"}
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}

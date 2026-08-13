@@ -17,6 +17,7 @@ def hash_password(password: str):
 def crear_empleado(db: Session, data: EmpleadoCreate):
     empleado = Empleado(
         nombre=data.nombre,
+        apellidos=data.apellidos,
         dni=data.dni,
         usuario=data.dni,
         password=hash_password(data.dni),

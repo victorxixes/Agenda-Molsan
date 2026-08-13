@@ -4,8 +4,9 @@ from datetime import date, time
 
 from backend.app.database import get_db
 
-from backend.app.agenda.models import Cita
 from backend.app.agenda.schemas import CitaCreate, CitaUpdate, CitaResponse
+from backend.app.agenda.models import Cita
+
 
 from backend.app.agenda.service import (
     listar_citas_dia,

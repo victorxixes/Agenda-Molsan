@@ -2,11 +2,19 @@ import { create } from "zustand";
 import { loginRequest } from "../api/auth";
 import { usePermisosStore } from "./permisosStore";
 
-export const useAuthStore = create((set) => ({
+// 🔥 Importar APIs y WebSockets del chat y empleados
+import { mensajesAPI } from "../api/mensajes";
+import { conectarChatWS, desconectarChatWS } from "../ws/chatWS";
+import { conectarEmpleadosWS, desconectarEmpleadosWS } from "../ws/empleadosWS";
+
+export const useAuthStore = create((set, get) => ({
   user: null,
   loading: false,
   error: null,
 
+  // ---------------------------------------------------------
+  // LOGIN
+  // ---------------------------------------------------------
   login: async (usuario, password, onSuccess) => {
     set({ loading: true, error: null });
 
@@ -14,13 +22,15 @@ export const useAuthStore = create((set) => ({
       const data = await loginRequest(usuario, password);
 
       // Guardar usuario con los nombres CORRECTOS
+      const userData = {
+        id: data.id,
+        nombre: data.nombre,
+        rol: data.rol,
+        avatar_url: data.avatar_url,
+      };
+
       set({
-        user: {
-          id: data.id,
-          nombre: data.nombre,
-          rol: data.rol,
-          avatar_url: data.avatar_url,
-        },
+        user: userData,
         loading: false
       });
 
@@ -28,6 +38,17 @@ export const useAuthStore = create((set) => ({
       const permisosStore = usePermisosStore.getState();
       permisosStore.setModulos(data.modulos_visibles);
       permisosStore.setAcciones(data.permisos_modulo);
+
+      // ---------------------------------------------------------
+      // 🔥 REGISTRAR USUARIO COMO CONECTADO
+      // ---------------------------------------------------------
+      await mensajesAPI.conectar(userData.id);
+
+      // ---------------------------------------------------------
+      // 🔥 ACTIVAR WEBSOCKETS
+      // ---------------------------------------------------------
+      conectarChatWS(userData.id);
+      conectarEmpleadosWS(userData.id);
 
       if (onSuccess) onSuccess();
 
@@ -38,5 +59,21 @@ export const useAuthStore = create((set) => ({
     }
   },
 
-  logout: () => set({ user: null }),
+  // ---------------------------------------------------------
+  // LOGOUT
+  // ---------------------------------------------------------
+  logout: async () => {
+    const usuario = get().user;
+
+    if (usuario) {
+      // 🔥 Desconectar del backend
+      await mensajesAPI.desconectar(usuario.id);
+
+      // 🔥 Cerrar WebSockets
+      desconectarChatWS();
+      desconectarEmpleadosWS();
+    }
+
+    set({ user: null });
+  },
 }));

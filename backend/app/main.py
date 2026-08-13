@@ -6,6 +6,7 @@ import os
 from backend.app.agenda.models import Cita
 from backend.app.ctn.models import Notaria
 from backend.app.empleados.models import Empleado
+from backend.app.maestros.models import Departamento, Seccion, Cargo
 from backend.app.database import Base, engine
 
 # ---------------------------------------------------------

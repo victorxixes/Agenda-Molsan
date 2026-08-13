@@ -1,8 +1,10 @@
 from sqlalchemy.orm import Session
 from datetime import date, timedelta
-from app.agenda.models import Cita
-from app.ctn.models import Notario  # si existe
-from app.empleados.models import Empleado  # si existe
+
+from backend.app.agenda.models import Cita
+from backend.app.ctn.models import Notaria  # si existe
+from backend.app.empleados.models import Empleado  # si existe
+
 
 # ---------------------------------------------------------
 # RESUMEN AGENDA (día, semana, mes)
@@ -30,6 +32,7 @@ def resumen_agenda(db: Session, year: int, month: int, day: int):
         "mes": contar(citas_mes)
     }
 
+
 # ---------------------------------------------------------
 # INFORME APODERADOS
 # ---------------------------------------------------------
@@ -51,12 +54,11 @@ def resumen_apoderados(db: Session):
 
     return informe
 
+
 # ---------------------------------------------------------
 # MAPA DE CALOR DE ZONAS
 # ---------------------------------------------------------
 def mapa_calor_zonas(db: Session):
-    # Si tienes un modelo de zonas, aquí se conecta
-    # Si no, se puede simular con datos de citas
     citas = db.query(Cita).all()
 
     zonas = {}

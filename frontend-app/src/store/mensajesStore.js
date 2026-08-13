@@ -55,20 +55,21 @@ export const useMensajesStore = create((set, get) => ({
   // ---------------------------------------------------------
   // AÑADIR MENSAJE EN TIEMPO REAL (WebSocket)
   // ---------------------------------------------------------
-  agregarMensajeRealtime: (msg) =>
-    set((state) => ({
-      conversacion: [
-        ...state.conversacion,
-        {
-          id: msg.id || Date.now(),
-          mensaje: msg.mensaje,           // ✔ CORRECTO
-          remitente_id: msg.remitente_id,
-          destinatario_id: msg.destinatario_id,
-          fecha: new Date().toISOString(),
-          hora: "",
-        },
-      ],
-    })),
+agregarMensajeRealtime: (msg) =>
+  set((state) => ({
+    conversacion: [
+      ...state.conversacion,
+      {
+        id: msg.id || Date.now(),
+        mensaje: msg.mensaje,
+        remitente_id: msg.remitente_id,
+        destinatario_id: msg.destinatario_id,
+        fecha: new Date().toISOString(),
+        hora: "",
+      },
+    ],
+  })),
+
 
   // ---------------------------------------------------------
   // ENVIAR MENSAJE

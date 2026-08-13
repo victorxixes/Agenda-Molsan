@@ -1,24 +1,30 @@
-import React from "react";
-import { useMensajesStore } from "../../store/mensajesStore";
+import React, { useEffect } from "react";
+import { useMensajesStore } from "../store/mensajesStore";
+import { useAuthStore } from "../store/authStore";
 
-export default function UsuariosSidebar() {
-  const { usuarios, seleccionarUsuario, usuarioSeleccionado } = useMensajesStore();
+export default function UsuariosSidebar({ seleccionar }) {
+  const { conectados, cargarConectados } = useMensajesStore();
+  const { user } = useAuthStore();
+  const usuarioId = user?.id;
+
+  useEffect(() => {
+    cargarConectados();
+  }, []);
 
   return (
     <div className="w-72 bg-[#0A2E5C] text-white p-4 flex flex-col">
       <h2 className="text-lg font-semibold mb-4">Usuarios registrados</h2>
 
       <div className="space-y-3 overflow-y-auto">
-        {usuarios.map((u) => (
+        {conectados.map((u) => (
           <div
             key={u.id}
-            onClick={() => seleccionarUsuario(u.id)}
-            className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer 
-              ${usuarioSeleccionado === u.id ? "bg-[#0D3A73]" : "hover:bg-[#0D3A73]"}`}
+            onClick={() => seleccionar(u.id)}
+            className="flex items-center gap-3 p-2 rounded-lg cursor-pointer hover:bg-[#0D3A73]"
           >
             {/* Avatar redondo */}
             <img
-              src={u.foto}
+              src={u.foto || "/default-avatar.png"}
               alt={u.nombre}
               className="w-10 h-10 rounded-full object-cover border border-white/20"
             />

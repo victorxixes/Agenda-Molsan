@@ -38,7 +38,7 @@ export const useMensajesStore = create((set, get) => ({
 
       const normalizados = safe.map((m) => ({
         id: m.id,
-        texto: m.texto,
+        mensaje: m.mensaje,               // ✔ CORRECTO
         remitente_id: m.remitente_id,
         destinatario_id: m.destinatario_id,
         fecha: m.fecha || new Date().toISOString(),
@@ -61,7 +61,7 @@ export const useMensajesStore = create((set, get) => ({
         ...state.conversacion,
         {
           id: msg.id || Date.now(),
-          texto: msg.texto,
+          mensaje: msg.mensaje,           // ✔ CORRECTO
           remitente_id: msg.remitente_id,
           destinatario_id: msg.destinatario_id,
           fecha: new Date().toISOString(),

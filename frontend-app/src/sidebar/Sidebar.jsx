@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { NavLink, Link, useNavigate } from "react-router-dom";
 
 import { useAuthStore } from "../store/authStore";
 import { useMensajesStore } from "../store/mensajesStore";
@@ -17,12 +17,22 @@ import IconCTN from "../components/icons/IconCTN";
 
 export default function Sidebar() {
   const navigate = useNavigate();
+
   const { user, logout } = useAuthStore();
-  const { noLeidos = 0, conectados = [] } = useMensajesStore();
-  const { notificaciones = [] } = useIntranetStore();
+  const { noLeidos, cargarNoLeidos, conectados } = useMensajesStore();
+  const { notificaciones } = useIntranetStore();
 
   const [collapsed, setCollapsed] = useState(false);
   const toggle = () => setCollapsed(!collapsed);
+
+  // Cargar no leídos cada 10s
+  useEffect(() => {
+    if (user?.id) {
+      cargarNoLeidos(user.id);
+      const interval = setInterval(() => cargarNoLeidos(user.id), 10000);
+      return () => clearInterval(interval);
+    }
+  }, [user]);
 
   const sections = [
     {
@@ -61,9 +71,9 @@ export default function Sidebar() {
       title: "Mensajes",
       items: [
         {
-          name: "Mensajes",
+          name: "Chat",
           icon: <IconMensajes size={22} />,
-          path: "/mensajes",
+          path: "/mensajes/chat",
           badge: noLeidos,
           badgeColor: "bg-blue-600 text-white",
         },

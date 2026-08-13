@@ -1,5 +1,5 @@
 from sqlalchemy import text
-from app.database import engine
+from backend.app.database import engine
 
 def fix_table():
     with engine.connect() as conn:

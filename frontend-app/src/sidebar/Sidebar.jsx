@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { NavLink, Link, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 
 import { useAuthStore } from "../store/authStore";
 import { useMensajesStore } from "../store/mensajesStore";
@@ -19,8 +19,8 @@ export default function Sidebar() {
   const navigate = useNavigate();
 
   const { user, logout } = useAuthStore();
-  const { noLeidos, cargarNoLeidos, conectados } = useMensajesStore();
-  const { notificaciones } = useIntranetStore();
+  const { noLeidos = 0, cargarNoLeidos, conectados = [] } = useMensajesStore();
+  const { notificaciones = [] } = useIntranetStore();
 
   const [collapsed, setCollapsed] = useState(false);
   const toggle = () => setCollapsed(!collapsed);
@@ -50,7 +50,7 @@ export default function Sidebar() {
           name: "Intranet",
           icon: <IconIntranet size={22} />,
           path: "/intranet",
-          badge: notificaciones.length,
+          badge: notificaciones?.length || 0,
           badgeColor: "bg-yellow-400 text-black",
         },
       ],
@@ -62,7 +62,7 @@ export default function Sidebar() {
           name: "Empleados",
           icon: <IconEmpleados size={22} />,
           path: "/empleados",
-          badge: conectados.length,
+          badge: conectados?.length || 0,
           badgeColor: "bg-green-500 text-white",
         },
       ],
@@ -74,7 +74,7 @@ export default function Sidebar() {
           name: "Chat",
           icon: <IconMensajes size={22} />,
           path: "/mensajes/chat",
-          badge: noLeidos,
+          badge: noLeidos || 0,
           badgeColor: "bg-blue-600 text-white",
         },
       ],

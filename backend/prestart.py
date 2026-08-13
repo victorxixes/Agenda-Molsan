@@ -1,4 +1,4 @@
-fimport sys
+import sys
 import os
 from sqlalchemy import text
 

@@ -11,13 +11,12 @@ export const useLogsStore = create((set) => ({
     set({ logs: data, loading: false });
   },
 
-filtrarPorUsuario: async (id) => {
-  if (!id || isNaN(id)) return;   // 🔥 evita 422
-  set({ loading: true });
-  const data = await logsAPI.porUsuario(id);
-  set({ logs: data, loading: false });
-},
-
+  filtrarPorUsuario: async (id) => {
+    if (!id || isNaN(id)) return;   // 🔥 evita 422
+    set({ loading: true });
+    const data = await logsAPI.porUsuario(id);
+    set({ logs: data, loading: false });
+  },
 
   filtrarPorModulo: async (modulo) => {
     set({ loading: true });

@@ -1,0 +1,27 @@
+import { useMensajesStore } from "../store/mensajesStore";
+
+let wsEmpleados = null;
+
+export function conectarEmpleadosWS(usuarioId) {
+  wsEmpleados = new WebSocket(`${import.meta.env.VITE_WS_URL}/ws/empleados`);
+
+  wsEmpleados.onopen = () => {
+    wsEmpleados.send(JSON.stringify({ empleado_id: usuarioId }));
+  };
+
+  wsEmpleados.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+
+    if (data.tipo === "empleado_conectado" || data.tipo === "empleado_desconectado") {
+      useMensajesStore.getState().cargarConectados();
+    }
+  };
+
+  wsEmpleados.onclose = () => {
+    console.log("[WS-EMP] desconectado");
+  };
+}
+
+export function desconectarEmpleadosWS() {
+  wsEmpleados?.close();
+}

@@ -62,8 +62,6 @@ export default function Sidebar() {
           name: "Empleados",
           icon: <IconEmpleados size={22} />,
           path: "/empleados",
-          badge: 0,
-          badgeColor: "",
         },
       ],
     },

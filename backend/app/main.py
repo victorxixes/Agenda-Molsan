@@ -1,3 +1,6 @@
+from app. agenda.fix_table import fix_table
+fix_table()
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles

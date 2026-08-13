@@ -6,11 +6,11 @@ COPY requirements.txt .
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-# COPIAR TODO EL BACKEND
+# Copiar backend
 COPY backend ./backend
 
-# Ejecutar FastAPI desde backend/app/main.py
-CMD ["uvicorn", "backend.app.main:app", "--host", "0.0.0.0", "--port", "10000"]
+# Ejecutar prestart y luego arrancar FastAPI
+CMD ["bash", "-c", "python backend/prestart.py && uvicorn backend.app.main:app --host 0.0.0.0 --port 10000"]
 
 
 

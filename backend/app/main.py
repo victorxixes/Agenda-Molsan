@@ -4,6 +4,7 @@ from fastapi.staticfiles import StaticFiles
 import os
 
 from backend.app.agenda.models import Cita
+from backend.app.ctn.models import Notaria
 from backend.app.database import Base, engine
 
 # ---------------------------------------------------------

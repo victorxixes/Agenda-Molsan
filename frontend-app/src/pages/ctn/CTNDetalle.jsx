@@ -14,6 +14,11 @@ export default function CTNDetalle() {
     cargarNotaria(id);
   }, [id]);
 
+  // Mostrar todos los campos en consola (útil para debug)
+  useEffect(() => {
+    console.log("CAMPOS DE LA NOTARIA:", notaria);
+  }, [notaria]);
+
   if (!notaria) return "Cargando...";
 
   return (
@@ -34,58 +39,89 @@ export default function CTNDetalle() {
       />
 
       <GlassCard className="p-6 space-y-4">
+
+        {/* Código */}
         <p>
           <strong style={{ color: "#1F3A5F" }}>Código:</strong> {notaria.codigo}
         </p>
 
+        {/* Nombre */}
         <p>
           <strong style={{ color: "#1F3A5F" }}>Nombre:</strong>{" "}
           {notaria.nombre} {notaria.apellidos}
         </p>
 
+        {/* NIF */}
         <p>
           <strong style={{ color: "#1F3A5F" }}>NIF:</strong> {notaria.nif}
         </p>
 
+        {/* Teléfono */}
         <p>
           <strong style={{ color: "#1F3A5F" }}>Teléfono:</strong>{" "}
           {notaria.telefono || "No disponible"}
         </p>
 
+        {/* Provincia */}
         <p>
           <strong style={{ color: "#1F3A5F" }}>Provincia:</strong>{" "}
           {notaria.provincia}
         </p>
 
+        {/* Municipio */}
         <p>
           <strong style={{ color: "#1F3A5F" }}>Municipio:</strong>{" "}
           {notaria.municipio}
         </p>
 
+        {/* CP */}
         <p>
           <strong style={{ color: "#1F3A5F" }}>CP:</strong> {notaria.cp}
         </p>
 
+        {/* Videoconferencia */}
         <p>
           <strong style={{ color: "#1F3A5F" }}>Videoconferencia (VC):</strong>{" "}
           {notaria.vc ? "Sí" : "No"}
         </p>
 
+        {/* Apoderado */}
         <p>
           <strong style={{ color: "#1F3A5F" }}>Apoderado:</strong>{" "}
           {notaria.apoderado || "No asignado"}
         </p>
 
+        {/* Apoderado S */}
         <p>
           <strong style={{ color: "#1F3A5F" }}>Apoderado S:</strong>{" "}
           {notaria.apoderado_s || "No asignado"}
         </p>
 
+        {/* Observación */}
         <p>
           <strong style={{ color: "#1F3A5F" }}>Observación:</strong>{" "}
           {notaria.observacion || "Sin observaciones"}
         </p>
 
+        {/* Departamento Cancelaciones */}
+        <p>
+          <strong style={{ color: "#1F3A5F" }}>Dept. Cancelaciones:</strong>{" "}
+          {notaria.departamento_cancelaciones || "—"}
+        </p>
+
+        {/* Departamento Copias */}
+        <p>
+          <strong style={{ color: "#1F3A5F" }}>Dept. Copias:</strong>{" "}
+          {notaria.departamento_copias || "—"}
+        </p>
+
+        {/* Otros Departamentos */}
+        <p>
+          <strong style={{ color: "#1F3A5F" }}>Otros Departamentos:</strong>{" "}
+          {notaria.otros_departamentos || "—"}
+        </p>
+
+        {/* Botón editar */}
         <div className="pt-4">
           <Link
             to={`/ctn/${id}/editar`}

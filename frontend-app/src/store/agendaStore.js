@@ -8,6 +8,7 @@ export const useAgendaStore = create((set, get) => ({
   citas: [],
   citaActual: null,
   loading: false,
+  mesActual: null,   // 🔥 Necesario para recargar el calendario
 
   // ---------------------------------------------------------
   // CARGAR CITAS DEL DÍA
@@ -15,7 +16,7 @@ export const useAgendaStore = create((set, get) => ({
   cargarDia: async (fecha) => {
     set({ loading: true });
 
-    const data = await agendaAPI.citasDia(fecha);   // ✔ ruta nueva: /agenda/dia/{fecha}
+    const data = await agendaAPI.citasDia(fecha);
     const safe = Array.isArray(data) ? data : [];
 
     set({
@@ -29,7 +30,7 @@ export const useAgendaStore = create((set, get) => ({
   // CARGAR CITAS DEL MES (para CalendarGrid)
   // ---------------------------------------------------------
   cargarMes: async (year, month) => {
-    const data = await agendaAPI.citasMes(year, month);  // ✔ ruta nueva: /agenda/mes/{year}/{month}
+    const data = await agendaAPI.citasMes(year, month);
 
     const mapa = {};
 
@@ -39,14 +40,14 @@ export const useAgendaStore = create((set, get) => ({
       mapa[fecha].push(cita);
     });
 
-    set({ citasMes: mapa });
+    set({ citasMes: mapa, mesActual: { year, month } });
   },
 
   // ---------------------------------------------------------
   // CARGAR UNA CITA COMPLETA
   // ---------------------------------------------------------
   cargarCita: async (id) => {
-    const data = await agendaAPI.obtener(id);   // ✔ ruta nueva: /agenda/{id}
+    const data = await agendaAPI.obtener(id);
     set({ citaActual: data });
   },
 
@@ -66,11 +67,18 @@ export const useAgendaStore = create((set, get) => ({
       observaciones: data.observaciones || "",
     };
 
-    const res = await agendaAPI.crear(payload);   // ✔ ruta nueva: POST /agenda
+    const res = await agendaAPI.crear(payload);
 
     await crearLog("agenda", "crear", `Cita creada para el día ${res.fecha}`, res);
 
+    // 🔥 Recargar el día
     await get().cargarDia(res.fecha);
+
+    // 🔥 Recargar el mes actual (para que aparezca en el calendario)
+    const { mesActual } = get();
+    if (mesActual) {
+      await get().cargarMes(mesActual.year, mesActual.month);
+    }
   },
 
   // ---------------------------------------------------------
@@ -89,21 +97,31 @@ export const useAgendaStore = create((set, get) => ({
       observaciones: data.observaciones || "",
     };
 
-    const res = await agendaAPI.editar(id, payload);   // ✔ ruta nueva: PUT /agenda/{id}
+    const res = await agendaAPI.editar(id, payload);
 
     await crearLog("agenda", "editar", `Cita ${id} editada`, res);
 
     await get().cargarDia(payload.fecha);
+
+    const { mesActual } = get();
+    if (mesActual) {
+      await get().cargarMes(mesActual.year, mesActual.month);
+    }
   },
 
   // ---------------------------------------------------------
   // CAMBIAR ESTADO
   // ---------------------------------------------------------
   cambiarEstado: async (id, nuevoEstado) => {
-    const res = await agendaAPI.cambiarEstado(id, nuevoEstado);   // ✔ ruta nueva: PUT /agenda/estado/{id}
+    const res = await agendaAPI.cambiarEstado(id, nuevoEstado);
 
     await crearLog("agenda", "estado", `Estado de cita ${id} cambiado a ${nuevoEstado}`, res);
 
     await get().cargarCita(id);
+
+    const { mesActual } = get();
+    if (mesActual) {
+      await get().cargarMes(mesActual.year, mesActual.month);
+    }
   },
 }));

@@ -3,6 +3,8 @@ import { useMensajesStore } from "../store/mensajesStore";
 let wsChat = null;
 
 export function conectarChatWS(usuarioId) {
+  if (!usuarioId || isNaN(usuarioId)) return; // 🔥 evita /ws/chat/undefined
+
   wsChat = new WebSocket(`${import.meta.env.VITE_WS_URL}/ws/chat/${usuarioId}`);
 
   wsChat.onmessage = (event) => {
@@ -18,6 +20,7 @@ export function conectarChatWS(usuarioId) {
     }
   };
 }
+
 
 export function enviarMensajeWS(msg) {
   wsChat.send(JSON.stringify({

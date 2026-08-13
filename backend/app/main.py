@@ -1,4 +1,4 @@
-from app. agenda.fix_table import fix_table
+from backend.app.agenda.fix_table import fix_table
 fix_table()
 
 from fastapi import FastAPI
@@ -11,6 +11,7 @@ from backend.app.ctn.models import Notaria
 from backend.app.empleados.models import Empleado
 from backend.app.maestros.models import Departamento, Seccion, Cargo
 from backend.app.database import Base, engine
+
 
 # ---------------------------------------------------------
 # CREAR TABLAS

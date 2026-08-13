@@ -21,12 +21,14 @@ export const useAuthStore = create((set, get) => ({
     try {
       const data = await loginRequest(usuario, password);
 
-      // Guardar usuario con los nombres CORRECTOS
+      // 🔥 Backend devuelve:
+      // empleado_id, nombre, foto, modulos, permisos, token
       const userData = {
-        id: data.id,
+        id: data.empleado_id,
         nombre: data.nombre,
-        rol: data.rol,
-        avatar_url: data.avatar_url,
+        rol: data.rol || "empleado",
+        foto: data.foto || null,
+        token: data.token,
       };
 
       set({
@@ -34,10 +36,10 @@ export const useAuthStore = create((set, get) => ({
         loading: false
       });
 
-      // Guardar permisos con los nombres CORRECTOS
+      // 🔥 Guardar permisos correctamente
       const permisosStore = usePermisosStore.getState();
-      permisosStore.setModulos(data.modulos_visibles);
-      permisosStore.setAcciones(data.permisos_modulo);
+      permisosStore.setModulos(data.modulos);
+      permisosStore.setAcciones(data.permisos);
 
       // ---------------------------------------------------------
       // 🔥 REGISTRAR USUARIO COMO CONECTADO

@@ -1,31 +1,37 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useMensajesStore } from "../../store/mensajesStore";
+import { useAuthStore } from "../../store/authStore";
 
-export default function ConversacionPanel() {
+export default function ConversacionPanel({ destinatario }) {
   const {
-    usuarioSeleccionado,
-    usuarios,
-    mensajes,
+    conversacion,
+    cargarConversacion,
     enviarMensaje,
-    cargarConversacion
+    marcarLeido
   } = useMensajesStore();
+
+  const { user } = useAuthStore();
+  const remitenteId = user?.id;
 
   const [texto, setTexto] = useState("");
   const chatRef = useRef(null);
 
-  const usuario = usuarios.find((u) => u.id === usuarioSeleccionado);
-
+  // Cargar conversación
   useEffect(() => {
-    if (usuarioSeleccionado) cargarConversacion(usuarioSeleccionado);
-  }, [usuarioSeleccionado]);
+    if (remitenteId && destinatario) {
+      cargarConversacion(remitenteId, destinatario);
+      marcarLeido(destinatario, remitenteId);
+    }
+  }, [remitenteId, destinatario]);
 
+  // Auto-scroll
   useEffect(() => {
     if (chatRef.current) {
       chatRef.current.scrollTop = chatRef.current.scrollHeight;
     }
-  }, [mensajes]);
+  }, [conversacion]);
 
-  if (!usuario) {
+  if (!destinatario) {
     return (
       <div className="flex-1 flex items-center justify-center text-neutral-500">
         Selecciona un usuario para comenzar la conversación
@@ -38,25 +44,27 @@ export default function ConversacionPanel() {
       {/* Header */}
       <div className="p-4 border-b border-neutral-300 flex items-center gap-3 bg-white">
         <img
-          src={usuario.foto}
-          alt={usuario.nombre}
+          src={destinatario.foto || "/default-avatar.png"}
+          alt={destinatario.nombre}
           className="w-12 h-12 rounded-full object-cover"
         />
         <div>
-          <h2 className="text-lg font-semibold text-neutral-800">{usuario.nombre}</h2>
+          <h2 className="text-lg font-semibold text-neutral-800">
+            {destinatario.nombre}
+          </h2>
           <span className="text-sm text-neutral-500">
-            {usuario.logeado ? "Conectado" : "Desconectado"}
+            {destinatario.logeado ? "Conectado" : "Desconectado"}
           </span>
         </div>
       </div>
 
       {/* Mensajes */}
       <div ref={chatRef} className="flex-1 overflow-y-auto p-4 space-y-3">
-        {mensajes.map((m) => (
+        {conversacion.map((m) => (
           <div
             key={m.id}
             className={`max-w-[70%] p-3 rounded-xl shadow-sm text-sm ${
-              m.remitente === "yo"
+              m.remitente_id === remitenteId
                 ? "ml-auto bg-[#D9E8FF] text-neutral-800"
                 : "bg-white border border-neutral-200 text-neutral-700"
             }`}
@@ -79,7 +87,11 @@ export default function ConversacionPanel() {
 
         <button
           onClick={() => {
-            enviarMensaje(usuario.id, texto);
+            enviarMensaje({
+              remitente_id: remitenteId,
+              destinatario_id: destinatario.id,
+              texto,
+            });
             setTexto("");
           }}
           className="bg-[#0A2E5C] text-white p-3 rounded-full hover:bg-[#08305A]"

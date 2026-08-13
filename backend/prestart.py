@@ -8,7 +8,8 @@ APP_DIR = os.path.join(BASE_DIR, "app")                    # /app/backend/app
 sys.path.append(BASE_DIR)
 sys.path.append(APP_DIR)
 
-from app.database import engine
+from backend.app.database import engine
+
 
 print(">>> Ejecutando prestart.py para recrear agenda_citas...")
 

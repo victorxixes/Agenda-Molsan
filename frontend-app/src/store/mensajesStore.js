@@ -12,60 +12,91 @@ export const useMensajesStore = create((set, get) => ({
   // USUARIOS CONECTADOS
   // ---------------------------------------------------------
   cargarConectados: async () => {
-    const data = await mensajesAPI.conectados();
-    const safe = Array.isArray(data) ? data : [];
-    set({ conectados: safe });
+    try {
+      const data = await mensajesAPI.conectados();
+      const safe = Array.isArray(data) ? data : [];
+      set({ conectados: safe });
+    } catch (err) {
+      console.error("Error cargando conectados:", err);
+      set({ conectados: [] });
+    }
   },
 
   // ---------------------------------------------------------
   // CONVERSACIÓN ENTRE DOS USUARIOS
   // ---------------------------------------------------------
   cargarConversacion: async (u1, u2) => {
-    const data = await mensajesAPI.conversacion(u1, u2);
+    try {
+      const data = await mensajesAPI.conversacion(u1, u2);
+      const safe = Array.isArray(data) ? data : [];
 
-    // 🔥 Protección total
-    const safe = Array.isArray(data) ? data : [];
+      // Normalización por si el backend devuelve campos inconsistentes
+      const normalizados = safe.map((m) => ({
+        id: m.id,
+        texto: m.texto,
+        remitente_id: m.remitente_id,
+        destinatario_id: m.destinatario_id,
+        fecha: m.fecha || new Date().toISOString(),
+        hora: m.hora || "",
+      }));
 
-    set({ conversacion: safe });
+      set({ conversacion: normalizados });
+    } catch (err) {
+      console.error("Error cargando conversación:", err);
+      set({ conversacion: [] });
+    }
   },
 
   // ---------------------------------------------------------
   // ENVIAR MENSAJE
   // ---------------------------------------------------------
   enviarMensaje: async (data) => {
-    const res = await mensajesAPI.enviar(data);
+    try {
+      const res = await mensajesAPI.enviar(data);
 
-    await crearLog(
-      "mensajes",
-      "enviar",
-      `Mensaje enviado de ${data.remitente_id} a ${data.destinatario_id}`,
-      res
-    );
+      await crearLog(
+        "mensajes",
+        "enviar",
+        `Mensaje enviado de ${data.remitente_id} a ${data.destinatario_id}`,
+        res
+      );
 
-    await get().cargarConversacion(data.remitente_id, data.destinatario_id);
+      await get().cargarConversacion(data.remitente_id, data.destinatario_id);
+    } catch (err) {
+      console.error("Error enviando mensaje:", err);
+    }
   },
 
   // ---------------------------------------------------------
   // MARCAR COMO LEÍDO
   // ---------------------------------------------------------
   marcarLeido: async (remitente, destinatario) => {
-    await mensajesAPI.marcarLeido(remitente, destinatario);
+    try {
+      await mensajesAPI.marcarLeido(remitente, destinatario);
 
-    await crearLog(
-      "mensajes",
-      "leer",
-      `Conversación marcada como leída: remitente ${remitente}, destinatario ${destinatario}`,
-      { remitente, destinatario }
-    );
+      await crearLog(
+        "mensajes",
+        "leer",
+        `Conversación marcada como leída: remitente ${remitente}, destinatario ${destinatario}`,
+        { remitente, destinatario }
+      );
 
-    await get().cargarConversacion(remitente, destinatario);
+      await get().cargarConversacion(remitente, destinatario);
+    } catch (err) {
+      console.error("Error marcando como leído:", err);
+    }
   },
 
   // ---------------------------------------------------------
   // CONTADOR DE NO LEÍDOS
   // ---------------------------------------------------------
   cargarNoLeidos: async (usuarioId) => {
-    const data = await mensajesAPI.noLeidos(usuarioId);
-    set({ noLeidos: data });
+    try {
+      const data = await mensajesAPI.noLeidos(usuarioId);
+      set({ noLeidos: Number(data) || 0 });
+    } catch (err) {
+      console.error("Error cargando no leídos:", err);
+      set({ noLeidos: 0 });
+    }
   },
 }));

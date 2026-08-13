@@ -2,20 +2,18 @@ import sys
 import os
 from sqlalchemy import text
 
-# Añadir /app/backend al PYTHONPATH
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # /app/backend
-sys.path.append(BASE_DIR)                              # añade /app/backend
-sys.path.append(os.path.join(BASE_DIR, "app"))         # añade /app/backend/app
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))      # /app/backend
+APP_DIR = os.path.join(BASE_DIR, "app")                    # /app/backend/app
+
+sys.path.append(BASE_DIR)
+sys.path.append(APP_DIR)
 
 from app.database import engine
 
 print(">>> Ejecutando prestart.py para recrear agenda_citas...")
 
 with engine.begin() as conn:
-    conn.execute(text("""
-        DROP TABLE IF EXISTS agenda_citas CASCADE;
-    """))
-
+    conn.execute(text("DROP TABLE IF EXISTS agenda_citas CASCADE;"))
     conn.execute(text("""
         CREATE TABLE agenda_citas (
             id SERIAL PRIMARY KEY,

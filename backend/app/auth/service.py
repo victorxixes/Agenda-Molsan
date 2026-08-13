@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta
 import jwt
-from app.empleados.models import Empleado
+
+from backend.app.empleados.models import Empleado
+
 
 # Configuración del token
 SECRET = "SUPER_SECRETO_CAMBIAR"

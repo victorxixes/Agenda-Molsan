@@ -13,8 +13,8 @@ from backend.app.intranet.documentos.service import (
 )
 
 # WebSockets
-from app.websockets.intranet_ws import intranet_broadcast
-from app.websockets.notificaciones_ws import broadcast_notificacion
+from backend.app.websockets.intranet_ws import intranet_broadcast
+from backend.app.websockets.notificaciones_ws import broadcast_notificacion
 
 router = APIRouter(
     prefix="/intranet/documentos",

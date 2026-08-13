@@ -11,7 +11,12 @@ async def empleados_ws(websocket: WebSocket):
     await websocket.accept()
 
     # Recibir el primer mensaje: el ID del empleado
-    data = await websocket.receive_json()
+    try:
+        data = await websocket.receive_json()
+    except Exception:
+        await websocket.close()
+        return
+
     empleado_id = data.get("empleado_id")
 
     if not empleado_id:
@@ -20,9 +25,9 @@ async def empleados_ws(websocket: WebSocket):
 
     # Registrar empleado
     empleados_conectados[empleado_id] = websocket
-    print(f"Empleado conectado: {empleado_id}")
+    print(f"[WS-EMP] Conectado: {empleado_id}")
 
-    # Notificar a todos que este empleado está conectado
+    # Notificar conexión
     await broadcast({
         "tipo": "empleado_conectado",
         "empleado_id": empleado_id
@@ -31,10 +36,14 @@ async def empleados_ws(websocket: WebSocket):
     try:
         while True:
             # Mantener la conexión viva
-            await websocket.receive_text()
+            try:
+                await websocket.receive_text()
+            except Exception:
+                # Ignorar mensajes basura
+                continue
 
     except WebSocketDisconnect:
-        print(f"Empleado desconectado: {empleado_id}")
+        print(f"[WS-EMP] Desconectado: {empleado_id}")
 
     finally:
         # Eliminar del diccionario
@@ -50,8 +59,8 @@ async def empleados_ws(websocket: WebSocket):
 
 async def broadcast(message: dict):
     """Enviar mensaje a todos los empleados conectados."""
-    for ws in empleados_conectados.values():
+    for ws in list(empleados_conectados.values()):
         try:
             await ws.send_json(message)
-        except:
+        except Exception:
             pass

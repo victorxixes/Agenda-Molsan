@@ -3,6 +3,7 @@ from datetime import datetime
 
 from backend.app.database import Base
 
+
 class Documento(Base):
     __tablename__ = "intranet_documentos"
     __allow_unmapped__ = True
@@ -16,5 +17,5 @@ class Documento(Base):
 
     fichero = Column(String, nullable=False)
 
-    # ✔ usuario_id opcional
-    usuario_id = Column(Integer, ForeignKey("empleados.id"), nullable=True)
+    # CORREGIDO: la tabla correcta es empleados_v2
+    usuario_id = Column(Integer, ForeignKey("empleados_v2.id"), nullable=True)

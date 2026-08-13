@@ -59,6 +59,11 @@ def recreate_table(db: Session = Depends(get_db)):
 
     db.commit()
     return {"status": "OK", "message": "Tabla agenda_citas recreada correctamente"}
+
+@router.get("/debug/schema")
+def debug_schema(db: Session = Depends(get_db)):
+    result = db.execute(text("SELECT column_name, data_type FROM information_schema.columns WHERE table_name='agenda_citas';"))
+    return {"schema": [dict(row) for row in result]}
     
 # ---------------------------------------------------------
 # LISTAR CITAS

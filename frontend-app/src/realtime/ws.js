@@ -1,29 +1,33 @@
+export function connectWS(url, onMessage, initialMessageFn = null) {
+  let socket = null;
+  let reconnectTimer = null;
+  let isClosing = false;
 
-import { useRealtimeStore } from "../store/realtimeStore";
-
-let socket = null;
-let reconnectTimer = null;
-let isClosing = false;
-
-export function connectWS(url, onMessage) {
   function start() {
     try {
-      if (socket && socket.readyState === WebSocket.OPEN) return socket;
-
       socket = new WebSocket(url);
       isClosing = false;
 
       socket.onopen = () => {
         console.log("WS conectado:", url);
+
         if (reconnectTimer) clearTimeout(reconnectTimer);
+
+        // Enviar mensaje inicial si existe
+        if (initialMessageFn) {
+          try {
+            const msg = initialMessageFn();
+            socket.send(JSON.stringify(msg));
+          } catch {}
+        }
       };
 
       socket.onmessage = (event) => {
         try {
-          if (!event || !event.data) return;
+          if (!event?.data) return;
           const parsed = JSON.parse(event.data);
-          onMessage(parsed); // 🔥 AHORA SÍ
-        } catch (err) {
+          onMessage(parsed);
+        } catch {
           console.warn("WS mensaje inválido:", event?.data);
         }
       };
@@ -53,15 +57,16 @@ export function connectWS(url, onMessage) {
   const ws = start();
 
   return {
+    socket: ws,
     close: () => {
       try {
         isClosing = true;
         if (reconnectTimer) clearTimeout(reconnectTimer);
-        if (socket && socket.readyState !== WebSocket.CLOSED) {
-          socket.close();
+        if (ws && ws.readyState !== WebSocket.CLOSED) {
+          ws.close();
         }
-      } catch (err) {
-        console.warn("WS ya estaba cerrado:", err);
+      } catch {
+        console.warn("WS ya estaba cerrado");
       }
     }
   };

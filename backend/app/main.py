@@ -12,6 +12,10 @@ from backend.app.empleados.models import Empleado
 from backend.app.maestros.models import Departamento, Seccion, Cargo
 from backend.app.database import Base, engine
 
+from app.websockets.chat_ws import router as chat_ws_router
+app = FastAPI()
+
+app.include_router(chat_ws_router)
 
 # ---------------------------------------------------------
 # CREAR TABLAS

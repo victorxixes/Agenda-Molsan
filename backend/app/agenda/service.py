@@ -6,9 +6,6 @@ from backend.app.agenda.models import Cita
 from backend.app.ctn.models import Notaria
 from backend.app.empleados.models import Empleado
 
-# ---------------------------------------------------------
-# CONVERTIR CITA → OBJETO COMPLETO PARA EL FRONTEND
-# ---------------------------------------------------------
 def cita_con_relaciones(db: Session, cita: Cita):
     if not cita:
         return None
@@ -16,11 +13,19 @@ def cita_con_relaciones(db: Session, cita: Cita):
     notario = None
     apoderado = None
 
+    # NOTARIO
     if cita.notario_id:
-        notario = db.query(Notaria).filter(Notaria.id == cita.notario_id).first()
+        try:
+            notario = db.query(Notaria).filter(Notaria.id == cita.notario_id).first()
+        except:
+            notario = None
 
+    # APODERADO
     if cita.apoderado_id:
-        apoderado = db.query(Empleado).filter(Empleado.id == cita.apoderado_id).first()
+        try:
+            apoderado = db.query(Empleado).filter(Empleado.id == cita.apoderado_id).first()
+        except:
+            apoderado = None
 
     return {
         "id": cita.id,
@@ -32,5 +37,6 @@ def cita_con_relaciones(db: Session, cita: Cita):
         "estado": cita.estado,
         "observaciones": cita.observaciones,
         "notario": notario,
-        "apoderado": apoderado
+        "apoderado": apoderado,
+        "apoderado_id": cita.apoderado_id
     }

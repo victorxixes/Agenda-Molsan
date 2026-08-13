@@ -1,6 +1,8 @@
 from datetime import datetime
 from sqlalchemy.orm import Session
-from app.auditoria.models import Auditoria
+
+from backend.app.auditoria.models import Auditoria
+
 
 def registrar_auditoria(db: Session, usuario: str, modulo: str, accion: str, descripcion: str):
     registro = Auditoria(
@@ -15,8 +17,10 @@ def registrar_auditoria(db: Session, usuario: str, modulo: str, accion: str, des
     db.refresh(registro)
     return registro
 
+
 def obtener_auditoria(db: Session):
     return db.query(Auditoria).order_by(Auditoria.fecha.desc()).all()
+
 
 def obtener_metricas(db: Session):
     total = db.query(Auditoria).count()

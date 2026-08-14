@@ -8,7 +8,7 @@ from backend.app.empleados.models import Empleado
 from backend.app.auth.utils import create_access_token
 from backend.app.auth.schemas import LoginRequest
 
-router = APIRouter(prefix="/empleados", tags=["Empleados"])
+router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
 def hash_password(password: str) -> str:

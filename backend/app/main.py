@@ -7,7 +7,8 @@ import os
 # FIX TABLES / BOOTSTRAP
 # ---------------------------------------------------------
 from backend.app.agenda.fix_table import fix_table
-fix_table()
+# ❌ NO ejecutar fix_table en producción
+# fix_table()
 
 from backend.app.database import Base, engine
 Base.metadata.create_all(bind=engine)

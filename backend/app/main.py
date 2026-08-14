@@ -93,7 +93,7 @@ from backend.app.utilidades.router_force import router as force_router
 # app.include_router(router_fix_pg)
 # app.include_router(router_fix_noticias)
 
-app.include_router(auth_router)
+app.include_router(auth_router, prefix="/api")
 app.include_router(seguridad_router)
 app.include_router(permisos_router)
 

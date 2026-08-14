@@ -15,7 +15,7 @@ class Cita(Base):
     # Campos opcionales
     notario_id = Column(Integer, nullable=True)
     tipo_firma = Column(String, nullable=True)
-    apoderado_id = Column(String, nullable=True)
+    apoderado = Column(String, nullable=True)
     observaciones = Column(String, nullable=True)
 
     estado = Column(String, default="Pendiente")

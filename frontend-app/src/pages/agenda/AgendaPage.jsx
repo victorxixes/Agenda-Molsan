@@ -7,7 +7,9 @@ import CalendarGrid from "./CalendarGrid";
 import AgendaSidebar from "../../sidebar/AgendaSidebar.jsx";
 import AgendaNuevaCitaModal from "./AgendaNuevaCitaModal";
 import AgendaNuevaEditarCitaModal from "./AgendaNuevaEditarCitaModal.jsx";
-import AgendaCitaDetalleModal from "./AgendaCitaDetalleModal.jsx";   // 🔥 Modal de detalle
+import AgendaCitaDetalleModal from "./AgendaCitaDetalleModal.jsx";
+
+import AgendaCard from "../../components/agenda/AgendaCard.jsx";
 
 export default function AgendaPage() {
   const { citasDia, cargarDia, cargarMes } = useAgendaStore();
@@ -21,16 +23,10 @@ export default function AgendaPage() {
   const year = selectedDate.getFullYear();
   const month = selectedDate.getMonth() + 1;
 
-  // ---------------------------------------------------------
-  // CARGAR CITAS DEL MES
-  // ---------------------------------------------------------
   useEffect(() => {
     cargarMes(year, month);
   }, [year, month]);
 
-  // ---------------------------------------------------------
-  // SELECCIONAR DÍA DEL CALENDARIO
-  // ---------------------------------------------------------
   const handleSelectDay = (day) => {
     setSelectedDate(day);
     cargarDia(day.toISOString().split("T")[0]);
@@ -51,6 +47,17 @@ export default function AgendaPage() {
           selectedDate={selectedDate}
           onSelectDay={handleSelectDay}
         />
+
+        {/* ⭐ Tarjetas del día */}
+        <div className="mt-4 space-y-3">
+          {citasDia.map((cita) => (
+            <AgendaCard 
+              key={cita.id}
+              cita={cita}
+              onEditarCita={(id) => setEditarId(id)}
+            />
+          ))}
+        </div>
       </div>
 
       {/* Sidebar */}
@@ -76,13 +83,12 @@ export default function AgendaPage() {
         citaId={editarId}
         onClose={() => {
           setEditarId(null);
-          cargarDia(selectedDate.toISOString().split("T")[0]); // refresco automático
+          cargarDia(selectedDate.toISOString().split("T")[0]);
         }}
       />
 
-      {/* 🔥 Modal: Detalle de cita */}
+      {/* Modal: Detalle */}
       <AgendaCitaDetalleModal />
-
     </div>
   );
 }

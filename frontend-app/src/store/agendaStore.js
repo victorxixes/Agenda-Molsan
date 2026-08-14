@@ -8,7 +8,7 @@ export const useAgendaStore = create((set, get) => ({
   citas: [],
   citaActual: null,
   loading: false,
-  mesActual: null,   // 🔥 Necesario para recargar el calendario
+  mesActual: null,
 
   // ---------------------------------------------------------
   // SET CITA ACTUAL (para abrir el modal)
@@ -32,7 +32,7 @@ export const useAgendaStore = create((set, get) => ({
   },
 
   // ---------------------------------------------------------
-  // CARGAR CITAS DEL MES (para CalendarGrid)
+  // CARGAR CITAS DEL MES
   // ---------------------------------------------------------
   cargarMes: async (year, month) => {
     const data = await agendaAPI.citasMes(year, month);
@@ -67,7 +67,7 @@ export const useAgendaStore = create((set, get) => ({
       tipo_cita: data.tipo_cita,
       notario_id: Number(data.notario_id),
       tipo_firma: data.tipo_firma || "",
-      apoderado: data.apoderado || "",
+      apoderado_id: Number(data.apoderado_id) || null,   // ⭐ CORREGIDO
       estado: data.estado,
       observaciones: data.observaciones || "",
     };
@@ -76,10 +76,8 @@ export const useAgendaStore = create((set, get) => ({
 
     await crearLog("agenda", "crear", `Cita creada para el día ${res.fecha}`, res);
 
-    // 🔥 Recargar el día
     await get().cargarDia(res.fecha);
 
-    // 🔥 Recargar el mes actual (para que aparezca en el calendario)
     const { mesActual } = get();
     if (mesActual) {
       await get().cargarMes(mesActual.year, mesActual.month);
@@ -97,7 +95,7 @@ export const useAgendaStore = create((set, get) => ({
       tipo_cita: data.tipo_cita,
       notario_id: Number(data.notario_id),
       tipo_firma: data.tipo_firma || "",
-      apoderado: data.apoderado || "",
+      apoderado_id: Number(data.apoderado_id) || null,   // ⭐ CORREGIDO
       estado: data.estado,
       observaciones: data.observaciones || "",
     };

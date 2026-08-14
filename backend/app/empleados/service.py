@@ -42,8 +42,18 @@ def editar_empleado(db: Session, empleado_id: int, data: EmpleadoUpdate):
 
     for campo, valor in datos.items():
 
-        # --- PASSWORD ---
-        if campo == "password" and valor:
+        # --- PASSWORD (manejo seguro) ---
+        if campo == "password":
+
+            # Si viene vacío o None → NO tocar la contraseña
+            if valor is None or valor == "":
+                continue
+
+            # Si viene ya hasheada (64 chars hex) → NO re-hashear
+            if len(valor) == 64 and all(c in "0123456789abcdef" for c in valor.lower()):
+                continue
+
+            # Si viene en texto plano → hashearla
             valor = hash_password(valor)
 
         # --- JSONB: modulos_visibles ---
@@ -66,6 +76,10 @@ def editar_empleado(db: Session, empleado_id: int, data: EmpleadoUpdate):
                 except:
                     valor = {}
 
+        # --- Campos vacíos deben convertirse en None ---
+        if isinstance(valor, str) and valor.strip() == "":
+            valor = None
+
         # --- Asignar solo si el campo existe en el modelo ---
         if hasattr(Empleado, campo):
             setattr(empleado, campo, valor)
@@ -73,7 +87,6 @@ def editar_empleado(db: Session, empleado_id: int, data: EmpleadoUpdate):
     db.commit()
     db.refresh(empleado)
     return empleado
-
 
 # ---------------------------------------------------------
 # ELIMINAR EMPLEADO (V2)

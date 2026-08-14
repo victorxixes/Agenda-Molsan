@@ -7,7 +7,7 @@ import jwt
 
 from backend.app.empleados.models import Empleado
 from backend.app.empleados.schemas import EmpleadoCreate, EmpleadoUpdate
-from backend.app.config import settings
+from backend.app.config import settings   # Import correcto
 
 
 # ---------------------------------------------------------
@@ -35,23 +35,29 @@ def login(db: Session, usuario: str, password: str):
     if not empleado:
         raise HTTPException(status_code=401, detail="Usuario o contraseña incorrectos")
 
+    # --- Validar activo ---
     if not empleado.activo:
         raise HTTPException(status_code=401, detail="Usuario inactivo")
 
+    # --- Validar contraseña ---
     password_hash = hash_password(password)
 
     if empleado.password != password_hash:
         raise HTTPException(status_code=401, detail="Usuario o contraseña incorrectos")
 
+    # --- Validar módulos ---
     if not empleado.modulos_visibles or len(empleado.modulos_visibles) == 0:
         raise HTTPException(status_code=401, detail="Usuario sin módulos asignados")
 
+    # --- Validar permisos ---
     if not empleado.permisos_modulo or len(empleado.permisos_modulo.keys()) == 0:
         raise HTTPException(status_code=401, detail="Usuario sin permisos asignados")
 
+    # --- Validar estructura mínima ---
     if not empleado.departamento_id or not empleado.seccion_id or not empleado.cargo_id:
         raise HTTPException(status_code=401, detail="Usuario sin estructura asignada")
 
+    # --- Generar token ---
     token = jwt.encode(
         {
             "id": empleado.id,
@@ -66,6 +72,8 @@ def login(db: Session, usuario: str, password: str):
         "token": token,
         "empleado": empleado
     }
+
+
 # ---------------------------------------------------------
 # CREAR EMPLEADO (V2)
 # ---------------------------------------------------------
@@ -149,17 +157,14 @@ def editar_empleado(db: Session, empleado_id: int, data: EmpleadoUpdate):
 
         # --- PASSWORD (manejo seguro) ---
         if campo == "password":
-            # Si viene vacío o None → NO tocar la contraseña
             if valor is None or valor == "":
                 continue
 
-            # Si viene ya hasheada (64 chars hex) → NO re-hashear
             if isinstance(valor, str) and len(valor) == 64 and all(
                 c in "0123456789abcdef" for c in valor.lower()
             ):
                 continue
 
-            # Si viene en texto plano → hashearla
             valor = hash_password(valor)
 
         # --- JSONB: modulos_visibles ---

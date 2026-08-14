@@ -1,10 +1,13 @@
 import axios from "../api/axios.js";
 
 export const loginRequest = async (usuario, password) => {
-  const res = await axios.post(
-    "/empleados/login",
-    { usuario, password }
-  );
-
-  return res.data;
+  return axios({
+    method: "POST",
+    url: "/empleados/login",
+    data: { usuario, password },
+    headers: {
+      "Content-Type": "application/json"
+    }
+  }).then(res => res.data);
 };
+

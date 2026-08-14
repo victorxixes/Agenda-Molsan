@@ -13,28 +13,20 @@ export const useAuthStore = create((set, get) => ({
     try {
       const data = await loginRequest(usuario, password);
 
-      // 🔥 Validar que empleado_id existe y es número
-      const empleadoId = Number(data.empleado_id);
-      if (!empleadoId || isNaN(empleadoId)) {
-        throw new Error("ID de empleado inválido en respuesta del backend");
-      }
-
-// 🔥 El backend devuelve "id", no "empleado_id"
-const userData = {
-  id: data.id,
-  nombre: data.nombre,
-  rol: data.rol || "empleado",
-  foto: data.avatar_url || null,
-  modulos: data.modulos_visibles,
-  permisos: data.permisos_modulo,
-};
-
+      // 🔥 El backend devuelve "id", NO "empleado_id"
+      const userData = {
+        id: data.id,
+        nombre: data.nombre,
+        rol: data.rol || "empleado",
+        foto: data.avatar_url || null,
+      };
 
       set({ user: userData, loading: false });
 
+      // 🔥 El backend devuelve "modulos_visibles" y "permisos_modulo"
       const permisosStore = usePermisosStore.getState();
-      permisosStore.setModulos(data.modulos);
-      permisosStore.setAcciones(data.permisos);
+      permisosStore.setModulos(data.modulos_visibles);
+      permisosStore.setAcciones(data.permisos_modulo);
 
       if (onSuccess) onSuccess();
 
@@ -48,9 +40,4 @@ const userData = {
   logout: async () => {
     set({ user: null });
   },
-
 }));
-
-// ❌ NO activar WS durante login
-// conectarChatWS(userData.id);
-// conectarEmpleadosWS(userData.id);

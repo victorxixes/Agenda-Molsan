@@ -8,13 +8,7 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
   const { cargarCita, citaActual, editar, cambiarEstado } = useAgendaStore();
   const { notarias, cargarNotarias } = useCTNStore();
 
-  // 🔥 Tipos de cita definidos localmente (ya no vienen del backend)
-  const TIPOS_CITA = [
-    "Firma notarial",
-    "Reunión",
-    "Visita",
-    "Otros"
-  ];
+  const TIPOS_CITA = ["Firma notarial", "Reunión", "Visita", "Otros"];
 
   const [form, setForm] = useState({
     fecha: "",
@@ -23,7 +17,7 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
     tipo_cita: "",
     notario_id: null,
     tipo_firma: "",
-    apoderado: "",
+    apoderado_id: null,
     estado: "",
     observaciones: "",
   });
@@ -50,7 +44,7 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
         tipo_cita: citaActual.tipo_cita,
         notario_id: citaActual.notario_id,
         tipo_firma: citaActual.tipo_firma,
-        apoderado: citaActual.apoderado,
+        apoderado_id: citaActual.apoderado_id || null,
         estado: citaActual.estado,
         observaciones: citaActual.observaciones || "",
       });
@@ -70,7 +64,7 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
       ...prev,
       notario_id: n.id,
       tipo_firma: tipoFirmaTraducida,
-      apoderado: n.apoderado || "",
+      apoderado_id: n.apoderado_id || null,
       observaciones: n.observacion || prev.observaciones,
     }));
   };
@@ -176,7 +170,11 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
         <input
           type="text"
           className="input bg-gray-100"
-          value={form.apoderado || ""}
+          value={
+            citaActual?.apoderado
+              ? `${citaActual.apoderado.nombre} ${citaActual.apoderado.apellidos}`
+              : "—"
+          }
           readOnly
         />
 

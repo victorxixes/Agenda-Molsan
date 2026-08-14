@@ -14,7 +14,9 @@ from backend.app.database import Base, engine
 Base.metadata.create_all(bind=engine)
 
 from backend.app.agenda.bootstrap import bootstrap_agenda
-bootstrap_agenda()
+# ❌ NO ejecutar bootstrap_agenda en producción
+# bootstrap_agenda()
+
 
 # ---------------------------------------------------------
 # APP

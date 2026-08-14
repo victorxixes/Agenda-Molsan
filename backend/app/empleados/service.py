@@ -17,9 +17,7 @@ def hash_password(password: str) -> str:
     return hashlib.sha256(password.encode()).hexdigest()
 
 
-# ---------------------------------------------------------
-# LOGIN EMPLEADO
-# ---------------------------------------------------------
+
 # ---------------------------------------------------------
 # LOGIN EMPLEADO (SOLO USUARIO + CONTRASEÑA)
 # ---------------------------------------------------------
@@ -35,21 +33,25 @@ def login(db: Session, usuario: str, password: str):
         .first()
     )
 
+    print("LOGIN DEBUG → usuario:", usuario)
+    print("LOGIN DEBUG → password:", password)
+    print("LOGIN DEBUG → empleado encontrado:", empleado)
+
+    if empleado:
+        print("LOGIN DEBUG → password BD:", empleado.password)
+        print("LOGIN DEBUG → password hash:", hash_password(password))
+        print("LOGIN DEBUG → activo:", empleado.activo)
+
     if not empleado:
         raise HTTPException(status_code=401, detail="Usuario o contraseña incorrectos")
 
-    # Validar activo
     if not empleado.activo:
         raise HTTPException(status_code=401, detail="Usuario inactivo")
 
-    # Validar contraseña
     password_hash = hash_password(password)
     if empleado.password != password_hash:
         raise HTTPException(status_code=401, detail="Usuario o contraseña incorrectos")
 
-    # ❌ NO validamos módulos, permisos ni estructura aquí
-
-    # Generar token
     token = jwt.encode(
         {
             "id": empleado.id,
@@ -64,7 +66,6 @@ def login(db: Session, usuario: str, password: str):
         "token": token,
         "empleado": empleado,
     }
-
 
 # ---------------------------------------------------------
 # CREAR EMPLEADO (V2)

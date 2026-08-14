@@ -4,6 +4,7 @@ import { usePermisosStore } from "./permisosStore";
 
 export const useAuthStore = create((set, get) => ({
   user: null,
+  token: null,
   loading: false,
   error: null,
 
@@ -11,22 +12,34 @@ export const useAuthStore = create((set, get) => ({
     set({ loading: true, error: null });
 
     try {
+      // 🔥 Limpia sesión antes de iniciar
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+
       const data = await loginRequest(usuario, password);
 
-      // 🔥 El backend devuelve "id", NO "empleado_id"
+      // 🔥 El backend devuelve empleado_id, foto, modulos, permisos, token
       const userData = {
-        id: data.id,
+        id: data.empleado_id,
         nombre: data.nombre,
-        rol: data.rol || "empleado",
-        foto: data.avatar_url || null,
+        foto: data.foto || null,
       };
 
-      set({ user: userData, loading: false });
+      // 🔥 Guardar token y usuario en Zustand
+      set({
+        user: userData,
+        token: data.token,
+        loading: false,
+      });
 
-      // 🔥 El backend devuelve "modulos_visibles" y "permisos_modulo"
+      // 🔥 Guardar token en localStorage
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(userData));
+
+      // 🔥 Guardar permisos y módulos
       const permisosStore = usePermisosStore.getState();
-      permisosStore.setModulos(data.modulos_visibles);
-      permisosStore.setAcciones(data.permisos_modulo);
+      permisosStore.setModulos(data.modulos);
+      permisosStore.setAcciones(data.permisos);
 
       if (onSuccess) onSuccess();
 
@@ -37,7 +50,17 @@ export const useAuthStore = create((set, get) => ({
     }
   },
 
-  logout: async () => {
-    set({ user: null });
+  logout: () => {
+    // 🔥 Limpia Zustand
+    set({ user: null, token: null });
+
+    // 🔥 Limpia localStorage
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+
+    // 🔥 Limpia permisos
+    const permisosStore = usePermisosStore.getState();
+    permisosStore.setModulos([]);
+    permisosStore.setAcciones({});
   },
 }));

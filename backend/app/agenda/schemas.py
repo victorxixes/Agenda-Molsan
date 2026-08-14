@@ -13,9 +13,11 @@ class CitaBase(BaseModel):
 
     notario_id: Optional[int] = None
     tipo_firma: Optional[str] = None
-    apoderado_id: Optional[int] = None
-    observaciones: Optional[str] = None
 
+    # CAMBIO IMPORTANTE → ahora es STRING
+    apoderado: Optional[str] = None
+
+    observaciones: Optional[str] = None
     estado: Optional[str] = "Pendiente"
 
 
@@ -51,7 +53,9 @@ class CitaUpdate(BaseModel):
     notario_id: Optional[int] = None
     tipo_firma: Optional[str] = None
 
-    apoderado_id: Optional[int] = None
+    # CAMBIO IMPORTANTE → ahora es STRING
+    apoderado: Optional[str] = None
+
     estado: Optional[str] = None
     observaciones: Optional[str] = None
 

@@ -2,7 +2,7 @@ import { useAgendaStore } from "../store/agendaStore";
 
 export default function AgendaSidebar({ date, citas, onEditarCita }) {
   const fecha = date.toISOString().split("T")[0];
-  const { eliminar, cargarDia } = useAgendaStore();
+  const { eliminar, cargarDia, setCitaActual } = useAgendaStore();
 
   const onEliminarCita = async (id) => {
     if (!confirm("¿Eliminar esta cita?")) return;
@@ -43,26 +43,48 @@ export default function AgendaSidebar({ date, citas, onEditarCita }) {
           )}
 
           {citas.map((c) => (
-            <tr key={c.id}>
+            <tr
+              key={c.id}
+              className="cursor-pointer hover:bg-gray-100"
+              onClick={() => setCitaActual(c)}
+            >
               <td>{c.hora_inicio}</td>
               <td>{c.hora_fin}</td>
               <td>{c.tipo_cita}</td>
-              <td>{c.notario_nombre}</td>
-              <td>{c.tipo_firma}</td>
-              <td>{c.apoderado}</td>
+
+              <td>
+                {c.notario
+                  ? `${c.notario.nombre} ${c.notario.apellidos}`
+                  : "—"}
+              </td>
+
+              <td>{c.tipo_firma || "—"}</td>
+
+              <td>
+                {c.apoderado
+                  ? `${c.apoderado.nombre} ${c.apoderado.apellidos}`
+                  : "—"}
+              </td>
+
               <td>{c.estado}</td>
 
               <td className="flex gap-2">
                 <button
                   className="btn btn-sm btn-primary"
-                  onClick={() => onEditarCita(c.id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEditarCita(c.id);
+                  }}
                 >
                   Editar
                 </button>
 
                 <button
                   className="btn btn-sm btn-danger"
-                  onClick={() => onEliminarCita(c.id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEliminarCita(c.id);
+                  }}
                 >
                   Eliminar
                 </button>

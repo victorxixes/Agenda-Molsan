@@ -14,6 +14,9 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
 # ---------------------------------------------------------
 @router.post("/login")
 def login_empleado(data: LoginRequest, db: Session = Depends(get_db)):
+    print("USUARIO RECIBIDO:", data.usuario)
+    print("PASSWORD RECIBIDO:", data.password)
+
     resultado = login_service(db, data.usuario, data.password)
 
     empleado = resultado["empleado"]

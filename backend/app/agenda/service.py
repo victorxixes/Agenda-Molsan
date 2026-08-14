@@ -14,7 +14,6 @@ def cita_con_relaciones(db: Session, cita: Cita):
         return None
 
     notario = None
-    apoderado = None
 
     # NOTARIO
     if cita.notario_id:
@@ -22,13 +21,6 @@ def cita_con_relaciones(db: Session, cita: Cita):
             notario = db.query(Notaria).filter(Notaria.id == cita.notario_id).first()
         except:
             notario = None
-
-    # APODERADO
-    if cita.apoderado_id:
-        try:
-            apoderado = db.query(Empleado).filter(Empleado.id == cita.apoderado_id).first()
-        except:
-            apoderado = None
 
     return {
         "id": cita.id,
@@ -40,8 +32,9 @@ def cita_con_relaciones(db: Session, cita: Cita):
         "estado": cita.estado,
         "observaciones": cita.observaciones,
         "notario": notario,
-        "apoderado": apoderado,
-        "apoderado_id": cita.apoderado_id
+
+        # AHORA ES STRING
+        "apoderado": cita.apoderado,
     }
 
 # ---------------------------------------------------------

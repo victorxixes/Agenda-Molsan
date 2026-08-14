@@ -1,34 +1,23 @@
 import hashlib
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
-from pydantic import BaseModel
 
 from backend.app.database import get_db
-from backend.app.empleados.models import Empleado
-from backend.app.auth.utils import create_access_token
 from backend.app.auth.schemas import LoginRequest
+from backend.app.empleados.service import login as login_service
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
-def hash_password(password: str) -> str:
-    return hashlib.sha256(password.encode()).hexdigest()
-
-
 # ---------------------------------------------------------
-# LOGIN EMPLEADOS (CORREGIDO)
+# LOGIN EMPLEADOS (USANDO EL LOGIN BLINDADO DEL SERVICE)
 # ---------------------------------------------------------
 @router.post("/login")
 def login_empleado(data: LoginRequest, db: Session = Depends(get_db)):
-    empleado = db.query(Empleado).filter(Empleado.usuario == data.usuario).first()
+    resultado = login_service(db, data.usuario, data.password)
 
-    if not empleado:
-        raise HTTPException(status_code=404, detail="Usuario no encontrado")
-
-    if empleado.password != hash_password(data.password):
-        raise HTTPException(status_code=401, detail="Contraseña incorrecta")
-
-    token = create_access_token({"empleado_id": empleado.id})
+    empleado = resultado["empleado"]
+    token = resultado["token"]
 
     return {
         "empleado_id": empleado.id,
@@ -48,6 +37,10 @@ def login_empleado_slash(data: LoginRequest, db: Session = Depends(get_db)):
 # ---------------------------------------------------------
 # LOGIN ADMIN
 # ---------------------------------------------------------
+def hash_password(password: str) -> str:
+    return hashlib.sha256(password.encode()).hexdigest()
+
+
 @router.options("/admin/login")
 def options_login():
     return {}

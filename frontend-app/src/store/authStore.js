@@ -19,13 +19,16 @@ export const useAuthStore = create((set, get) => ({
         throw new Error("ID de empleado inválido en respuesta del backend");
       }
 
-      const userData = {
-        id: empleadoId,
-        nombre: data.nombre,
-        rol: data.rol || "empleado",
-        foto: data.foto || null,
-        token: data.token,
-      };
+// 🔥 El backend devuelve "id", no "empleado_id"
+const userData = {
+  id: data.id,
+  nombre: data.nombre,
+  rol: data.rol || "empleado",
+  foto: data.avatar_url || null,
+  modulos: data.modulos_visibles,
+  permisos: data.permisos_modulo,
+};
+
 
       set({ user: userData, loading: false });
 

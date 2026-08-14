@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { loginRequest } from "../api/auth.js";
+import { loginRequest } from "../api/auth_login.js";
 import { usePermisosStore } from "./permisosStore";
 
 export const useAuthStore = create((set, get) => ({

@@ -9,13 +9,7 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
   const { crear } = useAgendaStore();
   const { notarias, cargarNotarias } = useCTNStore();
 
-  // 🔥 Tipos de cita definidos localmente (backend ya no los sirve)
-  const TIPOS_CITA = [
-    "Firma notarial",
-    "Reunión",
-    "Visita",
-    "Otros"
-  ];
+  const TIPOS_CITA = ["Firma notarial", "Reunión", "Visita", "Otros"];
 
   const [form, setForm] = useState({
     fecha: "",
@@ -24,7 +18,7 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
     tipo_cita: "",
     notario_id: null,
     tipo_firma: "",
-    apoderado: "",   // texto del Excel
+    apoderado_id: null,
     estado: "Pendiente",
     observaciones: "",
   });
@@ -44,7 +38,7 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
   }, [open]);
 
   // ---------------------------------------------------------
-  // SELECCIONAR NOTARIA (solo usar Apoderado y VC del Excel)
+  // SELECCIONAR NOTARIA
   // ---------------------------------------------------------
   const seleccionarNotaria = (n) => {
     const tipoFirmaTraducida =
@@ -56,7 +50,7 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
       ...prev,
       notario_id: n.id,
       tipo_firma: tipoFirmaTraducida,
-      apoderado: n.apoderado || "",
+      apoderado_id: n.apoderado_id || null,
       observaciones: n.observacion || prev.observaciones,
     }));
   };
@@ -154,7 +148,11 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
         <input
           type="text"
           className="input bg-gray-100"
-          value={form.apoderado || ""}
+          value={
+            notarioSeleccionado?.apoderado
+              ? notarioSeleccionado.apoderado
+              : "—"
+          }
           readOnly
         />
 

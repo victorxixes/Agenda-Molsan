@@ -17,8 +17,18 @@ export default function AgendaCitaDetalleModal() {
         <p><strong>Fecha:</strong> {citaActual.fecha}</p>
         <p><strong>Hora:</strong> {citaActual.hora_inicio} - {citaActual.hora_fin}</p>
         <p><strong>Tipo:</strong> {citaActual.tipo_cita}</p>
-        <p><strong>Notario:</strong> {citaActual.notario_id}</p>
-        <p><strong>Apoderado:</strong> {citaActual.apoderado || "—"}</p>
+<p><strong>Notario:</strong> 
+  {citaActual.notario 
+    ? `${citaActual.notario.nombre} ${citaActual.notario.apellidos}`
+    : "—"}
+</p>
+
+<p><strong>Apoderado:</strong> 
+  {citaActual.apoderado 
+    ? `${citaActual.apoderado.nombre} ${citaActual.apoderado.apellidos}`
+    : "—"}
+</p>
+
         <p><strong>Tipo firma:</strong> {citaActual.tipo_firma || "—"}</p>
         <p><strong>Estado:</strong> {citaActual.estado}</p>
         <p><strong>Observaciones:</strong> {citaActual.observaciones || "—"}</p>

@@ -12,31 +12,27 @@ export const useAuthStore = create((set, get) => ({
     set({ loading: true, error: null });
 
     try {
-      // 🔥 Limpia sesión antes de iniciar
+      // Limpia sesión antes de iniciar
       localStorage.removeItem("token");
       localStorage.removeItem("user");
 
       const data = await loginRequest(usuario, password);
 
-      // 🔥 El backend devuelve empleado_id, foto, modulos, permisos, token
       const userData = {
         id: data.empleado_id,
         nombre: data.nombre,
         foto: data.foto || null,
       };
 
-      // 🔥 Guardar token y usuario en Zustand
       set({
         user: userData,
         token: data.token,
         loading: false,
       });
 
-      // 🔥 Guardar token en localStorage
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(userData));
 
-      // 🔥 Guardar permisos y módulos
       const permisosStore = usePermisosStore.getState();
       permisosStore.setModulos(data.modulos);
       permisosStore.setAcciones(data.permisos);
@@ -51,14 +47,11 @@ export const useAuthStore = create((set, get) => ({
   },
 
   logout: () => {
-    // 🔥 Limpia Zustand
     set({ user: null, token: null });
 
-    // 🔥 Limpia localStorage
     localStorage.removeItem("token");
     localStorage.removeItem("user");
 
-    // 🔥 Limpia permisos
     const permisosStore = usePermisosStore.getState();
     permisosStore.setModulos([]);
     permisosStore.setAcciones({});

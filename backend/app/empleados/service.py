@@ -15,20 +15,69 @@ def hash_password(password: str):
 # CREAR EMPLEADO (V2)
 # ---------------------------------------------------------
 def crear_empleado(db: Session, data: EmpleadoCreate):
+    # --- Validar DNI duplicado ---
+    if db.query(Empleado).filter(Empleado.dni == data.dni).first():
+        raise HTTPException(status_code=400, detail="El DNI ya existe")
+
+    # --- Contraseña por defecto segura ---
+    password_plano = data.password if data.password else data.dni
+    password_hash = hash_password(password_plano)
+
+    # --- Módulos por defecto ---
+    modulos_defecto = [
+        "dashboard",
+        "empleados",
+        "documentos",
+        "mensajes",
+        "agenda",
+        "ctn",
+        "intranet",
+        "seguridad"
+    ]
+
+    # --- Permisos por defecto ---
+    permisos_defecto = {
+        "dashboard": ["ver"],
+        "empleados": ["ver"],
+        "agenda": ["ver"],
+        "documentos": ["ver"],
+        "mensajes": ["ver"],
+        "ctn": ["ver"],
+        "intranet": ["ver"],
+        "seguridad": ["ver"]
+    }
+
     empleado = Empleado(
         nombre=data.nombre,
         apellidos=data.apellidos,
         dni=data.dni,
-        usuario=data.dni,
-        password=hash_password(data.dni),
-        activo=True
+        usuario=data.usuario if data.usuario else data.dni,
+        password=password_hash,
+        telefono=data.telefono,
+        email_personal=data.email_personal,
+        direccion=data.direccion,
+        fecha_nacimiento=data.fecha_nacimiento,
+        alergias=data.alergias,
+        persona_contacto=data.persona_contacto,
+        telefono_contacto=data.telefono_contacto,
+        observaciones=data.observaciones,
+        departamento_id=data.departamento_id,
+        seccion_id=data.seccion_id,
+        cargo_id=data.cargo_id,
+        email_empresa=data.email_empresa,
+        extension=data.extension,
+        fecha_alta=data.fecha_alta,
+        fecha_baja=data.fecha_baja,
+        activo=True,
+        foto="/static/fotos_empleados/default.jpg",
+        modulos_visibles=modulos_defecto,
+        permisos_modulo=permisos_defecto
     )
 
     db.add(empleado)
     db.commit()
     db.refresh(empleado)
     return empleado
-
 
 # ---------------------------------------------------------
 # EDITAR EMPLEADO (V2)

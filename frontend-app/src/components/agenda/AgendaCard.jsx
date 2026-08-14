@@ -9,7 +9,7 @@ const estadoIcono = {
   Finalizada: "🔵",
 };
 
-export default function AgendaCard({ cita }) {
+export default function AgendaCard({ cita, onEditarCita }) {
   const { setCitaActual } = useAgendaStore();
 
   return (
@@ -52,6 +52,17 @@ export default function AgendaCard({ cita }) {
           {cita.observaciones}
         </p>
       )}
+
+      {/* ⭐ BOTÓN EDITAR */}
+      <button
+        className="btn btn-sm btn-primary mt-2"
+        onClick={(e) => {
+          e.stopPropagation(); // evita abrir el modal de detalle
+          onEditarCita(cita.id);
+        }}
+      >
+        Editar cita
+      </button>
     </GlassCard>
   );
 }

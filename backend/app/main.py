@@ -4,18 +4,16 @@ from fastapi.staticfiles import StaticFiles
 import os
 
 # ---------------------------------------------------------
-# FIX TABLES / BOOTSTRAP
+# FIX TABLES / BOOTSTRAP (DESACTIVADOS EN PRODUCCIÓN)
 # ---------------------------------------------------------
 from backend.app.agenda.fix_table import fix_table
-# ❌ NO ejecutar fix_table en producción
-# fix_table()
+# fix_table()  # ❌ NO ejecutar en producción
 
 from backend.app.database import Base, engine
 Base.metadata.create_all(bind=engine)
 
 from backend.app.agenda.bootstrap import bootstrap_agenda
-# ❌ NO ejecutar bootstrap_agenda en producción
-# bootstrap_agenda()
+# bootstrap_agenda()  # ❌ NO ejecutar en producción
 
 
 # ---------------------------------------------------------
@@ -44,10 +42,10 @@ app.add_middleware(
 # ROUTERS NORMALES (REST)
 # ---------------------------------------------------------
 
-# Admin Noticias (PostgreSQL)
-from backend.app.intranet.noticias.router_reset_pg import router as router_reset_pg
-from backend.app.intranet.noticias.router_fix_pg import router as router_fix_pg
-from backend.app.intranet.noticias.router_fix_schema import router as router_fix_noticias
+# ❌ DESACTIVADOS PARA AISLAR EL ERROR
+# from backend.app.intranet.noticias.router_reset_pg import router as router_reset_pg
+# from backend.app.intranet.noticias.router_fix_pg import router as router_fix_pg
+# from backend.app.intranet.noticias.router_fix_schema import router as router_fix_noticias
 
 # Seguridad / Auth
 from backend.app.seguridad.router import router as seguridad_router
@@ -89,9 +87,11 @@ from backend.app.utilidades.router_force import router as force_router
 # ---------------------------------------------------------
 # INCLUIR ROUTERS REST
 # ---------------------------------------------------------
-app.include_router(router_reset_pg)
-app.include_router(router_fix_pg)
-app.include_router(router_fix_noticias)
+
+# ❌ DESACTIVADOS
+# app.include_router(router_reset_pg)
+# app.include_router(router_fix_pg)
+# app.include_router(router_fix_noticias)
 
 app.include_router(auth_router)
 app.include_router(seguridad_router)
@@ -132,7 +132,6 @@ app.include_router(chat_ws_router)
 app.include_router(empleados_ws_router)
 app.include_router(intranet_ws_router)
 app.include_router(notificaciones_ws_router)
-
 
 # ---------------------------------------------------------
 # STATIC FILES

@@ -8,9 +8,6 @@ export const useSeguridadStore = create((set, get) => ({
   eventos: [],
   loading: false,
 
-  // ---------------------------------------------------------
-  // ROLES
-  // ---------------------------------------------------------
   cargarRoles: async () => {
     set({ loading: true });
     const data = await seguridadAPI.listarRoles();
@@ -50,9 +47,6 @@ export const useSeguridadStore = create((set, get) => ({
     await get().cargarRoles();
   },
 
-  // ---------------------------------------------------------
-  // PERMISOS
-  // ---------------------------------------------------------
   asignarPermiso: async (usuarioId, modulo, permiso) => {
     const res = await seguridadAPI.asignarPermiso(usuarioId, modulo, permiso);
 
@@ -64,9 +58,6 @@ export const useSeguridadStore = create((set, get) => ({
     );
   },
 
-  // ---------------------------------------------------------
-  // EVENTOS DE SEGURIDAD
-  // ---------------------------------------------------------
   cargarEventos: async () => {
     set({ loading: true });
     const data = await seguridadAPI.listarEventos();

@@ -1,5 +1,6 @@
 import GlassCard from "../ui/GlassCard.jsx";
 import IconAgenda from "../icons/IconAgenda.jsx";
+import { useAgendaStore } from "../../store/agendaStore";
 
 const estadoIcono = {
   Confirmada: "🟢",
@@ -9,13 +10,19 @@ const estadoIcono = {
 };
 
 export default function AgendaCard({ cita }) {
-  return (
-    <GlassCard className="flex flex-col gap-2">
+  const { setCitaActual } = useAgendaStore();
 
+  return (
+    <GlassCard
+      className="flex flex-col gap-2 cursor-pointer"
+      onClick={() => setCitaActual(cita)}
+    >
       <div className="flex items-center gap-3">
         <IconAgenda size={26} />
         <h4 className="text-lg font-bold" style={{ color: "#1F3A5F" }}>
-          {cita.notario?.nombre || "Notaría"}
+          {cita.notario
+            ? `${cita.notario.nombre} ${cita.notario.apellidos}`
+            : "Notaría"}
         </h4>
       </div>
 
@@ -28,7 +35,9 @@ export default function AgendaCard({ cita }) {
       </p>
 
       <p style={{ color: "#1F3A5F" }}>
-        Apoderado: {cita.apoderado?.nombre || "Sin asignar"}
+        Apoderado: {cita.apoderado
+          ? `${cita.apoderado.nombre} ${cita.apoderado.apellidos}`
+          : "Sin asignar"}
       </p>
 
       <p className="flex items-center gap-2 text-sm">

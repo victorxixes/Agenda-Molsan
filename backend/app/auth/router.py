@@ -40,6 +40,11 @@ def login_empleado(data: LoginRequest, db: Session = Depends(get_db)):
     }
 
 
+@router.post("/login/")
+def login_empleado_slash(data: LoginRequest, db: Session = Depends(get_db)):
+    return login_empleado(data, db)
+
+
 # ---------------------------------------------------------
 # LOGIN ADMIN
 # ---------------------------------------------------------

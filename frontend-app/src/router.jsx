@@ -1,4 +1,21 @@
 import React from "react";
+import { useEffect } from "react";
+
+function App() {
+
+  useEffect(() => {
+    console.log("WS_URL:", import.meta.env.VITE_WS_URL);
+  }, []);
+
+  return (
+    <div>
+      {/* tu app */}
+    </div>
+  );
+}
+
+export default App;
+
 import { Routes, Route, Navigate } from "react-router-dom";
 
 import RequireAuth from "./router/RequireAuth.jsx";

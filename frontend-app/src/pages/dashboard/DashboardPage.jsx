@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { useDashboardResumenStore } from "../../store/dashboardStore";
+import { useDashboardStore } from "../../store/dashboardStore";
 
 import IconAgenda from "../../components/icons/IconAgenda.jsx";
 import IconEmpleados from "../../components/icons/IconEmpleados.jsx";
@@ -10,7 +10,7 @@ import CitasHoyList from "../../components/dashboard/CitasHoyList.jsx";
 import AgendaSection from "../../components/agenda/AgendaSection.jsx";
 
 export default function DashboardPage() {
-  const { resumen, cargarResumen } = useDashboardResumenStore();
+  const { resumen, cargarResumen } = useDashboardStore();
 
   useEffect(() => {
     cargarResumen();

@@ -48,18 +48,6 @@ export default function AgendaPage() {
           onSelectDay={handleSelectDay}
         />
 
-        {/* ⭐ Tarjetas del día */}
-        <div className="mt-4 space-y-3">
-          {citasDia.map((cita) => (
-            <AgendaCard 
-              key={cita.id}
-              cita={cita}
-              onEditarCita={(id) => setEditarId(id)}
-            />
-          ))}
-        </div>
-      </div>
-
       {/* Sidebar */}
       <div className="col-span-4">
         <AgendaSidebar 

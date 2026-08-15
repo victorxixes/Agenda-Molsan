@@ -19,3 +19,22 @@ class Cita(Base):
     observaciones = Column(String, nullable=True)
 
     estado = Column(String, default="Pendiente")
+
+    # ✔ MÉTODO CORRECTO, DENTRO DE LA CLASE
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "fecha": self.fecha.isoformat() if self.fecha else None,
+            "hora_inicio": self.hora_inicio.strftime("%H:%M") if self.hora_inicio else None,
+            "hora_fin": self.hora_fin.strftime("%H:%M") if self.hora_fin else None,
+            "tipo_cita": self.tipo_cita,
+            "tipo_firma": self.tipo_firma,
+            "estado": self.estado,
+
+            # ⚠ IMPORTANTE: tus columnas NO tienen relaciones ORM
+            # notario_id y apoderado son solo enteros o strings
+            # así que devolvemos solo el valor
+            "notario_id": self.notario_id,
+            "apoderado": self.apoderado,
+            "observaciones": self.observaciones
+        }

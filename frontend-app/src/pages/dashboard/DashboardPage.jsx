@@ -5,7 +5,6 @@ import { useDashboardStore } from "../../store/dashboardStore";
 import IconAgenda from "../../components/icons/IconAgenda.jsx";
 import IconEmpleados from "../../components/icons/IconEmpleados.jsx";
 import IconMensajes from "../../components/icons/IconMensajes.jsx";
-import IconLogs from "../../components/icons/IconLogs.jsx";
 
 // COMPONENTES
 import KpiCard from "../../components/dashboard/KpiCard.jsx";
@@ -16,14 +15,14 @@ export default function DashboardPage() {
   const { resumen, cargarResumen } = useDashboardStore();
 
   useEffect(() => {
-    cargarResumen();   // 🔥 carga /dashboard/resumen
+    cargarResumen();   // carga /dashboard/resumen
   }, []);
 
   if (!resumen) return "Cargando dashboard...";
 
-  const realizadas = resumen.firmas_realizadas;
-  const pendientes = resumen.firmas_pendientes;
-  const apoderados = resumen.por_apoderado;
+  const realizadas = resumen.firmas_realizadas || {};
+  const pendientes = resumen.firmas_pendientes || {};
+  const apoderados = resumen.por_apoderado || [];
   const citasHoy = resumen.citas_dia || [];
 
   return (
@@ -32,9 +31,6 @@ export default function DashboardPage() {
         Dashboard de Firmas
       </h2>
 
-      {/* ============================
-          CITAS DEL DÍA
-      ============================ */}
       <AgendaSection title="Citas del día">
         <CitasHoyList
           citas={citasHoy}
@@ -42,9 +38,6 @@ export default function DashboardPage() {
         />
       </AgendaSection>
 
-      {/* ============================
-          FIRMAS REALIZADAS
-      ============================ */}
       <h3 className="text-xl font-semibold" style={{ color: "#1F3A5F" }}>
         Firmas realizadas
       </h3>
@@ -52,20 +45,17 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <KpiCard
           title="Videoconferencia"
-          value={realizadas.videoconferencia}
+          value={realizadas.videoconferencia || 0}
           icon={<IconAgenda size={28} />}
         />
 
         <KpiCard
           title="Presencial"
-          value={realizadas.presencial}
+          value={realizadas.presencial || 0}
           icon={<IconAgenda size={28} />}
         />
       </div>
 
-      {/* ============================
-          FIRMAS PENDIENTES
-      ============================ */}
       <h3 className="text-xl font-semibold" style={{ color: "#1F3A5F" }}>
         Firmas pendientes
       </h3>
@@ -73,20 +63,17 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <KpiCard
           title="Videoconferencia"
-          value={pendientes.videoconferencia}
+          value={pendientes.videoconferencia || 0}
           icon={<IconMensajes size={28} />}
         />
 
         <KpiCard
           title="Presencial"
-          value={pendientes.presencial}
+          value={pendientes.presencial || 0}
           icon={<IconMensajes size={28} />}
         />
       </div>
 
-      {/* ============================
-          FIRMAS POR APODERADO
-      ============================ */}
       <h3 className="text-xl font-semibold" style={{ color: "#1F3A5F" }}>
         Firmas por apoderado
       </h3>
@@ -101,22 +88,19 @@ export default function DashboardPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <KpiCard
                 title="Total firmadas"
-                value={
-                  apo.videoconferencia.firmadas +
-                  apo.presencial.firmadas
-                }
+                value={(apo.videoconferencia?.firmadas || 0) + (apo.presencial?.firmadas || 0)}
                 icon={<IconEmpleados size={28} />}
               />
 
               <KpiCard
                 title="VC (firmadas)"
-                value={apo.videoconferencia.firmadas}
+                value={apo.videoconferencia?.firmadas || 0}
                 icon={<IconAgenda size={28} />}
               />
 
               <KpiCard
                 title="Presencial (firmadas)"
-                value={apo.presencial.firmadas}
+                value={apo.presencial?.firmadas || 0}
                 icon={<IconAgenda size={28} />}
               />
             </div>
@@ -124,13 +108,13 @@ export default function DashboardPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
               <KpiCard
                 title="VC (pendientes)"
-                value={apo.videoconferencia.pendientes}
+                value={apo.videoconferencia?.pendientes || 0}
                 icon={<IconMensajes size={28} />}
               />
 
               <KpiCard
                 title="Presencial (pendientes)"
-                value={apo.presencial.pendientes}
+                value={apo.presencial?.pendientes || 0}
                 icon={<IconMensajes size={28} />}
               />
             </div>

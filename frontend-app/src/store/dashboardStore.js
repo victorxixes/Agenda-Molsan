@@ -20,7 +20,6 @@ export const useDashboardStore = create((set) => ({
         },
 
         por_apoderado: raw?.por_apoderado || [],
-
         citas_dia: raw?.citas_dia || []
       };
 

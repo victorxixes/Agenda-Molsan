@@ -6,13 +6,10 @@ import { useEmpleadosStore } from "../../store/empleadosStore";
 import IconAgenda from "../../components/icons/IconAgenda.jsx";
 import IconEmpleados from "../../components/icons/IconEmpleados.jsx";
 import IconMensajes from "../../components/icons/IconMensajes.jsx";
-import IconIntranet from "../../components/icons/IconIntranet.jsx";
 import IconLogs from "../../components/icons/IconLogs.jsx";
 
 // Nuevo componente KPI
 import KpiCard from "../../components/dashboard/KpiCard.jsx";
-
-import ChartFirmasMes from "../../components/dashboard/ChartFirmasMes.jsx";
 
 export default function DashboardPage() {
   const { data, cargarDashboard } = useDashboardStore();
@@ -21,21 +18,17 @@ export default function DashboardPage() {
   const [empleadoId, setEmpleadoId] = useState("");
 
   useEffect(() => {
-    cargarEmpleados();               // 🔥 CLAVE: carga empleados antes del dashboard
+    cargarEmpleados();               
     cargarDashboard(empleadoId || null);
   }, [empleadoId]);
 
-  // Si no hay datos aún → mostramos loading
   if (!data) return "Cargando dashboard...";
 
-  // Protecciones para evitar errores
   const agenda = data.agenda || {};
   const empleadosData = data.empleados || {};
   const mensajes = data.mensajes || {};
   const actividad = data.actividad || {};
-  const ctn = data.ctn || {};
 
-  // Protección total para empleados (evita el error del selector)
   const safeEmpleados = Array.isArray(empleados) ? empleados : [];
 
   return (
@@ -81,8 +74,6 @@ export default function DashboardPage() {
         <KpiCard title="Firmas Presenciales semana" value={agenda.firmas_semana?.p ?? 0} icon={<IconAgenda size={28} />} />
       </div>
 
-      <ChartFirmasMes data={Array.isArray(agenda.firmas_por_mes) ? agenda.firmas_por_mes : []} />
-
       {/* ============================
           EMPLEADOS
       ============================ */}
@@ -111,17 +102,6 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <KpiCard title="Actividad hoy" value={actividad.hoy ?? 0} icon={<IconLogs size={28} />} />
         <KpiCard title="Actividad semana" value={actividad.semana ?? 0} icon={<IconLogs size={28} />} />
-      </div>
-
-      {/* ============================
-          CTN
-      ============================ */}
-      <h3 style={{ color: "#1F3A5F" }}>CTN</h3>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <KpiCard title="Notarios" value={ctn.notarios ?? 0} icon={<IconIntranet size={28} />} />
-        <KpiCard title="Zonas" value={ctn.zonas ?? 0} icon={<IconIntranet size={28} />} />
-        <KpiCard title="Firmas CTN" value={ctn.firmas ?? 0} icon={<IconIntranet size={28} />} />
       </div>
     </div>
   );

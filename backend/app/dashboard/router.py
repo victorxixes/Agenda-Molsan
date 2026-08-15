@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from datetime import date
 from backend.app.database import get_db
-from backend.app.models.cita import Cita
+from backend.app.agenda.models import Cita
 
 router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
 

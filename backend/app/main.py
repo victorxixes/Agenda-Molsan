@@ -109,7 +109,7 @@ app.include_router(agenda_router)
 app.include_router(agenda_notarios_router)
 
 app.include_router(auditoria_router)
-app.include_router(dashboard_router)
+app.include_router(dashboard_router, prefix="/api")
 app.include_router(informes_router)
 
 app.include_router(logs_router)

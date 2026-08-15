@@ -1,107 +1,128 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useDashboardStore } from "../../store/dashboardStore";
-import { useEmpleadosStore } from "../../store/empleadosStore";
 
-// ICONOS GLASS PREMIUM SJ
+// ICONOS
 import IconAgenda from "../../components/icons/IconAgenda.jsx";
 import IconEmpleados from "../../components/icons/IconEmpleados.jsx";
 import IconMensajes from "../../components/icons/IconMensajes.jsx";
 import IconLogs from "../../components/icons/IconLogs.jsx";
 
-// Nuevo componente KPI
+// KPI CARD
 import KpiCard from "../../components/dashboard/KpiCard.jsx";
 
 export default function DashboardPage() {
-  const { data, cargarDashboard } = useDashboardStore();
-  const { empleados, cargarEmpleados } = useEmpleadosStore();
-
-  const [empleadoId, setEmpleadoId] = useState("");
+  const { resumen, cargarResumen } = useDashboardStore();
 
   useEffect(() => {
-    cargarEmpleados();               
-    cargarDashboard(empleadoId || null);
-  }, [empleadoId]);
+    cargarResumen();   // 🔥 carga /dashboard/resumen
+  }, []);
 
-  if (!data) return "Cargando dashboard...";
+  if (!resumen) return "Cargando dashboard...";
 
-  const agenda = data.agenda || {};
-  const empleadosData = data.empleados || {};
-  const mensajes = data.mensajes || {};
-  const actividad = data.actividad || {};
-
-  const safeEmpleados = Array.isArray(empleados) ? empleados : [];
+  const realizadas = resumen.firmas_realizadas;
+  const pendientes = resumen.firmas_pendientes;
+  const apoderados = resumen.por_apoderado;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-10">
       <h2 className="text-3xl font-bold" style={{ color: "#1F3A5F" }}>
-        Dashboard
+        Dashboard de Firmas
       </h2>
 
-      {/* SELECTOR DE EMPLEADO */}
-      <div className="my-4">
-        <label className="block mb-2 font-semibold" style={{ color: "#1F3A5F" }}>
-          Filtrar por empleado:
-        </label>
+      {/* ============================
+          FIRMAS REALIZADAS
+      ============================ */}
+      <h3 className="text-xl font-semibold" style={{ color: "#1F3A5F" }}>
+        Firmas realizadas
+      </h3>
 
-        <select
-          className="border p-2 rounded mb-4"
-          value={empleadoId}
-          onChange={(e) => setEmpleadoId(e.target.value)}
-        >
-          <option value="">Todos los empleados</option>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <KpiCard
+          title="Videoconferencia"
+          value={realizadas.videoconferencia}
+          icon={<IconAgenda size={28} />}
+        />
 
-          {safeEmpleados.map((e) => (
-            <option key={e.id} value={e.id}>
-              {e.nombre}
-            </option>
-          ))}
-        </select>
+        <KpiCard
+          title="Presencial"
+          value={realizadas.presencial}
+          icon={<IconAgenda size={28} />}
+        />
       </div>
 
       {/* ============================
-          AGENDA
+          FIRMAS PENDIENTES
       ============================ */}
-      <h3 style={{ color: "#1F3A5F" }}>Agenda</h3>
+      <h3 className="text-xl font-semibold" style={{ color: "#1F3A5F" }}>
+        Firmas pendientes
+      </h3>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <KpiCard title="Citas hoy" value={agenda.citas_hoy ?? 0} icon={<IconAgenda size={28} />} />
-        <KpiCard title="Citas semana" value={agenda.citas_semana ?? 0} icon={<IconAgenda size={28} />} />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <KpiCard
+          title="Videoconferencia"
+          value={pendientes.videoconferencia}
+          icon={<IconMensajes size={28} />}
+        />
 
-        <KpiCard title="Firmas VC hoy" value={agenda.firmas_hoy?.vc ?? 0} icon={<IconAgenda size={28} />} />
-        <KpiCard title="Firmas Presenciales hoy" value={agenda.firmas_hoy?.p ?? 0} icon={<IconAgenda size={28} />} />
-
-        <KpiCard title="Firmas VC semana" value={agenda.firmas_semana?.vc ?? 0} icon={<IconAgenda size={28} />} />
-        <KpiCard title="Firmas Presenciales semana" value={agenda.firmas_semana?.p ?? 0} icon={<IconAgenda size={28} />} />
+        <KpiCard
+          title="Presencial"
+          value={pendientes.presencial}
+          icon={<IconMensajes size={28} />}
+        />
       </div>
 
       {/* ============================
-          EMPLEADOS
+          FIRMAS POR APODERADO
       ============================ */}
-      <h3 style={{ color: "#1F3A5F" }}>Empleados</h3>
+      <h3 className="text-xl font-semibold" style={{ color: "#1F3A5F" }}>
+        Firmas por apoderado
+      </h3>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <KpiCard title="Total empleados" value={empleadosData.total ?? 0} icon={<IconEmpleados size={28} />} />
-        <KpiCard title="Activos" value={empleadosData.activos ?? 0} icon={<IconEmpleados size={28} />} />
-      </div>
+      <div className="space-y-6">
+        {apoderados.map((apo) => (
+          <div key={apo.apoderado_id} className="border p-4 rounded-lg shadow-sm">
+            <h4 className="text-lg font-bold mb-3" style={{ color: "#1F3A5F" }}>
+              {apo.nombre}
+            </h4>
 
-      {/* ============================
-          MENSAJES
-      ============================ */}
-      <h3 style={{ color: "#1F3A5F" }}>Mensajes</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <KpiCard
+                title="Total firmadas"
+                value={
+                  apo.videoconferencia.firmadas +
+                  apo.presencial.firmadas
+                }
+                icon={<IconEmpleados size={28} />}
+              />
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <KpiCard title="Mensajes hoy" value={mensajes.hoy ?? 0} icon={<IconMensajes size={28} />} />
-        <KpiCard title="No leídos" value={mensajes.no_leidos ?? 0} icon={<IconMensajes size={28} />} />
-      </div>
+              <KpiCard
+                title="VC (firmadas)"
+                value={apo.videoconferencia.firmadas}
+                icon={<IconAgenda size={28} />}
+              />
 
-      {/* ============================
-          ACTIVIDAD (LOGS)
-      ============================ */}
-      <h3 style={{ color: "#1F3A5F" }}>Actividad del sistema</h3>
+              <KpiCard
+                title="Presencial (firmadas)"
+                value={apo.presencial.firmadas}
+                icon={<IconAgenda size={28} />}
+              />
+            </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <KpiCard title="Actividad hoy" value={actividad.hoy ?? 0} icon={<IconLogs size={28} />} />
-        <KpiCard title="Actividad semana" value={actividad.semana ?? 0} icon={<IconLogs size={28} />} />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
+              <KpiCard
+                title="VC (pendientes)"
+                value={apo.videoconferencia.pendientes}
+                icon={<IconMensajes size={28} />}
+              />
+
+              <KpiCard
+                title="Presencial (pendientes)"
+                value={apo.presencial.pendientes}
+                icon={<IconMensajes size={28} />}
+              />
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

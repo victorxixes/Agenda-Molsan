@@ -7,8 +7,10 @@ import IconEmpleados from "../../components/icons/IconEmpleados.jsx";
 import IconMensajes from "../../components/icons/IconMensajes.jsx";
 import IconLogs from "../../components/icons/IconLogs.jsx";
 
-// KPI CARD
+// COMPONENTES
 import KpiCard from "../../components/dashboard/KpiCard.jsx";
+import CitasHoyList from "../../components/dashboard/CitasHoyList.jsx";
+import AgendaSection from "../../components/agenda/AgendaSection.jsx";
 
 export default function DashboardPage() {
   const { resumen, cargarResumen } = useDashboardStore();
@@ -22,12 +24,23 @@ export default function DashboardPage() {
   const realizadas = resumen.firmas_realizadas;
   const pendientes = resumen.firmas_pendientes;
   const apoderados = resumen.por_apoderado;
+  const citasHoy = resumen.citas_dia || [];
 
   return (
     <div className="space-y-10">
       <h2 className="text-3xl font-bold" style={{ color: "#1F3A5F" }}>
         Dashboard de Firmas
       </h2>
+
+      {/* ============================
+          CITAS DEL DÍA
+      ============================ */}
+      <AgendaSection title="Citas del día">
+        <CitasHoyList
+          citas={citasHoy}
+          onEditar={(id) => console.log("Editar desde dashboard", id)}
+        />
+      </AgendaSection>
 
       {/* ============================
           FIRMAS REALIZADAS

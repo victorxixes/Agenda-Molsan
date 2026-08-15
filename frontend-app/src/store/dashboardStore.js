@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { dashboardAPI } from "../api/dashboard";
 
-export const useDashboardStore = create((set) => ({
+export const useDashboardResumenStore = create((set) => ({
   resumen: null,
 
   cargarResumen: async () => {

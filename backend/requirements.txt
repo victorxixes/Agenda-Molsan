@@ -12,3 +12,5 @@ pandas
 openpyxl
 email-validator==2.1.0.post1
 PyJWT
+uvicorn[standard]
+websockets

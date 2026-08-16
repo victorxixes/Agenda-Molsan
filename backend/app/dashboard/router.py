@@ -35,19 +35,19 @@ def dashboard_resumen(db: Session = Depends(get_db)):
 
     por_apoderado = []
 
-    # Apoderados reales (string), no IDs
+    # Apoderados reales (ID)
     apoderados = (
-        db.query(Cita.apoderado)
-        .filter(Cita.apoderado.isnot(None))
+        db.query(Cita.apoderado_id)
+        .filter(Cita.apoderado_id.isnot(None))
         .distinct()
         .all()
     )
 
-    for (apo_nombre,) in apoderados:
-        citas_apo = db.query(Cita).filter(Cita.apoderado == apo_nombre).all()
+    for (apo_id,) in apoderados:
+        citas_apo = db.query(Cita).filter(Cita.apoderado_id == apo_id).all()
 
         por_apoderado.append({
-            "apoderado": apo_nombre or "Sin nombre",
+            "apoderado_id": apo_id,
             "videoconferencia": {
                 "firmadas": sum(
                     1 for c in citas_apo
@@ -81,7 +81,7 @@ def dashboard_resumen(db: Session = Depends(get_db)):
             "tipo_firma": c.tipo_firma,
             "estado": c.estado,
             "notario_id": c.notario_id,
-            "apoderado": c.apoderado,
+            "apoderado_id": c.apoderado_id,
             "observaciones": c.observaciones,
         }
         for c in citas_dia

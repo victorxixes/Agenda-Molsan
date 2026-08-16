@@ -17,19 +17,19 @@ def dashboard_resumen(db: Session = Depends(get_db)):
 
     firmas_realizadas = {
         "videoconferencia": db.query(Cita)
-            .filter(Cita.tipo_firma == "VC", Cita.estado == "hecha")
+            .filter(Cita.tipo_firma == "VC", Cita.estado == "Hecha")
             .count(),
         "presencial": db.query(Cita)
-            .filter(Cita.tipo_firma == "P", Cita.estado == "hecha")
+            .filter(Cita.tipo_firma == "P", Cita.estado == "Hecha")
             .count(),
     }
 
     firmas_pendientes = {
         "videoconferencia": db.query(Cita)
-            .filter(Cita.tipo_firma == "VC", Cita.estado == "pendiente")
+            .filter(Cita.tipo_firma == "VC", Cita.estado == "Pendiente")
             .count(),
         "presencial": db.query(Cita)
-            .filter(Cita.tipo_firma == "P", Cita.estado == "pendiente")
+            .filter(Cita.tipo_firma == "P", Cita.estado == "Pendiente")
             .count(),
     }
 

@@ -51,21 +51,21 @@ def dashboard_resumen(db: Session = Depends(get_db)):
             "videoconferencia": {
                 "firmadas": sum(
                     1 for c in citas_apo
-                    if c.tipo_firma == "VC" and c.estado == "hecha"
+                    if c.tipo_firma == "VC" and c.estado == "Hecha"
                 ),
                 "pendientes": sum(
                     1 for c in citas_apo
-                    if c.tipo_firma == "VC" and c.estado == "pendiente"
+                    if c.tipo_firma == "VC" and c.estado == "Pendiente"
                 ),
             },
             "presencial": {
                 "firmadas": sum(
                     1 for c in citas_apo
-                    if c.tipo_firma == "P" and c.estado == "hecha"
+                    if c.tipo_firma == "P" and c.estado == "Hecha"
                 ),
                 "pendientes": sum(
                     1 for c in citas_apo
-                    if c.tipo_firma == "P" and c.estado == "pendiente"
+                    if c.tipo_firma == "P" and c.estado == "Pendiente"
                 ),
             },
         })

@@ -1,8 +1,10 @@
 import { connectWS } from "./ws";
 
 export function connectIntranet(usuarioId, onMessage) {
+  const WS = import.meta.env.VITE_WS_URL;
+
   return connectWS(
-    `${import.meta.env.VITE_API_URL_WS}/ws/intranet`,
+    `${WS}/ws/intranet`,
     onMessage,
     () => ({ usuario_id: usuarioId })
   );

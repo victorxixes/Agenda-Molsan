@@ -12,7 +12,7 @@ router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
 def dashboard_resumen(db: Session = Depends(get_db)):
     hoy = date.today()
 
-    # Citas del día (blindado, sin to_dict)
+    # Citas del día
     citas_dia = db.query(Cita).filter(Cita.fecha == hoy).all()
 
     firmas_realizadas = {
@@ -35,26 +35,19 @@ def dashboard_resumen(db: Session = Depends(get_db)):
 
     por_apoderado = []
 
-    # Solo apoderados con ID no nulo
+    # Apoderados reales (string), no IDs
     apoderados = (
-        db.query(Cita.apoderado_id)
-        .filter(Cita.apoderado_id.isnot(None))
+        db.query(Cita.apoderado)
+        .filter(Cita.apoderado.isnot(None))
         .distinct()
         .all()
     )
 
-    for (apo_id,) in apoderados:
-        citas_apo = db.query(Cita).filter(Cita.apoderado_id == apo_id).all()
-
-        # Nombre blindado: si no hay citas o no hay apoderado, "Sin nombre"
-        if citas_apo:
-            nombre_apo = getattr(citas_apo[0], "apoderado", None) or "Sin nombre"
-        else:
-            nombre_apo = "Sin nombre"
+    for (apo_nombre,) in apoderados:
+        citas_apo = db.query(Cita).filter(Cita.apoderado == apo_nombre).all()
 
         por_apoderado.append({
-            "apoderado_id": apo_id,
-            "nombre": nombre_apo,
+            "apoderado": apo_nombre or "Sin nombre",
             "videoconferencia": {
                 "firmadas": sum(
                     1 for c in citas_apo
@@ -77,16 +70,19 @@ def dashboard_resumen(db: Session = Depends(get_db)):
             },
         })
 
-    # Serialización manual de citas_dia para evitar depender de to_dict()
+    # Serialización correcta según tu modelo
     citas_dia_serializadas = [
         {
             "id": c.id,
             "fecha": c.fecha.isoformat() if c.fecha else None,
-            "hora": getattr(c, "hora", None),
+            "hora_inicio": c.hora_inicio.strftime("%H:%M") if c.hora_inicio else None,
+            "hora_fin": c.hora_fin.strftime("%H:%M") if c.hora_fin else None,
+            "tipo_cita": c.tipo_cita,
             "tipo_firma": c.tipo_firma,
             "estado": c.estado,
-            "apoderado_id": getattr(c, "apoderado_id", None),
-            "apoderado": getattr(c, "apoderado", None),
+            "notario_id": c.notario_id,
+            "apoderado": c.apoderado,
+            "observaciones": c.observaciones,
         }
         for c in citas_dia
     ]

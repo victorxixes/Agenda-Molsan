@@ -30,7 +30,7 @@ def dashboard_resumen(db: Session = Depends(get_db)):
 
         por_apoderado.append({
             "apoderado_id": apo_id,
-            "nombre": citas_apo[0].apoderado.nombre if citas_apo and citas_apo[0].apoderado else "Sin nombre",
+            "nombre": citas_apo[0].apoderado if citas_apo and citas_apo[0].apoderado else "Sin nombre",
             "videoconferencia": {
                 "firmadas": sum(1 for c in citas_apo if c.tipo_firma == "VC" and c.estado == "hecha"),
                 "pendientes": sum(1 for c in citas_apo if c.tipo_firma == "VC" and c.estado == "pendiente")

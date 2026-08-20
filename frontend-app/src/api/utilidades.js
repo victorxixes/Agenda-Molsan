@@ -2,7 +2,7 @@ import axios from "axios";
 const API = import.meta.env.VITE_API_URL;
 
 export const utilidadesAPI = {
-
+ 
   importarCTN: (file) => {
     const form = new FormData();
     form.append("file", file);

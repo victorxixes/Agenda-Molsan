@@ -33,8 +33,8 @@ def cita_con_relaciones(db: Session, cita: Cita):
         "observaciones": cita.observaciones,
         "notario": notario,
 
-        # AHORA ES STRING
-        "apoderado": cita.apoderado,
+        # CORREGIDO: antes era cita.apoderado (columna inexistente)
+        "apoderado_id": cita.apoderado_id,
     }
 
 # ---------------------------------------------------------

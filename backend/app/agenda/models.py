@@ -16,10 +16,13 @@ class Cita(Base):
     notario_id = Column(Integer, nullable=True)
     tipo_firma = Column(String, nullable=True)
 
-    # ✔ CORREGIDO: la columna real es apoderado_id
+    # 🔴 ANTES:
+    # apoderado = Column(String, nullable=True)
+    # 🔵 AHORA: coherente con la tabla
     apoderado_id = Column(Integer, nullable=True)
 
     observaciones = Column(String, nullable=True)
+
     estado = Column(String, default="Pendiente")
 
     def to_dict(self):
@@ -32,9 +35,7 @@ class Cita(Base):
             "tipo_firma": self.tipo_firma,
             "estado": self.estado,
             "notario_id": self.notario_id,
-
-            # ✔ CORREGIDO
+            # 🔵 coherente con el modelo y la tabla
             "apoderado_id": self.apoderado_id,
-
-            "observaciones": self.observaciones
+            "observaciones": self.observaciones,
         }

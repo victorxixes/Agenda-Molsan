@@ -10,13 +10,14 @@ class Mensaje(Base):
 
     id = Column(Integer, primary_key=True, index=True)
 
-    # CORREGIDO: la tabla correcta es empleados_v2
-    remitente_id = Column(Integer, ForeignKey("empleados_v2.id"), nullable=False)
-    destinatario_id = Column(Integer, ForeignKey("empleados_v2.id"), nullable=False)
+    # ✔ La tabla correcta es empleados
+    remitente_id = Column(Integer, ForeignKey("empleados.id"), nullable=False)
+    destinatario_id = Column(Integer, ForeignKey("empleados.id"), nullable=False)
 
-    mensaje = Column(String, nullable=False)
-    fecha = Column(DateTime, default=datetime.now)
+    # ✔ CAMBIO CRÍTICO: debe llamarse texto, no mensaje
+    texto = Column(String, nullable=False)
 
+    fecha = Column(DateTime, default=datetime.utcnow)
     leido = Column(Boolean, default=False)
 
 
@@ -26,8 +27,8 @@ class UsuarioEstado(Base):
 
     id = Column(Integer, primary_key=True, index=True)
 
-    # CORREGIDO: la tabla correcta es empleados_v2
-    usuario_id = Column(Integer, ForeignKey("empleados_v2.id"), nullable=False)
+    # ✔ La tabla correcta es empleados
+    usuario_id = Column(Integer, ForeignKey("empleados.id"), nullable=False)
 
     conectado = Column(Boolean, default=False)
-    ultima_actividad = Column(DateTime, default=datetime.now)
+    ultima_actividad = Column(DateTime, default=datetime.utcnow)

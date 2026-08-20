@@ -70,7 +70,6 @@ def dashboard_resumen(db: Session = Depends(get_db)):
             },
         })
 
-    # Serialización correcta según tu modelo
     citas_dia_serializadas = [
         {
             "id": c.id,

@@ -15,12 +15,13 @@ class Cita(Base):
     # Campos opcionales
     notario_id = Column(Integer, nullable=True)
     tipo_firma = Column(String, nullable=True)
-    apoderado = Column(String, nullable=True)
-    observaciones = Column(String, nullable=True)
 
+    # ✔ CORREGIDO: la columna real es apoderado_id
+    apoderado_id = Column(Integer, nullable=True)
+
+    observaciones = Column(String, nullable=True)
     estado = Column(String, default="Pendiente")
 
-    # ✔ MÉTODO CORRECTO, DENTRO DE LA CLASE
     def to_dict(self):
         return {
             "id": self.id,
@@ -30,11 +31,10 @@ class Cita(Base):
             "tipo_cita": self.tipo_cita,
             "tipo_firma": self.tipo_firma,
             "estado": self.estado,
-
-            # ⚠ IMPORTANTE: tus columnas NO tienen relaciones ORM
-            # notario_id y apoderado son solo enteros o strings
-            # así que devolvemos solo el valor
             "notario_id": self.notario_id,
-            "apoderado": self.apoderado,
+
+            # ✔ CORREGIDO
+            "apoderado_id": self.apoderado_id,
+
             "observaciones": self.observaciones
         }

@@ -2,14 +2,15 @@ import axios from "axios";
 
 axios.defaults.baseURL = import.meta.env.VITE_API_URL;
 
-// Todas las rutas REST llevan /api
 axios.interceptors.request.use((config) => {
-  if (!config.url.startsWith("/api")) {
-    config.url = "/api" + config.url;
+  // Login va sin /api, aquí NO tocamos la URL
+  if (config.url.startsWith("/auth/login")) {
+    return config;
   }
 
-  if (config.url.startsWith("/api/auth/login")) {
-    return config;
+  // El resto: si no empieza por /api, se lo añadimos
+  if (!config.url.startsWith("/api")) {
+    config.url = "/api" + config.url;
   }
 
   const token = localStorage.getItem("token");
@@ -20,4 +21,5 @@ axios.interceptors.request.use((config) => {
   return config;
 });
 
+export default axios;
 export default axios;

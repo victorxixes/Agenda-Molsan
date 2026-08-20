@@ -5,7 +5,7 @@ axios.defaults.baseURL = import.meta.env.VITE_API_URL;
 // Interceptor para añadir token excepto en login
 axios.interceptors.request.use((config) => {
   // login → NO añadir token
-  if (config.url.startsWith("/auth/login")) {
+  if (config.url.startsWith("/api/auth/login")) {
     return config;
   }
 

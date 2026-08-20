@@ -1,10 +1,8 @@
-import axios from "axios";
-
-const API = import.meta.env.VITE_API_URL;
+import axios from "../api/axios";
 
 export const dashboardAPI = {
   resumen: async () => {
-    const res = await axios.get(`${API}/api/dashboard/resumen`);
+    const res = await axios.get("/dashboard/resumen");
     return res.data;
   }
 };

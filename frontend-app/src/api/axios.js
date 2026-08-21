@@ -1,24 +1,15 @@
 import axios from "axios";
 
-axios.defaults.baseURL = import.meta.env.VITE_API_URL;
+const instance = axios.create({
+  baseURL: import.meta.env.VITE_API_URL,   // ❗ SIN /api
+  withCredentials: true,
+});
 
-axios.interceptors.request.use((config) => {
-  // Login va sin /api, aquí NO tocamos la URL
-  if (config.url.startsWith("/auth/login")) {
-    return config;
-  }
-
-  // El resto: si no empieza por /api, se lo añadimos
-  if (!config.url.startsWith("/api")) {
-    config.url = "/api" + config.url;
-  }
-
+// ❗ NO añadir /api en el interceptor
+instance.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-
+  if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
 
-export default axios;
+export default instance;

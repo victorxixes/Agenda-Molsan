@@ -1,23 +1,19 @@
-
 import { create } from "zustand";
+import { ctnAPI } from "../api/ctn";
 
 export const useCTNStore = create((set, get) => ({
   notarias: [],
   loading: false,
   error: null,
 
-  // 🔥 Cargar NOTARÍAS desde CTN (CORREGIDO)
   cargarNotarias: async () => {
     try {
       set({ loading: true, error: null });
 
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/ctn/notarias`);
-      if (!res.ok) throw new Error("Error al cargar notarías");
-
-      const data = await res.json();
+      const data = await ctnAPI.listar();
 
       set({
-        notarias: data,
+        notarias: Array.isArray(data) ? data : [],
         loading: false,
         error: null,
       });

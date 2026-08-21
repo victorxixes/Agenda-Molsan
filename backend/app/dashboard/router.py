@@ -7,6 +7,34 @@ from backend.app.agenda.models import Cita
 
 router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
 
+@router.get("/agenda/kpis")
+def dashboard_agenda_kpis(db: Session = Depends(get_db)):
+    hoy = date.today()
+
+    citas_hoy = db.query(Cita).filter(Cita.fecha == hoy).count()
+    citas_pendientes = db.query(Cita).filter(Cita.estado == "Pendiente").count()
+
+    firmas_hechas = db.query(Cita).filter(Cita.estado == "Hecha").count()
+    firmas_pendientes = db.query(Cita).filter(Cita.estado == "Pendiente").count()
+
+    presenciales_hechas = db.query(Cita).filter(Cita.tipo_firma == "P", Cita.estado == "Hecha").count()
+    presenciales_pendientes = db.query(Cita).filter(Cita.tipo_firma == "P", Cita.estado == "Pendiente").count()
+
+    vc_hechas = db.query(Cita).filter(Cita.tipo_firma == "VC", Cita.estado == "Hecha").count()
+    vc_pendientes = db.query(Cita).filter(Cita.tipo_firma == "VC", Cita.estado == "Pendiente").count()
+
+    return {
+        "citasHoy": citas_hoy,
+        "citasPendientes": citas_pendientes,
+        "firmasHechas": firmas_hechas,
+        "firmasPendientes": firmas_pendientes,
+        "presencialesHechas": presenciales_hechas,
+        "presencialesPendientes": presenciales_pendientes,
+        "vcHechas": vc_hechas,
+        "vcPendientes": vc_pendientes,
+        "citasPorProvincia": [],
+        "citasPorHora": []
+    }
 
 @router.get("/resumen")
 def dashboard_resumen(db: Session = Depends(get_db)):

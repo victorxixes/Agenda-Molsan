@@ -22,4 +22,3 @@ axios.interceptors.request.use((config) => {
 });
 
 export default axios;
-

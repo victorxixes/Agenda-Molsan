@@ -30,6 +30,7 @@ app.add_middleware(
 # ---------------------------------------------------------
 
 from backend.app.seguridad.router import router as seguridad_router
+from backend.app.seguridad.router_api import router as seguridad_api_router
 from backend.app.seguridad.permisos_router import router as permisos_router
 from backend.app.auth.router import router as auth_router
 
@@ -62,6 +63,7 @@ from backend.app.utilidades.router_force import router as force_router
 
 app.include_router(auth_router, prefix="/api")
 app.include_router(seguridad_router, prefix="/api")
+app.include_router(seguridad_api_router, prefix="/api")
 app.include_router(permisos_router, prefix="/api")
 
 app.include_router(empleados_router, prefix="/api")

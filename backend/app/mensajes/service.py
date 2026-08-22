@@ -49,7 +49,12 @@ def listar_conversacion(db: Session, usuario1: int, usuario2: int):
 
 
 def crear_mensaje(db: Session, data: MensajeCreate):
-    mensaje = Mensaje(**data.dict())
+    mensaje = Mensaje(
+        remitente_id=data.remitente_id,
+        destinatario_id=data.destinatario_id,
+        mensaje=data.texto  # el frontend envía "texto"
+    )
+
     db.add(mensaje)
     db.commit()
     db.refresh(mensaje)
@@ -69,6 +74,7 @@ def marcar_conversacion_leida(db: Session, remitente: int, destinatario: int):
     db.commit()
     return True
 
+
 def mensajes_no_leidos(db: Session, usuario_id: int):
     try:
         count = db.query(Mensaje).filter(
@@ -81,9 +87,3 @@ def mensajes_no_leidos(db: Session, usuario_id: int):
     except Exception as e:
         print("ERROR mensajes_no_leidos:", e)
         return 0
-
-def mensajes_no_leidos(db: Session, usuario_id: int):
-    return db.query(Mensaje).filter(
-        Mensaje.destinatario_id == usuario_id,
-        Mensaje.leido == False
-    ).count()

@@ -44,6 +44,3 @@ def marcar_leido(remitente: int, destinatario: int, db: Session = Depends(get_db
 def no_leidos(usuario_id: int, db: Session = Depends(get_db)):
     return mensajes_no_leidos(db, usuario_id)
 
-@router.get("/debug/columns")
-def debug_columns():
-    return Mensaje.__table__.columns.keys()

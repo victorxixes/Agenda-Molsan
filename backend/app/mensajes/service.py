@@ -69,6 +69,18 @@ def marcar_conversacion_leida(db: Session, remitente: int, destinatario: int):
     db.commit()
     return True
 
+def mensajes_no_leidos(db: Session, usuario_id: int):
+    try:
+        count = db.query(Mensaje).filter(
+            Mensaje.destinatario_id == usuario_id,
+            Mensaje.leido == False
+        ).count()
+
+        return count
+
+    except Exception as e:
+        print("ERROR mensajes_no_leidos:", e)
+        return 0
 
 def mensajes_no_leidos(db: Session, usuario_id: int):
     return db.query(Mensaje).filter(

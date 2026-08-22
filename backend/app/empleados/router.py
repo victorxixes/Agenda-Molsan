@@ -206,3 +206,8 @@ def actualizar_permisos(empleado_id: int, data: dict, db: Session = Depends(get_
     db.refresh(empleado)
 
     return {"detail": "Permisos actualizados correctamente"}
+
+@router.get("/debug/columns")
+def debug_columns():
+    from backend.app.empleados.models import Empleado
+    return Empleado.__table__.columns.keys()

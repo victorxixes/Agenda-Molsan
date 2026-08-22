@@ -10,15 +10,15 @@ class Mensaje(Base):
 
     id = Column(Integer, primary_key=True, index=True)
 
-    # ✔ La tabla correcta es empleados
     remitente_id = Column(Integer, ForeignKey("empleados.id"), nullable=False)
     destinatario_id = Column(Integer, ForeignKey("empleados.id"), nullable=False)
 
-    # ✔ CAMBIO CRÍTICO: debe llamarse texto, no mensaje
-    texto = Column(String, nullable=False)
+    # ✔ Debe coincidir con la BD
+    mensaje = Column(String, nullable=False)
 
     fecha = Column(DateTime, default=datetime.utcnow)
     leido = Column(Boolean, default=False)
+
 
 
 class UsuarioEstado(Base):

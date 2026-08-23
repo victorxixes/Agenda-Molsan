@@ -1,3 +1,4 @@
+
 import axios from "../api/axios";
 
 export const agendaAPI = {
@@ -8,8 +9,11 @@ export const agendaAPI = {
   citasSemana: (fecha) =>
     axios.get(`/agenda/semana/${fecha}`).then(r => r.data),
 
-  citasMes: (year, month) =>
-    axios.get(`/agenda/mes/${year}/${month}`).then(r => r.data),
+  // ⭐ CORREGIDO: ahora acepta "2026-08" y lo divide en year + month
+  citasMes: (mesString) => {
+    const [year, month] = mesString.split("-");
+    return axios.get(`/agenda/mes/${year}/${month}`).then(r => r.data);
+  },
 
   obtener: (id) =>
     axios.get(`/agenda/${id}`).then(r => r.data),

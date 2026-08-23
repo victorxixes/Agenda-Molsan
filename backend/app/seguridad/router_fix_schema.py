@@ -1,7 +1,9 @@
+
+
 from fastapi import APIRouter, HTTPException
 from sqlalchemy import inspect, text
 from sqlalchemy.exc import SQLAlchemyError
-from app.database import engine
+from backend.app.database import engine
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
@@ -16,7 +18,6 @@ def check_empleados():
         return {"tablas": tablas}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
 
 # ---------------------------------------------------------
 # 2) Fix del esquema de empleados
@@ -50,9 +51,7 @@ def fix_empleados_schema():
                 detail=f"Error añadiendo columna '{nombre}': {str(e)}"
             )
 
-    # -----------------------------
-    # DATOS PERSONALES
-    # -----------------------------
+    # Datos personales
     add_column("direccion", "VARCHAR(255)")
     add_column("fecha_nacimiento", "VARCHAR(20)")
     add_column("alergias", "TEXT")
@@ -60,32 +59,23 @@ def fix_empleados_schema():
     add_column("telefono_contacto", "VARCHAR(20)")
     add_column("observaciones", "TEXT")
 
-    # -----------------------------
-    # DATOS LABORALES
-    # -----------------------------
+    # Datos laborales
     add_column("departamento_id", "INTEGER")
     add_column("seccion_id", "INTEGER")
     add_column("cargo_id", "INTEGER")
-
     add_column("email_empresa", "VARCHAR(150)")
     add_column("extension", "VARCHAR(20)")
     add_column("fecha_alta", "VARCHAR(20)")
     add_column("fecha_baja", "VARCHAR(20)")
 
-    # -----------------------------
-    # USUARIO INTERNO
-    # -----------------------------
+    # Usuario interno
     add_column("usuario", "VARCHAR(100)")
     add_column("password", "VARCHAR(255)")
 
-    # -----------------------------
-    # FOTO
-    # -----------------------------
+    # Foto
     add_column("foto", "VARCHAR(255)")
 
-    # -----------------------------
     # JSONB
-    # -----------------------------
     add_column("modulos_visibles", "JSONB")
     add_column("permisos_modulo", "JSONB")
 
@@ -93,7 +83,6 @@ def fix_empleados_schema():
         "status": "ok",
         "columnas_agregadas": alteraciones
     }
-
 
 # ---------------------------------------------------------
 # 3) Endpoint manual para ejecutar el fix

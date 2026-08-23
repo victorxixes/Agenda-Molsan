@@ -1,10 +1,7 @@
+# backend/app/seguridad/router_api.py
 from fastapi import APIRouter
 
-router = APIRouter(prefix="/seguridad", tags=["Seguridad"])
-
-@router.get("/permisos")
-def get_permisos():
-    return {"detail": "ok"}
+router = APIRouter(prefix="/seguridad", tags=["Seguridad API"])
 
 @router.get("/eventos")
 def get_eventos():

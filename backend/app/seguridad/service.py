@@ -22,5 +22,4 @@ def listar_roles(db: Session):
     return db.query(Rol).all()
 
 def obtener_permisos_por_rol(db: Session, rol_id: int):
-    permisos = db.query(Permiso).filter(Permiso.rol_id == rol_id).all()
-    return permisos
+    return db.query(Permiso).filter(Permiso.rol_id == rol_id).all()

@@ -1,3 +1,4 @@
+
 import React, { useEffect } from "react";
 import { useSeguridadStore } from "../../store/seguridadStore";
 import { useSistemaStore } from "../../store/sistemaStore";
@@ -9,10 +10,7 @@ import IconSistema from "../../components/icons/IconSistema.jsx";
 import SeguridadRealtime from "../../components/realtime/SeguridadRealtime.jsx";
 
 export default function SeguridadPage() {
-  // Seguridad
   const { eventos, cargarEventos, loading } = useSeguridadStore();
-
-  // Estado del Sistema
   const {
     estado,
     info,
@@ -29,7 +27,6 @@ export default function SeguridadPage() {
 
   return (
     <div className="p-4 space-y-6">
-      {/* Título principal */}
       <h2
         className="text-3xl font-bold flex items-center gap-3"
         style={{ color: "#1F3A5F" }}
@@ -38,7 +35,6 @@ export default function SeguridadPage() {
         Seguridad del Sistema
       </h2>
 
-      {/* Estado del Sistema */}
       <GlassSectionTitle
         icon={<IconSistema size={26} />}
         title="Estado del Sistema"
@@ -95,7 +91,6 @@ export default function SeguridadPage() {
         </div>
       )}
 
-      {/* Eventos de seguridad */}
       <GlassSectionTitle
         icon={<IconSeguridad size={26} />}
         title="Eventos de seguridad"
@@ -122,7 +117,7 @@ export default function SeguridadPage() {
               {e.tipo.toUpperCase()}
             </p>
             <p className="text-sm" style={{ color: "#6A7A8C" }}>
-              {e.descripcion}
+              {e.descripcion || "Sin descripción"}
             </p>
             <p className="text-xs text-neutral-500">
               {new Date(e.fecha).toLocaleString()}

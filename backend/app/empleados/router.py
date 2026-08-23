@@ -200,12 +200,13 @@ def actualizar_permisos(empleado_id: int, data: dict, db: Session = Depends(get_
     if "permisos" not in data:
         raise HTTPException(status_code=400, detail="Faltan los permisos")
 
-    empleado.permisos = ",".join(data["permisos"])
+    empleado.permisos_modulo = data["permisos"]
 
     db.commit()
     db.refresh(empleado)
 
     return {"detail": "Permisos actualizados correctamente"}
+
 
 @router.get("/debug/columns")
 def debug_columns():

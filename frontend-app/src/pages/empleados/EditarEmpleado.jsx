@@ -1,15 +1,13 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axios from "../api/axios";
 
 export default function EditarEmpleado({ empleadoId }) {
-  const API = "https://agenda-intranet-b.onrender.com";
-
   const [form, setForm] = useState({});
   const [departamentos, setDepartamentos] = useState([]);
   const [secciones, setSecciones] = useState([]);
   const [cargos, setCargos] = useState([]);
 
-  // 🔥 Limpia valores "string", null, undefined
+  // Limpia valores corruptos del backend
   const limpiar = (obj) => {
     const limpio = { ...obj };
     for (const key in limpio) {
@@ -25,26 +23,18 @@ export default function EditarEmpleado({ empleadoId }) {
     return limpio;
   };
 
-  // 🔥 Cargar datos del empleado
+  // Cargar datos del empleado
   useEffect(() => {
-    axios.get(`${API}/empleados/${empleadoId}`).then((res) => {
+    axios.get(`/empleados/${empleadoId}`).then((res) => {
       setForm(limpiar(res.data));
     });
   }, [empleadoId]);
 
-  // 🔥 Cargar listas para selects
+  // Cargar listas para selects
   useEffect(() => {
-    fetch(`${API}/empleados/departamentos`)
-      .then((r) => r.json())
-      .then(setDepartamentos);
-
-    fetch(`${API}/empleados/secciones`)
-      .then((r) => r.json())
-      .then(setSecciones);
-
-    fetch(`${API}/empleados/cargos`)
-      .then((r) => r.json())
-      .then(setCargos);
+    axios.get(`/empleados/departamentos`).then((r) => setDepartamentos(r.data));
+    axios.get(`/empleados/secciones`).then((r) => setSecciones(r.data));
+    axios.get(`/empleados/cargos`).then((r) => setCargos(r.data));
   }, []);
 
   const handleChange = (field, value) => {
@@ -52,8 +42,15 @@ export default function EditarEmpleado({ empleadoId }) {
   };
 
   const guardar = () => {
+    const payload = {
+      ...form,
+      seccion_id: Number(form.seccion_id) || null,
+      departamento_id: Number(form.departamento_id) || null,
+      cargo_id: Number(form.cargo_id) || null,
+    };
+
     axios
-      .put(`${API}/empleados/${empleadoId}`, form)
+      .put(`/empleados/${empleadoId}`, payload)
       .then(() => alert("Empleado actualizado"))
       .catch(() => alert("Error al actualizar"));
   };
@@ -64,9 +61,7 @@ export default function EditarEmpleado({ empleadoId }) {
     <div className="p-6 space-y-6">
       <h2 className="text-xl font-bold mb-4">Editar empleado</h2>
 
-      {/* 🔥 Selects bonitos */}
       <div className="grid grid-cols-3 gap-4 mb-6">
-
         {/* SECCIÓN */}
         <div>
           <label className="font-semibold">Sección</label>
@@ -119,12 +114,12 @@ export default function EditarEmpleado({ empleadoId }) {
         </div>
       </div>
 
-      {/* 🔥 Campos del empleado (EXCLUYENDO los IDs) */}
+      {/* Campos del empleado (excepto IDs) */}
       <div className="grid grid-cols-2 gap-4">
         {Object.keys(form)
           .filter(
             (key) =>
-              !["seccion_id", "departamento_id", "cargo_id"].includes(key)
+              !["seccion_id", "departamento_id", "cargo_id", "id"].includes(key)
           )
           .map((key) => (
             <div key={key}>

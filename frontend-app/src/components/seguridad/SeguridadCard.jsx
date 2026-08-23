@@ -1,5 +1,6 @@
 import GlassCard from "../ui/GlassCard.jsx";
 import IconSeguridad from "../icons/IconSeguridad.jsx";
+
 export default function SeguridadCard({ titulo, descripcion }) {
   return (
     <GlassCard className="flex items-center gap-3">

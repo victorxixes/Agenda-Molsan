@@ -1,10 +1,8 @@
-from sqlalchemy.orm import Session
-from app.database import SessionLocal
-from app.seguridad.models import Rol, Permiso, RolPermiso
 
-# ---------------------------------------------------------
-# ROLES BASE DEL SISTEMA
-# ---------------------------------------------------------
+from sqlalchemy.orm import Session
+from backend.app.database import SessionLocal
+from backend.app.seguridad.models import Rol, Permiso, RolPermiso
+
 ROLES_BASE = [
     {"nombre": "Administrador", "descripcion": "Acceso total al ERP"},
     {"nombre": "Direccion", "descripcion": "Gestión y supervisión"},
@@ -13,9 +11,6 @@ ROLES_BASE = [
     {"nombre": "Invitado", "descripcion": "Acceso mínimo"},
 ]
 
-# ---------------------------------------------------------
-# PERMISOS BASE POR MÓDULO
-# ---------------------------------------------------------
 PERMISOS_BASE = [
     {"modulo": "agenda", "acciones": "ver,crear,editar,eliminar"},
     {"modulo": "empleados", "acciones": "ver,crear,editar,eliminar"},
@@ -29,9 +24,6 @@ PERMISOS_BASE = [
     {"modulo": "logs", "acciones": "ver"},
 ]
 
-# ---------------------------------------------------------
-# CREAR ROLES
-# ---------------------------------------------------------
 def init_roles():
     db: Session = SessionLocal()
 
@@ -44,9 +36,6 @@ def init_roles():
     db.commit()
     db.close()
 
-# ---------------------------------------------------------
-# CREAR PERMISOS
-# ---------------------------------------------------------
 def init_permisos():
     db: Session = SessionLocal()
 
@@ -55,16 +44,13 @@ def init_permisos():
         if not existe:
             nuevo = Permiso(
                 modulo=permiso["modulo"],
-                acciones=permiso["acciones"]
+                acciones=permiso["acciones"],
             )
             db.add(nuevo)
 
     db.commit()
     db.close()
 
-# ---------------------------------------------------------
-# ASIGNAR PERMISOS A ROLES
-# ---------------------------------------------------------
 def init_roles_permisos():
     db: Session = SessionLocal()
 
@@ -73,38 +59,32 @@ def init_roles_permisos():
 
     for rol in roles:
         for permiso in permisos:
-
             existe = db.query(RolPermiso).filter(
                 RolPermiso.rol_id == rol.id,
-                RolPermiso.permiso_id == permiso.id
+                RolPermiso.permiso_id == permiso.id,
             ).first()
 
-            # ADMINISTRADOR → TODOS LOS PERMISOS
             if rol.nombre == "Administrador":
                 if not existe:
                     db.add(RolPermiso(rol_id=rol.id, permiso_id=permiso.id))
 
-            # DIRECCION → ver + editar en todos los módulos
             elif rol.nombre == "Direccion":
                 acciones = permiso.acciones.split(",")
                 if "ver" in acciones or "editar" in acciones:
                     if not existe:
                         db.add(RolPermiso(rol_id=rol.id, permiso_id=permiso.id))
 
-            # APODERADO → solo agenda
             elif rol.nombre == "Apoderado":
                 if permiso.modulo == "agenda":
                     if not existe:
                         db.add(RolPermiso(rol_id=rol.id, permiso_id=permiso.id))
 
-            # GESTOR → solo ver en todos los módulos
             elif rol.nombre == "Gestor":
                 acciones = permiso.acciones.split(",")
                 if "ver" in acciones:
                     if not existe:
                         db.add(RolPermiso(rol_id=rol.id, permiso_id=permiso.id))
 
-            # INVITADO → ver agenda + ver empleados
             elif rol.nombre == "Invitado":
                 if permiso.modulo in ["agenda", "empleados"]:
                     acciones = permiso.acciones.split(",")
@@ -115,9 +95,6 @@ def init_roles_permisos():
     db.commit()
     db.close()
 
-# ---------------------------------------------------------
-# FUNCIÓN GLOBAL PARA LLAMAR DESDE main.py
-# ---------------------------------------------------------
 def init_seguridad():
     init_roles()
     init_permisos()

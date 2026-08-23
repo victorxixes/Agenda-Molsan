@@ -214,3 +214,16 @@ def actualizar_permisos(empleado_id: int, data: dict, db: Session = Depends(get_
 def debug_columns():
     from backend.app.empleados.models import Empleado
     return Empleado.__table__.columns.keys()
+@router.get("/debug/raw")
+def debug_raw(db: Session = Depends(get_db)):
+    empleados = db.query(Empleado).all()
+    salida = []
+    for e in empleados:
+        salida.append({
+            "id": e.id,
+            "modulos_visibles": e.modulos_visibles,
+            "permisos_modulo": e.permisos_modulo,
+            "usuario": e.usuario,
+            "dni": e.dni
+        })
+    return salida

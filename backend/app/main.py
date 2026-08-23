@@ -29,11 +29,14 @@ app.add_middleware(
 # ROUTERS (REST)
 # ---------------------------------------------------------
 
-from backend.app.seguridad.router import router as seguridad_router
+# ❌ ESTE ROMPÍA SWAGGER Y EMPLEADOS
+# from backend.app.seguridad.router import router as seguridad_router
+
+# ✔ ESTE ES EL CORRECTO (mínimo y estable)
 from backend.app.seguridad.router_api import router as seguridad_api_router
 from backend.app.seguridad.permisos_router import router as permisos_router
-from backend.app.auth.router import router as auth_router
 
+from backend.app.auth.router import router as auth_router
 from backend.app.empleados.router import router as empleados_router
 from backend.app.maestros.router import router as maestros_router
 
@@ -63,6 +66,7 @@ from backend.app.utilidades.router_force import router as force_router
 
 app.include_router(auth_router, prefix="/api")
 
+# ✔ Seguridad estable
 app.include_router(seguridad_api_router, prefix="/api")
 app.include_router(permisos_router, prefix="/api")
 
@@ -103,7 +107,6 @@ app.include_router(empleados_ws_router)
 app.include_router(intranet_ws_router)
 app.include_router(notificaciones_ws_router)
 app.include_router(seguridad_ws_router)
-
 
 # ---------------------------------------------------------
 # STATIC FILES

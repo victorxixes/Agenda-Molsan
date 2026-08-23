@@ -181,12 +181,14 @@ def actualizar_modulos(empleado_id: int, data: dict, db: Session = Depends(get_d
     if "modulos" not in data:
         raise HTTPException(status_code=400, detail="Faltan los módulos")
 
-    empleado.modulos_visibles = ",".join(data["modulos"])
+    # Guardar como JSONB (array real)
+    empleado.modulos_visibles = data["modulos"]
 
     db.commit()
     db.refresh(empleado)
 
     return {"detail": "Módulos actualizados correctamente"}
+
 
 # ---------------------------------------------------------
 # ACTUALIZAR PERMISOS DEL EMPLEADO

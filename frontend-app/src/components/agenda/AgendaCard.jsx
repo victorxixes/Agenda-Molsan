@@ -35,9 +35,7 @@ export default function AgendaCard({ cita, onEditarCita }) {
       </p>
 
       <p style={{ color: "#1F3A5F" }}>
-        Apoderado: {cita.apoderado
-          ? `${cita.apoderado.nombre} ${cita.apoderado.apellidos}`
-          : "Sin asignar"}
+        Apoderado ID: {cita.apoderado_id || "—"}
       </p>
 
       <p className="flex items-center gap-2 text-sm">
@@ -53,11 +51,10 @@ export default function AgendaCard({ cita, onEditarCita }) {
         </p>
       )}
 
-      {/* ⭐ BOTÓN EDITAR */}
       <button
         className="btn btn-sm btn-primary mt-2"
         onClick={(e) => {
-          e.stopPropagation(); // evita abrir el modal de detalle
+          e.stopPropagation();
           onEditarCita(cita.id);
         }}
       >

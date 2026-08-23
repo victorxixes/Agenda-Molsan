@@ -65,7 +65,7 @@ def subir_foto(empleado_id: int, archivo: UploadFile = File(...), db: Session = 
 # ---------------------------------------------------------
 # LISTAR
 # ---------------------------------------------------------
-@router.get("/", response_model=list[EmpleadoResponse])
+@router.get("", response_model=list[EmpleadoResponse])
 def listar(db: Session = Depends(get_db)):
     return listar_empleados(db)
 

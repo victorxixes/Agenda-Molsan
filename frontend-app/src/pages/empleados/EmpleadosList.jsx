@@ -37,15 +37,18 @@ export default function EmpleadosList() {
             className="bg-white p-4 rounded-xl border border-neutral-300 shadow-md cursor-pointer hover:bg-neutral-50"
             onClick={() => navigate(`/empleados/${empleado.id}`)}
           >
-<div className="flex items-center gap-2">
-  <EstadoBadge activo={empleado.registrado} />
-  <h3 className="font-semibold text-neutral-800">
-    {empleado.nombre}
-  </h3>
-</div>
+            <div className="flex items-center gap-2">
+              <EstadoBadge activo={empleado.activo} />
+              <h3 className="font-semibold text-neutral-800">
+                {empleado.nombre}
+              </h3>
+            </div>
 
-<p className="text-neutral-600 text-sm">{empleado.rol}</p>
-
+            <p className="text-neutral-600 text-sm">
+              {empleado.permisos_modulo?.rol
+                ? empleado.permisos_modulo.rol
+                : "Sin rol"}
+            </p>
           </div>
         ))}
       </div>

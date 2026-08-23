@@ -50,7 +50,7 @@ export default function CalendarGrid({ selectedDate, onSelectDay }) {
                   e.stopPropagation();
                   setCitaActual(cita);
                 }}
-                title={`Notario: ${cita.notario_id}\nApoderado: ${cita.apoderado}\nHora: ${cita.hora_inicio}`}
+               title={`Notario: ${cita.notario_id}\nApoderado ID: ${cita.apoderado_id}\nHora: ${cita.hora_inicio}`}
               >
                 <div className="flex items-center gap-1 text-sm">
                   <span>{icono}</span>
@@ -60,8 +60,8 @@ export default function CalendarGrid({ selectedDate, onSelectDay }) {
                   Notario: {cita.notario_id}
                 </div>
                 <div className="text-xs text-gray-700">
-                  Apoderado: {cita.apoderado || "—"}
-                </div>
+  Apoderado ID: {cita.apoderado_id || "—"}
+</div>
               </div>
             );
           })}

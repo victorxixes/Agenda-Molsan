@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axios from "../api/axios";
 
 export default function PermisosEmpleado({ empleadoId }) {
-  const API = "https://agenda-intranet-b.onrender.com";
-
   // Módulos disponibles
   const MODULOS = [
     "dashboard",
@@ -24,7 +22,7 @@ export default function PermisosEmpleado({ empleadoId }) {
 
   // Cargar datos del empleado
   useEffect(() => {
-    axios.get(`${API}/empleados/${empleadoId}`).then((res) => {
+    axios.get(`/empleados/${empleadoId}`).then((res) => {
       setModulosVisibles(res.data.modulos_visibles || []);
       setPermisosModulo(res.data.permisos_modulo || {});
     });
@@ -33,24 +31,22 @@ export default function PermisosEmpleado({ empleadoId }) {
   // Toggle módulo visible
   const toggleModulo = (modulo) => {
     let nuevos = [...modulosVisibles];
+
     if (nuevos.includes(modulo)) {
       nuevos = nuevos.filter((m) => m !== modulo);
     } else {
       nuevos.push(modulo);
     }
+
     setModulosVisibles(nuevos);
   };
 
   // Toggle permiso por módulo
   const togglePermiso = (modulo, permiso) => {
     const actuales = permisosModulo[modulo] || [];
-    let nuevos = [...actuales];
-
-    if (nuevos.includes(permiso)) {
-      nuevos = nuevos.filter((p) => p !== permiso);
-    } else {
-      nuevos.push(permiso);
-    }
+    let nuevos = actuales.includes(permiso)
+      ? actuales.filter((p) => p !== permiso)
+      : [...actuales, permiso];
 
     setPermisosModulo({
       ...permisosModulo,
@@ -58,12 +54,11 @@ export default function PermisosEmpleado({ empleadoId }) {
     });
   };
 
-  // Guardar cambios (endpoint correcto)
+  // Guardar cambios (endpoint correcto del backend)
   const guardarCambios = () => {
     axios
-      .put(`${API}/empleados/${empleadoId}`, {
-        modulos_visibles: modulosVisibles,
-        permisos_modulo: permisosModulo,
+      .put(`/empleados/${empleadoId}/permisos-detalle`, {
+        permisos: permisosModulo
       })
       .then(() => alert("Permisos actualizados correctamente"))
       .catch(() => alert("Error al guardar permisos"));

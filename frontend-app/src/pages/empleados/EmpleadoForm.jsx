@@ -21,18 +21,48 @@ export default function EmpleadoForm() {
     activo: true,
   });
 
+  // Limpieza de valores corruptos del backend
+  const limpiar = (obj) => {
+    const limpio = { ...obj };
+    for (const key in limpio) {
+      if (
+        limpio[key] === "string" ||
+        limpio[key] === null ||
+        limpio[key] === "null" ||
+        limpio[key] === undefined
+      ) {
+        limpio[key] = "";
+      }
+    }
+    return limpio;
+  };
+
+  // Cargar empleado si estamos editando
   useEffect(() => {
     if (id) cargarEmpleado(id);
   }, [id]);
 
+  // Cuando el store recibe el empleado, lo volcamos al formulario
   useEffect(() => {
-    if (empleado && id) setForm(empleado);
+    if (empleado && id) {
+      setForm(limpiar(empleado));
+    }
   }, [empleado, id]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (id) await actualizarEmpleado(id, form);
-    else await crearEmpleado(form);
+
+    const payload = {
+      ...form,
+      activo: Boolean(form.activo),
+    };
+
+    if (id) {
+      await actualizarEmpleado(id, payload);
+    } else {
+      await crearEmpleado(payload);
+    }
+
     navigate("/empleados");
   };
 

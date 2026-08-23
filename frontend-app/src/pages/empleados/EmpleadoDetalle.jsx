@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import axios from "axios";
+import axios from "../api/axios";
 
 import ResumenEmpleado from "./ResumenEmpleado";
 import RolEmpleado from "./RolEmpleado";
@@ -18,14 +18,11 @@ export default function EmpleadoDetalle() {
   const [empleado, setEmpleado] = useState(null);
   const [tab, setTab] = useState("resumen");
 
-  const API = "https://agenda-intranet-b.onrender.com";
-
-  // 🔥 Listas para convertir IDs → nombres
   const [departamentos, setDepartamentos] = useState([]);
   const [secciones, setSecciones] = useState([]);
   const [cargos, setCargos] = useState([]);
 
-  // 🔥 Limpia valores "string", null, undefined
+  // Limpieza de valores corruptos
   const limpiar = (obj) => {
     const limpio = { ...obj };
     for (const key in limpio) {
@@ -41,52 +38,43 @@ export default function EmpleadoDetalle() {
     return limpio;
   };
 
-  // 🔥 Cargar empleado
+  // Foto correcta
+  const getFotoURL = (foto) => {
+    if (!foto || foto === "string" || foto.trim() === "") {
+      return "/placeholder.png";
+    }
+    return `${import.meta.env.VITE_API_URL}${foto}`;
+  };
+
+  // Cargar empleado
   useEffect(() => {
-    axios.get(`${API}/empleados/${empleadoId}`).then((res) => {
+    axios.get(`/empleados/${empleadoId}`).then((res) => {
       setEmpleado(limpiar(res.data));
     });
   }, [empleadoId]);
 
-  // 🔥 Cargar listas para mostrar nombres reales (CORREGIDO)
+  // Cargar listas
   useEffect(() => {
-    fetch(`${API}/empleados/departamentos`)
-      .then((r) => r.json())
-      .then(setDepartamentos);
-
-    fetch(`${API}/empleados/secciones`)
-      .then((r) => r.json())
-      .then(setSecciones);
-
-    fetch(`${API}/empleados/cargos`)
-      .then((r) => r.json())
-      .then(setCargos);
+    axios.get(`/empleados/departamentos`).then((r) => setDepartamentos(r.data));
+    axios.get(`/empleados/secciones`).then((r) => setSecciones(r.data));
+    axios.get(`/empleados/cargos`).then((r) => setCargos(r.data));
   }, []);
 
-  // 🔥 Convertir IDs → nombres
+  // Convertir IDs → nombres
   const getDepartamentoNombre = (id) => {
-    const d = departamentos.find((dep) => dep.id === id);
+    const d = departamentos.find((dep) => dep.id === Number(id));
     return d ? d.nombre : "Sin departamento";
   };
 
   const getSeccionNombre = (id) => {
-    const s = secciones.find((sec) => sec.id === id);
+    const s = secciones.find((sec) => sec.id === Number(id));
     return s ? s.nombre : "Sin sección";
   };
 
   const getCargoNombre = (id) => {
-    const c = cargos.find((cg) => cg.id === id);
+    const c = cargos.find((cg) => cg.id === Number(id));
     return c ? c.nombre : "Sin cargo";
   };
-
-  // 🔥 Foto corregida
- const getFotoURL = (foto) => {
-  if (!foto || foto === "string" || foto.trim() === "") {
-    return "/placeholder.png";
-  }
-  return `${API}/fotos/${foto}`;
-};
-
 
   if (!empleado) return <div className="p-6">Cargando empleado...</div>;
 
@@ -109,7 +97,6 @@ export default function EmpleadoDetalle() {
             Estado: {empleado.activo ? "Activo" : "Inactivo"}
           </p>
 
-          {/* 🔥 Mostrar nombres reales */}
           <p className="text-neutral-700 text-sm">
             Sección: {getSeccionNombre(empleado.seccion_id)}
           </p>
@@ -149,32 +136,33 @@ export default function EmpleadoDetalle() {
       </div>
 
       {/* CONTENIDO SEGÚN PESTAÑA */}
-     {tab === "resumen" && (
-  <ResumenEmpleado
-    empleadoId={empleadoId}
-    getSeccionNombre={getSeccionNombre}
-    getDepartamentoNombre={getDepartamentoNombre}
-    getCargoNombre={getCargoNombre}
-  />
-)}
+      {tab === "resumen" && (
+        <ResumenEmpleado
+          empleadoId={empleadoId}
+          getSeccionNombre={getSeccionNombre}
+          getDepartamentoNombre={getDepartamentoNombre}
+          getCargoNombre={getCargoNombre}
+        />
+      )}
 
-    {tab === "datos" && (
-  <DatosPersonales
-    empleadoId={empleadoId}
-    getSeccionNombre={getSeccionNombre}
-    getDepartamentoNombre={getDepartamentoNombre}
-    getCargoNombre={getCargoNombre}
-  />
-)}
+      {tab === "datos" && (
+        <DatosPersonales
+          empleadoId={empleadoId}
+          getSeccionNombre={getSeccionNombre}
+          getDepartamentoNombre={getDepartamentoNombre}
+          getCargoNombre={getCargoNombre}
+        />
+      )}
 
-{tab === "laboral" && (
-  <DatosLaborales
-    empleadoId={empleadoId}
-    getSeccionNombre={getSeccionNombre}
-    getDepartamentoNombre={getDepartamentoNombre}
-    getCargoNombre={getCargoNombre}
-  />
-)}
+      {tab === "laboral" && (
+        <DatosLaborales
+          empleadoId={empleadoId}
+          getSeccionNombre={getSeccionNombre}
+          getDepartamentoNombre={getDepartamentoNombre}
+          getCargoNombre={getCargoNombre}
+        />
+      )}
+
       {tab === "rol" && <RolEmpleado empleadoId={empleadoId} />}
       {tab === "modulos" && <ModulosVisibles empleadoId={empleadoId} />}
       {tab === "permisos" && <PermisosEmpleado empleadoId={empleadoId} />}

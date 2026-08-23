@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axios from "../api/axios";
 
 export default function ResumenEmpleado({
   empleadoId,
@@ -8,10 +8,9 @@ export default function ResumenEmpleado({
   getCargoNombre,
 }) {
   const [empleado, setEmpleado] = useState(null);
-  const API = "https://agenda-intranet-b.onrender.com";
 
   useEffect(() => {
-    axios.get(`${API}/empleados/${empleadoId}`).then((res) => {
+    axios.get(`/empleados/${empleadoId}`).then((res) => {
       setEmpleado(res.data);
     });
   }, [empleadoId]);
@@ -46,12 +45,10 @@ export default function ResumenEmpleado({
         <div>
           <h3 className="font-semibold mb-2">Datos laborales</h3>
 
-          {/* 🔥 Mostrar nombres reales */}
           <p>Sección: {getSeccionNombre(empleado.seccion_id)}</p>
           <p>Departamento: {getDepartamentoNombre(empleado.departamento_id)}</p>
           <p>Cargo: {getCargoNombre(empleado.cargo_id)}</p>
 
-          {/* 🔥 Resto de datos */}
           <p>Email empresa: {empleado.email_empresa}</p>
         </div>
       </div>

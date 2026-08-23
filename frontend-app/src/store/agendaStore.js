@@ -32,10 +32,10 @@ export const useAgendaStore = create((set, get) => ({
   },
 
   // ---------------------------------------------------------
-  // CARGAR CITAS DEL MES
+  // CARGAR CITAS DEL MES (CORREGIDO)
   // ---------------------------------------------------------
-  cargarMes: async (year, month) => {
-    const data = await agendaAPI.citasMes(year, month);
+  cargarMes: async (yearMonth) => {
+    const data = await agendaAPI.citasMes(yearMonth);
 
     const mapa = {};
 
@@ -45,7 +45,7 @@ export const useAgendaStore = create((set, get) => ({
       mapa[fecha].push(cita);
     });
 
-    set({ citasMes: mapa, mesActual: { year, month } });
+    set({ citasMes: mapa, mesActual: yearMonth });
   },
 
   // ---------------------------------------------------------
@@ -67,7 +67,7 @@ export const useAgendaStore = create((set, get) => ({
       tipo_cita: data.tipo_cita,
       notario_id: Number(data.notario_id),
       tipo_firma: data.tipo_firma || "",
-      apoderado_id: Number(data.apoderado_id) || null,   // ⭐ CORREGIDO
+      apoderado_id: Number(data.apoderado_id) || null,
       estado: data.estado,
       observaciones: data.observaciones || "",
     };
@@ -80,7 +80,7 @@ export const useAgendaStore = create((set, get) => ({
 
     const { mesActual } = get();
     if (mesActual) {
-      await get().cargarMes(mesActual.year, mesActual.month);
+      await get().cargarMes(mesActual);   // ⭐ CORREGIDO
     }
   },
 
@@ -95,7 +95,7 @@ export const useAgendaStore = create((set, get) => ({
       tipo_cita: data.tipo_cita,
       notario_id: Number(data.notario_id),
       tipo_firma: data.tipo_firma || "",
-      apoderado_id: Number(data.apoderado_id) || null,   // ⭐ CORREGIDO
+      apoderado_id: Number(data.apoderado_id) || null,
       estado: data.estado,
       observaciones: data.observaciones || "",
     };
@@ -108,7 +108,7 @@ export const useAgendaStore = create((set, get) => ({
 
     const { mesActual } = get();
     if (mesActual) {
-      await get().cargarMes(mesActual.year, mesActual.month);
+      await get().cargarMes(mesActual);   // ⭐ CORREGIDO
     }
   },
 
@@ -124,7 +124,7 @@ export const useAgendaStore = create((set, get) => ({
 
     const { mesActual } = get();
     if (mesActual) {
-      await get().cargarMes(mesActual.year, mesActual.month);
+      await get().cargarMes(mesActual);   // ⭐ CORREGIDO
     }
   },
 }));

@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axios from "../api/axios";
 
 export default function ModulosVisibles({ empleadoId }) {
-  const API = "https://agenda-intranet-b.onrender.com";
-
   const MODULOS = [
     "dashboard",
     "agenda",
@@ -17,26 +15,31 @@ export default function ModulosVisibles({ empleadoId }) {
 
   const [modulosVisibles, setModulosVisibles] = useState([]);
 
+  // Cargar módulos visibles del empleado
   useEffect(() => {
-    axios.get(`${API}/empleados/${empleadoId}`).then((res) => {
+    axios.get(`/empleados/${empleadoId}`).then((res) => {
       setModulosVisibles(res.data.modulos_visibles || []);
     });
   }, [empleadoId]);
 
+  // Alternar módulo
   const toggleModulo = (modulo) => {
     let nuevos = [...modulosVisibles];
+
     if (nuevos.includes(modulo)) {
       nuevos = nuevos.filter((m) => m !== modulo);
     } else {
       nuevos.push(modulo);
     }
+
     setModulosVisibles(nuevos);
   };
 
+  // Guardar cambios (endpoint correcto del backend)
   const guardarCambios = () => {
     axios
-      .put(`${API}/empleados/${empleadoId}`, {
-        modulos_visibles: modulosVisibles,
+      .put(`/empleados/${empleadoId}/permisos`, {
+        modulos: modulosVisibles
       })
       .then(() => alert("Módulos visibles actualizados"))
       .catch(() => alert("Error al guardar módulos"));

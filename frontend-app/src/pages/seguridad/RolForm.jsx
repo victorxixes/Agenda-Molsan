@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+
+import React, { useState, useEffect } from "react";
 import { useSeguridadStore } from "../../store/seguridadStore";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -8,16 +9,85 @@ import IconSeguridad from "../../components/icons/IconSeguridad.jsx";
 
 export default function RolForm() {
   const navigate = useNavigate();
-  const { crearRol } = useSeguridadStore();
+  const { id } = useParams();
+
+  const {
+    rol,
+    cargarRol,
+    crearRol,
+    actualizarRol,
+  } = useSeguridadStore();
 
   const [form, setForm] = useState({
     nombre: "",
     descripcion: "",
+    permisos: [],
   });
 
+  const [nuevoPermiso, setNuevoPermiso] = useState({
+    modulo: "",
+    acciones: "",
+  });
+
+  // ---------------------------------------------------------
+  // Cargar rol si estamos editando
+  // ---------------------------------------------------------
+  useEffect(() => {
+    if (id) cargarRol(id);
+  }, [id]);
+
+  // ---------------------------------------------------------
+  // Rellenar formulario cuando llega el rol
+  // ---------------------------------------------------------
+  useEffect(() => {
+    if (rol) {
+      setForm({
+        nombre: rol.nombre,
+        descripcion: rol.descripcion,
+        permisos: rol.permisos.map((p) => ({
+          modulo: p.modulo,
+          acciones: p.acciones,
+        })),
+      });
+    }
+  }, [rol]);
+
+  // ---------------------------------------------------------
+  // Añadir permiso
+  // ---------------------------------------------------------
+  const agregarPermiso = () => {
+    if (!nuevoPermiso.modulo || !nuevoPermiso.acciones) return;
+
+    setForm({
+      ...form,
+      permisos: [...form.permisos, nuevoPermiso],
+    });
+
+    setNuevoPermiso({ modulo: "", acciones: "" });
+  };
+
+  // ---------------------------------------------------------
+  // Eliminar permiso
+  // ---------------------------------------------------------
+  const eliminarPermiso = (modulo) => {
+    setForm({
+      ...form,
+      permisos: form.permisos.filter((p) => p.modulo !== modulo),
+    });
+  };
+
+  // ---------------------------------------------------------
+  // Guardar
+  // ---------------------------------------------------------
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await crearRol(form);
+
+    if (id) {
+      await actualizarRol(id, form);
+    } else {
+      await crearRol(form);
+    }
+
     navigate("/seguridad/roles");
   };
 
@@ -29,7 +99,7 @@ export default function RolForm() {
         style={{ color: "#1F3A5F" }}
       >
         <IconSeguridad size={30} />
-        Nuevo Rol
+        {id ? "Editar Rol" : "Nuevo Rol"}
       </h2>
 
       {/* Sección Glass */}
@@ -51,11 +121,75 @@ export default function RolForm() {
             className="input"
             placeholder="Descripción"
             value={form.descripcion}
-            onChange={(e) => setForm({ ...form, descripcion: e.target.value })}
+            onChange={(e) =>
+              setForm({ ...form, descripcion: e.target.value })
+            }
           />
 
+          {/* Permisos */}
+          <div className="space-y-3">
+            <p className="font-bold" style={{ color: "#1F3A5F" }}>
+              Permisos del rol
+            </p>
+
+            {form.permisos.length === 0 && (
+              <p className="text-neutral-500 text-sm">No hay permisos.</p>
+            )}
+
+            {form.permisos.map((p) => (
+              <div
+                key={p.modulo}
+                className="flex items-center justify-between bg-neutral-800 p-2 rounded"
+              >
+                <span>
+                  <strong>{p.modulo}</strong>: {p.acciones}
+                </span>
+
+                <button
+                  type="button"
+                  className="text-red-400 text-sm"
+                  onClick={() => eliminarPermiso(p.modulo)}
+                >
+                  Eliminar
+                </button>
+              </div>
+            ))}
+
+            {/* Añadir permiso */}
+            <div className="flex gap-2">
+              <input
+                className="input flex-1"
+                placeholder="Módulo"
+                value={nuevoPermiso.modulo}
+                onChange={(e) =>
+                  setNuevoPermiso({ ...nuevoPermiso, modulo: e.target.value })
+                }
+              />
+
+              <input
+                className="input flex-1"
+                placeholder="Acciones (ver,crear,editar,eliminar)"
+                value={nuevoPermiso.acciones}
+                onChange={(e) =>
+                  setNuevoPermiso({
+                    ...nuevoPermiso,
+                    acciones: e.target.value,
+                  })
+                }
+              />
+
+              <button
+                type="button"
+                className="btn-primary"
+                onClick={agregarPermiso}
+              >
+                +
+              </button>
+            </div>
+          </div>
+
           <button type="submit" className="btn-primary w-full">
-            Guardar
+            {id ? "Guardar cambios" : "Crear rol"}
           </button>
         </form>
       </GlassCard>

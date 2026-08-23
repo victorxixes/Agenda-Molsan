@@ -1,10 +1,12 @@
+# backend/app/seguridad/init_admin.py
+
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 
-from app.database import SessionLocal
-from app.empleados.models import Empleado
-from app.maestros.models import Departamento, Seccion, Cargo
-from app.seguridad.models import Rol
+from backend.app.database import SessionLocal
+from backend.app.empleados.models import Empleado
+from backend.app.maestros.models import Departamento, Seccion, Cargo
+from backend.app.seguridad.models import Rol
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -41,13 +43,12 @@ def init_admin():
             nombre="Admin",
             apellidos="General",
             dni="ADMIN000",
-            telefono="600000000",
+            telefono_personal="600000000",
             email_personal="admin@molsan.com",
             email_empresa="admin@molsan.com",
             extension="100",
             fecha_alta="2026-08-01",
 
-            # Adaptado al nuevo modelo (strings, no IDs)
             departamento=dep.nombre,
             seccion=sec.nombre,
             cargo=car.nombre,

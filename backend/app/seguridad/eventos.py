@@ -5,7 +5,6 @@ router = APIRouter(prefix="/seguridad", tags=["Seguridad"])
 
 @router.get("/eventos")
 def listar_eventos():
-    # Ejemplo mínimo para que el módulo funcione
     return [
         {
             "id": 1,

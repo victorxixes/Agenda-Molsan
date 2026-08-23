@@ -170,7 +170,7 @@ def eliminar(empleado_id: int, db: Session = Depends(get_db)):
     return {"detail": "Empleado eliminado correctamente"}
 
 # ---------------------------------------------------------
-# ACTUALIZAR MÓDULOS VISIBLES
+# ACTUALIZAR MÓDULOS VISIBLES (JSONB)
 # ---------------------------------------------------------
 @router.put("/{empleado_id}/permisos")
 def actualizar_modulos(empleado_id: int, data: dict, db: Session = Depends(get_db)):
@@ -181,7 +181,6 @@ def actualizar_modulos(empleado_id: int, data: dict, db: Session = Depends(get_d
     if "modulos" not in data:
         raise HTTPException(status_code=400, detail="Faltan los módulos")
 
-    # Guardar como JSONB (array real)
     empleado.modulos_visibles = data["modulos"]
 
     db.commit()
@@ -189,9 +188,8 @@ def actualizar_modulos(empleado_id: int, data: dict, db: Session = Depends(get_d
 
     return {"detail": "Módulos actualizados correctamente"}
 
-
 # ---------------------------------------------------------
-# ACTUALIZAR PERMISOS DEL EMPLEADO
+# ACTUALIZAR PERMISOS DEL EMPLEADO (JSONB)
 # ---------------------------------------------------------
 @router.put("/{empleado_id}/permisos-detalle")
 def actualizar_permisos(empleado_id: int, data: dict, db: Session = Depends(get_db)):
@@ -209,7 +207,9 @@ def actualizar_permisos(empleado_id: int, data: dict, db: Session = Depends(get_
 
     return {"detail": "Permisos actualizados correctamente"}
 
-
+# ---------------------------------------------------------
+# DEBUG
+# ---------------------------------------------------------
 @router.get("/debug/columns")
 def debug_columns():
     from backend.app.empleados.models import Empleado

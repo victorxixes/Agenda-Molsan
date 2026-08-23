@@ -167,16 +167,12 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
         )}
 
         {/* Apoderado */}
-        <input
-          type="text"
-          className="input bg-gray-100"
-          value={
-            citaActual?.apoderado
-              ? `${citaActual.apoderado.nombre} ${citaActual.apoderado.apellidos}`
-              : "—"
-          }
-          readOnly
-        />
+<input
+  type="text"
+  className="input bg-gray-100"
+  value={form.apoderado_id || "—"}
+  readOnly
+/>
 
         {/* Tipo de firma */}
         <input

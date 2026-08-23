@@ -1,23 +1,23 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axios from "../api/axios";
 
 export default function EstadoEmpleado({ empleadoId }) {
   const [empleado, setEmpleado] = useState(null);
-  const API = "https://agenda-intranet-b.onrender.com";
 
+  // Cargar empleado
   useEffect(() => {
-    axios.get(`${API}/empleados/${empleadoId}`).then((res) => {
+    axios.get(`/empleados/${empleadoId}`).then((res) => {
       setEmpleado(res.data);
     });
   }, [empleadoId]);
 
+  // Cambiar estado (activo / inactivo)
   const toggleEstado = () => {
     const nuevoEstado = !empleado.activo;
 
     axios
-      .put(`${API}/empleados/${empleadoId}`, {
-        ...empleado,
-        activo: nuevoEstado,
+      .put(`/empleados/${empleadoId}`, {
+        activo: nuevoEstado
       })
       .then((res) => {
         setEmpleado(res.data);

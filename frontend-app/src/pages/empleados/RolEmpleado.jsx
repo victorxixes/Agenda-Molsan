@@ -1,24 +1,33 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axios from "../api/axios";
 
-const ROLES = ["Administrador", "Gestor", "Apoderado", "Usuario básico"];
+const ROLES = ["admin", "gestor", "apoderado", "usuario"];
 
 export default function RolEmpleado({ empleadoId }) {
   const [empleado, setEmpleado] = useState(null);
   const [rol, setRol] = useState("");
-  const API = "https://agenda-intranet-b.onrender.com";
 
+  // Cargar empleado
   useEffect(() => {
-    axios.get(`${API}/empleados/${empleadoId}`).then((res) => {
+    axios.get(`/empleados/${empleadoId}`).then((res) => {
       setEmpleado(res.data);
-      setRol(res.data.rol || "");
+
+      // Si ya tiene rol guardado en permisos_modulo
+      const rolActual = res.data.permisos_modulo?.rol || "";
+      setRol(rolActual);
     });
   }, [empleadoId]);
 
+  // Guardar rol dentro de permisos_modulo
   const guardarRol = () => {
     axios
-      .put(`${API}/empleados/${empleadoId}`, { ...empleado, rol })
-      .then(() => alert("Rol actualizado"))
+      .put(`/empleados/${empleadoId}/permisos-detalle`, {
+        permisos: {
+          ...empleado.permisos_modulo,
+          rol: rol,
+        },
+      })
+      .then(() => alert("Rol actualizado correctamente"))
       .catch(() => alert("Error al actualizar rol"));
   };
 
@@ -27,9 +36,7 @@ export default function RolEmpleado({ empleadoId }) {
   return (
     <div className="p-6">
       <h2 className="text-xl font-bold mb-4">Rol del empleado</h2>
-      <p className="mb-4">
-        Selecciona el rol que tendrá este empleado dentro del sistema.
-      </p>
+      <p className="mb-4">Selecciona el rol que tendrá este empleado dentro del sistema.</p>
 
       <div className="space-y-2 mb-4">
         {ROLES.map((r) => (
@@ -41,7 +48,7 @@ export default function RolEmpleado({ empleadoId }) {
               checked={rol === r}
               onChange={() => setRol(r)}
             />
-            {r}
+            {r.charAt(0).toUpperCase() + r.slice(1)}
           </label>
         ))}
       </div>

@@ -1,3 +1,4 @@
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
@@ -6,12 +7,8 @@ from backend.app.seguridad.service import obtener_permisos_por_rol
 
 router = APIRouter(prefix="/seguridad", tags=["Seguridad"])
 
-# ---------------------------------------------------------
-# PERMISOS DEL ADMIN (ruta que el frontend necesita)
-# ---------------------------------------------------------
 @router.get("/permisos")
 def permisos_admin(db: Session = Depends(get_db)):
-    # Módulos del ERP
     modulos = [
         "dashboard",
         "agenda",
@@ -25,7 +22,7 @@ def permisos_admin(db: Session = Depends(get_db)):
         "utilidades",
         "monitor",
         "logs",
-        "perfil"
+        "perfil",
     ]
 
     acciones = {
@@ -36,12 +33,9 @@ def permisos_admin(db: Session = Depends(get_db)):
     return {
         "rol": "Administrador",
         "modulos": modulos,
-        "acciones": acciones
+        "acciones": acciones,
     }
 
-# ---------------------------------------------------------
-# PERMISOS POR ROL (opcional)
-# ---------------------------------------------------------
 @router.get("/permisos/{rol_id}")
 def permisos_por_rol(rol_id: int, db: Session = Depends(get_db)):
     permisos = obtener_permisos_por_rol(db, rol_id)
@@ -56,5 +50,5 @@ def permisos_por_rol(rol_id: int, db: Session = Depends(get_db)):
     return {
         "rol_id": rol_id,
         "modulos": modulos,
-        "acciones": acciones
+        "acciones": acciones,
     }

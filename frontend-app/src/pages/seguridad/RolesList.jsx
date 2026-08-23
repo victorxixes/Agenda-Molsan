@@ -1,3 +1,4 @@
+
 import React, { useEffect } from "react";
 import { useSeguridadStore } from "../../store/seguridadStore";
 import { Link } from "react-router-dom";
@@ -15,7 +16,6 @@ export default function RolesList() {
 
   return (
     <div className="p-4 space-y-6">
-      {/* Título principal */}
       <div className="flex items-center justify-between">
         <h2
           className="text-3xl font-bold flex items-center gap-3"
@@ -30,7 +30,6 @@ export default function RolesList() {
         </Link>
       </div>
 
-      {/* Sección Glass */}
       <GlassSectionTitle
         icon={<IconSeguridad size={26} />}
         title="Listado de roles"
@@ -42,7 +41,6 @@ export default function RolesList() {
         </GlassCard>
       )}
 
-      {/* Grid de roles */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {roles.map((r) => (
           <GlassCard key={r.id} className="p-4 space-y-2">
@@ -52,6 +50,12 @@ export default function RolesList() {
 
             <p className="text-sm" style={{ color: "#6A7A8C" }}>
               {r.descripcion || "Sin descripción"}
+            </p>
+
+            <p className="text-xs text-neutral-500">
+              {r.permisos?.length > 0
+                ? `${r.permisos.length} permisos`
+                : "Sin permisos"}
             </p>
 
             <div className="pt-2">

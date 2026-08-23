@@ -1,4 +1,3 @@
-# backend/app/seguridad/router_api.py
 from fastapi import APIRouter
 
 router = APIRouter(prefix="/seguridad", tags=["Seguridad API"])

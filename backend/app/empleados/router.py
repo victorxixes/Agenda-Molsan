@@ -78,14 +78,20 @@ def listar(db: Session = Depends(get_db)):
         e.seccion = None
         e.cargo = None
 
-        # 🔥 Corrección JSONB
-        if e.modulos_visibles is None:
-            e.modulos_visibles = []
-        if e.permisos_modulo is None:
-            e.permisos_modulo = {}
+        # 🔥 SANEAR JSONB ANTES DE SERIALIZAR
+        if not isinstance(e.modulos_visibles, list):
+            try:
+                e.modulos_visibles = json.loads(e.modulos_visibles)
+            except:
+                e.modulos_visibles = []
+
+        if not isinstance(e.permisos_modulo, dict):
+            try:
+                e.permisos_modulo = json.loads(e.permisos_modulo)
+            except:
+                e.permisos_modulo = {}
 
     return empleados
-
 
 # ---------------------------------------------------------
 # BUSCAR + FILTROS + PAGINACIÓN

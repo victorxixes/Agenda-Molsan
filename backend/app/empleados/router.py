@@ -269,6 +269,7 @@ def buscar_empleados(
     offset = (page - 1) * limit
 
     empleados = query.offset(offset).limit(limit).all()
+
     empleados_saneados = [_sanear_jsonb_empleado(e) for e in empleados]
 
     return EmpleadoSearchResponse(

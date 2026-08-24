@@ -68,7 +68,9 @@ export const useEmpleadosStore = create((set, get) => ({
     if (filtros.activo !== null) params.append("activo", filtros.activo);
 
     const API = import.meta.env.VITE_API_URL;
-    const res = await fetch(`${API}/empleados/search?${params.toString()}`);
+
+    // 🔥 CORREGIDO: ruta correcta con /api
+    const res = await fetch(`${API}/api/empleados/search?${params.toString()}`);
     const data = await res.json();
 
     set({ empleados: data.items });
@@ -169,8 +171,9 @@ export const useEmpleadosStore = create((set, get) => ({
       const formData = new FormData();
       formData.append("archivo", archivo);
 
+      // 🔥 CORREGIDO: ruta correcta con /api
       const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/empleados/${id}/foto`,
+        `${import.meta.env.VITE_API_URL}/api/empleados/${id}/foto`,
         { method: "POST", body: formData }
       );
 
@@ -200,7 +203,8 @@ export const useEmpleadosStore = create((set, get) => ({
   // ---------------------------------------------------------
   guardarPermisos: async (id, modulos_visibles, permisos_modulo) => {
     try {
-      await fetch(`${import.meta.env.VITE_API_URL}/empleados/${id}/permisos`, {
+      // 🔥 CORREGIDO: ruta correcta con /api
+      await fetch(`${import.meta.env.VITE_API_URL}/api/empleados/${id}/permisos`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

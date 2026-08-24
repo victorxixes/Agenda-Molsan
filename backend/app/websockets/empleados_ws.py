@@ -1,3 +1,5 @@
+from __future__ import annotations   # 🔥 evita que FastAPI intente resolver modelos al analizar el router
+
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from typing import Dict
 
@@ -5,8 +7,13 @@ router = APIRouter()
 
 empleados_conectados: Dict[int, WebSocket] = {}
 
+
 @router.websocket("/ws/empleados")
 async def empleados_ws(websocket: WebSocket):
+    # 🔥 Importar aquí evita que se carguen modelos antes de tiempo
+    # (si en el futuro este WS usa servicios que importan modelos)
+    # from backend.app.empleados.service import algo   ← ejemplo
+
     await websocket.accept()
 
     try:

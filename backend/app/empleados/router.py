@@ -278,3 +278,44 @@ def debug_raw(db: Session = Depends(get_db)):
             "dni": e.dni
         })
     return salida
+
+router.put("/fix-jsonb")
+def fix_jsonb(db: Session = Depends(get_db)):
+    empleados = db.query(Empleado).all()
+    cambios = []
+
+    for e in empleados:
+        cambiado = False
+
+        # --- Arreglar modulos_visibles ---
+        if isinstance(e.modulos_visibles, str):
+            # Convertir "a,b,c" → ["a","b","c"]
+            e.modulos_visibles = e.modulos_visibles.split(",")
+            cambiado = True
+
+        if e.modulos_visibles is None:
+            e.modulos_visibles = []
+            cambiado = True
+
+        # --- Arreglar permisos_modulo ---
+        if isinstance(e.permisos_modulo, str):
+            try:
+                import json
+                e.permisos_modulo = json.loads(e.permisos_modulo)
+            except:
+                e.permisos_modulo = {}
+            cambiado = True
+
+        if e.permisos_modulo is None:
+            e.permisos_modulo = {}
+            cambiado = True
+
+        if cambiado:
+            cambios.append(e.id)
+
+    db.commit()
+
+    return {
+        "detail": "JSONB corregido",
+        "empleados_corregidos": cambios
+    }

@@ -23,8 +23,40 @@ from backend.app.empleados.service import (
 
 router = APIRouter(prefix="/empleados", tags=["Empleados"])
 
+
 # ---------------------------------------------------------
-# 🔥 ENDPOINT DE REPARACIÓN JSONB (SIEMPRE SE CARGA)
+# UTILIDAD: SANEAR JSONB DE UN EMPLEADO
+# ---------------------------------------------------------
+def _sanear_jsonb_empleado(e: Empleado):
+    # relaciones fuera
+    e.departamento = None
+    e.seccion = None
+    e.cargo = None
+
+    # modulos_visibles siempre lista
+    mv = e.modulos_visibles
+    if isinstance(mv, str):
+        mv = mv.split(",")
+    elif mv is None:
+        mv = []
+    e.modulos_visibles = mv
+
+    # permisos_modulo siempre dict
+    pm = e.permisos_modulo
+    if isinstance(pm, str):
+        try:
+            pm = json.loads(pm)
+        except Exception:
+            pm = {}
+    elif pm is None:
+        pm = {}
+    e.permisos_modulo = pm
+
+    return e
+
+
+# ---------------------------------------------------------
+# 🔥 FIX JSONB
 # ---------------------------------------------------------
 @router.put("/fix-jsonb-safe")
 def fix_jsonb_safe(db: Session = Depends(get_db)):
@@ -32,30 +64,12 @@ def fix_jsonb_safe(db: Session = Depends(get_db)):
     cambios = []
 
     for e in empleados:
-        cambiado = False
+        original_mv = e.modulos_visibles
+        original_pm = e.permisos_modulo
 
-        # --- Arreglar modulos_visibles ---
-        if isinstance(e.modulos_visibles, str):
-            e.modulos_visibles = e.modulos_visibles.split(",")
-            cambiado = True
+        _sanear_jsonb_empleado(e)
 
-        if e.modulos_visibles is None:
-            e.modulos_visibles = []
-            cambiado = True
-
-        # --- Arreglar permisos_modulo ---
-        if isinstance(e.permisos_modulo, str):
-            try:
-                e.permisos_modulo = json.loads(e.permisos_modulo)
-            except:
-                e.permisos_modulo = {}
-            cambiado = True
-
-        if e.permisos_modulo is None:
-            e.permisos_modulo = {}
-            cambiado = True
-
-        if cambiado:
+        if e.modulos_visibles != original_mv or e.permisos_modulo != original_pm:
             cambios.append(e.id)
 
     db.commit()
@@ -65,20 +79,24 @@ def fix_jsonb_safe(db: Session = Depends(get_db)):
         "empleados_corregidos": cambios
     }
 
+
 # ---------------------------------------------------------
-# LISTAS PARA SELECTS (SIN IMPORTAR MODELOS)
+# SELECTS
 # ---------------------------------------------------------
 @router.get("/departamentos")
 def listar_departamentos(db: Session = Depends(get_db)):
     return db.execute("SELECT id, nombre, descripcion FROM departamentos").fetchall()
 
+
 @router.get("/secciones")
 def listar_secciones(db: Session = Depends(get_db)):
     return db.execute("SELECT id, nombre, descripcion FROM secciones").fetchall()
 
+
 @router.get("/cargos")
 def listar_cargos(db: Session = Depends(get_db)):
     return db.execute("SELECT id, nombre, descripcion FROM cargos").fetchall()
+
 
 # ---------------------------------------------------------
 # SUBIR FOTO
@@ -102,12 +120,8 @@ def subir_foto(empleado_id: int, archivo: UploadFile = File(...), db: Session = 
     db.commit()
     db.refresh(empleado)
 
-    # Evitar serializar relaciones
-    empleado.departamento = None
-    empleado.seccion = None
-    empleado.cargo = None
+    return _sanear_jsonb_empleado(empleado)
 
-    return empleado
 
 # ---------------------------------------------------------
 # LISTAR
@@ -115,29 +129,98 @@ def subir_foto(empleado_id: int, archivo: UploadFile = File(...), db: Session = 
 @router.get("", response_model=list[EmpleadoResponse])
 def listar(db: Session = Depends(get_db)):
     empleados = listar_empleados(db)
+    return [_sanear_jsonb_empleado(e) for e in empleados]
 
-    for e in empleados:
-        e.departamento = None
-        e.seccion = None
-        e.cargo = None
-
-        # 🔥 SANEAR JSONB ANTES DE SERIALIZAR
-        if not isinstance(e.modulos_visibles, list):
-            try:
-                e.modulos_visibles = json.loads(e.modulos_visibles)
-            except:
-                e.modulos_visibles = []
-
-        if not isinstance(e.permisos_modulo, dict):
-            try:
-                e.permisos_modulo = json.loads(e.permisos_modulo)
-            except:
-                e.permisos_modulo = {}
-
-    return empleados
 
 # ---------------------------------------------------------
-# BUSCAR + FILTROS + PAGINACIÓN
+# OBTENER UNO
+# ---------------------------------------------------------
+@router.get("/{empleado_id}", response_model=EmpleadoResponse)
+def obtener(empleado_id: int, db: Session = Depends(get_db)):
+    empleado = db.query(Empleado).filter(Empleado.id == empleado_id).first()
+    if not empleado:
+        raise HTTPException(status_code=404, detail="Empleado no encontrado")
+
+    return _sanear_jsonb_empleado(empleado)
+
+
+# ---------------------------------------------------------
+# CREAR
+# ---------------------------------------------------------
+@router.post("/", response_model=EmpleadoResponse)
+def crear(data: EmpleadoCreate, db: Session = Depends(get_db)):
+    empleado = crear_empleado(db, data)
+    return _sanear_jsonb_empleado(empleado)
+
+
+# ---------------------------------------------------------
+# EDITAR
+# ---------------------------------------------------------
+@router.put("/{empleado_id}", response_model=EmpleadoResponse)
+def editar(empleado_id: int, data: EmpleadoUpdate, db: Session = Depends(get_db)):
+    empleado = editar_empleado_service(db, empleado_id, data)
+    if not empleado:
+        raise HTTPException(status_code=404, detail="Empleado no encontrado")
+
+    return _sanear_jsonb_empleado(empleado)
+
+
+# ---------------------------------------------------------
+# ELIMINAR
+# ---------------------------------------------------------
+@router.delete("/{empleado_id}")
+def eliminar(empleado_id: int, db: Session = Depends(get_db)):
+    empleado = db.query(Empleado).filter(Empleado.id == empleado_id).first()
+    if not empleado:
+        raise HTTPException(status_code=404, detail="Empleado no encontrado")
+
+    db.delete(empleado)
+    db.commit()
+    return {"detail": "Empleado eliminado correctamente"}
+
+
+# ---------------------------------------------------------
+# ACTUALIZAR MÓDULOS
+# ---------------------------------------------------------
+@router.put("/{empleado_id}/permisos")
+def actualizar_modulos(empleado_id: int, data: dict, db: Session = Depends(get_db)):
+    empleado = db.query(Empleado).filter(Empleado.id == empleado_id).first()
+    if not empleado:
+        raise HTTPException(status_code=404, detail="Empleado no encontrado")
+
+    if "modulos" not in data:
+        raise HTTPException(status_code=400, detail="Faltan los módulos")
+
+    empleado.modulos_visibles = data["modulos"]
+
+    db.commit()
+    db.refresh(empleado)
+
+    return _sanear_jsonb_empleado(empleado)
+
+
+# ---------------------------------------------------------
+# ACTUALIZAR PERMISOS
+# ---------------------------------------------------------
+@router.put("/{empleado_id}/permisos-detalle")
+def actualizar_permisos(empleado_id: int, data: dict, db: Session = Depends(get_db)):
+    empleado = db.query(Empleado).filter(Empleado.id == empleado_id).first()
+    if not empleado:
+        raise HTTPException(status_code=404, detail="Empleado no encontrado")
+
+    if "permisos" not in data:
+        raise HTTPException(status_code=400, detail="Faltan los permisos")
+
+    empleado.permisos_modulo = data["permisos"]
+
+    db.commit()
+    db.refresh(empleado)
+
+    return _sanear_jsonb_empleado(empleado)
+
+
+# ---------------------------------------------------------
+# SEARCH
 # ---------------------------------------------------------
 @router.get("/search", response_model=EmpleadoSearchResponse)
 def buscar_empleados(
@@ -186,12 +269,7 @@ def buscar_empleados(
     offset = (page - 1) * limit
 
     empleados = query.offset(offset).limit(limit).all()
-
-    # Evitar serializar relaciones
-    for e in empleados:
-        e.departamento = None
-        e.seccion = None
-        e.cargo = None
+    empleados_saneados = [_sanear_jsonb_empleado(e) for e in empleados]
 
     return EmpleadoSearchResponse(
         total=total,
@@ -199,114 +277,12 @@ def buscar_empleados(
         pages=pages,
         limit=limit,
         offset=offset,
-        items=empleados
+        items=empleados_saneados
     )
 
-# ---------------------------------------------------------
-# OBTENER UNO
-# ---------------------------------------------------------
-@router.get("/{empleado_id}", response_model=EmpleadoResponse)
-def obtener(empleado_id: int, db: Session = Depends(get_db)):
-    empleado = db.query(Empleado).filter(Empleado.id == empleado_id).first()
-    if not empleado:
-        raise HTTPException(status_code=404, detail="Empleado no encontrado")
-
-    # Evitar serializar relaciones
-    empleado.departamento = None
-    empleado.seccion = None
-    empleado.cargo = None
-
-    return empleado
 
 # ---------------------------------------------------------
-# CREAR
-# ---------------------------------------------------------
-@router.post("/", response_model=EmpleadoResponse)
-def crear(data: EmpleadoCreate, db: Session = Depends(get_db)):
-    empleado = crear_empleado(db, data)
-
-    empleado.departamento = None
-    empleado.seccion = None
-    empleado.cargo = None
-
-    return empleado
-
-# ---------------------------------------------------------
-# EDITAR
-# ---------------------------------------------------------
-@router.put("/{empleado_id}", response_model=EmpleadoResponse)
-def editar(empleado_id: int, data: EmpleadoUpdate, db: Session = Depends(get_db)):
-    empleado = editar_empleado_service(db, empleado_id, data)
-    if not empleado:
-        raise HTTPException(status_code=404, detail="Empleado no encontrado")
-
-    empleado.departamento = None
-    empleado.seccion = None
-    empleado.cargo = None
-
-    return empleado
-
-# ---------------------------------------------------------
-# ELIMINAR
-# ---------------------------------------------------------
-@router.delete("/{empleado_id}")
-def eliminar(empleado_id: int, db: Session = Depends(get_db)):
-    empleado = db.query(Empleado).filter(Empleado.id == empleado_id).first()
-    if not empleado:
-        raise HTTPException(status_code=404, detail="Empleado no encontrado")
-
-    db.delete(empleado)
-    db.commit()
-    return {"detail": "Empleado eliminado correctamente"}
-
-# ---------------------------------------------------------
-# ACTUALIZAR MÓDULOS VISIBLES (JSONB)
-# ---------------------------------------------------------
-@router.put("/{empleado_id}/permisos")
-def actualizar_modulos(empleado_id: int, data: dict, db: Session = Depends(get_db)):
-    empleado = db.query(Empleado).filter(Empleado.id == empleado_id).first()
-    if not empleado:
-        raise HTTPException(status_code=404, detail="Empleado no encontrado")
-
-    if "modulos" not in data:
-        raise HTTPException(status_code=400, detail="Faltan los módulos")
-
-    empleado.modulos_visibles = data["modulos"]
-
-    db.commit()
-    db.refresh(empleado)
-
-    empleado.departamento = None
-    empleado.seccion = None
-    empleado.cargo = None
-
-    return {"detail": "Módulos actualizados correctamente"}
-
-# ---------------------------------------------------------
-# ACTUALIZAR PERMISOS DEL EMPLEADO (JSONB)
-# ---------------------------------------------------------
-@router.put("/{empleado_id}/permisos-detalle")
-def actualizar_permisos(empleado_id: int, data: dict, db: Session = Depends(get_db)):
-    empleado = db.query(Empleado).filter(Empleado.id == empleado_id).first()
-    if not empleado:
-        raise HTTPException(status_code=404, detail="Empleado no encontrado")
-
-    if "permisos" not in data:
-        raise HTTPException(status_code=400, detail="Faltan los permisos")
-
-    empleado.permisos_modulo = data["permisos"]
-
-    db.commit()
-    db.refresh(empleado)
-
-    empleado.departamento = None
-    empleado.seccion = None
-    empleado.cargo = None
-
-    return {"detail": "Permisos actualizados correctamente"}
-
-# ---------------------------------------------------------
-# DEBUG
+# DEBUG RAW
 # ---------------------------------------------------------
 @router.get("/debug/raw")
 def debug_raw(db: Session = Depends(get_db)):
@@ -321,10 +297,3 @@ def debug_raw(db: Session = Depends(get_db)):
             "dni": e.dni
         })
     return salida
-
-
-
-    return {
-        "detail": "JSONB corregido",
-        "empleados_corregidos": cambios
-    }

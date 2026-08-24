@@ -1,10 +1,12 @@
+from __future__ import annotations
+
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from typing import Dict
 
 router = APIRouter()
 
-# Diccionario global de conexiones por usuario
 notificaciones_connections: Dict[int, WebSocket] = {}
+
 
 @router.websocket("/ws/notificaciones/{usuario_id}")
 async def notificaciones_ws(websocket: WebSocket, usuario_id: int):
@@ -29,7 +31,6 @@ async def notificaciones_ws(websocket: WebSocket, usuario_id: int):
 
 
 async def enviar_notificacion(usuario_id: int, evento: dict):
-    """Enviar notificación a un usuario específico."""
     ws = notificaciones_connections.get(usuario_id)
     if ws:
         try:
@@ -39,7 +40,6 @@ async def enviar_notificacion(usuario_id: int, evento: dict):
 
 
 async def broadcast_notificacion(evento: dict):
-    """Enviar notificación a todos los usuarios conectados."""
     for ws in list(notificaciones_connections.values()):
         try:
             await ws.send_json(evento)

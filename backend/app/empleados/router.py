@@ -73,13 +73,19 @@ def subir_foto(empleado_id: int, archivo: UploadFile = File(...), db: Session = 
 def listar(db: Session = Depends(get_db)):
     empleados = listar_empleados(db)
 
-    # Evitar serializar relaciones
     for e in empleados:
         e.departamento = None
         e.seccion = None
         e.cargo = None
 
+        # 🔥 Corrección JSONB
+        if e.modulos_visibles is None:
+            e.modulos_visibles = []
+        if e.permisos_modulo is None:
+            e.permisos_modulo = {}
+
     return empleados
+
 
 # ---------------------------------------------------------
 # BUSCAR + FILTROS + PAGINACIÓN

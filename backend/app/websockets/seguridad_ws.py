@@ -1,6 +1,10 @@
+from __future__ import annotations
+
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+import asyncio
 
 router = APIRouter()
+
 
 @router.websocket("/ws/seguridad")
 async def seguridad_ws(websocket: WebSocket):

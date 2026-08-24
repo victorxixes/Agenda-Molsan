@@ -1,16 +1,17 @@
+from __future__ import annotations
+
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from typing import Dict
 
 router = APIRouter()
 
-# Diccionario global de conexiones WebSocket
 intranet_connections: Dict[int, WebSocket] = {}
+
 
 @router.websocket("/ws/intranet")
 async def intranet_ws(websocket: WebSocket):
     await websocket.accept()
 
-    # Recibir primer mensaje: ID del usuario
     try:
         data = await websocket.receive_json()
     except Exception:
@@ -18,7 +19,6 @@ async def intranet_ws(websocket: WebSocket):
         return
 
     usuario_id = data.get("usuario_id")
-
     if not usuario_id:
         await websocket.close()
         return
@@ -42,7 +42,6 @@ async def intranet_ws(websocket: WebSocket):
 
 
 async def intranet_broadcast(evento: dict):
-    """Enviar evento a todos los usuarios conectados al WS de intranet."""
     for ws in list(intranet_connections.values()):
         try:
             await ws.send_json(evento)

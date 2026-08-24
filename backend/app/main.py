@@ -4,15 +4,12 @@ from fastapi.staticfiles import StaticFiles
 import os
 
 # ---------------------------------------------------------
-# IMPORTAR SQLALCHEMY Y REGISTRAR MODELOS ANTES DE ROUTERS
+# SQLALCHEMY: REGISTRAR MODELOS ANTES DE IMPORTAR ROUTERS
 # ---------------------------------------------------------
 from backend.app.database import Base, engine
 import sqlalchemy
 
-# Forzar registro de mappers una sola vez
 sqlalchemy.orm.configure_mappers()
-
-# Crear tablas
 Base.metadata.create_all(bind=engine)
 
 # ---------------------------------------------------------
@@ -44,7 +41,7 @@ FOTOS_DIR = os.path.join(os.path.dirname(__file__), "fotos")
 app.mount("/fotos", StaticFiles(directory=FOTOS_DIR), name="fotos")
 
 # ---------------------------------------------------------
-# IMPORTAR ROUTERS DESPUÉS DE CREAR TABLAS
+# IMPORTAR ROUTERS (REST) — DESPUÉS DE CREAR TABLAS
 # ---------------------------------------------------------
 
 # Seguridad
@@ -85,15 +82,8 @@ from backend.app.utilidades.router import router as utilidades_router
 from backend.app.utilidades.router_create import router as create_router
 from backend.app.utilidades.router_force import router as force_router
 
-# WebSockets
-from backend.app.websockets.chat_ws import router as chat_ws_router
-from backend.app.websockets.empleados_ws import router as empleados_ws_router
-from backend.app.websockets.intranet_ws import router as intranet_ws_router
-from backend.app.websockets.notificaciones_ws import router as notificaciones_ws_router
-from backend.app.websockets.seguridad_ws import router as seguridad_ws_router
-
 # ---------------------------------------------------------
-# INCLUIR ROUTERS
+# INCLUIR ROUTERS REST
 # ---------------------------------------------------------
 
 app.include_router(auth_router, prefix="/api")
@@ -125,9 +115,22 @@ app.include_router(utilidades_router, prefix="/api")
 app.include_router(create_router, prefix="/api")
 app.include_router(force_router, prefix="/api")
 
+# ---------------------------------------------------------
+# IMPORTAR WEBSOCKETS AL FINAL (CRÍTICO)
+# ---------------------------------------------------------
+
+from backend.app.websockets.chat_ws import router as chat_ws_router
+from backend.app.websockets.empleados_ws import router as empleados_ws_router
+from backend.app.websockets.intranet_ws import router as intranet_ws_router
+from backend.app.websockets.notificaciones_ws import router as notificaciones_ws_router
+from backend.app.websockets.seguridad_ws import router as seguridad_ws_router
+
+# ---------------------------------------------------------
+# INCLUIR WEBSOCKETS SIN SCHEMA (CRÍTICO)
+# ---------------------------------------------------------
+
 app.include_router(chat_ws_router, include_in_schema=False)
 app.include_router(empleados_ws_router, include_in_schema=False)
 app.include_router(intranet_ws_router, include_in_schema=False)
 app.include_router(notificaciones_ws_router, include_in_schema=False)
 app.include_router(seguridad_ws_router, include_in_schema=False)
-

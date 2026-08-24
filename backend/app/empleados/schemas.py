@@ -58,6 +58,7 @@ class EmpleadoResponse(EmpleadoBase):
 
     class Config:
         orm_mode = True
+        arbitrary_types_allowed = True   # ← 🔥 ESTA LÍNEA ES LA QUE EVITA EL 500
 
 # ---------------------------------------------------------
 # SEARCH RESPONSE (paginación)

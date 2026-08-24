@@ -5,7 +5,6 @@ import os
 
 from backend.app.database import get_db
 from backend.app.empleados.models import Empleado
-from backend.app.maestros.models import Departamento, Seccion, Cargo
 
 from backend.app.empleados.schemas import (
     EmpleadoCreate,
@@ -24,19 +23,19 @@ from backend.app.empleados.service import (
 router = APIRouter(prefix="/empleados", tags=["Empleados"])
 
 # ---------------------------------------------------------
-# LISTAS PARA SELECTS
+# LISTAS PARA SELECTS (SIN IMPORTAR MODELOS)
 # ---------------------------------------------------------
 @router.get("/departamentos")
 def listar_departamentos(db: Session = Depends(get_db)):
-    return db.query(Departamento).all()
+    return db.execute("SELECT id, nombre, descripcion FROM departamentos").fetchall()
 
 @router.get("/secciones")
 def listar_secciones(db: Session = Depends(get_db)):
-    return db.query(Seccion).all()
+    return db.execute("SELECT id, nombre, descripcion FROM secciones").fetchall()
 
 @router.get("/cargos")
 def listar_cargos(db: Session = Depends(get_db)):
-    return db.query(Cargo).all()
+    return db.execute("SELECT id, nombre, descripcion FROM cargos").fetchall()
 
 # ---------------------------------------------------------
 # SUBIR FOTO
@@ -60,6 +59,11 @@ def subir_foto(empleado_id: int, archivo: UploadFile = File(...), db: Session = 
     db.commit()
     db.refresh(empleado)
 
+    # Evitar serializar relaciones
+    empleado.departamento = None
+    empleado.seccion = None
+    empleado.cargo = None
+
     return empleado
 
 # ---------------------------------------------------------
@@ -67,7 +71,15 @@ def subir_foto(empleado_id: int, archivo: UploadFile = File(...), db: Session = 
 # ---------------------------------------------------------
 @router.get("", response_model=list[EmpleadoResponse])
 def listar(db: Session = Depends(get_db)):
-    return listar_empleados(db)
+    empleados = listar_empleados(db)
+
+    # Evitar serializar relaciones
+    for e in empleados:
+        e.departamento = None
+        e.seccion = None
+        e.cargo = None
+
+    return empleados
 
 # ---------------------------------------------------------
 # BUSCAR + FILTROS + PAGINACIÓN
@@ -120,6 +132,12 @@ def buscar_empleados(
 
     empleados = query.offset(offset).limit(limit).all()
 
+    # Evitar serializar relaciones
+    for e in empleados:
+        e.departamento = None
+        e.seccion = None
+        e.cargo = None
+
     return EmpleadoSearchResponse(
         total=total,
         page=page,
@@ -137,6 +155,12 @@ def obtener(empleado_id: int, db: Session = Depends(get_db)):
     empleado = db.query(Empleado).filter(Empleado.id == empleado_id).first()
     if not empleado:
         raise HTTPException(status_code=404, detail="Empleado no encontrado")
+
+    # Evitar serializar relaciones
+    empleado.departamento = None
+    empleado.seccion = None
+    empleado.cargo = None
+
     return empleado
 
 # ---------------------------------------------------------
@@ -144,7 +168,13 @@ def obtener(empleado_id: int, db: Session = Depends(get_db)):
 # ---------------------------------------------------------
 @router.post("/", response_model=EmpleadoResponse)
 def crear(data: EmpleadoCreate, db: Session = Depends(get_db)):
-    return crear_empleado(db, data)
+    empleado = crear_empleado(db, data)
+
+    empleado.departamento = None
+    empleado.seccion = None
+    empleado.cargo = None
+
+    return empleado
 
 # ---------------------------------------------------------
 # EDITAR
@@ -154,6 +184,11 @@ def editar(empleado_id: int, data: EmpleadoUpdate, db: Session = Depends(get_db)
     empleado = editar_empleado_service(db, empleado_id, data)
     if not empleado:
         raise HTTPException(status_code=404, detail="Empleado no encontrado")
+
+    empleado.departamento = None
+    empleado.seccion = None
+    empleado.cargo = None
+
     return empleado
 
 # ---------------------------------------------------------
@@ -186,6 +221,10 @@ def actualizar_modulos(empleado_id: int, data: dict, db: Session = Depends(get_d
     db.commit()
     db.refresh(empleado)
 
+    empleado.departamento = None
+    empleado.seccion = None
+    empleado.cargo = None
+
     return {"detail": "Módulos actualizados correctamente"}
 
 # ---------------------------------------------------------
@@ -205,15 +244,15 @@ def actualizar_permisos(empleado_id: int, data: dict, db: Session = Depends(get_
     db.commit()
     db.refresh(empleado)
 
+    empleado.departamento = None
+    empleado.seccion = None
+    empleado.cargo = None
+
     return {"detail": "Permisos actualizados correctamente"}
 
 # ---------------------------------------------------------
 # DEBUG
 # ---------------------------------------------------------
-@router.get("/debug/columns")
-def debug_columns():
-    from backend.app.empleados.models import Empleado
-    return Empleado.__table__.columns.keys()
 @router.get("/debug/raw")
 def debug_raw(db: Session = Depends(get_db)):
     empleados = db.query(Empleado).all()

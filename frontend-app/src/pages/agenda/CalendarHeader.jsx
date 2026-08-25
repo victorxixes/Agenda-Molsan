@@ -25,7 +25,7 @@ export default function CalendarHeader({ selectedDate, onChange }) {
 
       <div className="flex gap-2">
         <button className="btn" onClick={prevMonth}>←</button>
-        <button className="btn" onClick={goToday}>Hoy</button>
+        <button className="btn btn-primary" onClick={goToday}>Hoy</button>
         <button className="btn" onClick={nextMonth}>→</button>
       </div>
     </div>

@@ -6,6 +6,14 @@ export default function AgendaCitaDetalleModal() {
 
   if (!citaActual) return null;
 
+  const notarioNombre = citaActual.notario
+    ? `${citaActual.notario.nombre} ${citaActual.notario.apellidos}`
+    : citaActual.notario_id || "—";
+
+  const apoderadoNombre = citaActual.apoderado
+    ? `${citaActual.apoderado.nombre} ${citaActual.apoderado.apellidos}`
+    : citaActual.apoderado_id || "—";
+
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
       <div className="bg-white rounded-xl shadow-xl p-6 w-[400px] space-y-4">
@@ -17,17 +25,9 @@ export default function AgendaCitaDetalleModal() {
         <p><strong>Fecha:</strong> {citaActual.fecha}</p>
         <p><strong>Hora:</strong> {citaActual.hora_inicio} - {citaActual.hora_fin}</p>
         <p><strong>Tipo:</strong> {citaActual.tipo_cita}</p>
-<p><strong>Notario:</strong> 
-  {citaActual.notario 
-    ? `${citaActual.notario.nombre} ${citaActual.notario.apellidos}`
-    : "—"}
-</p>
 
-<p><strong>Apoderado:</strong> 
-  {citaActual.apoderado 
-    ? `${citaActual.apoderado.nombre} ${citaActual.apoderado.apellidos}`
-    : "—"}
-</p>
+        <p><strong>Notario:</strong> {notarioNombre}</p>
+        <p><strong>Apoderado:</strong> {apoderadoNombre}</p>
 
         <p><strong>Tipo firma:</strong> {citaActual.tipo_firma || "—"}</p>
         <p><strong>Estado:</strong> {citaActual.estado}</p>

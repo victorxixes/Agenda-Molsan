@@ -1,31 +1,23 @@
 import { useState } from "react";
 import GlassCard from "../ui/GlassCard";
+import { useEmpleadosStore } from "../../store/empleadosStore";
 
 const getFotoURL = (foto) => {
-  if (
-    !foto ||
-    foto === "string" ||
-    foto.trim() === "" ||
-    foto === null
-  ) {
+  if (!foto || foto === "string" || foto.trim() === "") {
     return "/placeholder.png";
   }
-
-  if (foto.startsWith("http")) {
-    return foto;
-  }
-
+  if (foto.startsWith("http")) return foto;
   return `${import.meta.env.VITE_API_URL}${foto}`;
 };
 
-export default function EmpleadoFoto({ empleado, onUploaded }) {
+export default function EmpleadoFoto({ empleado }) {
   const [archivo, setArchivo] = useState(null);
   const [subiendo, setSubiendo] = useState(false);
   const [error, setError] = useState(null);
 
-  const API = import.meta.env.VITE_API_URL;
+  const { subirFoto, cargarEmpleado } = useEmpleadosStore();
 
-  const subirFoto = async () => {
+  const handleUpload = async () => {
     if (!archivo) return;
 
     if (!archivo.type.startsWith("image/")) {
@@ -37,22 +29,9 @@ export default function EmpleadoFoto({ empleado, onUploaded }) {
     setError(null);
 
     try {
-      const formData = new FormData();
-      formData.append("archivo", archivo);
-
-      const res = await fetch(`${API}/empleados/${empleado.id}/foto`, {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await res.json();
-
-      if (data.error) {
-        setError(data.error);
-      } else {
-        onUploaded && onUploaded();
-      }
-    } catch (err) {
+      await subirFoto(empleado.id, archivo);
+      await cargarEmpleado(empleado.id);
+    } catch {
       setError("Error subiendo la foto");
     }
 
@@ -81,7 +60,7 @@ export default function EmpleadoFoto({ empleado, onUploaded }) {
 
       <button
         className="btn-primary w-full"
-        onClick={subirFoto}
+        onClick={handleUpload}
         disabled={subiendo}
       >
         {subiendo ? "Subiendo..." : "Subir foto"}

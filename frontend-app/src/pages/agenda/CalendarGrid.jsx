@@ -14,14 +14,15 @@ export default function CalendarGrid({ selectedDate, onSelectDay }) {
   const startWeekday = firstDay.getDay();
 
   const tipoIcono = {
-    "Firma notarial": "🖋️",
     "Videoconferencia": "🎥",
     "Presencial": "📍",
+    "Firma notarial": "🖋️",
     "Otros": "📄",
   };
 
   const grid = [];
 
+  // Espacios vacíos antes del día 1
   for (let i = 0; i < startWeekday; i++) {
     grid.push(
       <div
@@ -31,6 +32,7 @@ export default function CalendarGrid({ selectedDate, onSelectDay }) {
     );
   }
 
+  // Días del mes
   for (let day = 1; day <= daysInMonth; day++) {
     const fecha = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
     const citas = citasMes[fecha] || [];
@@ -45,7 +47,19 @@ export default function CalendarGrid({ selectedDate, onSelectDay }) {
 
         <div className="mt-1 space-y-1">
           {citas.map((cita) => {
-            const icono = tipoIcono[cita.tipo_cita] || "📄";
+            // Icono basado en tipo_firma o tipo_cita
+            const icono =
+              tipoIcono[cita.tipo_firma] ||
+              tipoIcono[cita.tipo_cita] ||
+              "📄";
+
+            const notarioNombre = cita.notario
+              ? `${cita.notario.nombre} ${cita.notario.apellidos}`
+              : cita.notario_id || "—";
+
+            const apoderadoNombre = cita.apoderado
+              ? `${cita.apoderado.nombre} ${cita.apoderado.apellidos}`
+              : cita.apoderado_id || "—";
 
             return (
               <div
@@ -55,8 +69,8 @@ export default function CalendarGrid({ selectedDate, onSelectDay }) {
                   e.stopPropagation();
                   setCitaActual(cita);
                 }}
-                title={`Notario: ${cita.notario?.nombre || ""} ${cita.notario?.apellidos || ""}
-Apoderado: ${cita.apoderado?.nombre || ""} ${cita.apoderado?.apellidos || ""}
+                title={`Notario: ${notarioNombre}
+Apoderado: ${apoderadoNombre}
 Hora: ${cita.hora_inicio}`}
               >
                 <div className="flex items-center gap-1 text-sm">
@@ -65,15 +79,11 @@ Hora: ${cita.hora_inicio}`}
                 </div>
 
                 <div className="text-xs text-gray-700">
-                  {cita.notario
-                    ? `${cita.notario.nombre} ${cita.notario.apellidos}`
-                    : "Sin notario"}
+                  {notarioNombre}
                 </div>
 
                 <div className="text-xs text-gray-700">
-                  {cita.apoderado
-                    ? `${cita.apoderado.nombre} ${cita.apoderado.apellidos}`
-                    : "Sin apoderado"}
+                  {apoderadoNombre}
                 </div>
               </div>
             );

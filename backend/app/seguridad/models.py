@@ -18,6 +18,9 @@ class Rol(Base):
     # Relación con permisos
     permisos = relationship("Permiso", back_populates="rol", cascade="all, delete")
 
+    # 🔥 Relación con empleados
+    empleados = relationship("Empleado", back_populates="rol")
+
 
 # ---------------------------------------------------------
 # PERMISOS POR MÓDULO

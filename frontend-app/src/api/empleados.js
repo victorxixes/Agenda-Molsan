@@ -16,19 +16,11 @@ export const empleadosAPI = {
   eliminar: (id) =>
     axios.delete(`/empleados/${id}`).then(r => r.data),
 
-  inhabilitar: (id) =>
-    axios.put(`/empleados/${id}/inhabilitar`).then(r => r.data),
-
-  resetPassword: (id, nueva) =>
-    axios.put(`/empleados/${id}/reset-password?nueva_password=${nueva}`)
-      .then(r => r.data),
-
-  obtenerModulos: (id) =>
-    axios.get(`/empleados/${id}/modulos`).then(r => r.data),
-
+  // 🔥 Actualizar módulos visibles
   actualizarModulos: (id, modulos) =>
-    axios.put(`/empleados/${id}/modulos`, modulos).then(r => r.data),
+    axios.put(`/empleados/${id}/permisos`, { modulos }).then(r => r.data),
 
+  // 🔥 Actualizar permisos por módulo
   actualizarPermisos: (id, permisos) =>
-    axios.put(`/empleados/${id}/permisos`, permisos).then(r => r.data),
+    axios.put(`/empleados/${id}/permisos-detalle`, { permisos }).then(r => r.data),
 };

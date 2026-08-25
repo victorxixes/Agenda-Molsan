@@ -23,9 +23,8 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
     observaciones: "",
   });
 
-  // ---------------------------------------------------------
-  // CARGAR NOTARIAS + FECHA
-  // ---------------------------------------------------------
+  const [error, setError] = useState("");
+
   useEffect(() => {
     if (open) {
       cargarNotarias();
@@ -37,9 +36,6 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
     }
   }, [open]);
 
-  // ---------------------------------------------------------
-  // SELECCIONAR NOTARIA
-  // ---------------------------------------------------------
   const seleccionarNotaria = (n) => {
     const tipoFirmaTraducida =
       n.vc === "SI" ? "Videoconferencia" :
@@ -55,13 +51,23 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
     }));
   };
 
-  // ---------------------------------------------------------
-  // GUARDAR
-  // ---------------------------------------------------------
   const guardar = async () => {
-    await crear(form);
-    alert("Cita creada correctamente");
-    onClose();
+    setError("");
+
+    if (!form.fecha) return setError("La fecha es obligatoria");
+    if (!form.hora_inicio) return setError("La hora de inicio es obligatoria");
+    if (!form.hora_fin) return setError("La hora de fin es obligatoria");
+    if (!form.tipo_cita) return setError("El tipo de cita es obligatorio");
+    if (!form.notario_id) return setError("Debes seleccionar una notaría");
+
+    try {
+      await crear(form);
+      alert("Cita creada correctamente");
+      onClose();
+    } catch (err) {
+      console.error(err);
+      setError("Error creando la cita");
+    }
   };
 
   if (!open) return null;
@@ -81,7 +87,12 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
 
         <h2 className="text-2xl font-bold">Nueva cita</h2>
 
-        {/* Fecha */}
+        {error && (
+          <div className="bg-red-100 text-red-700 p-2 rounded">
+            {error}
+          </div>
+        )}
+
         <input
           type="date"
           className="input"
@@ -89,7 +100,6 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
           onChange={(e) => setForm({ ...form, fecha: e.target.value })}
         />
 
-        {/* Horas */}
         <div className="grid grid-cols-2 gap-3">
           <input
             type="time"
@@ -106,7 +116,6 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
           />
         </div>
 
-        {/* Tipo de cita */}
         <select
           className="input"
           value={form.tipo_cita}
@@ -118,13 +127,11 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
           ))}
         </select>
 
-        {/* Buscador de notaria */}
         <BuscadorNotariaPremium
           notarios={notarias}
           onSelect={seleccionarNotaria}
         />
 
-        {/* Datos del notario */}
         {notarioSeleccionado && (
           <div className="space-y-2 bg-white/40 p-3 rounded-lg">
             <div className="font-semibold">
@@ -144,27 +151,6 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
           </div>
         )}
 
-        {/* Apoderado */}
-        <input
-          type="text"
-          className="input bg-gray-100"
-          value={
-            notarioSeleccionado?.apoderado
-              ? notarioSeleccionado.apoderado
-              : "—"
-          }
-          readOnly
-        />
-
-        {/* Tipo de firma */}
-        <input
-          type="text"
-          className="input bg-gray-100"
-          value={form.tipo_firma || ""}
-          readOnly
-        />
-
-        {/* Observaciones */}
         <textarea
           className="input"
           placeholder="Observaciones"
@@ -172,7 +158,6 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
           onChange={(e) => setForm({ ...form, observaciones: e.target.value })}
         />
 
-        {/* Botón guardar */}
         <button className="btn-primary w-full" onClick={guardar}>
           Crear cita
         </button>

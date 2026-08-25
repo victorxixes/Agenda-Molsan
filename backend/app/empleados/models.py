@@ -4,19 +4,12 @@ from sqlalchemy.orm import relationship
 
 from backend.app.database import Base
 
-
-# ---------------------------------------------------------
-# EMPLEADOS (empleados_v2)
-# ---------------------------------------------------------
-
 class Empleado(Base):
     __tablename__ = "empleados_v2"
 
     id = Column(Integer, primary_key=True, index=True)
 
-    # -----------------------------
-    # DATOS PERSONALES
-    # -----------------------------
+    # Datos personales
     nombre = Column(String(100), nullable=True)
     apellidos = Column(String(150), nullable=True)
     dni = Column(String(20), unique=True, nullable=True)
@@ -30,9 +23,7 @@ class Empleado(Base):
     telefono_contacto = Column(String(20), nullable=True)
     observaciones = Column(Text, nullable=True)
 
-    # -----------------------------
-    # DATOS LABORALES
-    # -----------------------------
+    # Datos laborales
     departamento_id = Column(Integer, ForeignKey("departamentos.id"), nullable=True)
     seccion_id = Column(Integer, ForeignKey("secciones.id"), nullable=True)
     cargo_id = Column(Integer, ForeignKey("cargos.id"), nullable=True)
@@ -48,19 +39,17 @@ class Empleado(Base):
 
     activo = Column(Boolean, default=True)
 
-    # -----------------------------
-    # USUARIO INTERNO
-    # -----------------------------
+    # Usuario interno
     usuario = Column(String(100), nullable=True)
     password = Column(String(255), nullable=True)
 
-    # -----------------------------
-    # FOTO
-    # -----------------------------
+    # Foto
     foto = Column(String(255), nullable=True)
 
-    # -----------------------------
-    # MÓDULOS Y PERMISOS
-    # -----------------------------
+    # 🔥 ROL DEL ERP
+    rol_id = Column(Integer, ForeignKey("roles.id"), nullable=True)
+    rol = relationship("Rol", back_populates="empleados")
+
+    # Módulos y permisos
     modulos_visibles = Column(JSONB, nullable=True, default=list)
     permisos_modulo = Column(JSONB, nullable=True, default=dict)

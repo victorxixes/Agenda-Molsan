@@ -1,4 +1,3 @@
-# backend/app/seguridad/init_admin.py
 
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext

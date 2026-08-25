@@ -12,16 +12,17 @@ export const useAuthStore = create((set, get) => ({
     set({ loading: true, error: null });
 
     try {
-      // Limpia sesión antes de iniciar
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-
       const data = await loginRequest(usuario, password);
 
+      const empleado = data.empleado;
+
       const userData = {
-        id: data.empleado_id,
-        nombre: data.nombre,
-        foto: data.foto || null,
+        id: empleado.id,
+        nombre: empleado.nombre,
+        usuario: empleado.usuario,
+        rol_id: empleado.rol_id,
+        rol_nombre: empleado.rol_nombre,
+        foto: empleado.foto || null,
       };
 
       set({
@@ -34,13 +35,12 @@ export const useAuthStore = create((set, get) => ({
       localStorage.setItem("user", JSON.stringify(userData));
 
       const permisosStore = usePermisosStore.getState();
-      permisosStore.setModulos(data.modulos);
-      permisosStore.setAcciones(data.permisos);
+      permisosStore.setModulos(empleado.modulos_visibles);
+      permisosStore.setAcciones(empleado.permisos_modulo);
 
-      if (onSuccess) onSuccess();
+      onSuccess && onSuccess();
 
     } catch (err) {
-      console.error("ERROR LOGIN:", err);
       set({ error: "Credenciales incorrectas", loading: false });
       alert("Error al iniciar sesión");
     }

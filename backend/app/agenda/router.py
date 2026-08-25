@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from datetime import date, time
-from sqlalchemy import text
 
 from backend.app.database import get_db
 from backend.app.agenda.schemas import CitaCreate, CitaUpdate, CitaResponse
@@ -15,34 +14,50 @@ from backend.app.agenda.service import (
     editar_cita,
     eliminar_cita,
     mover_cita,
-    cambiar_estado_cita
+    cambiar_estado_cita,
+    obtener_cita
 )
 
 router = APIRouter(prefix="/agenda", tags=["Agenda"])
 
 
 # ---------------------------------------------------------
-# SANEAR CITA (evita errores 500)
+# SANEAR CITA (solo si viene de SQLAlchemy)
 # ---------------------------------------------------------
-def _sanear(c: Cita):
-    # Notario
-    if hasattr(c, "notario") and c.notario:
-        c.notario = {
-            "id": c.notario_id,
-            "nombre": getattr(c.notario, "nombre", None),
-            "apellidos": getattr(c.notario, "apellidos", None),
-            "direccion": getattr(c.notario, "direccion", None),
-        }
+def _sanear(c: Cita | dict | None):
+    if not c:
+        return None
 
-    # Apoderado
-    if hasattr(c, "apoderado") and c.apoderado:
-        c.apoderado = {
-            "id": c.apoderado_id,
-            "nombre": getattr(c.apoderado, "nombre", None),
-            "apellidos": getattr(c.apoderado, "apellidos", None),
-        }
+    # Si viene del service como dict, lo devolvemos tal cual
+    if isinstance(c, dict):
+        return c
 
-    return c
+    # Si viene como SQLAlchemy, lo convertimos
+    salida = {
+        "id": c.id,
+        "fecha": c.fecha,
+        "hora_inicio": c.hora_inicio,
+        "hora_fin": c.hora_fin,
+        "tipo_cita": c.tipo_cita,
+        "tipo_firma": c.tipo_firma,
+        "estado": c.estado,
+        "observaciones": c.observaciones,
+        "notario_id": c.notario_id,
+        "apoderado_id": c.apoderado_id,
+    }
+
+    return salida
+
+
+# ---------------------------------------------------------
+# OBTENER UNA CITA
+# ---------------------------------------------------------
+@router.get("/{id}", response_model=CitaResponse)
+def obtener(id: int, db: Session = Depends(get_db)):
+    cita = obtener_cita(db, id)
+    if not cita:
+        raise HTTPException(status_code=404, detail="Cita no encontrada")
+    return cita
 
 
 # ---------------------------------------------------------
@@ -51,21 +66,18 @@ def _sanear(c: Cita):
 @router.get("/dia/{fecha}", response_model=list[CitaResponse])
 def citas_dia(fecha: str, db: Session = Depends(get_db)):
     fecha_dt = date.fromisoformat(fecha)
-    citas = listar_citas_dia(db, fecha_dt)
-    return [_sanear(c) for c in citas]
+    return listar_citas_dia(db, fecha_dt)
 
 
 @router.get("/semana/{fecha}", response_model=list[CitaResponse])
 def citas_semana(fecha: str, db: Session = Depends(get_db)):
     fecha_dt = date.fromisoformat(fecha)
-    citas = listar_citas_semana(db, fecha_dt)
-    return [_sanear(c) for c in citas]
+    return listar_citas_semana(db, fecha_dt)
 
 
 @router.get("/mes/{year}/{month}", response_model=list[CitaResponse])
 def citas_mes(year: int, month: int, db: Session = Depends(get_db)):
-    citas = listar_citas_mes(db, year, month)
-    return [_sanear(c) for c in citas]
+    return listar_citas_mes(db, year, month)
 
 
 # ---------------------------------------------------------
@@ -74,7 +86,7 @@ def citas_mes(year: int, month: int, db: Session = Depends(get_db)):
 @router.post("/", response_model=CitaResponse)
 def create_cita(cita: CitaCreate, db: Session = Depends(get_db)):
     nueva = crear_cita(db, cita)
-    return _sanear(nueva)
+    return nueva
 
 
 # ---------------------------------------------------------
@@ -83,7 +95,9 @@ def create_cita(cita: CitaCreate, db: Session = Depends(get_db)):
 @router.put("/{id}", response_model=CitaResponse)
 def editar(id: int, data: CitaUpdate, db: Session = Depends(get_db)):
     editada = editar_cita(db, id, data)
-    return _sanear(editada)
+    if not editada:
+        raise HTTPException(status_code=404, detail="Cita no encontrada")
+    return editada
 
 
 # ---------------------------------------------------------
@@ -91,7 +105,9 @@ def editar(id: int, data: CitaUpdate, db: Session = Depends(get_db)):
 # ---------------------------------------------------------
 @router.delete("/{id}")
 def eliminar(id: int, db: Session = Depends(get_db)):
-    eliminar_cita(db, id)
+    res = eliminar_cita(db, id)
+    if not res:
+        raise HTTPException(status_code=404, detail="Cita no encontrada")
     return {"detail": "Cita eliminada correctamente"}
 
 
@@ -103,8 +119,12 @@ def mover(id: int, nueva_fecha: str, nueva_hora_inicio: str, nueva_hora_fin: str
     fecha_dt = date.fromisoformat(nueva_fecha)
     hora_inicio_dt = time.fromisoformat(nueva_hora_inicio)
     hora_fin_dt = time.fromisoformat(nueva_hora_fin)
+
     movida = mover_cita(db, id, fecha_dt, hora_inicio_dt, hora_fin_dt)
-    return _sanear(movida)
+    if not movida:
+        raise HTTPException(status_code=404, detail="Cita no encontrada")
+
+    return movida
 
 
 # ---------------------------------------------------------
@@ -113,4 +133,6 @@ def mover(id: int, nueva_fecha: str, nueva_hora_inicio: str, nueva_hora_fin: str
 @router.put("/estado/{id}", response_model=CitaResponse)
 def cambiar_estado(id: int, nuevo_estado: str, db: Session = Depends(get_db)):
     cambiada = cambiar_estado_cita(db, id, nuevo_estado)
-    return _sanear(cambiada)
+    if not cambiada:
+        raise HTTPException(status_code=404, detail="Cita no encontrada")
+    return cambiada

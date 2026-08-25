@@ -2,20 +2,11 @@ import { useAgendaStore } from "../store/agendaStore";
 
 export default function AgendaSidebar({ date, citas, onEditarCita }) {
   const fecha = date.toISOString().split("T")[0];
-  const { eliminar, cargarDia, cargarMes, setCitaActual, mesActual } = useAgendaStore();
+  const { eliminar, setCitaActual } = useAgendaStore();
 
   const onEliminarCita = async (id) => {
     if (!confirm("¿Eliminar esta cita?")) return;
-
-    await eliminar(id);
-
-    // Refrescar día
-    await cargarDia(fecha);
-
-    // Refrescar mes
-    if (mesActual) {
-      await cargarMes(mesActual);
-    }
+    await eliminar(id); // El store ya refresca día + mes
   };
 
   return (
@@ -48,55 +39,53 @@ export default function AgendaSidebar({ date, citas, onEditarCita }) {
             </tr>
           )}
 
-          {citas.map((c) => (
-            <tr
-              key={c.id}
-              className="cursor-pointer hover:bg-gray-100"
-              onClick={() => setCitaActual(c)}
-            >
-              <td>{c.hora_inicio}</td>
-              <td>{c.hora_fin}</td>
-              <td>{c.tipo_cita}</td>
+          {citas.map((c) => {
+            const notarioNombre = c.notario
+              ? `${c.notario.nombre} ${c.notario.apellidos}`
+              : "—";
 
-              <td>
-                {c.notario
-                  ? `${c.notario.nombre} ${c.notario.apellidos}`
-                  : "—"}
-              </td>
+            const apoderadoNombre = c.apoderado
+              ? `${c.apoderado.nombre} ${c.apoderado.apellidos}`
+              : c.apoderado_id || "—";
 
-              <td>{c.tipo_firma || "—"}</td>
+            return (
+              <tr
+                key={c.id}
+                className="cursor-pointer hover:bg-gray-100"
+                onClick={() => setCitaActual(c)}
+              >
+                <td>{c.hora_inicio}</td>
+                <td>{c.hora_fin}</td>
+                <td>{c.tipo_cita}</td>
+                <td>{notarioNombre}</td>
+                <td>{c.tipo_firma || "—"}</td>
+                <td>{apoderadoNombre}</td>
+                <td>{c.estado}</td>
 
-              <td>
-                {c.apoderado
-                  ? `${c.apoderado.nombre} ${c.apoderado.apellidos}`
-                  : "—"}
-              </td>
+                <td className="flex gap-2">
+                  <button
+                    className="btn btn-sm btn-primary"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEditarCita(c.id);
+                    }}
+                  >
+                    Editar
+                  </button>
 
-              <td>{c.estado}</td>
-
-              <td className="flex gap-2">
-                <button
-                  className="btn btn-sm btn-primary"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onEditarCita(c.id); // Ahora sí abre el modal
-                  }}
-                >
-                  Editar
-                </button>
-
-                <button
-                  className="btn btn-sm btn-danger"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onEliminarCita(c.id);
-                  }}
-                >
-                  Eliminar
-                </button>
-              </td>
-            </tr>
-          ))}
+                  <button
+                    className="btn btn-sm btn-danger"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEliminarCita(c.id);
+                    }}
+                  >
+                    Eliminar
+                  </button>
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
 

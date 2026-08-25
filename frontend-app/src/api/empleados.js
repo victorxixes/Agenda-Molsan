@@ -23,4 +23,11 @@ export const empleadosAPI = {
   // 🔥 Actualizar permisos por módulo
   actualizarPermisos: (id, permisos) =>
     axios.put(`/empleados/${id}/permisos-detalle`, { permisos }).then(r => r.data),
+
+  // 🔥 Subir foto
+  subirFoto: (id, archivo) => {
+    const formData = new FormData();
+    formData.append("archivo", archivo);
+    return axios.post(`/empleados/${id}/foto`, formData).then(r => r.data);
+  },
 };

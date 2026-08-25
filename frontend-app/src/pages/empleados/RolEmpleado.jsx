@@ -1,64 +1,69 @@
 import { useEffect, useState } from "react";
-import axios from "../../api/axios";
-
-const ROLES = ["admin", "gestor", "apoderado", "usuario"];
+import { useEmpleadosStore } from "../../store/empleadosStore";
+import { useSeguridadStore } from "../../store/seguridadStore";
 
 export default function RolEmpleado({ empleadoId }) {
-  const [empleado, setEmpleado] = useState(null);
-  const [rol, setRol] = useState("");
+  const {
+    empleadoActual,
+    cargarEmpleado,
+    actualizarEmpleado,
+  } = useEmpleadosStore();
 
-  // Cargar empleado
+  const {
+    roles,
+    cargarRoles,
+  } = useSeguridadStore();
+
+  const [rolId, setRolId] = useState("");
+
+  // Cargar empleado + roles
   useEffect(() => {
-    axios.get(`/empleados/${empleadoId}`).then((res) => {
-      setEmpleado(res.data);
-
-      // Si ya tiene rol guardado en permisos_modulo
-      const rolActual = res.data.permisos_modulo?.rol || "";
-      setRol(rolActual);
-    });
+    cargarEmpleado(empleadoId);
+    cargarRoles();
   }, [empleadoId]);
 
-  // Guardar rol dentro de permisos_modulo
-  const guardarRol = () => {
-    axios
-      .put(`/empleados/${empleadoId}/permisos-detalle`, {
-        permisos: {
-          ...empleado.permisos_modulo,
-          rol: rol,
-        },
-      })
-      .then(() => alert("Rol actualizado correctamente"))
-      .catch(() => alert("Error al actualizar rol"));
+  // Cuando llega el empleado → rellenamos estado
+  useEffect(() => {
+    if (empleadoActual) {
+      setRolId(empleadoActual.rol_id || "");
+    }
+  }, [empleadoActual]);
+
+  const guardarRol = async () => {
+    await actualizarEmpleado(empleadoId, { rol_id: Number(rolId) });
+    await cargarEmpleado(empleadoId);
+    alert("Rol actualizado correctamente");
   };
 
-  if (!empleado) return <div>Cargando...</div>;
+  if (!empleadoActual) return <div className="p-6">Cargando rol...</div>;
 
   return (
-    <div className="p-6">
+    <div className="p-6 space-y-6">
       <h2 className="text-xl font-bold mb-4">Rol del empleado</h2>
-      <p className="mb-4">Selecciona el rol que tendrá este empleado dentro del sistema.</p>
 
-      <div className="space-y-2 mb-4">
-        {ROLES.map((r) => (
-          <label key={r} className="flex items-center gap-2">
-            <input
-              type="radio"
-              name="rol"
-              value={r}
-              checked={rol === r}
-              onChange={() => setRol(r)}
-            />
-            {r.charAt(0).toUpperCase() + r.slice(1)}
-          </label>
-        ))}
+      <div className="space-y-4">
+        <label className="font-semibold">Rol asignado</label>
+
+        <select
+          className="border rounded px-2 py-1 w-full"
+          value={rolId}
+          onChange={(e) => setRolId(e.target.value)}
+        >
+          <option value="">Seleccionar rol</option>
+          {roles.map((r) => (
+            <option key={r.id} value={r.id}>
+              {r.nombre}
+            </option>
+          ))}
+        </select>
+
+        <button
+          onClick={guardarRol}
+          className="bg-blue-600 text-white px-4 py-2 rounded"
+        >
+          Guardar rol
+        </button>
       </div>
-
-      <button
-        onClick={guardarRol}
-        className="bg-green-600 text-white px-4 py-2 rounded"
-      >
-        Guardar rol
-      </button>
     </div>
   );
 }

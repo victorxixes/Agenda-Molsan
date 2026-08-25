@@ -2,19 +2,25 @@ import { useAgendaStore } from "../store/agendaStore";
 
 export default function AgendaSidebar({ date, citas, onEditarCita }) {
   const fecha = date.toISOString().split("T")[0];
-  const { eliminar, cargarDia, setCitaActual } = useAgendaStore();
+  const { eliminar, cargarDia, cargarMes, setCitaActual, mesActual } = useAgendaStore();
 
   const onEliminarCita = async (id) => {
     if (!confirm("¿Eliminar esta cita?")) return;
 
     await eliminar(id);
-    cargarDia(date.toISOString().split("T")[0]); // refresco automático
+
+    // Refrescar día
+    await cargarDia(fecha);
+
+    // Refrescar mes
+    if (mesActual) {
+      await cargarMes(mesActual);
+    }
   };
 
   return (
     <div className="bg-white rounded-xl shadow p-4 space-y-4">
 
-      {/* Cabecera */}
       <div className="flex justify-between items-center">
         <h3 className="text-xl font-bold">{fecha}</h3>
       </div>
@@ -73,7 +79,7 @@ export default function AgendaSidebar({ date, citas, onEditarCita }) {
                   className="btn btn-sm btn-primary"
                   onClick={(e) => {
                     e.stopPropagation();
-                    onEditarCita(c.id);
+                    onEditarCita(c.id); // Ahora sí abre el modal
                   }}
                 >
                   Editar

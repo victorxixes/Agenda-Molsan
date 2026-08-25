@@ -18,7 +18,7 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
     tipo_cita: "",
     notario_id: null,
     tipo_firma: "",
-    apoderado_id: null,
+    apoderado_id: null, // se asigna automáticamente en backend
     estado: "Pendiente",
     observaciones: "",
   });
@@ -45,9 +45,10 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
     setForm(prev => ({
       ...prev,
       notario_id: n.id,
-      tipo_firma: tipoFirmaTraducida,
-      apoderado_id: n.apoderado_id || null,
-      observaciones: n.observacion || prev.observaciones,
+      tipo_firma: prev.tipo_cita === "Firma notarial" ? tipoFirmaTraducida : "",
+      observaciones: prev.tipo_cita === "Firma notarial"
+        ? (n.observacion || prev.observaciones)
+        : prev.observaciones,
     }));
   };
 
@@ -58,7 +59,12 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
     if (!form.hora_inicio) return setError("La hora de inicio es obligatoria");
     if (!form.hora_fin) return setError("La hora de fin es obligatoria");
     if (!form.tipo_cita) return setError("El tipo de cita es obligatorio");
-    if (!form.notario_id) return setError("Debes seleccionar una notaría");
+
+    // Validación coherente con backend
+    if (form.tipo_cita === "Firma notarial") {
+      if (!form.notario_id) return setError("Debes seleccionar una notaría");
+      if (!form.tipo_firma) return setError("Debes seleccionar el tipo de firma");
+    }
 
     try {
       await crear(form);
@@ -119,7 +125,15 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
         <select
           className="input"
           value={form.tipo_cita}
-          onChange={(e) => setForm({ ...form, tipo_cita: e.target.value })}
+          onChange={(e) => {
+            const tipo = e.target.value;
+
+            setForm(prev => ({
+              ...prev,
+              tipo_cita: tipo,
+              tipo_firma: tipo === "Firma notarial" ? prev.tipo_firma : "",
+            }));
+          }}
         >
           <option value="">Selecciona tipo de cita</option>
           {TIPOS_CITA.map((t) => (

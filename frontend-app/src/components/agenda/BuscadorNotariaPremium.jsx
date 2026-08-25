@@ -54,7 +54,7 @@ export default function BuscadorNotariaPremium({ notarios, onSelect }) {
 
               {n.vc && (
                 <div className="text-xs text-blue-600 mt-1">
-                  Firma: {n.vc}
+                  Tipo firma: {n.vc === "SI" ? "Videoconferencia" : "Presencial"}
                 </div>
               )}
 

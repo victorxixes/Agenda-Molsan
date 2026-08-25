@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useEmpleadosStore } from "../../store/empleadosStore";
+import { useSeguridadStore } from "../../store/seguridadStore";
 import { useParams, useNavigate } from "react-router-dom";
 
 import EmpleadosSection from "../../components/empleados/EmpleadosSection.jsx";
@@ -10,50 +11,53 @@ export default function EmpleadoForm() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const { empleado, cargarEmpleado, crearEmpleado, actualizarEmpleado } =
-    useEmpleadosStore();
+  const {
+    empleadoActual,
+    cargarEmpleado,
+    crearEmpleado,
+    actualizarEmpleado,
+  } = useEmpleadosStore();
+
+  const { roles, cargarRoles } = useSeguridadStore();
 
   const [form, setForm] = useState({
     nombre: "",
     apellidos: "",
     usuario: "",
     email_empresa: "",
+    rol_id: "",
     activo: true,
   });
 
-  // Limpieza de valores corruptos del backend
-  const limpiar = (obj) => {
-    const limpio = { ...obj };
-    for (const key in limpio) {
-      if (
-        limpio[key] === "string" ||
-        limpio[key] === null ||
-        limpio[key] === "null" ||
-        limpio[key] === undefined
-      ) {
-        limpio[key] = "";
-      }
-    }
-    return limpio;
-  };
-
-  // Cargar empleado si estamos editando
+  // Cargar roles y empleado si estamos editando
   useEffect(() => {
+    cargarRoles();
     if (id) cargarEmpleado(id);
   }, [id]);
 
-  // Cuando el store recibe el empleado, lo volcamos al formulario
+  // Cuando llega el empleado del store → rellenamos formulario
   useEffect(() => {
-    if (empleado && id) {
-      setForm(limpiar(empleado));
+    if (empleadoActual && id) {
+      setForm({
+        nombre: empleadoActual.nombre || "",
+        apellidos: empleadoActual.apellidos || "",
+        usuario: empleadoActual.usuario || "",
+        email_empresa: empleadoActual.email_empresa || "",
+        rol_id: empleadoActual.rol_id || "",
+        activo: Boolean(empleadoActual.activo),
+      });
     }
-  }, [empleado, id]);
+  }, [empleadoActual, id]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     const payload = {
-      ...form,
+      nombre: form.nombre,
+      apellidos: form.apellidos,
+      usuario: form.usuario,
+      email_empresa: form.email_empresa,
+      rol_id: Number(form.rol_id) || null,
       activo: Boolean(form.activo),
     };
 
@@ -81,6 +85,7 @@ export default function EmpleadoForm() {
       <EmpleadosSection title="Datos del empleado">
         <GlassCard className="p-6 space-y-4">
           <form onSubmit={handleSubmit} className="space-y-4">
+
             <input
               className="input"
               placeholder="Nombre"
@@ -111,6 +116,23 @@ export default function EmpleadoForm() {
               }
             />
 
+            {/* Selector de rol */}
+            <select
+              className="input"
+              value={form.rol_id}
+              onChange={(e) =>
+                setForm({ ...form, rol_id: Number(e.target.value) })
+              }
+            >
+              <option value="">Seleccionar rol</option>
+              {roles.map((r) => (
+                <option key={r.id} value={r.id}>
+                  {r.nombre}
+                </option>
+              ))}
+            </select>
+
+            {/* Activo */}
             <label className="flex items-center gap-2 text-sm">
               <input
                 type="checkbox"

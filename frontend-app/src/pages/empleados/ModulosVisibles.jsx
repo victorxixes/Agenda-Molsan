@@ -1,7 +1,13 @@
 import { useEffect, useState } from "react";
-import axios from "../../api/axios";
+import { useEmpleadosStore } from "../../store/empleadosStore";
 
 export default function ModulosVisibles({ empleadoId }) {
+  const {
+    empleadoActual,
+    cargarEmpleado,
+    guardarModulos,
+  } = useEmpleadosStore();
+
   const MODULOS = [
     "dashboard",
     "agenda",
@@ -10,19 +16,24 @@ export default function ModulosVisibles({ empleadoId }) {
     "documentos",
     "intranet",
     "mensajes",
-    "seguridad"
+    "seguridad",
   ];
 
   const [modulosVisibles, setModulosVisibles] = useState([]);
 
-  // Cargar módulos visibles del empleado
+  // Cargar empleado
   useEffect(() => {
-    axios.get(`/empleados/${empleadoId}`).then((res) => {
-      setModulosVisibles(res.data.modulos_visibles || []);
-    });
+    cargarEmpleado(empleadoId);
   }, [empleadoId]);
 
-  // Alternar módulo
+  // Cuando llega el empleado → rellenamos estado
+  useEffect(() => {
+    if (empleadoActual) {
+      setModulosVisibles(empleadoActual.modulos_visibles || []);
+    }
+  }, [empleadoActual]);
+
+  // Toggle módulo visible
   const toggleModulo = (modulo) => {
     let nuevos = [...modulosVisibles];
 
@@ -35,21 +46,20 @@ export default function ModulosVisibles({ empleadoId }) {
     setModulosVisibles(nuevos);
   };
 
-  // Guardar cambios (endpoint correcto del backend)
-  const guardarCambios = () => {
-    axios
-      .put(`/empleados/${empleadoId}/permisos`, {
-        modulos: modulosVisibles
-      })
-      .then(() => alert("Módulos visibles actualizados"))
-      .catch(() => alert("Error al guardar módulos"));
+  // Guardar cambios
+  const guardarCambios = async () => {
+    await guardarModulos(empleadoId, modulosVisibles);
+    await cargarEmpleado(empleadoId);
+    alert("Módulos visibles actualizados correctamente");
   };
 
+  if (!empleadoActual) return <div className="p-6">Cargando módulos...</div>;
+
   return (
-    <div className="p-6">
+    <div className="p-6 space-y-6">
       <h2 className="text-xl font-bold mb-4">Módulos visibles</h2>
 
-      <div className="grid grid-cols-2 gap-3 mb-4">
+      <div className="grid grid-cols-2 gap-3">
         {MODULOS.map((modulo) => (
           <label key={modulo} className="flex items-center gap-2">
             <input
@@ -64,7 +74,7 @@ export default function ModulosVisibles({ empleadoId }) {
 
       <button
         onClick={guardarCambios}
-        className="bg-green-600 text-white px-4 py-2 rounded"
+        className="bg-blue-600 text-white px-4 py-2 rounded"
       >
         Guardar cambios
       </button>

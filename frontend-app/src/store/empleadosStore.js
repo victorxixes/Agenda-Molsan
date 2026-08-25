@@ -3,29 +3,10 @@ import { empleadosAPI } from "../api/empleados";
 import { crearLog } from "../lib/log";
 
 export const useEmpleadosStore = create((set, get) => ({
-  // ---------------------------------------------------------
-  // ESTADO
-  // ---------------------------------------------------------
   empleados: [],
   empleadoActual: null,
   loading: false,
   error: null,
-
-  // Empleados conectados (WebSocket)
-  conectados: [],
-
-  // ---------------------------------------------------------
-  // WEBSOCKET: CONECTADOS
-  // ---------------------------------------------------------
-  marcarConectado: (id) =>
-    set((state) => ({
-      conectados: [...new Set([...state.conectados, id])]
-    })),
-
-  marcarDesconectado: (id) =>
-    set((state) => ({
-      conectados: state.conectados.filter((x) => x !== id)
-    })),
 
   // ---------------------------------------------------------
   // LISTAR EMPLEADOS
@@ -34,10 +15,7 @@ export const useEmpleadosStore = create((set, get) => ({
     try {
       set({ loading: true, error: null });
       const data = await empleadosAPI.listar();
-      set({
-        empleados: Array.isArray(data) ? data : [],
-        loading: false,
-      });
+      set({ empleados: Array.isArray(data) ? data : [], loading: false });
     } catch (err) {
       set({ loading: false, error: "Error cargando empleados" });
     }
@@ -54,26 +32,6 @@ export const useEmpleadosStore = create((set, get) => ({
     } catch (err) {
       set({ loading: false, error: "Error cargando empleado" });
     }
-  },
-
-  // ---------------------------------------------------------
-  // BUSCAR EMPLEADOS
-  // ---------------------------------------------------------
-  buscarEmpleados: async (filtros) => {
-    const params = new URLSearchParams();
-
-    if (filtros.id) params.append("id", filtros.id);
-    if (filtros.dni) params.append("dni", filtros.dni);
-    if (filtros.q) params.append("q", filtros.q);
-    if (filtros.activo !== null) params.append("activo", filtros.activo);
-
-    const API = import.meta.env.VITE_API_URL;
-
-    // 🔥 CORREGIDO: ruta correcta con /api
-    const res = await fetch(`${API}/api/empleados/search?${params.toString()}`);
-    const data = await res.json();
-
-    set({ empleados: data.items });
   },
 
   // ---------------------------------------------------------
@@ -110,8 +68,8 @@ export const useEmpleadosStore = create((set, get) => ({
         res
       );
 
-      await get().cargarEmpleados();
       await get().cargarEmpleado(id);
+      await get().cargarEmpleados();
     } catch (err) {
       set({ error: "Error actualizando empleado" });
     }
@@ -145,7 +103,6 @@ export const useEmpleadosStore = create((set, get) => ({
       const nuevoEstado = !empleado.activo;
 
       const res = await empleadosAPI.actualizar(empleado.id, {
-        ...empleado,
         activo: nuevoEstado,
       });
 
@@ -168,27 +125,13 @@ export const useEmpleadosStore = create((set, get) => ({
   // ---------------------------------------------------------
   subirFoto: async (id, archivo) => {
     try {
-      const formData = new FormData();
-      formData.append("archivo", archivo);
-
-      // 🔥 CORREGIDO: ruta correcta con /api
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/empleados/${id}/foto`,
-        { method: "POST", body: formData }
-      );
-
-      const data = await res.json();
-
-      if (data.error) {
-        set({ error: data.error });
-        return;
-      }
+      const res = await empleadosAPI.subirFoto(id, archivo);
 
       await crearLog(
         "empleados",
         "foto",
         `Foto actualizada para empleado ID ${id}`,
-        data
+        res
       );
 
       await get().cargarEmpleado(id);
@@ -199,25 +142,37 @@ export const useEmpleadosStore = create((set, get) => ({
   },
 
   // ---------------------------------------------------------
-  // GUARDAR PERMISOS Y MÓDULOS VISIBLES
+  // GUARDAR MÓDULOS VISIBLES
   // ---------------------------------------------------------
-  guardarPermisos: async (id, modulos_visibles, permisos_modulo) => {
+  guardarModulos: async (id, modulos) => {
     try {
-      // 🔥 CORREGIDO: ruta correcta con /api
-      await fetch(`${import.meta.env.VITE_API_URL}/api/empleados/${id}/permisos`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          modulos_visibles,
-          permisos_modulo,
-        }),
-      });
+      await empleadosAPI.actualizarModulos(id, modulos);
+
+      await crearLog(
+        "empleados",
+        "modulos",
+        `Módulos visibles actualizados para empleado ID ${id}`,
+        { modulos }
+      );
+
+      await get().cargarEmpleado(id);
+    } catch (err) {
+      set({ error: "Error guardando módulos visibles" });
+    }
+  },
+
+  // ---------------------------------------------------------
+  // GUARDAR PERMISOS POR MÓDULO
+  // ---------------------------------------------------------
+  guardarPermisos: async (id, permisos) => {
+    try {
+      await empleadosAPI.actualizarPermisos(id, permisos);
 
       await crearLog(
         "empleados",
         "permisos",
         `Permisos actualizados para empleado ID ${id}`,
-        { modulos_visibles, permisos_modulo }
+        permisos
       );
 
       await get().cargarEmpleado(id);

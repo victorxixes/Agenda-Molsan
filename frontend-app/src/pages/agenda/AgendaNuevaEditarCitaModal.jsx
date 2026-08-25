@@ -24,6 +24,7 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
 
   const [error, setError] = useState("");
 
+  // Cargar cita + notarios
   useEffect(() => {
     if (open && citaId) {
       cargarCita(citaId);
@@ -31,6 +32,7 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
     }
   }, [open, citaId]);
 
+  // Rellenar formulario
   useEffect(() => {
     if (citaActual) {
       setForm({
@@ -47,6 +49,7 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
     }
   }, [citaActual]);
 
+  // Seleccionar notaría
   const seleccionarNotaria = (n) => {
     const tipoFirmaTraducida =
       n.vc === "SI" ? "Videoconferencia" :
@@ -56,12 +59,12 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
     setForm(prev => ({
       ...prev,
       notario_id: n.id,
-      tipo_firma: tipoFirmaTraducida,
-      apoderado_id: n.apoderado_id || null,
+      tipo_firma: prev.tipo_cita === "Firma notarial" ? tipoFirmaTraducida : "",
       observaciones: n.observacion || prev.observaciones,
     }));
   };
 
+  // Guardar cambios
   const guardar = async () => {
     setError("");
 
@@ -69,7 +72,12 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
     if (!form.hora_inicio) return setError("La hora de inicio es obligatoria");
     if (!form.hora_fin) return setError("La hora de fin es obligatoria");
     if (!form.tipo_cita) return setError("El tipo de cita es obligatorio");
-    if (!form.notario_id) return setError("Debes seleccionar una notaría");
+
+    // Validación coherente con backend
+    if (form.tipo_cita === "Firma notarial") {
+      if (!form.notario_id) return setError("Debes seleccionar una notaría");
+      if (!form.tipo_firma) return setError("Debes seleccionar el tipo de firma");
+    }
 
     try {
       await editar(citaId, form);
@@ -81,9 +89,10 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
     }
   };
 
+  // Cambiar estado
   const cambiarEstadoCita = async (nuevoEstado) => {
     await cambiarEstado(citaId, nuevoEstado);
-    setForm({ ...form, estado: nuevoEstado });
+    setForm(prev => ({ ...prev, estado: nuevoEstado }));
   };
 
   if (!open) return null;
@@ -135,7 +144,15 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
         <select
           className="input"
           value={form.tipo_cita}
-          onChange={(e) => setForm({ ...form, tipo_cita: e.target.value })}
+          onChange={(e) => {
+            const tipo = e.target.value;
+
+            setForm(prev => ({
+              ...prev,
+              tipo_cita: tipo,
+              tipo_firma: tipo === "Firma notarial" ? prev.tipo_firma : "",
+            }));
+          }}
         >
           <option value="">Selecciona tipo de cita</option>
           {TIPOS_CITA.map((t) => (
@@ -167,6 +184,7 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
           </div>
         )}
 
+        {/* Apoderado (solo mostrar, no editar) */}
         <input
           type="text"
           className="input bg-gray-100"
@@ -174,6 +192,7 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
           readOnly
         />
 
+        {/* Tipo firma */}
         <input
           type="text"
           className="input bg-gray-100"
@@ -181,6 +200,7 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
           readOnly
         />
 
+        {/* Estados */}
         <div className="flex gap-2">
           {["Pendiente", "Confirmada", "En curso", "Finalizada", "Cancelada"].map((estado) => (
             <button

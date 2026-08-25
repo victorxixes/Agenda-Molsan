@@ -1,11 +1,7 @@
 from pydantic import BaseModel, Field
 from typing import Optional, Dict, List
 
-# ---------------------------------------------------------
-# SCHEMA BASE
-# ---------------------------------------------------------
 class EmpleadoBase(BaseModel):
-    # Datos personales
     nombre: Optional[str] = None
     apellidos: Optional[str] = None
     dni: Optional[str] = None
@@ -19,12 +15,11 @@ class EmpleadoBase(BaseModel):
     telefono_contacto: Optional[str] = None
     observaciones: Optional[str] = None
 
-    # Datos laborales
     departamento_id: Optional[int] = None
     seccion_id: Optional[int] = None
     cargo_id: Optional[int] = None
 
-    # 🔥 PERFIL DEL ERP (ROL)
+    # 🔥 ROL DEL ERP
     rol_id: Optional[int] = None
 
     email_empresa: Optional[str] = None
@@ -34,46 +29,29 @@ class EmpleadoBase(BaseModel):
 
     activo: Optional[bool] = True
 
-    # Usuario interno
     usuario: Optional[str] = None
     password: Optional[str] = None
 
     foto: Optional[str] = None
 
-    # Módulos y permisos
     modulos_visibles: Optional[List[str]] = Field(default_factory=list)
     permisos_modulo: Optional[Dict[str, List[str]]] = Field(default_factory=dict)
 
-
-# ---------------------------------------------------------
-# CREATE
-# ---------------------------------------------------------
 class EmpleadoCreate(EmpleadoBase):
     nombre: str
     dni: str
 
-
-# ---------------------------------------------------------
-# UPDATE
-# ---------------------------------------------------------
 class EmpleadoUpdate(EmpleadoBase):
     pass
 
-
-# ---------------------------------------------------------
-# RESPONSE
-# ---------------------------------------------------------
 class EmpleadoResponse(EmpleadoBase):
     id: int
+    rol_nombre: Optional[str] = None
 
     class Config:
         orm_mode = True
         arbitrary_types_allowed = True
 
-
-# ---------------------------------------------------------
-# SEARCH RESPONSE
-# ---------------------------------------------------------
 class EmpleadoSearchResponse(BaseModel):
     total: int
     page: int

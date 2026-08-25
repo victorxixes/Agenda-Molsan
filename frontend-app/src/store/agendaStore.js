@@ -12,6 +12,9 @@ export const useAgendaStore = create((set, get) => ({
 
   setCitaActual: (cita) => set({ citaActual: cita }),
 
+  // ---------------------------------------------------------
+  // CARGAR DÍA
+  // ---------------------------------------------------------
   cargarDia: async (fecha) => {
     set({ loading: true });
     const data = await agendaAPI.citasDia(fecha);
@@ -19,6 +22,9 @@ export const useAgendaStore = create((set, get) => ({
     set({ citasDia: safe, citas: safe, loading: false });
   },
 
+  // ---------------------------------------------------------
+  // CARGAR MES
+  // ---------------------------------------------------------
   cargarMes: async (mesString) => {
     set({ loading: true });
 
@@ -34,11 +40,17 @@ export const useAgendaStore = create((set, get) => ({
     set({ citasMes: mapa, mesActual: mesString, loading: false });
   },
 
+  // ---------------------------------------------------------
+  // CARGAR UNA CITA
+  // ---------------------------------------------------------
   cargarCita: async (id) => {
     const data = await agendaAPI.obtener(id);
     set({ citaActual: data });
   },
 
+  // ---------------------------------------------------------
+  // CREAR CITA
+  // ---------------------------------------------------------
   crear: async (data) => {
     const res = await agendaAPI.crear(data);
 
@@ -50,17 +62,44 @@ export const useAgendaStore = create((set, get) => ({
     if (mesActual) await get().cargarMes(mesActual);
   },
 
+  // ---------------------------------------------------------
+  // EDITAR CITA
+  // ---------------------------------------------------------
   editar: async (id, data) => {
     const res = await agendaAPI.editar(id, data);
 
     await crearLog("agenda", "editar", `Cita ${id} editada`, res);
 
-    await get().cargarDia(data.fecha);
+    // refrescar usando la fecha REAL devuelta por el backend
+    await get().cargarDia(res.fecha);
 
     const { mesActual } = get();
     if (mesActual) await get().cargarMes(mesActual);
   },
 
+  // ---------------------------------------------------------
+  // ELIMINAR CITA
+  // ---------------------------------------------------------
+  eliminar: async (id) => {
+    const res = await agendaAPI.eliminar(id);
+
+    await crearLog("agenda", "eliminar", `Cita ${id} eliminada`, { id });
+
+    const { citasDia } = get();
+    if (citasDia.length > 0) {
+      const fecha = citasDia[0].fecha;
+      await get().cargarDia(fecha);
+    }
+
+    const { mesActual } = get();
+    if (mesActual) await get().cargarMes(mesActual);
+
+    return res;
+  },
+
+  // ---------------------------------------------------------
+  // CAMBIAR ESTADO
+  // ---------------------------------------------------------
   cambiarEstado: async (id, nuevoEstado) => {
     const res = await agendaAPI.cambiarEstado(id, nuevoEstado);
 

@@ -14,6 +14,7 @@ def cita_con_relaciones(db: Session, cita: Cita):
         return None
 
     notario = None
+    apoderado = None
 
     # NOTARIO
     if cita.notario_id:
@@ -21,6 +22,13 @@ def cita_con_relaciones(db: Session, cita: Cita):
             notario = db.query(Notaria).filter(Notaria.id == cita.notario_id).first()
         except:
             notario = None
+
+    # APODERADO (empleado)
+    if cita.apoderado_id:
+        try:
+            apoderado = db.query(Empleado).filter(Empleado.id == cita.apoderado_id).first()
+        except:
+            apoderado = None
 
     return {
         "id": cita.id,
@@ -32,10 +40,18 @@ def cita_con_relaciones(db: Session, cita: Cita):
         "estado": cita.estado,
         "observaciones": cita.observaciones,
         "notario": notario,
-
-        # CORREGIDO: antes era cita.apoderado (columna inexistente)
+        "apoderado": apoderado,
         "apoderado_id": cita.apoderado_id,
     }
+
+# ---------------------------------------------------------
+# OBTENER CITA POR ID
+# ---------------------------------------------------------
+def obtener_cita(db: Session, cita_id: int):
+    cita = db.query(Cita).filter(Cita.id == cita_id).first()
+    if not cita:
+        return None
+    return cita_con_relaciones(db, cita)
 
 # ---------------------------------------------------------
 # LISTAR CITAS POR DÍA

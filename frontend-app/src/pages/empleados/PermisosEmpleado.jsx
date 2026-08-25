@@ -1,125 +1,109 @@
 import { useEffect, useState } from "react";
-import axios from "../../api/axios";
+import { useEmpleadosStore } from "../../store/empleadosStore";
 
-export default function PermisosEmpleado({ empleadoId }) {
-  // Módulos disponibles
-  const MODULOS = [
-    "dashboard",
-    "agenda",
-    "empleados",
-    "ctn",
-    "documentos",
-    "intranet",
-    "mensajes",
-    "seguridad"
-  ];
+const getFotoURL = (foto) => {
+  if (!foto || foto === "string" || foto.trim() === "") {
+    return "/placeholder.png";
+  }
+  if (foto.startsWith("http")) return foto;
+  return `${import.meta.env.VITE_API_URL}${foto}`;
+};
 
-  // Permisos disponibles
-  const PERMISOS = ["ver", "crear", "editar", "borrar"];
+export default function FotoEmpleado({ empleadoId }) {
+  const {
+    empleadoActual,
+    cargarEmpleado,
+    subirFoto,
+  } = useEmpleadosStore();
 
-  const [modulosVisibles, setModulosVisibles] = useState([]);
-  const [permisosModulo, setPermisosModulo] = useState({});
+  const [preview, setPreview] = useState(null);
+  const [archivo, setArchivo] = useState(null);
+  const [subiendo, setSubiendo] = useState(false);
+  const [error, setError] = useState(null);
 
-  // Cargar datos del empleado
+  // Cargar empleado
   useEffect(() => {
-    axios.get(`/empleados/${empleadoId}`).then((res) => {
-      setModulosVisibles(res.data.modulos_visibles || []);
-      setPermisosModulo(res.data.permisos_modulo || {});
-    });
+    cargarEmpleado(empleadoId);
   }, [empleadoId]);
 
-  // Toggle módulo visible
-  const toggleModulo = (modulo) => {
-    let nuevos = [...modulosVisibles];
+  // Actualizar preview cuando llega el empleado
+  useEffect(() => {
+    if (empleadoActual) {
+      setPreview(getFotoURL(empleadoActual.foto));
+    }
+  }, [empleadoActual]);
 
-    if (nuevos.includes(modulo)) {
-      nuevos = nuevos.filter((m) => m !== modulo);
-    } else {
-      nuevos.push(modulo);
+  const handleFile = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setError("El archivo debe ser una imagen");
+      return;
     }
 
-    setModulosVisibles(nuevos);
+    setArchivo(file);
+    setError(null);
+
+    // Preview local
+    const reader = new FileReader();
+    reader.onload = () => setPreview(reader.result);
+    reader.readAsDataURL(file);
   };
 
-  // Toggle permiso por módulo
-  const togglePermiso = (modulo, permiso) => {
-    const actuales = permisosModulo[modulo] || [];
-    let nuevos = actuales.includes(permiso)
-      ? actuales.filter((p) => p !== permiso)
-      : [...actuales, permiso];
+  const handleUpload = async () => {
+    if (!archivo) {
+      setError("Selecciona una imagen primero");
+      return;
+    }
 
-    setPermisosModulo({
-      ...permisosModulo,
-      [modulo]: nuevos,
-    });
+    setSubiendo(true);
+    setError(null);
+
+    try {
+      await subirFoto(empleadoId, archivo);
+      await cargarEmpleado(empleadoId);
+      alert("Foto actualizada correctamente");
+    } catch {
+      setError("Error al subir la foto");
+    }
+
+    setSubiendo(false);
+    setArchivo(null);
   };
 
-  // Guardar cambios (endpoint correcto del backend)
-  const guardarCambios = () => {
-    axios
-      .put(`/empleados/${empleadoId}/permisos-detalle`, {
-        permisos: permisosModulo
-      })
-      .then(() => alert("Permisos actualizados correctamente"))
-      .catch(() => alert("Error al guardar permisos"));
-  };
+  if (!empleadoActual) return <div className="p-6">Cargando foto...</div>;
 
   return (
-    <div className="p-6">
-      <h2 className="text-xl font-bold mb-4">Permisos por módulo</h2>
+    <div className="p-6 space-y-6">
+      <h2 className="text-xl font-bold mb-4">Foto del empleado</h2>
 
-      {/* MÓDULOS VISIBLES */}
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold mb-2">Módulos visibles</h3>
+      <div className="flex items-center gap-6">
+        <img
+          src={preview}
+          alt="Foto empleado"
+          className="w-32 h-32 rounded-full object-cover border"
+        />
 
-        <div className="grid grid-cols-2 gap-3">
-          {MODULOS.map((modulo) => (
-            <label key={modulo} className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={modulosVisibles.includes(modulo)}
-                onChange={() => toggleModulo(modulo)}
-              />
-              {modulo}
-            </label>
-          ))}
+        <div className="space-y-3">
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleFile}
+            className="input"
+          />
+
+          {error && <p className="text-red-600 text-sm">{error}</p>}
+
+          <button
+            onClick={handleUpload}
+            disabled={subiendo}
+            className="bg-blue-600 text-white px-4 py-2 rounded w-full"
+          >
+            {subiendo ? "Subiendo..." : "Actualizar foto"}
+          </button>
         </div>
       </div>
-
-      {/* PERMISOS POR MÓDULO */}
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold mb-2">Permisos por módulo</h3>
-
-        {modulosVisibles.length === 0 && (
-          <p className="text-gray-500">Selecciona módulos primero.</p>
-        )}
-
-        {modulosVisibles.map((modulo) => (
-          <div key={modulo} className="mb-4 border p-3 rounded-lg">
-            <h4 className="font-medium mb-2">{modulo}</h4>
-
-            <div className="flex gap-4 flex-wrap">
-              {PERMISOS.map((permiso) => (
-                <label key={permiso} className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={permisosModulo[modulo]?.includes(permiso) || false}
-                    onChange={() => togglePermiso(modulo, permiso)}
-                  />
-                  {permiso}
-                </label>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <button
-        onClick={guardarCambios}
-        className="bg-green-600 text-white px-4 py-2 rounded"
-      >
-        Guardar cambios
-      </button>
     </div>
   );
 }

@@ -1,25 +1,18 @@
-
 import { create } from "zustand";
 import { seguridadAPI } from "../api/seguridad";
 import { crearLog } from "../lib/log";
 
 export const useSeguridadStore = create((set, get) => ({
   roles: [],
-  rol: null,
+  permisosBase: [],
+  permisosRol: {},
   eventos: [],
   loading: false,
 
   cargarRoles: async () => {
     set({ loading: true });
     const data = await seguridadAPI.listarRoles();
-    const safe = Array.isArray(data) ? data : [];
-    set({ roles: safe, loading: false });
-  },
-
-  cargarRol: async (id) => {
-    set({ loading: true });
-    const data = await seguridadAPI.obtenerRol(id);
-    set({ rol: data, loading: false });
+    set({ roles: Array.isArray(data) ? data : [], loading: false });
   },
 
   crearRol: async (data) => {
@@ -35,34 +28,19 @@ export const useSeguridadStore = create((set, get) => ({
     await get().cargarRoles();
   },
 
-  actualizarRol: async (id, data) => {
-    const res = await seguridadAPI.actualizarRol(id, data);
-
-    await crearLog(
-      "seguridad",
-      "rol_editado",
-      `Rol editado: ${res.nombre}`,
-      res
-    );
-
-    await get().cargarRoles();
+  cargarPermisosBase: async () => {
+    const data = await seguridadAPI.obtenerPermisosBase();
+    set({ permisosBase: data });
   },
 
-  asignarPermiso: async (usuarioId, modulo, permiso) => {
-    const res = await seguridadAPI.asignarPermiso(usuarioId, modulo, permiso);
-
-    await crearLog(
-      "seguridad",
-      "permiso_asignado",
-      `Permiso asignado: usuario ${usuarioId}, módulo ${modulo}, permiso ${permiso}`,
-      res
-    );
+  cargarPermisosRol: async (rolId) => {
+    const data = await seguridadAPI.obtenerPermisosRol(rolId);
+    set({ permisosRol: data });
   },
 
   cargarEventos: async () => {
     set({ loading: true });
     const data = await seguridadAPI.listarEventos();
-    const safe = Array.isArray(data) ? data : [];
-    set({ eventos: safe, loading: false });
+    set({ eventos: Array.isArray(data) ? data : [], loading: false });
   },
 }));

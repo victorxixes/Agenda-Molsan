@@ -2,12 +2,20 @@ import React, { useState, useEffect } from "react";
 import CalendarHeader from "./CalendarHeader.jsx";
 import CalendarGrid from "./CalendarGrid.jsx";
 import AgendaSidebar from "../../sidebar/AgendaSidebar.jsx";
+
+import AgendaNuevaEditarCitaModal from "./AgendaNuevaEditarCitaModal.jsx";
+import AgendaCitaDetalleModal from "./AgendaCitaDetalleModal.jsx";
+
 import { useAgendaStore } from "../../store/agendaStore";
 
 export default function AgendaPage() {
   const { cargarMes, cargarDia, citasDia } = useAgendaStore();
 
   const [selectedDate, setSelectedDate] = useState(new Date());
+
+  // Estado para modal de edición
+  const [modalEditarOpen, setModalEditarOpen] = useState(false);
+  const [citaEditId, setCitaEditId] = useState(null);
 
   // Cargar citas del mes
   useEffect(() => {
@@ -22,31 +30,49 @@ export default function AgendaPage() {
     cargarDia(fecha);
   }, [selectedDate]);
 
+  // Abrir modal de edición
+  const handleEditarCita = (id) => {
+    setCitaEditId(id);
+    setModalEditarOpen(true);
+  };
+
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-      {/* CALENDARIO */}
-      <div className="lg:col-span-2">
-        <CalendarHeader
-          selectedDate={selectedDate}
-          onChange={setSelectedDate}
-        />
+        {/* CALENDARIO */}
+        <div className="lg:col-span-2">
+          <CalendarHeader
+            selectedDate={selectedDate}
+            onChange={setSelectedDate}
+          />
 
-        <CalendarGrid
-          selectedDate={selectedDate}
-          onSelectDay={setSelectedDate}
-        />
+          <CalendarGrid
+            selectedDate={selectedDate}
+            onSelectDay={setSelectedDate}
+          />
+        </div>
+
+        {/* SIDEBAR */}
+        <div>
+          <AgendaSidebar
+            date={selectedDate}
+            citas={citasDia || []}
+            onEditarCita={handleEditarCita}
+          />
+        </div>
+
       </div>
 
-      {/* SIDEBAR */}
-      <div>
-        <AgendaSidebar
-          date={selectedDate}
-          citas={citasDia || []}
-          onEditarCita={(id) => console.log("Editar cita", id)}
-        />
-      </div>
+      {/* MODAL DETALLE */}
+      <AgendaCitaDetalleModal />
 
-    </div>
+      {/* MODAL EDITAR */}
+      <AgendaNuevaEditarCitaModal
+        citaId={citaEditId}
+        open={modalEditarOpen}
+        onClose={() => setModalEditarOpen(false)}
+      />
+    </>
   );
 }

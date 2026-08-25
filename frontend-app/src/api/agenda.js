@@ -1,34 +1,33 @@
-
 import axios from "../api/axios";
 
 export const agendaAPI = {
 
   citasDia: (fecha) =>
-    axios.get(`/agenda/dia/${fecha}`).then(r => r.data),
+    axios.get(`/api/agenda/dia/${fecha}`).then(r => r.data),
 
   citasSemana: (fecha) =>
-    axios.get(`/agenda/semana/${fecha}`).then(r => r.data),
+    axios.get(`/api/agenda/semana/${fecha}`).then(r => r.data),
 
   // ⭐ CORREGIDO: ahora acepta "2026-08" y lo divide en year + month
- citasMes: (mesString) => {
-  const [year, month] = mesString.split("-");
-  return axios.get(`/agenda/mes/${year}/${month}`).then(r => r.data);
-},
+  citasMes: (mesString) => {
+    const [year, month] = mesString.split("-");
+    return axios.get(`/api/agenda/mes/${year}/${month}`).then(r => r.data);
+  },
 
   obtener: (id) =>
-    axios.get(`/agenda/${id}`).then(r => r.data),
+    axios.get(`/api/agenda/${id}`).then(r => r.data),
 
   crear: (data) =>
-    axios.post(`/agenda`, data).then(r => r.data),
+    axios.post(`/api/agenda`, data).then(r => r.data),
 
   editar: (id, data) =>
-    axios.put(`/agenda/${id}`, data).then(r => r.data),
+    axios.put(`/api/agenda/${id}`, data).then(r => r.data),
 
   eliminar: (id) =>
-    axios.delete(`/agenda/${id}`).then(r => r.data),
+    axios.delete(`/api/agenda/${id}`).then(r => r.data),
 
   mover: (id, fecha, hi, hf) =>
-    axios.put(`/agenda/mover/${id}`, null, {
+    axios.put(`/api/agenda/mover/${id}`, null, {
       params: {
         nueva_fecha: fecha,
         nueva_hora_inicio: hi,
@@ -37,7 +36,7 @@ export const agendaAPI = {
     }).then(r => r.data),
 
   cambiarEstado: (id, estado) =>
-    axios.put(`/agenda/estado/${id}`, null, {
+    axios.put(`/api/agenda/estado/${id}`, null, {
       params: { nuevo_estado: estado },
     }).then(r => r.data),
 };

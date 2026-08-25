@@ -1,50 +1,44 @@
-import { useEffect, useState } from "react";
-import axios from "../../api/axios";
+import { useEffect } from "react";
+import { useEmpleadosStore } from "../../store/empleadosStore";
 
 export default function EstadoEmpleado({ empleadoId }) {
-  const [empleado, setEmpleado] = useState(null);
+  const {
+    empleadoActual,
+    cargarEmpleado,
+    toggleActivo,
+  } = useEmpleadosStore();
 
-  // Cargar empleado
   useEffect(() => {
-    axios.get(`/empleados/${empleadoId}`).then((res) => {
-      setEmpleado(res.data);
-    });
+    cargarEmpleado(empleadoId);
   }, [empleadoId]);
 
-  // Cambiar estado (activo / inactivo)
-  const toggleEstado = () => {
-    const nuevoEstado = !empleado.activo;
+  if (!empleadoActual) return <div className="p-6">Cargando estado...</div>;
 
-    axios
-      .put(`/empleados/${empleadoId}`, {
-        activo: nuevoEstado
-      })
-      .then((res) => {
-        setEmpleado(res.data);
-      })
-      .catch(() => alert("Error al cambiar estado"));
+  const e = empleadoActual;
+
+  const cambiarEstado = async () => {
+    await toggleActivo(e);
+    await cargarEmpleado(empleadoId);
   };
 
-  if (!empleado) return <div>Cargando...</div>;
-
   return (
-    <div className="p-6">
+    <div className="p-6 space-y-6">
       <h2 className="text-xl font-bold mb-4">Estado del empleado</h2>
 
       <p className="mb-4">
         Estado actual:{" "}
-        <span className={empleado.activo ? "text-green-600" : "text-red-600"}>
-          {empleado.activo ? "Activo" : "Inactivo"}
+        <span className={e.activo ? "text-green-600" : "text-red-600"}>
+          {e.activo ? "Activo" : "Inactivo"}
         </span>
       </p>
 
       <button
-        onClick={toggleEstado}
+        onClick={cambiarEstado}
         className={`px-4 py-2 rounded text-white ${
-          empleado.activo ? "bg-red-600" : "bg-green-600"
+          e.activo ? "bg-red-600" : "bg-green-600"
         }`}
       >
-        {empleado.activo ? "Desactivar empleado" : "Activar empleado"}
+        {e.activo ? "Desactivar empleado" : "Activar empleado"}
       </button>
     </div>
   );

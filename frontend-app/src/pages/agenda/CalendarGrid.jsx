@@ -5,25 +5,30 @@ export default function CalendarGrid({ selectedDate, onSelectDay }) {
   const { citasMes, setCitaActual } = useAgendaStore();
 
   const year = selectedDate.getFullYear();
-  const month = selectedDate.getMonth(); // 0–11
+  const month = selectedDate.getMonth();
 
   const firstDay = new Date(year, month, 1);
   const lastDay = new Date(year, month + 1, 0);
 
   const daysInMonth = lastDay.getDate();
-  const startWeekday = firstDay.getDay(); // 0 domingo
+  const startWeekday = firstDay.getDay();
 
   const tipoIcono = {
-    "firma notarial": "🖋️",
-    "videoconferencia": "🎥",
-    "presencial": "📍",
-    "otros": "📄",
+    "Firma notarial": "🖋️",
+    "Videoconferencia": "🎥",
+    "Presencial": "📍",
+    "Otros": "📄",
   };
 
   const grid = [];
 
   for (let i = 0; i < startWeekday; i++) {
-    grid.push(<div key={`empty-${i}`} className="h-28 border rounded-lg bg-gray-50"></div>);
+    grid.push(
+      <div
+        key={`empty-${i}`}
+        className="h-28 border rounded-lg bg-gray-50"
+      ></div>
+    );
   }
 
   for (let day = 1; day <= daysInMonth; day++) {
@@ -50,18 +55,26 @@ export default function CalendarGrid({ selectedDate, onSelectDay }) {
                   e.stopPropagation();
                   setCitaActual(cita);
                 }}
-               title={`Notario: ${cita.notario_id}\nApoderado ID: ${cita.apoderado_id}\nHora: ${cita.hora_inicio}`}
+                title={`Notario: ${cita.notario?.nombre || ""} ${cita.notario?.apellidos || ""}
+Apoderado: ${cita.apoderado?.nombre || ""} ${cita.apoderado?.apellidos || ""}
+Hora: ${cita.hora_inicio}`}
               >
                 <div className="flex items-center gap-1 text-sm">
                   <span>{icono}</span>
                   <span className="font-bold">{cita.hora_inicio}</span>
                 </div>
+
                 <div className="text-xs text-gray-700">
-                  Notario: {cita.notario_id}
+                  {cita.notario
+                    ? `${cita.notario.nombre} ${cita.notario.apellidos}`
+                    : "Sin notario"}
                 </div>
+
                 <div className="text-xs text-gray-700">
-  Apoderado ID: {cita.apoderado_id || "—"}
-</div>
+                  {cita.apoderado
+                    ? `${cita.apoderado.nombre} ${cita.apoderado.apellidos}`
+                    : "Sin apoderado"}
+                </div>
               </div>
             );
           })}
@@ -70,9 +83,5 @@ export default function CalendarGrid({ selectedDate, onSelectDay }) {
     );
   }
 
-  return (
-    <div className="grid grid-cols-7 gap-2 mt-4">
-      {grid}
-    </div>
-  );
+  return <div className="grid grid-cols-7 gap-2 mt-4">{grid}</div>;
 }

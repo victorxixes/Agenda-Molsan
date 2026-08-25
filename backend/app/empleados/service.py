@@ -6,41 +6,17 @@ import json
 import jwt
 
 from backend.app.empleados.models import Empleado
+from backend.app.seguridad.models import Rol
 from backend.app.empleados.schemas import EmpleadoCreate, EmpleadoUpdate
-from backend.app.config import settings   # Import correcto
+from backend.app.config import settings
 
-
-# ---------------------------------------------------------
-# UTILIDADES
-# ---------------------------------------------------------
 def hash_password(password: str) -> str:
     return hashlib.sha256(password.encode()).hexdigest()
 
-
-
-# ---------------------------------------------------------
-# LOGIN EMPLEADO (SOLO USUARIO + CONTRASEÑA)
-# ---------------------------------------------------------
 def login(db: Session, usuario: str, password: str):
-    empleado = (
-        db.query(Empleado)
-        .filter(
-            or_(
-                Empleado.usuario == usuario,
-                Empleado.dni == usuario
-            )
-        )
-        .first()
-    )
-
-    print("LOGIN DEBUG → usuario:", usuario)
-    print("LOGIN DEBUG → password:", password)
-    print("LOGIN DEBUG → empleado encontrado:", empleado)
-
-    if empleado:
-        print("LOGIN DEBUG → password BD:", empleado.password)
-        print("LOGIN DEBUG → password hash:", hash_password(password))
-        print("LOGIN DEBUG → activo:", empleado.activo)
+    empleado = db.query(Empleado).filter(
+        or_(Empleado.usuario == usuario, Empleado.dni == usuario)
+    ).first()
 
     if not empleado:
         raise HTTPException(status_code=401, detail="Usuario o contraseña incorrectos")
@@ -48,15 +24,15 @@ def login(db: Session, usuario: str, password: str):
     if not empleado.activo:
         raise HTTPException(status_code=401, detail="Usuario inactivo")
 
-    password_hash = hash_password(password)
-    if empleado.password != password_hash:
+    if empleado.password != hash_password(password):
         raise HTTPException(status_code=401, detail="Usuario o contraseña incorrectos")
 
     token = jwt.encode(
         {
             "id": empleado.id,
             "usuario": empleado.usuario,
-            "rol": empleado.cargo_id,
+            "rol_id": empleado.rol_id,
+            "rol_nombre": empleado.rol.nombre if empleado.rol else None,
         },
         settings.JWT_SECRET,
         algorithm=settings.ALGORITHM,
@@ -67,67 +43,44 @@ def login(db: Session, usuario: str, password: str):
         "empleado": empleado,
     }
 
-# ---------------------------------------------------------
-# CREAR EMPLEADO (V2)
-# ---------------------------------------------------------
 def crear_empleado(db: Session, data: EmpleadoCreate):
-    # --- Validar DNI duplicado ---
+
     if db.query(Empleado).filter(Empleado.dni == data.dni).first():
         raise HTTPException(status_code=400, detail="El DNI ya existe")
 
-    # --- Contraseña por defecto segura ---
-    password_plano = data.password if getattr(data, "password", None) else data.dni
+    if data.rol_id:
+        if not db.query(Rol).filter(Rol.id == data.rol_id).first():
+            raise HTTPException(status_code=400, detail="Rol no válido")
+
+    password_plano = data.password if data.password else data.dni
     password_hash = hash_password(password_plano)
-
-    # --- Módulos por defecto ---
-    modulos_defecto = [
-        "dashboard",
-        "empleados",
-        "documentos",
-        "mensajes",
-        "agenda",
-        "ctn",
-        "intranet",
-        "seguridad"
-    ]
-
-    # --- Permisos por defecto ---
-    permisos_defecto = {
-        "dashboard": ["ver"],
-        "empleados": ["ver"],
-        "agenda": ["ver"],
-        "documentos": ["ver"],
-        "mensajes": ["ver"],
-        "ctn": ["ver"],
-        "intranet": ["ver"],
-        "seguridad": ["ver"]
-    }
 
     empleado = Empleado(
         nombre=data.nombre,
         apellidos=data.apellidos,
         dni=data.dni,
-        usuario=data.usuario if getattr(data, "usuario", None) else data.dni,
+        usuario=data.usuario if data.usuario else data.dni,
         password=password_hash,
-        telefono=getattr(data, "telefono", None),
-        email_personal=getattr(data, "email_personal", None),
-        direccion=getattr(data, "direccion", None),
-        fecha_nacimiento=getattr(data, "fecha_nacimiento", None),
-        alergias=getattr(data, "alergias", None),
-        persona_contacto=getattr(data, "persona_contacto", None),
-        telefono_contacto=getattr(data, "telefono_contacto", None),
-        observaciones=getattr(data, "observaciones", None),
-        departamento_id=getattr(data, "departamento_id", None),
-        seccion_id=getattr(data, "seccion_id", None),
-        cargo_id=getattr(data, "cargo_id", None),
-        email_empresa=getattr(data, "email_empresa", None),
-        extension=getattr(data, "extension", None),
-        fecha_alta=getattr(data, "fecha_alta", None),
-        fecha_baja=getattr(data, "fecha_baja", None),
+        telefono=data.telefono,
+        email_personal=data.email_personal,
+        direccion=data.direccion,
+        fecha_nacimiento=data.fecha_nacimiento,
+        alergias=data.alergias,
+        persona_contacto=data.persona_contacto,
+        telefono_contacto=data.telefono_contacto,
+        observaciones=data.observaciones,
+        departamento_id=data.departamento_id,
+        seccion_id=data.seccion_id,
+        cargo_id=data.cargo_id,
+        email_empresa=data.email_empresa,
+        extension=data.extension,
+        fecha_alta=data.fecha_alta,
+        fecha_baja=data.fecha_baja,
         activo=True,
         foto="/static/fotos_empleados/default.jpg",
-        modulos_visibles=modulos_defecto,
-        permisos_modulo=permisos_defecto
+        rol_id=data.rol_id,
+        modulos_visibles=data.modulos_visibles,
+        permisos_modulo=data.permisos_modulo,
     )
 
     db.add(empleado)
@@ -135,67 +88,35 @@ def crear_empleado(db: Session, data: EmpleadoCreate):
     db.refresh(empleado)
     return empleado
 
-
-# ---------------------------------------------------------
-# EDITAR EMPLEADO (V2)
-# ---------------------------------------------------------
 def editar_empleado(db: Session, empleado_id: int, data: EmpleadoUpdate):
     empleado = db.query(Empleado).filter(Empleado.id == empleado_id).first()
     if not empleado:
         return None
 
+    if data.rol_id:
+        if not db.query(Rol).filter(Rol.id == data.rol_id).first():
+            raise HTTPException(status_code=400, detail="Rol no válido")
+
     datos = data.dict(exclude_unset=True)
 
     for campo, valor in datos.items():
 
-        # --- PASSWORD (manejo seguro) ---
         if campo == "password":
-            if valor is None or valor == "":
-                continue
+            if valor:
+                valor = hash_password(valor)
 
-            if isinstance(valor, str) and len(valor) == 64 and all(
-                c in "0123456789abcdef" for c in valor.lower()
-            ):
-                continue
+        if campo == "modulos_visibles" and isinstance(valor, str):
+            valor = valor.split(",")
 
-            valor = hash_password(valor)
+        if campo == "permisos_modulo" and isinstance(valor, str):
+            valor = json.loads(valor)
 
-        # --- JSONB: modulos_visibles ---
-        if campo == "modulos_visibles":
-            if valor is None:
-                valor = []
-            elif not isinstance(valor, list):
-                try:
-                    valor = json.loads(valor)
-                except Exception:
-                    valor = []
-
-        # --- JSONB: permisos_modulo ---
-        if campo == "permisos_modulo":
-            if valor is None:
-                valor = {}
-            elif not isinstance(valor, dict):
-                try:
-                    valor = json.loads(valor)
-                except Exception:
-                    valor = {}
-
-        # --- Campos vacíos deben convertirse en None ---
-        if isinstance(valor, str) and valor.strip() == "":
-            valor = None
-
-        # --- Asignar solo si el campo existe en el modelo ---
-        if hasattr(Empleado, campo):
-            setattr(empleado, campo, valor)
+        setattr(empleado, campo, valor)
 
     db.commit()
     db.refresh(empleado)
     return empleado
 
-
-# ---------------------------------------------------------
-# ELIMINAR EMPLEADO (V2)
-# ---------------------------------------------------------
 def eliminar_empleado(db: Session, empleado_id: int):
     empleado = db.query(Empleado).filter(Empleado.id == empleado_id).first()
     if not empleado:
@@ -205,9 +126,5 @@ def eliminar_empleado(db: Session, empleado_id: int):
     db.commit()
     return True
 
-
-# ---------------------------------------------------------
-# LISTAR EMPLEADOS (V2)
-# ---------------------------------------------------------
 def listar_empleados(db: Session):
     return db.query(Empleado).all()

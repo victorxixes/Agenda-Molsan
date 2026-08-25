@@ -12,6 +12,14 @@ const estadoIcono = {
 export default function AgendaCard({ cita, onEditarCita }) {
   const { setCitaActual } = useAgendaStore();
 
+  const notarioNombre = cita.notario
+    ? `${cita.notario.nombre} ${cita.notario.apellidos}`
+    : cita.notario_id || "Notaría";
+
+  const apoderadoNombre = cita.apoderado
+    ? `${cita.apoderado.nombre} ${cita.apoderado.apellidos}`
+    : cita.apoderado_id || "—";
+
   return (
     <GlassCard
       className="flex flex-col gap-2 cursor-pointer"
@@ -20,9 +28,7 @@ export default function AgendaCard({ cita, onEditarCita }) {
       <div className="flex items-center gap-3">
         <IconAgenda size={26} />
         <h4 className="text-lg font-bold" style={{ color: "#1F3A5F" }}>
-          {cita.notario
-            ? `${cita.notario.nombre} ${cita.notario.apellidos}`
-            : "Notaría"}
+          {notarioNombre}
         </h4>
       </div>
 
@@ -35,7 +41,7 @@ export default function AgendaCard({ cita, onEditarCita }) {
       </p>
 
       <p style={{ color: "#1F3A5F" }}>
-        Apoderado ID: {cita.apoderado_id || "—"}
+        Apoderado: {apoderadoNombre}
       </p>
 
       <p className="flex items-center gap-2 text-sm">

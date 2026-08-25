@@ -97,9 +97,8 @@ def listar_secciones(db: Session = Depends(get_db)):
 def listar_cargos(db: Session = Depends(get_db)):
     return db.execute("SELECT id, nombre, descripcion FROM cargos").fetchall()
 
-
 # ---------------------------------------------------------
-# SUBIR FOTO
+# SUBIR FOTO (RENDER SAFE)
 # ---------------------------------------------------------
 @router.post("/{empleado_id}/foto", response_model=EmpleadoResponse)
 def subir_foto(empleado_id: int, archivo: UploadFile = File(...), db: Session = Depends(get_db)):
@@ -107,7 +106,7 @@ def subir_foto(empleado_id: int, archivo: UploadFile = File(...), db: Session = 
     if not empleado:
         raise HTTPException(status_code=404, detail="Empleado no encontrado")
 
-    carpeta = "static/fotos_empleados"
+    carpeta = "/tmp/fotos_empleados"
     os.makedirs(carpeta, exist_ok=True)
 
     ruta_archivo = f"{carpeta}/empleado_{empleado_id}.jpg"
@@ -115,13 +114,12 @@ def subir_foto(empleado_id: int, archivo: UploadFile = File(...), db: Session = 
     with open(ruta_archivo, "wb") as f:
         f.write(archivo.file.read())
 
-    empleado.foto = f"/static/fotos_empleados/empleado_{empleado_id}.jpg"
+    empleado.foto = ruta_archivo
 
     db.commit()
     db.refresh(empleado)
 
     return _sanear_jsonb_empleado(empleado)
-
 
 # ---------------------------------------------------------
 # LISTAR

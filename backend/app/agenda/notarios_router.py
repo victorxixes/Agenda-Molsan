@@ -37,7 +37,7 @@ def obtener_notarios(db: Session = Depends(get_db)):
 
             # Campos críticos para autocompletado
             "vc": n.vc,
-            "apoderado": n.apoderado,
+            "apoderado_id": n.apoderado_id,
             "apoderado_s": n.apoderado_s,
             "observacion": n.observacion,
 

@@ -1,66 +1,99 @@
 import { useEffect, useState } from "react";
-import axios from "../../api/axios";
+import { useEmpleadosStore } from "../../store/empleadosStore";
+import { useSeguridadStore } from "../../store/seguridadStore";
 
 export default function EditarEmpleado({ empleadoId }) {
-  const [form, setForm] = useState({});
+  const {
+    empleadoActual,
+    cargarEmpleado,
+    actualizarEmpleado,
+  } = useEmpleadosStore();
+
+  const {
+    roles,
+    cargarRoles,
+  } = useSeguridadStore();
+
   const [departamentos, setDepartamentos] = useState([]);
   const [secciones, setSecciones] = useState([]);
   const [cargos, setCargos] = useState([]);
 
-  // Limpia valores corruptos del backend
-  const limpiar = (obj) => {
-    const limpio = { ...obj };
-    for (const key in limpio) {
-      if (
-        limpio[key] === "string" ||
-        limpio[key] === null ||
-        limpio[key] === "null" ||
-        limpio[key] === undefined
-      ) {
-        limpio[key] = "";
-      }
-    }
-    return limpio;
-  };
+  const [form, setForm] = useState({
+    nombre: "",
+    apellidos: "",
+    usuario: "",
+    email_empresa: "",
+    rol_id: "",
+    activo: true,
+    departamento_id: "",
+    seccion_id: "",
+    cargo_id: "",
+  });
 
-  // Cargar datos del empleado
+  // Cargar empleado + roles + maestros
   useEffect(() => {
-    axios.get(`/empleados/${empleadoId}`).then((res) => {
-      setForm(limpiar(res.data));
-    });
+    cargarEmpleado(empleadoId);
+    cargarRoles();
+
+    // Maestros (secciones, departamentos, cargos)
+    fetch(`${import.meta.env.VITE_API_URL}/empleados/departamentos`)
+      .then((r) => r.json())
+      .then(setDepartamentos);
+
+    fetch(`${import.meta.env.VITE_API_URL}/empleados/secciones`)
+      .then((r) => r.json())
+      .then(setSecciones);
+
+    fetch(`${import.meta.env.VITE_API_URL}/empleados/cargos`)
+      .then((r) => r.json())
+      .then(setCargos);
   }, [empleadoId]);
 
-  // Cargar listas para selects
+  // Cuando llega el empleado del store → rellenamos formulario
   useEffect(() => {
-    axios.get(`/empleados/departamentos`).then((r) => setDepartamentos(r.data));
-    axios.get(`/empleados/secciones`).then((r) => setSecciones(r.data));
-    axios.get(`/empleados/cargos`).then((r) => setCargos(r.data));
-  }, []);
+    if (empleadoActual) {
+      setForm({
+        nombre: empleadoActual.nombre || "",
+        apellidos: empleadoActual.apellidos || "",
+        usuario: empleadoActual.usuario || "",
+        email_empresa: empleadoActual.email_empresa || "",
+        rol_id: empleadoActual.rol_id || "",
+        activo: Boolean(empleadoActual.activo),
+        departamento_id: empleadoActual.departamento_id || "",
+        seccion_id: empleadoActual.seccion_id || "",
+        cargo_id: empleadoActual.cargo_id || "",
+      });
+    }
+  }, [empleadoActual]);
 
   const handleChange = (field, value) => {
     setForm({ ...form, [field]: value });
   };
 
-  const guardar = () => {
+  const guardar = async () => {
     const payload = {
-      ...form,
-      seccion_id: Number(form.seccion_id) || null,
+      nombre: form.nombre,
+      apellidos: form.apellidos,
+      usuario: form.usuario,
+      email_empresa: form.email_empresa,
+      rol_id: Number(form.rol_id) || null,
+      activo: Boolean(form.activo),
       departamento_id: Number(form.departamento_id) || null,
+      seccion_id: Number(form.seccion_id) || null,
       cargo_id: Number(form.cargo_id) || null,
     };
 
-    axios
-      .put(`/empleados/${empleadoId}`, payload)
-      .then(() => alert("Empleado actualizado"))
-      .catch(() => alert("Error al actualizar"));
+    await actualizarEmpleado(empleadoId, payload);
+    alert("Empleado actualizado correctamente");
   };
 
-  if (!form.id) return <div>Cargando...</div>;
+  if (!empleadoActual) return <div className="p-6">Cargando empleado...</div>;
 
   return (
     <div className="p-6 space-y-6">
       <h2 className="text-xl font-bold mb-4">Editar empleado</h2>
 
+      {/* SECCIÓN / DEPARTAMENTO / CARGO */}
       <div className="grid grid-cols-3 gap-4 mb-6">
         {/* SECCIÓN */}
         <div>
@@ -114,23 +147,70 @@ export default function EditarEmpleado({ empleadoId }) {
         </div>
       </div>
 
-      {/* Campos del empleado (excepto IDs) */}
+      {/* CAMPOS GENERALES */}
       <div className="grid grid-cols-2 gap-4">
-        {Object.keys(form)
-          .filter(
-            (key) =>
-              !["seccion_id", "departamento_id", "cargo_id", "id"].includes(key)
-          )
-          .map((key) => (
-            <div key={key}>
-              <label className="font-semibold">{key}</label>
-              <input
-                className="border rounded px-2 py-1 w-full"
-                value={form[key] || ""}
-                onChange={(e) => handleChange(key, e.target.value)}
-              />
-            </div>
-          ))}
+        <div>
+          <label className="font-semibold">Nombre</label>
+          <input
+            className="border rounded px-2 py-1 w-full"
+            value={form.nombre}
+            onChange={(e) => handleChange("nombre", e.target.value)}
+          />
+        </div>
+
+        <div>
+          <label className="font-semibold">Apellidos</label>
+          <input
+            className="border rounded px-2 py-1 w-full"
+            value={form.apellidos}
+            onChange={(e) => handleChange("apellidos", e.target.value)}
+          />
+        </div>
+
+        <div>
+          <label className="font-semibold">Usuario</label>
+          <input
+            className="border rounded px-2 py-1 w-full"
+            value={form.usuario}
+            onChange={(e) => handleChange("usuario", e.target.value)}
+          />
+        </div>
+
+        <div>
+          <label className="font-semibold">Email empresa</label>
+          <input
+            className="border rounded px-2 py-1 w-full"
+            value={form.email_empresa}
+            onChange={(e) => handleChange("email_empresa", e.target.value)}
+          />
+        </div>
+
+        {/* ROL */}
+        <div>
+          <label className="font-semibold">Rol</label>
+          <select
+            value={form.rol_id}
+            onChange={(e) => handleChange("rol_id", Number(e.target.value))}
+            className="border rounded px-2 py-1 w-full"
+          >
+            <option value="">Seleccionar rol</option>
+            {roles.map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.nombre}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* ACTIVO */}
+        <div className="flex items-center gap-2 mt-6">
+          <input
+            type="checkbox"
+            checked={form.activo}
+            onChange={(e) => handleChange("activo", e.target.checked)}
+          />
+          <label className="font-semibold">Activo</label>
+        </div>
       </div>
 
       <button

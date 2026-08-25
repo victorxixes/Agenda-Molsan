@@ -22,9 +22,8 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
     observaciones: "",
   });
 
-  // ---------------------------------------------------------
-  // CARGAR CITA + NOTARIAS
-  // ---------------------------------------------------------
+  const [error, setError] = useState("");
+
   useEffect(() => {
     if (open && citaId) {
       cargarCita(citaId);
@@ -32,9 +31,6 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
     }
   }, [open, citaId]);
 
-  // ---------------------------------------------------------
-  // RELLENAR FORMULARIO
-  // ---------------------------------------------------------
   useEffect(() => {
     if (citaActual) {
       setForm({
@@ -51,9 +47,6 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
     }
   }, [citaActual]);
 
-  // ---------------------------------------------------------
-  // SELECCIONAR NOTARIA
-  // ---------------------------------------------------------
   const seleccionarNotaria = (n) => {
     const tipoFirmaTraducida =
       n.vc === "SI" ? "Videoconferencia" :
@@ -69,18 +62,25 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
     }));
   };
 
-  // ---------------------------------------------------------
-  // GUARDAR CAMBIOS
-  // ---------------------------------------------------------
   const guardar = async () => {
-    await editar(citaId, form);
-    alert("Cita actualizada correctamente");
-    onClose();
+    setError("");
+
+    if (!form.fecha) return setError("La fecha es obligatoria");
+    if (!form.hora_inicio) return setError("La hora de inicio es obligatoria");
+    if (!form.hora_fin) return setError("La hora de fin es obligatoria");
+    if (!form.tipo_cita) return setError("El tipo de cita es obligatorio");
+    if (!form.notario_id) return setError("Debes seleccionar una notaría");
+
+    try {
+      await editar(citaId, form);
+      alert("Cita actualizada correctamente");
+      onClose();
+    } catch (err) {
+      console.error(err);
+      setError("Error actualizando la cita");
+    }
   };
 
-  // ---------------------------------------------------------
-  // CAMBIAR ESTADO
-  // ---------------------------------------------------------
   const cambiarEstadoCita = async (nuevoEstado) => {
     await cambiarEstado(citaId, nuevoEstado);
     setForm({ ...form, estado: nuevoEstado });
@@ -103,7 +103,12 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
 
         <h2 className="text-2xl font-bold">Editar cita</h2>
 
-        {/* Fecha */}
+        {error && (
+          <div className="bg-red-100 text-red-700 p-2 rounded">
+            {error}
+          </div>
+        )}
+
         <input
           type="date"
           className="input"
@@ -111,7 +116,6 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
           onChange={(e) => setForm({ ...form, fecha: e.target.value })}
         />
 
-        {/* Horas */}
         <div className="grid grid-cols-2 gap-3">
           <input
             type="time"
@@ -128,7 +132,6 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
           />
         </div>
 
-        {/* Tipo de cita */}
         <select
           className="input"
           value={form.tipo_cita}
@@ -140,13 +143,11 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
           ))}
         </select>
 
-        {/* Buscador de notaria */}
         <BuscadorNotariaPremium
           notarios={notarias}
           onSelect={seleccionarNotaria}
         />
 
-        {/* Datos del notario */}
         {notarioSeleccionado && (
           <div className="space-y-2 bg-white/40 p-3 rounded-lg">
             <div className="font-semibold">
@@ -166,15 +167,13 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
           </div>
         )}
 
-        {/* Apoderado */}
-<input
-  type="text"
-  className="input bg-gray-100"
-  value={form.apoderado_id || "—"}
-  readOnly
-/>
+        <input
+          type="text"
+          className="input bg-gray-100"
+          value={form.apoderado_id || "—"}
+          readOnly
+        />
 
-        {/* Tipo de firma */}
         <input
           type="text"
           className="input bg-gray-100"
@@ -182,7 +181,6 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
           readOnly
         />
 
-        {/* Estado */}
         <div className="flex gap-2">
           {["Pendiente", "Confirmada", "En curso", "Finalizada", "Cancelada"].map((estado) => (
             <button
@@ -195,7 +193,6 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
           ))}
         </div>
 
-        {/* Observaciones */}
         <textarea
           className="input"
           placeholder="Observaciones"
@@ -203,7 +200,6 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
           onChange={(e) => setForm({ ...form, observaciones: e.target.value })}
         />
 
-        {/* Botón guardar */}
         <button className="btn-primary w-full" onClick={guardar}>
           Guardar cambios
         </button>

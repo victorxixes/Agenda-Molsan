@@ -2,14 +2,6 @@ import { create } from "zustand";
 import { seguridadAPI } from "../api/seguridad";
 import { crearLog } from "../lib/log";
 
-type SeguridadEvent = {
-  id?: number;
-  tipo: string;
-  descripcion: string;
-  fecha: string;
-  payload?: any;
-};
-
 type SeguridadState = {
   roles: any[];
   permisosBase: any[];

@@ -37,30 +37,20 @@ export const useEmpleadosStore = create((set, get) => ({
         break;
 
       case "empleado_actualizado":
-        await refrescarLista();
-        await refrescarFicha();
-        break;
-
       case "empleado_estado_cambiado":
-        await refrescarLista();
-        await refrescarFicha();
-        break;
-
       case "empleado_rol_cambiado":
         await refrescarLista();
         await refrescarFicha();
         break;
 
       case "empleado_foto_actualizada":
-        await refrescarFicha();
-        break;
-
       case "empleado_modulos_actualizados":
-        await refrescarFicha();
-        break;
-
       case "empleado_permisos_actualizados":
         await refrescarFicha();
+        break;
+
+      case "empleado_eliminado":
+        await refrescarLista();
         break;
 
       default:
@@ -86,7 +76,7 @@ export const useEmpleadosStore = create((set, get) => ({
   // ---------------------------------------------------------
   cargarEmpleado: async (id) => {
     try {
-      set({ loading: true, empleadoActual: null, error: null });
+      set({ loading: true, error: null });
       const data = await empleadosAPI.obtener(id);
       set({ empleadoActual: data, loading: false });
     } catch (err) {
@@ -108,7 +98,9 @@ export const useEmpleadosStore = create((set, get) => ({
         res
       );
 
-      await get().cargarEmpleados();
+      // ❌ Ya NO recargamos lista
+      // El realtime lo hace automáticamente
+
     } catch (err) {
       set({ error: "Error creando empleado" });
     }
@@ -128,8 +120,9 @@ export const useEmpleadosStore = create((set, get) => ({
         res
       );
 
-      await get().cargarEmpleado(id);
-      await get().cargarEmpleados();
+      // ❌ Ya NO recargamos lista ni ficha
+      // El realtime lo hace automáticamente
+
     } catch (err) {
       set({ error: "Error actualizando empleado" });
     }
@@ -149,7 +142,9 @@ export const useEmpleadosStore = create((set, get) => ({
         { id }
       );
 
-      await get().cargarEmpleados();
+      // ❌ Ya NO recargamos lista
+      // El realtime lo hace automáticamente
+
     } catch (err) {
       set({ error: "Error eliminando empleado" });
     }
@@ -173,8 +168,9 @@ export const useEmpleadosStore = create((set, get) => ({
         res
       );
 
-      await get().cargarEmpleado(empleado.id);
-      await get().cargarEmpleados();
+      // ❌ Ya NO recargamos lista ni ficha
+      // El realtime lo hace automáticamente
+
     } catch (err) {
       set({ error: "Error cambiando estado del empleado" });
     }
@@ -194,8 +190,9 @@ export const useEmpleadosStore = create((set, get) => ({
         res
       );
 
-      await get().cargarEmpleado(id);
-      await get().cargarEmpleados();
+      // ❌ Ya NO recargamos ficha
+      // El realtime lo hace automáticamente
+
     } catch (err) {
       set({ error: "Error subiendo foto" });
     }
@@ -215,7 +212,9 @@ export const useEmpleadosStore = create((set, get) => ({
         { modulos }
       );
 
-      await get().cargarEmpleado(id);
+      // ❌ Ya NO recargamos ficha
+      // El realtime lo hace automáticamente
+
     } catch (err) {
       set({ error: "Error guardando módulos visibles" });
     }
@@ -235,7 +234,9 @@ export const useEmpleadosStore = create((set, get) => ({
         permisos
       );
 
-      await get().cargarEmpleado(id);
+      // ❌ Ya NO recargamos ficha
+      // El realtime lo hace automáticamente
+
     } catch (err) {
       set({ error: "Error guardando permisos" });
     }

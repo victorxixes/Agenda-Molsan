@@ -9,7 +9,7 @@ export const useEmpleadosStore = create((set, get) => ({
   error: null,
 
   // ---------------------------------------------------------
-  // EVENTOS REALTIME
+  // REALTIME
   // ---------------------------------------------------------
   eventosRealtime: [],
 
@@ -22,9 +22,7 @@ export const useEmpleadosStore = create((set, get) => ({
     const { tipo, payload } = ev;
 
     const refrescarLista = async () => {
-      if (get().cargarEmpleados) {
-        await get().cargarEmpleados();
-      }
+      await get().cargarEmpleados();
     };
 
     const refrescarFicha = async () => {

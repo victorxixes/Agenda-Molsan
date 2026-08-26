@@ -21,14 +21,14 @@ export default function FotoEmpleado({ empleadoId }) {
   const [subiendo, setSubiendo] = useState(false);
   const [error, setError] = useState(null);
 
-  // Cargar empleado
+  // Cargar empleado SOLO una vez
   useEffect(() => {
     cargarEmpleado(empleadoId);
   }, [empleadoId]);
 
-  // Actualizar preview cuando llega el empleado
+  // Actualizar preview cuando llega el empleado (solo si no hay archivo local)
   useEffect(() => {
-    if (empleadoActual) {
+    if (empleadoActual && !archivo) {
       setPreview(getFotoURL(empleadoActual.foto));
     }
   }, [empleadoActual]);
@@ -62,7 +62,10 @@ export default function FotoEmpleado({ empleadoId }) {
 
     try {
       await subirFoto(empleadoId, archivo);
-      await cargarEmpleado(empleadoId);
+
+      // ❌ Ya NO llamamos a cargarEmpleado
+      // El store + realtime ya actualizan la ficha automáticamente
+
       alert("Foto actualizada correctamente");
     } catch {
       setError("Error al subir la foto");

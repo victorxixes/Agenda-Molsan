@@ -15,24 +15,29 @@ export default function RolEmpleado({ empleadoId }) {
   } = useSeguridadStore();
 
   const [rolId, setRolId] = useState("");
+  const [editando, setEditando] = useState(false);
 
-  // Cargar empleado + roles
+  // Cargar empleado + roles SOLO una vez
   useEffect(() => {
     cargarEmpleado(empleadoId);
     cargarRoles();
   }, [empleadoId]);
 
-  // Cuando llega el empleado → rellenamos estado
+  // Cuando llega el empleado → rellenamos estado (solo si no está editando)
   useEffect(() => {
-    if (empleadoActual) {
+    if (empleadoActual && !editando) {
       setRolId(empleadoActual.rol_id || "");
     }
   }, [empleadoActual]);
 
   const guardarRol = async () => {
     await actualizarEmpleado(empleadoId, { rol_id: Number(rolId) });
-    await cargarEmpleado(empleadoId);
+
+    // ❌ Ya NO llamamos a cargarEmpleado
+    // El store + realtime ya actualizan automáticamente
+
     alert("Rol actualizado correctamente");
+    setEditando(false);
   };
 
   if (!empleadoActual) return <div className="p-6">Cargando rol...</div>;
@@ -47,7 +52,10 @@ export default function RolEmpleado({ empleadoId }) {
         <select
           className="border rounded px-2 py-1 w-full"
           value={rolId}
-          onChange={(e) => setRolId(e.target.value)}
+          onChange={(e) => {
+            setEditando(true);
+            setRolId(e.target.value);
+          }}
         >
           <option value="">Seleccionar rol</option>
           {roles.map((r) => (

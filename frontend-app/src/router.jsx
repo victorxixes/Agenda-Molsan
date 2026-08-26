@@ -26,6 +26,7 @@ import MensajesChat from "./pages/mensajes/MensajesChat.jsx";
 import EmpleadosList from "./pages/empleados/EmpleadosList.jsx";
 import EmpleadoDetalle from "./pages/empleados/EmpleadoDetalle.jsx";
 import EmpleadoForm from "./pages/empleados/EmpleadoForm.jsx";
+import EmpleadosLayout from "./pages/empleados/EmpleadosLayout.jsx";
 
 // CTN
 import CTNList from "./pages/ctn/CTNList.jsx";
@@ -83,7 +84,7 @@ export default function AppRouter() {
       {/* EMPLEADOS */}
       <Route element={<RequireAuth modulo="empleados" />}>
         <Route element={<Layout />}>
-          <Route path="/empleados" element={<EmpleadosList />} />
+          <Route path="/empleados" element={<EmpleadosLayout />} />
           <Route path="/empleados/nuevo" element={<EmpleadoForm />} />
           <Route path="/empleados/:empleadoId" element={<EmpleadoDetalle />} />
           <Route path="/perfil" element={<MiPerfil />} />

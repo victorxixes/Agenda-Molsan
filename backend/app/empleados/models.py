@@ -47,7 +47,7 @@ class Empleado(Base):
     foto = Column(String(255), nullable=True)
 
     # 🔥 ROL DEL ERP
-    rol_id = Column(Integer, ForeignKey("roles.id"), nullable=True)
+    rol_id = Column(Integer, ForeignKey("roles2.id"), nullable=True)
     rol = relationship("Rol", back_populates="empleados")
 
     # Módulos y permisos

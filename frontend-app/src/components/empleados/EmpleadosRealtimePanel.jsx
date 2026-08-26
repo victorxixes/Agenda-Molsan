@@ -4,11 +4,19 @@ import { useEmpleadosWS } from "../../hooks/useEmpleadosWS";
 
 export default function EmpleadosRealtimePanel() {
   const { connected, events } = useEmpleadosWS("empleados");
-  const { addRealtimeEmpleadoEvent, eventosRealtime } = useEmpleadosStore();
 
-  // Cada evento recibido por WS → lo guardamos en el store
+  const {
+    addRealtimeEmpleadoEvent,
+    procesarEventoRealtime,
+    eventosRealtime,
+  } = useEmpleadosStore();
+
+  // Procesar eventos realtime (solo una vez)
   useEffect(() => {
-    events.forEach((ev) => addRealtimeEmpleadoEvent(ev));
+    events.forEach((ev) => {
+      addRealtimeEmpleadoEvent(ev);
+      procesarEventoRealtime(ev);
+    });
   }, [events]);
 
   return (

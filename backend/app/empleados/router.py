@@ -12,14 +12,13 @@ from backend.app.empleados.schemas import (
     EmpleadoCreate,
     EmpleadoUpdate,
     EmpleadoResponse,
-    EmpleadoSearchResponse
 )
 
 from backend.app.empleados.service import (
     crear_empleado,
     editar_empleado as editar_empleado_service,
     eliminar_empleado,
-    listar_empleados
+    listar_empleados,
 )
 
 # 🔥 Importar broadcast realtime
@@ -91,12 +90,11 @@ def crear(data: EmpleadoCreate, db: Session = Depends(get_db)):
     empleado = crear_empleado(db, data)
     empleado = _sanear_jsonb_empleado(empleado)
 
-    # 🔥 Emitir evento realtime
     broadcast_empleados({
         "tipo": "empleado_creado",
         "descripcion": f"Empleado creado: {empleado.nombre}",
         "fecha": datetime.now().isoformat(),
-        "payload": empleado.to_dict() if hasattr(empleado, "to_dict") else empleado.__dict__
+        "payload": empleado.__dict__
     })
 
     return empleado
@@ -118,12 +116,11 @@ def editar(empleado_id: int, data: EmpleadoUpdate, db: Session = Depends(get_db)
 
     empleado = _sanear_jsonb_empleado(empleado)
 
-    # 🔥 Emitir evento realtime
     broadcast_empleados({
         "tipo": "empleado_actualizado",
         "descripcion": f"Empleado actualizado: {empleado.nombre}",
         "fecha": datetime.now().isoformat(),
-        "payload": empleado.to_dict() if hasattr(empleado, "to_dict") else empleado.__dict__
+        "payload": empleado.__dict__
     })
 
     return empleado
@@ -141,7 +138,6 @@ def eliminar(empleado_id: int, db: Session = Depends(get_db)):
     db.delete(empleado)
     db.commit()
 
-    # 🔥 Emitir evento realtime
     broadcast_empleados({
         "tipo": "empleado_eliminado",
         "descripcion": f"Empleado eliminado: ID {empleado_id}",
@@ -150,3 +146,138 @@ def eliminar(empleado_id: int, db: Session = Depends(get_db)):
     })
 
     return {"detail": "Empleado eliminado correctamente"}
+
+
+# ---------------------------------------------------------
+# CAMBIAR ESTADO (ACTIVAR / DESACTIVAR)
+# ---------------------------------------------------------
+@router.put("/{empleado_id}/estado")
+def cambiar_estado(empleado_id: int, db: Session = Depends(get_db)):
+    empleado = db.query(Empleado).filter(Empleado.id == empleado_id).first()
+    if not empleado:
+        raise HTTPException(status_code=404, detail="Empleado no encontrado")
+
+    empleado.activo = not empleado.activo
+    db.commit()
+    db.refresh(empleado)
+
+    empleado = _sanear_jsonb_empleado(empleado)
+
+    broadcast_empleados({
+        "tipo": "empleado_estado_cambiado",
+        "descripcion": f"Estado cambiado: {empleado.nombre}",
+        "fecha": datetime.now().isoformat(),
+        "payload": empleado.__dict__
+    })
+
+    return empleado
+
+
+# ---------------------------------------------------------
+# CAMBIAR ROL
+# ---------------------------------------------------------
+@router.put("/{empleado_id}/rol/{rol_id}")
+def cambiar_rol(empleado_id: int, rol_id: int, db: Session = Depends(get_db)):
+    empleado = db.query(Empleado).filter(Empleado.id == empleado_id).first()
+    if not empleado:
+        raise HTTPException(status_code=404, detail="Empleado no encontrado")
+
+    rol = db.query(Rol).filter(Rol.id == rol_id).first()
+    if not rol:
+        raise HTTPException(status_code=400, detail="Rol no válido")
+
+    empleado.rol_id = rol_id
+    db.commit()
+    db.refresh(empleado)
+
+    empleado = _sanear_jsonb_empleado(empleado)
+
+    broadcast_empleados({
+        "tipo": "empleado_rol_cambiado",
+        "descripcion": f"Rol cambiado: {empleado.nombre}",
+        "fecha": datetime.now().isoformat(),
+        "payload": empleado.__dict__
+    })
+
+    return empleado
+
+
+# ---------------------------------------------------------
+# SUBIR FOTO
+# ---------------------------------------------------------
+@router.post("/{empleado_id}/foto")
+def subir_foto(empleado_id: int, archivo: UploadFile = File(...), db: Session = Depends(get_db)):
+    empleado = db.query(Empleado).filter(Empleado.id == empleado_id).first()
+    if not empleado:
+        raise HTTPException(status_code=404, detail="Empleado no encontrado")
+
+    ruta = f"/fotos/{empleado_id}.jpg"
+    path_real = os.path.join(os.path.dirname(__file__), "..", "fotos", f"{empleado_id}.jpg")
+
+    with open(path_real, "wb") as f:
+        f.write(archivo.file.read())
+
+    empleado.foto = ruta
+    db.commit()
+    db.refresh(empleado)
+
+    empleado = _sanear_jsonb_empleado(empleado)
+
+    broadcast_empleados({
+        "tipo": "empleado_foto_actualizada",
+        "descripcion": f"Foto actualizada: {empleado.nombre}",
+        "fecha": datetime.now().isoformat(),
+        "payload": empleado.__dict__
+    })
+
+    return empleado
+
+
+# ---------------------------------------------------------
+# ACTUALIZAR MÓDULOS VISIBLES
+# ---------------------------------------------------------
+@router.put("/{empleado_id}/modulos")
+def actualizar_modulos(empleado_id: int, modulos: list, db: Session = Depends(get_db)):
+    empleado = db.query(Empleado).filter(Empleado.id == empleado_id).first()
+    if not empleado:
+        raise HTTPException(status_code=404, detail="Empleado no encontrado")
+
+    empleado.modulos_visibles = modulos
+    db.commit()
+    db.refresh(empleado)
+
+    empleado = _sanear_jsonb_empleado(empleado)
+
+    broadcast_empleados({
+        "tipo": "empleado_modulos_actualizados",
+        "descripcion": f"Módulos actualizados: {empleado.nombre}",
+        "fecha": datetime.now().isoformat(),
+        "payload": empleado.__dict__
+    })
+
+    return empleado
+
+
+# ---------------------------------------------------------
+# ACTUALIZAR PERMISOS
+# ---------------------------------------------------------
+@router.put("/{empleado_id}/permisos")
+def actualizar_permisos(empleado_id: int, permisos: dict, db: Session = Depends(get_db)):
+    empleado = db.query(Empleado).filter(Empleado.id == empleado_id).first()
+    if not empleado:
+        raise HTTPException(status_code=404, detail="Empleado no encontrado")
+
+    empleado.permisos_modulo = permisos
+    db.commit()
+    db.refresh(empleado)
+
+    empleado = _sanear_jsonb_empleado(empleado)
+
+    broadcast_empleados({
+        "tipo": "empleado_permisos_actualizados",
+        "descripcion": f"Permisos actualizados: {empleado.nombre}",
+        "fecha": datetime.now().isoformat(),
+        "payload": empleado.__dict__
+    })
+
+    return empleado

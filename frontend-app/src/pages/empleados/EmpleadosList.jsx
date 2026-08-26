@@ -23,6 +23,7 @@ export default function EmpleadosList() {
   const navigate = useNavigate();
   const { empleados, cargarEmpleados } = useEmpleadosStore();
 
+  // Cargar empleados SOLO una vez al montar
   useEffect(() => {
     cargarEmpleados();
   }, []);
@@ -33,7 +34,7 @@ export default function EmpleadosList() {
       <p className="text-neutral-600">Listado de empleados</p>
 
       {/* Buscador */}
-      <BuscadorEmpleados onBuscar={() => cargarEmpleados()} />
+      <BuscadorEmpleados />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {empleados.map((empleado) => (

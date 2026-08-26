@@ -1,4 +1,4 @@
-// src/hooks/useEmpleadosWS.js
+
 import { useEffect, useRef, useState } from "react";
 
 export function useEmpleadosWS(room = "empleados") {

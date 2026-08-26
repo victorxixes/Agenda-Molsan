@@ -16,15 +16,15 @@ export const empleadosAPI = {
   eliminar: (id) =>
     axios.delete(`/empleados/${id}`).then(r => r.data),
 
-  // 🔥 Actualizar módulos visibles
+  // 🔥 Actualizar módulos visibles (CORRECTO)
   actualizarModulos: (id, modulos) =>
-    axios.put(`/empleados/${id}/permisos`, { modulos }).then(r => r.data),
+    axios.put(`/empleados/${id}/modulos`, modulos).then(r => r.data),
 
-  // 🔥 Actualizar permisos por módulo
+  // 🔥 Actualizar permisos por módulo (CORRECTO)
   actualizarPermisos: (id, permisos) =>
-    axios.put(`/empleados/${id}/permisos-detalle`, { permisos }).then(r => r.data),
+    axios.put(`/empleados/${id}/permisos`, permisos).then(r => r.data),
 
-  // 🔥 Subir foto
+  // 🔥 Subir foto (CORRECTO)
   subirFoto: (id, archivo) => {
     const formData = new FormData();
     formData.append("archivo", archivo);

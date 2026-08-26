@@ -9,6 +9,68 @@ export const useEmpleadosStore = create((set, get) => ({
   error: null,
 
   // ---------------------------------------------------------
+  // EVENTOS REALTIME
+  // ---------------------------------------------------------
+  eventosRealtime: [],
+
+  addRealtimeEmpleadoEvent: (ev) =>
+    set((state) => ({
+      eventosRealtime: [ev, ...state.eventosRealtime].slice(0, 200),
+    })),
+
+  procesarEventoRealtime: async (ev) => {
+    const { tipo, payload } = ev;
+
+    const refrescarLista = async () => {
+      if (get().cargarEmpleados) {
+        await get().cargarEmpleados();
+      }
+    };
+
+    const refrescarFicha = async () => {
+      if (get().empleadoActual?.id === payload.id) {
+        await get().cargarEmpleado(payload.id);
+      }
+    };
+
+    switch (tipo) {
+      case "empleado_creado":
+        await refrescarLista();
+        break;
+
+      case "empleado_actualizado":
+        await refrescarLista();
+        await refrescarFicha();
+        break;
+
+      case "empleado_estado_cambiado":
+        await refrescarLista();
+        await refrescarFicha();
+        break;
+
+      case "empleado_rol_cambiado":
+        await refrescarLista();
+        await refrescarFicha();
+        break;
+
+      case "empleado_foto_actualizada":
+        await refrescarFicha();
+        break;
+
+      case "empleado_modulos_actualizados":
+        await refrescarFicha();
+        break;
+
+      case "empleado_permisos_actualizados":
+        await refrescarFicha();
+        break;
+
+      default:
+        break;
+    }
+  },
+
+  // ---------------------------------------------------------
   // LISTAR EMPLEADOS
   // ---------------------------------------------------------
   cargarEmpleados: async () => {

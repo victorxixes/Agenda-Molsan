@@ -8,7 +8,7 @@ from backend.app.database import Base
 # ROLES
 # ---------------------------------------------------------
 class Rol(Base):
-    __tablename__ = "roles2"
+    __tablename__ = "roles"
     __allow_unmapped__ = True
 
     id = Column(Integer, primary_key=True, index=True)
@@ -26,7 +26,7 @@ class Rol(Base):
 # PERMISOS POR MÓDULO
 # ---------------------------------------------------------
 class Permiso(Base):
-    __tablename__ = "permisos2"
+    __tablename__ = "permisos"
     __allow_unmapped__ = True
 
     id = Column(Integer, primary_key=True, index=True)
@@ -41,7 +41,7 @@ class Permiso(Base):
 # RELACIÓN ROL-PERMISO (si la necesitas)
 # ---------------------------------------------------------
 class RolPermiso(Base):
-    __tablename__ = "roles_permisos2"
+    __tablename__ = "roles_permisos"
     __allow_unmapped__ = True
 
     id = Column(Integer, primary_key=True, index=True)

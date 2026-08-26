@@ -29,14 +29,13 @@ export default function EmpleadoDetalle() {
   const {
     empleadoActual,
     cargarEmpleado,
-    cargarEmpleados,
   } = useEmpleadosStore();
 
   const { cargarRoles } = useSeguridadStore();
 
   const [tab, setTab] = useState("resumen");
 
-  // Cargar empleado + roles
+  // Cargar empleado SOLO una vez al montar
   useEffect(() => {
     cargarEmpleado(empleadoId);
     cargarRoles();
@@ -105,45 +104,16 @@ export default function EmpleadoDetalle() {
       </div>
 
       {/* CONTENIDO SEGÚN PESTAÑA */}
-      {tab === "resumen" && (
-        <ResumenEmpleado empleadoId={empleadoId} />
-      )}
-
-      {tab === "datos" && (
-        <DatosPersonales empleadoId={empleadoId} />
-      )}
-
-      {tab === "laboral" && (
-        <DatosLaborales empleadoId={empleadoId} />
-      )}
-
-      {tab === "rol" && (
-        <RolEmpleado empleadoId={empleadoId} />
-      )}
-
-      {tab === "modulos" && (
-        <ModulosVisibles empleadoId={empleadoId} />
-      )}
-
-      {tab === "permisos" && (
-        <PermisosEmpleado empleadoId={empleadoId} />
-      )}
-
-      {tab === "foto" && (
-        <FotoEmpleado empleadoId={empleadoId} />
-      )}
-
-      {tab === "estado" && (
-        <EstadoEmpleado empleadoId={empleadoId} />
-      )}
-
-      {tab === "auditoria" && (
-        <AuditoriaEmpleado empleadoId={empleadoId} />
-      )}
-
-      {tab === "editar" && (
-        <EditarEmpleado empleadoId={empleadoId} />
-      )}
+      {tab === "resumen" && <ResumenEmpleado empleadoId={empleadoId} />}
+      {tab === "datos" && <DatosPersonales empleadoId={empleadoId} />}
+      {tab === "laboral" && <DatosLaborales empleadoId={empleadoId} />}
+      {tab === "rol" && <RolEmpleado empleadoId={empleadoId} />}
+      {tab === "modulos" && <ModulosVisibles empleadoId={empleadoId} />}
+      {tab === "permisos" && <PermisosEmpleado empleadoId={empleadoId} />}
+      {tab === "foto" && <FotoEmpleado empleadoId={empleadoId} />}
+      {tab === "estado" && <EstadoEmpleado empleadoId={empleadoId} />}
+      {tab === "auditoria" && <AuditoriaEmpleado empleadoId={empleadoId} />}
+      {tab === "editar" && <EditarEmpleado empleadoId={empleadoId} />}
     </div>
   );
 }

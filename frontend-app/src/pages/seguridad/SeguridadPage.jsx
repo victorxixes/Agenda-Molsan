@@ -1,6 +1,6 @@
-import RolesList from "../../components/seguridad/RolesList";
-import CrearRol from "../../components/seguridad/CrearRol";
-import EventosSeguridad from "../../components/seguridad/EventosSeguridad";
+import RolesList from "./RolesList";
+import CrearRol from "./CrearRol";
+import EventosSeguridad from "./EventosSeguridad";
 
 export default function SeguridadPage() {
   return (

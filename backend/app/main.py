@@ -41,7 +41,7 @@ FOTOS_DIR = os.path.join(os.path.dirname(__file__), "fotos")
 app.mount("/fotos", StaticFiles(directory=FOTOS_DIR), name="fotos")
 
 # ---------------------------------------------------------
-# IMPORTAR ROUTERS (REST) — DESPUÉS DE CREAR TABLAS
+# IMPORTAR ROUTERS (REST)
 # ---------------------------------------------------------
 
 # Seguridad
@@ -72,7 +72,7 @@ from backend.app.informes.router import router as informes_router
 from backend.app.intranet.noticias.router import router as noticias_router
 from backend.app.intranet.documentos.router import router as documentos_router
 
-# Logs / Mensajes / Realtime
+# Logs / Mensajes / Realtime REST
 from backend.app.logs.router import router as logs_router
 from backend.app.mensajes.router import router as mensajes_router
 from backend.app.realtime.router import router as realtime_router
@@ -116,7 +116,7 @@ app.include_router(create_router, prefix="/api")
 app.include_router(force_router, prefix="/api")
 
 # ---------------------------------------------------------
-# IMPORTAR WEBSOCKETS AL FINAL (CRÍTICO)
+# IMPORTAR WEBSOCKETS (AL FINAL)
 # ---------------------------------------------------------
 
 from backend.app.websockets.chat_ws import router as chat_ws_router
@@ -126,7 +126,7 @@ from backend.app.websockets.notificaciones_ws import router as notificaciones_ws
 from backend.app.websockets.seguridad_ws import router as seguridad_ws_router
 
 # ---------------------------------------------------------
-# INCLUIR WEBSOCKETS SIN SCHEMA (CRÍTICO)
+# INCLUIR WEBSOCKETS (SIN SCHEMA)
 # ---------------------------------------------------------
 
 app.include_router(chat_ws_router, include_in_schema=False)

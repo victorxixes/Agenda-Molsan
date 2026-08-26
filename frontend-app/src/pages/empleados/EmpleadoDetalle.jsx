@@ -35,7 +35,7 @@ export default function EmpleadoDetalle() {
 
   const [tab, setTab] = useState("resumen");
 
-  // Cargar empleado SOLO una vez al montar
+  // Cargar empleado + roles SOLO una vez
   useEffect(() => {
     cargarEmpleado(empleadoId);
     cargarRoles();

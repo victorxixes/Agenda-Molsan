@@ -1,109 +1,99 @@
 import { useEffect, useState } from "react";
 import { useEmpleadosStore } from "../../store/empleadosStore";
 
-const getFotoURL = (foto) => {
-  if (!foto || foto === "string" || foto.trim() === "") {
-    return "/placeholder.png";
-  }
-  if (foto.startsWith("http")) return foto;
-  return `${import.meta.env.VITE_API_URL}${foto}`;
-};
-
-export default function FotoEmpleado({ empleadoId }) {
+export default function PermisosEmpleado({ empleadoId }) {
   const {
     empleadoActual,
     cargarEmpleado,
-    subirFoto,
+    guardarPermisos,
   } = useEmpleadosStore();
 
-  const [preview, setPreview] = useState(null);
-  const [archivo, setArchivo] = useState(null);
-  const [subiendo, setSubiendo] = useState(false);
-  const [error, setError] = useState(null);
+  const [permisos, setPermisos] = useState({});
+  const [editando, setEditando] = useState(false);
 
-  // Cargar empleado
+  // Cargar empleado SOLO una vez
   useEffect(() => {
     cargarEmpleado(empleadoId);
   }, [empleadoId]);
 
-  // Actualizar preview cuando llega el empleado
+  // Actualizar permisos cuando llega el empleado (solo si no está editando)
   useEffect(() => {
-    if (empleadoActual) {
-      setPreview(getFotoURL(empleadoActual.foto));
+    if (empleadoActual && !editando) {
+      setPermisos(empleadoActual.permisos_modulo || {});
     }
   }, [empleadoActual]);
 
-  const handleFile = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+  const togglePermiso = (modulo, permiso) => {
+    setEditando(true);
 
-    if (!file.type.startsWith("image/")) {
-      setError("El archivo debe ser una imagen");
-      return;
+    const nuevos = { ...permisos };
+    const lista = nuevos[modulo] || [];
+
+    if (lista.includes(permiso)) {
+      nuevos[modulo] = lista.filter((p) => p !== permiso);
+    } else {
+      nuevos[modulo] = [...lista, permiso];
     }
 
-    setArchivo(file);
-    setError(null);
-
-    // Preview local
-    const reader = new FileReader();
-    reader.onload = () => setPreview(reader.result);
-    reader.readAsDataURL(file);
+    setPermisos(nuevos);
   };
 
-  const handleUpload = async () => {
-    if (!archivo) {
-      setError("Selecciona una imagen primero");
-      return;
-    }
+  const guardarCambios = async () => {
+    await guardarPermisos(empleadoId, permisos);
 
-    setSubiendo(true);
-    setError(null);
+    // ❌ NO recargar empleado
+    // El store + realtime ya actualizan automáticamente
 
-    try {
-      await subirFoto(empleadoId, archivo);
-      await cargarEmpleado(empleadoId);
-      alert("Foto actualizada correctamente");
-    } catch {
-      setError("Error al subir la foto");
-    }
-
-    setSubiendo(false);
-    setArchivo(null);
+    alert("Permisos actualizados correctamente");
+    setEditando(false);
   };
 
-  if (!empleadoActual) return <div className="p-6">Cargando foto...</div>;
+  if (!empleadoActual) return <div className="p-6">Cargando permisos...</div>;
+
+  const MODULOS = [
+    "dashboard",
+    "agenda",
+    "empleados",
+    "ctn",
+    "documentos",
+    "intranet",
+    "mensajes",
+    "seguridad",
+  ];
+
+  const PERMISOS = ["ver", "crear", "editar", "eliminar"];
 
   return (
     <div className="p-6 space-y-6">
-      <h2 className="text-xl font-bold mb-4">Foto del empleado</h2>
+      <h2 className="text-xl font-bold mb-4">Permisos del empleado</h2>
 
-      <div className="flex items-center gap-6">
-        <img
-          src={preview}
-          alt="Foto empleado"
-          className="w-32 h-32 rounded-full object-cover border"
-        />
+      <div className="space-y-6">
+        {MODULOS.map((modulo) => (
+          <div key={modulo} className="border p-4 rounded-lg">
+            <h3 className="font-semibold mb-2">{modulo}</h3>
 
-        <div className="space-y-3">
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleFile}
-            className="input"
-          />
-
-          {error && <p className="text-red-600 text-sm">{error}</p>}
-
-          <button
-            onClick={handleUpload}
-            disabled={subiendo}
-            className="bg-blue-600 text-white px-4 py-2 rounded w-full"
-          >
-            {subiendo ? "Subiendo..." : "Actualizar foto"}
-          </button>
-        </div>
+            <div className="grid grid-cols-2 gap-2">
+              {PERMISOS.map((permiso) => (
+                <label key={permiso} className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={(permisos[modulo] || []).includes(permiso)}
+                    onChange={() => togglePermiso(modulo, permiso)}
+                  />
+                  {permiso}
+                </label>
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
+
+      <button
+        onClick={guardarCambios}
+        className="bg-blue-600 text-white px-4 py-2 rounded"
+      >
+        Guardar permisos
+      </button>
     </div>
   );
 }

@@ -12,35 +12,43 @@ export const useAuthStore = create((set, get) => ({
     set({ loading: true, error: null });
 
     try {
+      // 🔥 Petición al backend
       const data = await loginRequest(usuario, password);
 
-      const empleado = data.empleado;
-
+      // 🔥 El backend devuelve:
+      // empleado_id, nombre, foto, modulos, permisos, token
       const userData = {
-        id: empleado.id,
-        nombre: empleado.nombre,
-        usuario: empleado.usuario,
-        rol_id: empleado.rol_id,
-        rol_nombre: empleado.rol_nombre,
-        foto: empleado.foto || null,
+        id: data.empleado_id,
+        nombre: data.nombre,
+        usuario: usuario, // el backend no lo devuelve
+        foto: data.foto || null,
+
+        // Opcional: si tu backend añade rol en el futuro
+        rol_id: data.rol_id || 1,
+        rol_nombre: data.rol_nombre || "Administrador",
       };
 
+      // 🔥 Guardar usuario y token en Zustand
       set({
         user: userData,
         token: data.token,
         loading: false,
       });
 
+      // 🔥 Guardar en localStorage
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(userData));
 
+      // 🔥 Guardar permisos y módulos en su store
       const permisosStore = usePermisosStore.getState();
-      permisosStore.setModulos(empleado.modulos_visibles);
-      permisosStore.setAcciones(empleado.permisos_modulo);
+      permisosStore.setModulos(data.modulos);
+      permisosStore.setAcciones(data.permisos);
 
+      // 🔥 Navegar sin recargar la app
       onSuccess && onSuccess();
 
     } catch (err) {
+      console.error("Error login:", err);
       set({ error: "Credenciales incorrectas", loading: false });
       alert("Error al iniciar sesión");
     }

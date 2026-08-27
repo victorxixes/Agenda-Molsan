@@ -32,5 +32,3 @@ class Notaria(Base):
     # 🔥 RELACIÓN INVERSA CORRECTA
     citas = relationship("Cita", back_populates="notario")
 
-# Alias para compatibilidad con informes
-Notario = Notaria

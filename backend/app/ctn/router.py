@@ -27,9 +27,9 @@ router = APIRouter(prefix="/ctn", tags=["CTN"])
 # ---------------------------------------------------------
 @router.get("/notarias/{notaria_id}/firmas")
 def contar_firmas(notaria_id: int, db: Session = Depends(get_db)):
-    total = db.query(Cita).filter(Cita.notaria_id == notaria_id).count()
-    vc = db.query(Cita).filter(Cita.notaria_id == notaria_id, Cita.tipo == "VC").count()
-    presencial = db.query(Cita).filter(Cita.notaria_id == notaria_id, Cita.tipo == "P").count()
+    total = db.query(Cita).filter(Cita.notario_id == notaria_id).count()
+    vc = db.query(Cita).filter(Cita.notario_id == notaria_id, Cita.tipo_cita == "VC").count()
+    presencial = db.query(Cita).filter(Cita.notario_id == notaria_id, Cita.tipo_cita == "P").count()
 
     return {
         "notaria_id": notaria_id,

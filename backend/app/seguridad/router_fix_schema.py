@@ -1,5 +1,3 @@
-
-
 from fastapi import APIRouter, HTTPException
 from sqlalchemy import inspect, text
 from sqlalchemy.exc import SQLAlchemyError
@@ -8,7 +6,7 @@ from backend.app.database import engine
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
 # ---------------------------------------------------------
-# 1) Comprobar si la tabla empleados existe
+# 1) Comprobar si la tabla empleados_v2 existe
 # ---------------------------------------------------------
 @router.get("/check-empleados")
 def check_empleados():
@@ -20,30 +18,30 @@ def check_empleados():
         raise HTTPException(status_code=500, detail=str(e))
 
 # ---------------------------------------------------------
-# 2) Fix del esquema de empleados
+# 2) Fix del esquema de empleados_v2
 # ---------------------------------------------------------
 def fix_empleados_schema():
     try:
         inspector = inspect(engine)
-        columnas = [col["name"] for col in inspector.get_columns("empleados")]
+        columnas = [col["name"] for col in inspector.get_columns("empleados_v2")]
     except SQLAlchemyError as e:
         raise HTTPException(
             status_code=500,
-            detail=f"Error inspeccionando la tabla empleados: {str(e)}"
+            detail=f"Error inspeccionando la tabla empleados_v2: {str(e)}"
         )
 
     alteraciones = []
 
     def add_column(nombre: str, tipo: str):
         inspector_local = inspect(engine)
-        columnas_actuales = [col["name"] for col in inspector_local.get_columns("empleados")]
+        columnas_actuales = [col["name"] for col in inspector_local.get_columns("empleados_v2")]
 
         if nombre in columnas_actuales:
             return
 
         try:
             with engine.connect() as conn:
-                conn.execute(text(f"ALTER TABLE empleados ADD COLUMN {nombre} {tipo}"))
+                conn.execute(text(f"ALTER TABLE empleados_v2 ADD COLUMN {nombre} {tipo}"))
             alteraciones.append(nombre)
         except SQLAlchemyError as e:
             raise HTTPException(
@@ -74,6 +72,9 @@ def fix_empleados_schema():
 
     # Foto
     add_column("foto", "VARCHAR(255)")
+
+    # Rol del ERP
+    add_column("rol_id", "INTEGER")
 
     # JSONB
     add_column("modulos_visibles", "JSONB")

@@ -15,10 +15,7 @@ class Rol(Base):
     nombre = Column(String, unique=True)
     descripcion = Column(String, nullable=True)
 
-    # Relación con permisos
     permisos = relationship("Permiso", back_populates="rol", cascade="all, delete")
-
-    # 🔥 Relación con empleados
     empleados = relationship("Empleado", back_populates="rol")
 
 
@@ -30,34 +27,34 @@ class Permiso(Base):
     __allow_unmapped__ = True
 
     id = Column(Integer, primary_key=True, index=True)
-    rol_id = Column(Integer, ForeignKey("roles2.id"))
-    modulo = Column(String)              # Ej: "empleados"
-    acciones = Column(String)            # Ej: "ver,crear,editar,eliminar"
+    rol_id = Column(Integer, ForeignKey("roles.id"))   # ✔ CORREGIDO
+    modulo = Column(String)
+    acciones = Column(String)
 
     rol = relationship("Rol", back_populates="permisos")
 
 
 # ---------------------------------------------------------
-# RELACIÓN ROL-PERMISO (si la necesitas)
+# RELACIÓN ROL-PERMISO
 # ---------------------------------------------------------
 class RolPermiso(Base):
     __tablename__ = "roles_permisos"
     __allow_unmapped__ = True
 
     id = Column(Integer, primary_key=True, index=True)
-    rol_id = Column(Integer, ForeignKey("roles2.id"))
-    permiso_id = Column(Integer, ForeignKey("permisos2.id"))
+    rol_id = Column(Integer, ForeignKey("roles.id"))        # ✔ CORREGIDO
+    permiso_id = Column(Integer, ForeignKey("permisos.id")) # ✔ CORREGIDO
 
 
 # ---------------------------------------------------------
-# EVENTOS DE SEGURIDAD (login, logout, errores, accesos)
+# EVENTOS DE SEGURIDAD
 # ---------------------------------------------------------
 class EventoSeguridad(Base):
     __tablename__ = "eventos_seguridad"
     __allow_unmapped__ = True
 
     id = Column(Integer, primary_key=True, index=True)
-    tipo = Column(String, index=True)          # login, logout, permiso_denegado, error
+    tipo = Column(String, index=True)
     usuario_id = Column(Integer, index=True)
     detalle = Column(String, default="")
     ip = Column(String, default="")
@@ -66,7 +63,7 @@ class EventoSeguridad(Base):
 
 
 # ---------------------------------------------------------
-# AUDITORÍA GENERAL (acciones del ERP)
+# AUDITORÍA GENERAL
 # ---------------------------------------------------------
 class Auditoria(Base):
     __tablename__ = "auditoria_seguridad"

@@ -1,7 +1,7 @@
-from fastapi import APIRouter
+import json
 from sqlalchemy import text
 from backend.app.database import engine
-import json
+from fastapi import APIRouter
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
@@ -32,28 +32,19 @@ def fix_permisos_modulo():
             limpio = {}
 
             for clave, valor in permisos.items():
-
-                # Si ya es lista → OK
                 if isinstance(valor, list):
                     limpio[clave] = valor
-                    continue
-
-                # Si es string → convertir a lista
-                if isinstance(valor, str):
+                elif isinstance(valor, str):
                     limpio[clave] = [valor]
-                    continue
-
-                # Si es dict → convertir claves en lista
-                if isinstance(valor, dict):
+                elif isinstance(valor, dict):
                     limpio[clave] = list(valor.keys())
-                    continue
+                else:
+                    limpio[clave] = []
 
-                # Cualquier otra cosa → lista vacía
-                limpio[clave] = []
-
+            # 🔥 aquí el cambio: convertir dict → JSON string y castear a jsonb
             conn.execute(
-                text("UPDATE empleados_v2 SET permisos_modulo = :p WHERE id = :id"),
-                {"p": limpio, "id": emp_id}
+                text("UPDATE empleados_v2 SET permisos_modulo = :p::jsonb WHERE id = :id"),
+                {"p": json.dumps(limpio), "id": emp_id}
             )
 
             cambios += 1

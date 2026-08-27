@@ -23,5 +23,5 @@ class Cita(Base):
     estado = Column(String, default="Pendiente")
 
     # ORM relations (CORREGIDAS)
-    notario = relationship("Notario", back_populates="citas", lazy="joined")
+    notario = relationship("Notaria", back_populates="citas", lazy="joined")
     apoderado = relationship("Empleado", lazy="joined")

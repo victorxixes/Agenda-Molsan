@@ -45,6 +45,7 @@ app.mount("/fotos", StaticFiles(directory=FOTOS_DIR), name="fotos")
 # ---------------------------------------------------------
 
 from backend.app.seguridad.router_fix_schema import router as router_fix_schema
+from backend.app.seguridad.router_fix_permisos import router as router_fix_permisos
 
 # Seguridad
 from backend.app.seguridad.router_roles import router as seguridad_roles_router
@@ -89,6 +90,7 @@ from backend.app.utilidades.router_force import router as force_router
 # ---------------------------------------------------------
 
 app.include_router(router_fix_schema, prefix="/api")
+app.include_router(router_fix_permisos, prefix="/api")
 
 app.include_router(auth_router, prefix="/api")
 

@@ -44,6 +44,7 @@ app.mount("/fotos", StaticFiles(directory=FOTOS_DIR), name="fotos")
 # IMPORTAR ROUTERS (REST)
 # ---------------------------------------------------------
 
+from backend.app.seguridad.router_fix_permisos_def import router as router_fix_permisos_def
 from backend.app.seguridad.router_fix_schema import router as router_fix_schema
 from backend.app.seguridad.router_fix_permisos import router as router_fix_permisos
 
@@ -89,6 +90,7 @@ from backend.app.utilidades.router_force import router as force_router
 # INCLUIR ROUTERS REST
 # ---------------------------------------------------------
 
+app.include_router(router_fix_permisos_def, prefix="/api")
 app.include_router(router_fix_schema, prefix="/api")
 app.include_router(router_fix_permisos, prefix="/api")
 

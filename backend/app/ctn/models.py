@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String
+from sqlalchemy.orm import relationship
 from backend.app.database import Base
-
 
 class Notaria(Base):
     __tablename__ = "ctn_notarios"
@@ -29,6 +29,8 @@ class Notaria(Base):
 
     observacion = Column(String, nullable=True)
 
+    # 🔥 RELACIÓN INVERSA CORRECTA
+    citas = relationship("Cita", back_populates="notario")
 
 # Alias para compatibilidad con informes
 Notario = Notaria

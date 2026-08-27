@@ -1,7 +1,7 @@
-import json
+from fastapi import APIRouter
 from sqlalchemy import text
 from backend.app.database import engine
-from fastapi import APIRouter
+import json
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
@@ -32,6 +32,7 @@ def fix_permisos_modulo():
             limpio = {}
 
             for clave, valor in permisos.items():
+
                 if isinstance(valor, list):
                     limpio[clave] = valor
                 elif isinstance(valor, str):
@@ -41,10 +42,12 @@ def fix_permisos_modulo():
                 else:
                     limpio[clave] = []
 
-            # 🔥 aquí el cambio: convertir dict → JSON string y castear a jsonb
+            # 🔥 Convertir dict → JSON string seguro para SQL
+            json_str = json.dumps(limpio).replace("'", "''")
+
+            # 🔥 Ejecutar UPDATE sin parámetros (Render-friendly)
             conn.execute(
-                text("UPDATE empleados_v2 SET permisos_modulo = :p::jsonb WHERE id = :id"),
-                {"p": json.dumps(limpio), "id": emp_id}
+                text(f"UPDATE empleados_v2 SET permisos_modulo = '{json_str}'::jsonb WHERE id = {emp_id}")
             )
 
             cambios += 1

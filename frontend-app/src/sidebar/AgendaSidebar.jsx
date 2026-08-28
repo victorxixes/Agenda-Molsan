@@ -15,15 +15,11 @@ export default function AgendaSidebar({ date, citas, onEditarCita }) {
       {/* Fecha */}
       <h3 className="text-xl font-bold">{fecha}</h3>
 
-      {/* Si no hay citas */}
-      {citas.length === 0 && (
-        <div className="text-gray-500 text-center py-4">
-          No hay citas en esta fecha
-        </div>
-      )}
+      {/* 🔥 Si NO hay citas → NO mostrar nada */}
+      {citas.length === 0 && <></>}
 
-      {/* Lista de citas */}
-      {citas.map((c) => {
+      {/* 🔥 Si hay citas → mostrarlas en formato limpio */}
+      {citas.length > 0 && citas.map((c) => {
         const notarioNombre = c.notario
           ? `${c.notario.nombre} ${c.notario.apellidos}`
           : "—";

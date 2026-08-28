@@ -51,10 +51,11 @@ export default function AgendaPage() {
             onChange={setSelectedDate}
           />
 
-          <CalendarGrid
-            selectedDate={selectedDate}
-            onSelectDay={setSelectedDate}
-          />
+<CalendarGrid
+  selectedDate={selectedDate}
+  onSelectDay={setSelectedDate}
+  onNuevaCita={() => setShowNuevaCita(true)}   // 🔥 abrir modal
+/>
         </div>
 
         {/* SIDEBAR */}

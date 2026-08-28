@@ -18,7 +18,8 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
     tipo_cita: "",
     notario_id: null,
     tipo_firma: "",
-    apoderado_id: null, // se asigna automáticamente en backend
+    apoderado: "",        // 🔥 nombre visible
+    apoderado_id: null,   // 🔥 ID para backend
     estado: "Pendiente",
     observaciones: "",
   });
@@ -45,10 +46,24 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
     setForm(prev => ({
       ...prev,
       notario_id: n.id,
-      tipo_firma: prev.tipo_cita === "Firma notarial" ? tipoFirmaTraducida : "",
-      observaciones: prev.tipo_cita === "Firma notarial"
-        ? (n.observacion || prev.observaciones)
-        : prev.observaciones,
+
+      // 🔥 Tipo de firma automático
+      tipo_firma:
+        prev.tipo_cita === "Firma notarial"
+          ? tipoFirmaTraducida
+          : "",
+
+      // 🔥 Apoderado automático
+      apoderado: n.apoderado || n.apoderado_s || "",
+
+      // 🔥 ID del apoderado si existe
+      apoderado_id: n.apoderado_id || null,
+
+      // 🔥 Observaciones automáticas
+      observaciones:
+        prev.tipo_cita === "Firma notarial"
+          ? (n.observacion || prev.observaciones)
+          : prev.observaciones,
     }));
   };
 
@@ -60,7 +75,6 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
     if (!form.hora_fin) return setError("La hora de fin es obligatoria");
     if (!form.tipo_cita) return setError("El tipo de cita es obligatorio");
 
-    // Validación coherente con backend
     if (form.tipo_cita === "Firma notarial") {
       if (!form.notario_id) return setError("Debes seleccionar una notaría");
       if (!form.tipo_firma) return setError("Debes seleccionar el tipo de firma");
@@ -164,6 +178,22 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
             ></iframe>
           </div>
         )}
+
+        {/* 🔥 Tipo de firma */}
+        <input
+          type="text"
+          className="input bg-gray-100"
+          value={form.tipo_firma}
+          readOnly
+        />
+
+        {/* 🔥 Apoderado */}
+        <input
+          type="text"
+          className="input bg-gray-100"
+          value={form.apoderado || ""}
+          readOnly
+        />
 
         <textarea
           className="input"

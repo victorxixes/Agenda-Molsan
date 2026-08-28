@@ -60,12 +60,11 @@ export default function AgendaPage() {
 
         {/* SIDEBAR */}
         <div>
-          <AgendaSidebar
-            date={selectedDate}
-            citas={citasDia || []}
-            onNuevaCita={() => setShowNuevaCita(true)}
-            onEditarCita={handleEditarCita}
-          />
+         <AgendaSidebar
+  date={selectedDate}
+  citas={citasDia || []}
+  onEditarCita={handleEditarCita}
+/>
         </div>
 
       </div>

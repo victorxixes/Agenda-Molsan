@@ -1,12 +1,12 @@
 import { useAgendaStore } from "../store/agendaStore";
 
-export default function AgendaSidebar({ date, citas, onEditarCita }) {
+export default function AgendaSidebar({ date, citas, onEditarCita, onNuevaCita }) {
   const fecha = date.toISOString().split("T")[0];
   const { eliminar, setCitaActual } = useAgendaStore();
 
   const onEliminarCita = async (id) => {
     if (!confirm("¿Eliminar esta cita?")) return;
-    await eliminar(id); // El store ya refresca día + mes
+    await eliminar(id);
   };
 
   return (
@@ -14,6 +14,14 @@ export default function AgendaSidebar({ date, citas, onEditarCita }) {
 
       <div className="flex justify-between items-center">
         <h3 className="text-xl font-bold">{fecha}</h3>
+
+        {/* 🔥 BOTÓN NUEVA CITA */}
+        <button
+          className="btn-primary"
+          onClick={onNuevaCita}
+        >
+          Nueva cita
+        </button>
       </div>
 
       <table className="table w-full">

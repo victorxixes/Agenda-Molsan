@@ -1,7 +1,7 @@
 import React from "react";
 import { useAgendaStore } from "../../store/agendaStore";
 
-export default function CalendarGrid({ selectedDate, onSelectDay }) {
+export default function CalendarGrid({ selectedDate, onSelectDay, onNuevaCita }) {
   const { citasMes, setCitaActual } = useAgendaStore();
 
   const year = selectedDate.getFullYear();
@@ -41,13 +41,15 @@ export default function CalendarGrid({ selectedDate, onSelectDay }) {
       <div
         key={fecha}
         className="h-28 border rounded-lg p-2 bg-white hover:bg-gray-50 transition cursor-pointer"
-        onClick={() => onSelectDay(new Date(year, month, day))}
+        onClick={() => {
+          onSelectDay(new Date(year, month, day));
+          onNuevaCita();   // 🔥 abrir modal al pinchar día
+        }}
       >
         <div className="font-semibold">{day}</div>
 
         <div className="mt-1 space-y-1">
           {citas.map((cita) => {
-            // Icono basado en tipo_firma o tipo_cita
             const icono =
               tipoIcono[cita.tipo_firma] ||
               tipoIcono[cita.tipo_cita] ||

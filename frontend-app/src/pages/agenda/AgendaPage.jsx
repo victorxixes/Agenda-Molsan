@@ -3,6 +3,7 @@ import CalendarHeader from "./CalendarHeader.jsx";
 import CalendarGrid from "./CalendarGrid.jsx";
 import AgendaSidebar from "../../sidebar/AgendaSidebar.jsx";
 
+import AgendaNuevaCitaModal from "./AgendaNuevaCitaModal.jsx";
 import AgendaNuevaEditarCitaModal from "./AgendaNuevaEditarCitaModal.jsx";
 import AgendaCitaDetalleModal from "./AgendaCitaDetalleModal.jsx";
 
@@ -13,7 +14,10 @@ export default function AgendaPage() {
 
   const [selectedDate, setSelectedDate] = useState(new Date());
 
-  // Estado para modal de edición
+  // MODAL NUEVA CITA
+  const [showNuevaCita, setShowNuevaCita] = useState(false);
+
+  // MODAL EDITAR
   const [modalEditarOpen, setModalEditarOpen] = useState(false);
   const [citaEditId, setCitaEditId] = useState(null);
 
@@ -58,6 +62,7 @@ export default function AgendaPage() {
           <AgendaSidebar
             date={selectedDate}
             citas={citasDia || []}
+            onNuevaCita={() => setShowNuevaCita(true)}
             onEditarCita={handleEditarCita}
           />
         </div>
@@ -66,6 +71,13 @@ export default function AgendaPage() {
 
       {/* MODAL DETALLE */}
       <AgendaCitaDetalleModal />
+
+      {/* MODAL NUEVA CITA */}
+      <AgendaNuevaCitaModal
+        open={showNuevaCita}
+        onClose={() => setShowNuevaCita(false)}
+        fechaSeleccionada={selectedDate}
+      />
 
       {/* MODAL EDITAR */}
       <AgendaNuevaEditarCitaModal

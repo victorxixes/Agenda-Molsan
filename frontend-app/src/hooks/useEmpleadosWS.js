@@ -9,7 +9,7 @@ export function useEmpleadosWS() {
   const procesar = useEmpleadosStore((s) => s.procesarEventoRealtime);
 
   useEffect(() => {
-    const url = `${import.meta.env.VITE_WS_URL}/ws/empleados`;
+const url = `${import.meta.env.VITE_WS_URL}/ws/empleados?room=empleados`;
 
     const conectar = () => {
       const ws = new WebSocket(url);

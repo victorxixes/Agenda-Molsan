@@ -1,6 +1,6 @@
 import { useAgendaStore } from "../store/agendaStore";
 
-export default function AgendaSidebar({ date, citas, onEditarCita, onNuevaCita }) {
+export default function AgendaSidebar({ date, citas, onEditarCita }) {
   const fecha = date.toISOString().split("T")[0];
   const { eliminar, setCitaActual } = useAgendaStore();
 
@@ -12,90 +12,62 @@ export default function AgendaSidebar({ date, citas, onEditarCita, onNuevaCita }
   return (
     <div className="bg-white rounded-xl shadow p-4 space-y-4">
 
-      <div className="flex justify-between items-center">
-        <h3 className="text-xl font-bold">{fecha}</h3>
+      {/* Fecha */}
+      <h3 className="text-xl font-bold">{fecha}</h3>
 
-        {/* 🔥 BOTÓN NUEVA CITA */}
-        <button
-          className="btn-primary"
-          onClick={onNuevaCita}
-        >
-          Nueva cita
-        </button>
-      </div>
+      {/* Si no hay citas */}
+      {citas.length === 0 && (
+        <div className="text-gray-500 text-center py-4">
+          No hay citas en esta fecha
+        </div>
+      )}
 
-      <table className="table w-full">
-        <thead>
-          <tr>
-            <th>Hora inicio</th>
-            <th>Hora fin</th>
-            <th>Tipo de cita</th>
-            <th>Notario</th>
-            <th>Tipo firma</th>
-            <th>Apoderado</th>
-            <th>Estado</th>
-            <th></th>
-          </tr>
-        </thead>
+      {/* Lista de citas */}
+      {citas.map((c) => {
+        const notarioNombre = c.notario
+          ? `${c.notario.nombre} ${c.notario.apellidos}`
+          : "—";
 
-        <tbody>
-          {citas.length === 0 && (
-            <tr>
-              <td colSpan="8" className="text-center py-4 text-gray-500">
-                No hay citas en esta fecha
-              </td>
-            </tr>
-          )}
+        const apoderadoNombre = c.apoderado
+          ? `${c.apoderado.nombre} ${c.apoderado.apellidos}`
+          : c.apoderado_id || "—";
 
-          {citas.map((c) => {
-            const notarioNombre = c.notario
-              ? `${c.notario.nombre} ${c.notario.apellidos}`
-              : "—";
+        return (
+          <div
+            key={c.id}
+            className="p-3 rounded-lg bg-gray-50 shadow cursor-pointer hover:bg-gray-100"
+            onClick={() => setCitaActual(c)}
+          >
+            <div className="font-bold">{c.hora_inicio} — {c.hora_fin}</div>
+            <div>{c.tipo_cita}</div>
 
-            const apoderadoNombre = c.apoderado
-              ? `${c.apoderado.nombre} ${c.apoderado.apellidos}`
-              : c.apoderado_id || "—";
+            <div className="text-sm text-gray-600">{notarioNombre}</div>
+            <div className="text-sm text-gray-600">{apoderadoNombre}</div>
 
-            return (
-              <tr
-                key={c.id}
-                className="cursor-pointer hover:bg-gray-100"
-                onClick={() => setCitaActual(c)}
+            <div className="flex gap-2 mt-2">
+              <button
+                className="btn btn-sm btn-primary"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEditarCita(c.id);
+                }}
               >
-                <td>{c.hora_inicio}</td>
-                <td>{c.hora_fin}</td>
-                <td>{c.tipo_cita}</td>
-                <td>{notarioNombre}</td>
-                <td>{c.tipo_firma || "—"}</td>
-                <td>{apoderadoNombre}</td>
-                <td>{c.estado}</td>
+                Editar
+              </button>
 
-                <td className="flex gap-2">
-                  <button
-                    className="btn btn-sm btn-primary"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onEditarCita(c.id);
-                    }}
-                  >
-                    Editar
-                  </button>
-
-                  <button
-                    className="btn btn-sm btn-danger"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onEliminarCita(c.id);
-                    }}
-                  >
-                    Eliminar
-                  </button>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+              <button
+                className="btn btn-sm btn-danger"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEliminarCita(c.id);
+                }}
+              >
+                Eliminar
+              </button>
+            </div>
+          </div>
+        );
+      })}
 
     </div>
   );

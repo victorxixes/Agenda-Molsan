@@ -2,13 +2,6 @@ import GlassCard from "../ui/GlassCard.jsx";
 import IconAgenda from "../icons/IconAgenda.jsx";
 import { useAgendaStore } from "../../store/agendaStore";
 
-const estadoIcono = {
-  Confirmada: "🟢",
-  Pendiente: "🟡",
-  Cancelada: "🔴",
-  Finalizada: "🔵",
-};
-
 export default function AgendaCard({ cita, onEditarCita }) {
   const { setCitaActual } = useAgendaStore();
 

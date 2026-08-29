@@ -39,7 +39,7 @@ export default function CalendarGrid({ selectedDate, onSelectDay, onNuevaCita })
     grid.push(
       <div
         key={`empty-${i}`}
-        className="h-28 border rounded-lg bg-gray-50"
+        className="min-h-28 border rounded-lg bg-gray-50"
       ></div>
     );
   }
@@ -52,7 +52,7 @@ export default function CalendarGrid({ selectedDate, onSelectDay, onNuevaCita })
     grid.push(
       <div
         key={fecha}
-        className="h-28 border rounded-lg p-2 bg-white hover:bg-gray-50 transition cursor-pointer"
+        className="min-h-28 border rounded-lg p-2 bg-white hover:bg-gray-50 transition cursor-pointer"
         onClick={() => {
           onSelectDay(new Date(year, month, day));
           onNuevaCita();
@@ -72,10 +72,12 @@ export default function CalendarGrid({ selectedDate, onSelectDay, onNuevaCita })
               ? `${cita.notario.nombre} ${cita.notario.apellidos}`
               : cita.notario_id || "—";
 
-            // 🔥 Apoderado corregido + visual mejorado
+            // 🔥 Apoderado corregido: soporta string y objeto
             const apoderadoNombre =
-              cita.apoderado && cita.apoderado.trim() !== ""
-                ? cita.apoderado
+              cita.apoderado
+                ? typeof cita.apoderado === "string"
+                  ? cita.apoderado
+                  : `${cita.apoderado.nombre} ${cita.apoderado.apellidos}`
                 : cita.apoderado_id
                 ? cita.apoderado_id
                 : "—";

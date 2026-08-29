@@ -37,13 +37,6 @@ export default function AgendaCard({ cita, onEditarCita }) {
         Apoderado: {apoderadoNombre}
       </p>
 
-      <p className="flex items-center gap-2 text-sm">
-        <span>{estadoIcono[cita.estado] || "⚪"}</span>
-        <span className="font-semibold" style={{ color: "#1F3A5F" }}>
-          {cita.estado}
-        </span>
-      </p>
-
       {cita.observaciones && (
         <p className="text-sm" style={{ color: "#6A7A8C" }}>
           {cita.observaciones}

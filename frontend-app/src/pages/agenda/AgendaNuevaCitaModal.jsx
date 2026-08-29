@@ -55,30 +55,28 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
     }
   }, [open]);
 
-  const seleccionarNotaria = (n) => {
-    const tipoFirmaTraducida =
-      n.vc === "SI" ? "Videoconferencia" :
-      n.vc === "NO" ? "Presencial" :
-      n.vc || "";
+const seleccionarNotaria = (n) => {
+  const tipoFirmaTraducida =
+    n.vc === "SI" ? "Videoconferencia" :
+    n.vc === "NO" ? "Presencial" :
+    "";
 
-    setForm(prev => ({
-      ...prev,
-      notario_id: n.id,
+  setForm(prev => ({
+    ...prev,
+    notario_id: n.id,
 
-      tipo_firma:
-        prev.tipo_cita === "Firma notarial"
-          ? tipoFirmaTraducida
-          : prev.tipo_firma,
+    // SIEMPRE autorellenar tipo_firma cuando se selecciona una notaría
+    tipo_firma: tipoFirmaTraducida,
 
-      apoderado: n.apoderado || n.apoderado_s || "",
-      apoderado_id: n.apoderado_id || null,
+    // SIEMPRE autorellenar apoderado y apoderado_id
+    apoderado: n.apoderado || n.apoderado_s || "",
+    apoderado_id: n.apoderado_id || null,
 
-      observaciones:
-        prev.tipo_cita === "Firma notarial"
-          ? (n.observacion?.trim() || prev.observaciones)
-          : prev.observaciones,
-    }));
-  };
+    // SIEMPRE autorellenar observaciones
+    observaciones: n.observacion?.trim() || "",
+  }));
+};
+
 
   const guardar = async () => {
     setError("");

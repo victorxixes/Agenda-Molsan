@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useAgendaStore } from "../../store/agendaStore";
 import { useEmpleadosStore } from "../../store/empleadosStore";
 
@@ -26,8 +27,10 @@ export default function AgendaCitaDetalleModal({ onEditarCita }) {
 
   if (!citaActual) return null;
 
-  // 🔥 Cargar empleados si no están cargados
-  if (empleados.length === 0) cargarEmpleados();
+  // 🔥 Cargar empleados una sola vez
+  useEffect(() => {
+    cargarEmpleados();
+  }, []);
 
   // 🔥 Resolver nombre del apoderado
   const apoderadoObj = empleados.find(e => e.id === citaActual.apoderado_id);
@@ -35,6 +38,11 @@ export default function AgendaCitaDetalleModal({ onEditarCita }) {
   const apoderadoLabel = apoderadoObj
     ? `${apoderadoObj.nombre} ${apoderadoObj.apellidos}`
     : "—";
+
+  // 🔥 Resolver nombre del notario (evitar undefined undefined)
+  const notarioLabel = citaActual.notario
+    ? `${citaActual.notario.nombre} ${citaActual.notario.apellidos}`
+    : citaActual.notario_id || "—";
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
@@ -60,7 +68,7 @@ export default function AgendaCitaDetalleModal({ onEditarCita }) {
         </div>
 
         <div>
-          <strong>Notario:</strong> {citaActual.notario?.nombre} {citaActual.notario?.apellidos}
+          <strong>Notario:</strong> {notarioLabel}
         </div>
 
         <div>

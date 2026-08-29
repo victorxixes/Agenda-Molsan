@@ -1,6 +1,25 @@
 import React from "react";
 import { useAgendaStore } from "../../store/agendaStore";
 
+// 🔥 Iconos para tipo de cita
+const iconoTipoCita = (tipo) => {
+  switch (tipo) {
+    case "Firma notarial": return "🖋";
+    case "Reunión": return "👥";
+    case "Visita": return "👣";
+    default: return "📄";
+  }
+};
+
+// 🔥 Iconos para tipo de firma
+const iconoTipoFirma = (tipo) => {
+  switch (tipo) {
+    case "Videoconferencia": return "🎥";
+    case "Presencial": return "📍";
+    default: return "📄";
+  }
+};
+
 export default function CalendarGrid({ selectedDate, onSelectDay, onNuevaCita }) {
   const { citasMes, setCitaActual } = useAgendaStore();
 
@@ -12,13 +31,6 @@ export default function CalendarGrid({ selectedDate, onSelectDay, onNuevaCita })
 
   const daysInMonth = lastDay.getDate();
   const startWeekday = firstDay.getDay();
-
-  const tipoIcono = {
-    "Videoconferencia": "🎥",
-    "Presencial": "📍",
-    "Firma notarial": "🖋️",
-    "Otros": "📄",
-  };
 
   const grid = [];
 
@@ -50,10 +62,11 @@ export default function CalendarGrid({ selectedDate, onSelectDay, onNuevaCita })
 
         <div className="mt-1 space-y-1">
           {citas.map((cita) => {
-            const icono =
-              tipoIcono[cita.tipo_firma] ||
-              tipoIcono[cita.tipo_cita] ||
-              "📄";
+
+            // 🔥 Icono final: primero tipo_firma, si no existe → tipo_cita
+            const icono = cita.tipo_firma
+              ? iconoTipoFirma(cita.tipo_firma)
+              : iconoTipoCita(cita.tipo_cita);
 
             const notarioNombre = cita.notario
               ? `${cita.notario.nombre} ${cita.notario.apellidos}`

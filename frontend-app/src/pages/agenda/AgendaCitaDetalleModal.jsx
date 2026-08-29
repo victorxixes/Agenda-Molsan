@@ -24,10 +24,15 @@ export default function AgendaCitaDetalleModal({ onEditarCita }) {
 
   if (!citaActual) return null;
 
+  // 🔥 Apoderado corregido: soporta string, objeto, id y null
   const apoderadoLabel =
     citaActual.apoderado
-      ? `${citaActual.apoderado.nombre} ${citaActual.apoderado.apellidos}`
-      : citaActual.apoderado_id || "—";
+      ? typeof citaActual.apoderado === "string"
+        ? citaActual.apoderado
+        : `${citaActual.apoderado.nombre} ${citaActual.apoderado.apellidos}`
+      : citaActual.apoderado_id
+      ? citaActual.apoderado_id
+      : "—";
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">

@@ -35,36 +35,35 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
       }));
     }
   }, [open]);
+const seleccionarNotaria = (n) => {
+  const tipoFirmaTraducida =
+    n.vc === "SI" ? "Videoconferencia" :
+    n.vc === "NO" ? "Presencial" :
+    n.vc || "";
 
-  const seleccionarNotaria = (n) => {
-    const tipoFirmaTraducida =
-      n.vc === "SI" ? "Videoconferencia" :
-      n.vc === "NO" ? "Presencial" :
-      n.vc || "";
+  setForm(prev => ({
+    ...prev,
+    notario_id: n.id,
 
-    setForm(prev => ({
-      ...prev,
-      notario_id: n.id,
+    // 🔥 Tipo de firma SIEMPRE que la cita sea notarial
+    tipo_firma:
+      prev.tipo_cita === "Firma notarial"
+        ? tipoFirmaTraducida
+        : prev.tipo_firma,   // ← mantiene el valor si ya estaba
 
-      // 🔥 Tipo de firma automático
-      tipo_firma:
-        prev.tipo_cita === "Firma notarial"
-          ? tipoFirmaTraducida
-          : "",
+    // 🔥 Apoderado automático
+    apoderado: n.apoderado || n.apoderado_s || "",
 
-      // 🔥 Apoderado automático
-      apoderado: n.apoderado || n.apoderado_s || "",
+    // 🔥 ID del apoderado si existe
+    apoderado_id: n.apoderado_id || null,
 
-      // 🔥 ID del apoderado si existe
-      apoderado_id: n.apoderado_id || null,
-
-      // 🔥 Observaciones automáticas
-      observaciones:
-        prev.tipo_cita === "Firma notarial"
-          ? (n.observacion || prev.observaciones)
-          : prev.observaciones,
-    }));
-  };
+    // 🔥 Observaciones automáticas
+    observaciones:
+      prev.tipo_cita === "Firma notarial"
+        ? (n.observacion || prev.observaciones)
+        : prev.observaciones,
+  }));
+};
 
   const guardar = async () => {
     setError("");

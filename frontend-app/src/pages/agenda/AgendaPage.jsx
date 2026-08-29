@@ -10,7 +10,7 @@ import AgendaCitaDetalleModal from "./AgendaCitaDetalleModal.jsx";
 import { useAgendaStore } from "../../store/agendaStore";
 
 export default function AgendaPage() {
-  const { cargarMes, cargarDia, citasDia } = useAgendaStore();
+  const { cargarMes, cargarDia, citasDia, setCitaActual, citaActual } = useAgendaStore();
 
   const [selectedDate, setSelectedDate] = useState(new Date());
 
@@ -51,27 +51,23 @@ export default function AgendaPage() {
             onChange={setSelectedDate}
           />
 
-<CalendarGrid
-  selectedDate={selectedDate}
-  onSelectDay={setSelectedDate}
-  onNuevaCita={() => setShowNuevaCita(true)}   // 🔥 abrir modal
-/>
+          <CalendarGrid
+            selectedDate={selectedDate}
+            onSelectDay={setSelectedDate}
+            onNuevaCita={() => setShowNuevaCita(true)}
+            onSelectCita={(cita) => setCitaActual(cita)}   // 🔥 IMPORTANTE
+          />
         </div>
 
         {/* SIDEBAR */}
         <div>
-         <AgendaSidebar
-  date={selectedDate}
-  citas={citasDia || []}
-  onEditarCita={handleEditarCita}
-/>
+          <AgendaSidebar date={selectedDate} />
         </div>
 
       </div>
 
       {/* MODAL DETALLE */}
       <AgendaCitaDetalleModal onEditarCita={handleEditarCita} />
-
 
       {/* MODAL NUEVA CITA */}
       <AgendaNuevaCitaModal

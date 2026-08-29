@@ -25,7 +25,6 @@ export default function AgendaCitaDetalleModal({ onEditarCita }) {
         <div><strong>Notario:</strong> {citaActual.notario?.nombre} {citaActual.notario?.apellidos}</div>
         <div><strong>Apoderado:</strong> {citaActual.apoderado || "—"}</div>
         <div><strong>Tipo firma:</strong> {citaActual.tipo_firma || "—"}</div>
-        <div><strong>Estado:</strong> {citaActual.estado}</div>
         <div><strong>Observaciones:</strong> {citaActual.observaciones || "—"}</div>
 
         {/* Botón editar */}

@@ -4,6 +4,25 @@ import { useCTNStore } from "../../store/ctnStore";
 import GlassCard from "../../components/ui/GlassCard.jsx";
 import BuscadorNotariaPremium from "../../components/agenda/BuscadorNotariaPremium.jsx";
 
+// 🔥 Iconos para tipo de cita
+const iconoTipoCita = (tipo) => {
+  switch (tipo) {
+    case "Firma notarial": return "🖋";
+    case "Reunión": return "👥";
+    case "Visita": return "👣";
+    default: return "📄";
+  }
+};
+
+// 🔥 Iconos para tipo de firma
+const iconoTipoFirma = (tipo) => {
+  switch (tipo) {
+    case "Videoconferencia": return "🎥";
+    case "Presencial": return "📍";
+    default: return "—";
+  }
+};
+
 export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
   const { cargarCita, citaActual, editar } = useAgendaStore();
   const { notarias, cargarNotarias } = useCTNStore();
@@ -57,7 +76,10 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
     setForm(prev => ({
       ...prev,
       notario_id: n.id,
-      tipo_firma: prev.tipo_cita === "Firma notarial" ? tipoFirmaTraducida : "",
+      tipo_firma:
+        prev.tipo_cita === "Firma notarial"
+          ? tipoFirmaTraducida
+          : prev.tipo_firma,
       observaciones:
         prev.tipo_cita === "Firma notarial"
           ? (n.observacion || prev.observaciones)
@@ -141,7 +163,7 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
           />
         </div>
 
-        {/* Tipo de cita */}
+        {/* Tipo de cita con iconos */}
         <select
           className="input"
           value={form.tipo_cita}
@@ -156,9 +178,11 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
           }}
         >
           <option value="">Selecciona tipo de cita</option>
-          {TIPOS_CITA.map((t) => (
-            <option key={t} value={t}>{t}</option>
-          ))}
+
+          <option value="Firma notarial">🖋 Firma notarial</option>
+          <option value="Reunión">👥 Reunión</option>
+          <option value="Visita">👣 Visita</option>
+          <option value="Otros">📄 Otros</option>
         </select>
 
         {/* Notario / notaría */}
@@ -194,11 +218,15 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
           readOnly
         />
 
-        {/* Tipo firma */}
+        {/* Tipo firma con icono */}
         <input
           type="text"
           className="input bg-gray-100"
-          value={form.tipo_firma || ""}
+          value={
+            form.tipo_firma
+              ? `${iconoTipoFirma(form.tipo_firma)} ${form.tipo_firma}`
+              : "—"
+          }
           readOnly
         />
 

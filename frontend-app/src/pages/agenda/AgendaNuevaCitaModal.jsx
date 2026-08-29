@@ -20,7 +20,6 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
     tipo_firma: "",
     apoderado: "",        // 🔥 nombre visible
     apoderado_id: null,   // 🔥 ID para backend
-    estado: "Pendiente",
     observaciones: "",
   });
 
@@ -180,12 +179,20 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
         )}
 
         {/* 🔥 Tipo de firma */}
-        <input
-          type="text"
-          className="input bg-gray-100"
-          value={form.tipo_firma}
-          readOnly
-        />
+   {/* 🔥 Tipo de firma con icono */}
+<input
+  type="text"
+  className="input bg-gray-100"
+  value={
+    form.tipo_firma === "Videoconferencia"
+      ? `🎥 ${form.tipo_firma}`
+      : form.tipo_firma === "Presencial"
+      ? `📍 ${form.tipo_firma}`
+      : "—"
+  }
+  readOnly
+/>
+
 
         {/* 🔥 Apoderado */}
         <input

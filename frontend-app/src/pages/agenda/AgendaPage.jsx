@@ -42,18 +42,18 @@ export default function AgendaPage() {
   return (
     <>
       {/* 🔥 SOLO EL CALENDARIO, SIN SIDEBAR */}
-      <div className="w-full">
-        <CalendarHeader
-          selectedDate={selectedDate}
-          onChange={setSelectedDate}
-        />
+     <div className="w-full px-2 lg:px-4 xl:px-8 max-w-none">
+  <CalendarHeader
+    selectedDate={selectedDate}
+    onChange={setSelectedDate}
+  />
 
-        <CalendarGrid
-          selectedDate={selectedDate}
-          onSelectDay={setSelectedDate}
-          onNuevaCita={() => setShowNuevaCita(true)}
-        />
-      </div>
+  <CalendarGrid
+    selectedDate={selectedDate}
+    onSelectDay={setSelectedDate}
+    onNuevaCita={() => setShowNuevaCita(true)}
+  />
+</div>
 
       {/* MODAL DETALLE */}
       <AgendaCitaDetalleModal onEditarCita={handleEditarCita} />

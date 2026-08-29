@@ -75,7 +75,7 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
 
       observaciones:
         prev.tipo_cita === "Firma notarial"
-          ? (n.observacion || prev.observaciones)
+          ? (n.observacion?.trim() || prev.observaciones)
           : prev.observaciones,
     }));
   };
@@ -151,7 +151,7 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
           />
         </div>
 
-        {/* Tipo de cita con iconos */}
+        {/* Tipo de cita */}
         <select
           className="input"
           value={form.tipo_cita}
@@ -161,7 +161,14 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
             setForm(prev => ({
               ...prev,
               tipo_cita: tipo,
-              tipo_firma: tipo === "Firma notarial" ? prev.tipo_firma : "",
+              tipo_firma:
+                tipo === "Firma notarial" && notarioSeleccionado
+                  ? (notarioSeleccionado.vc === "SI"
+                      ? "Videoconferencia"
+                      : notarioSeleccionado.vc === "NO"
+                      ? "Presencial"
+                      : "")
+                  : "",
             }));
           }}
         >
@@ -199,7 +206,7 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
           </div>
         )}
 
-        {/* Tipo de firma con icono */}
+        {/* Tipo de firma */}
         <input
           type="text"
           className="input bg-gray-100"

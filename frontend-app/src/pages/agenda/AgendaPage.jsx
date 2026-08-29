@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import CalendarHeader from "./CalendarHeader.jsx";
 import CalendarGrid from "./CalendarGrid.jsx";
-import AgendaSidebar from "../../sidebar/AgendaSidebar.jsx";
 
 import AgendaNuevaCitaModal from "./AgendaNuevaCitaModal.jsx";
 import AgendaNuevaEditarCitaModal from "./AgendaNuevaEditarCitaModal.jsx";
@@ -10,7 +9,7 @@ import AgendaCitaDetalleModal from "./AgendaCitaDetalleModal.jsx";
 import { useAgendaStore } from "../../store/agendaStore";
 
 export default function AgendaPage() {
-  const { cargarMes, cargarDia, citasDia, setCitaActual, citaActual } = useAgendaStore();
+  const { cargarMes, cargarDia, citasDia, setCitaActual } = useAgendaStore();
 
   const [selectedDate, setSelectedDate] = useState(new Date());
 
@@ -42,28 +41,18 @@ export default function AgendaPage() {
 
   return (
     <>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* 🔥 SOLO EL CALENDARIO, SIN SIDEBAR */}
+      <div className="w-full">
+        <CalendarHeader
+          selectedDate={selectedDate}
+          onChange={setSelectedDate}
+        />
 
-        {/* CALENDARIO */}
-        <div className="lg:col-span-2">
-          <CalendarHeader
-            selectedDate={selectedDate}
-            onChange={setSelectedDate}
-          />
-
-          <CalendarGrid
-            selectedDate={selectedDate}
-            onSelectDay={setSelectedDate}
-            onNuevaCita={() => setShowNuevaCita(true)}
-            onSelectCita={(cita) => setCitaActual(cita)}   // 🔥 IMPORTANTE
-          />
-        </div>
-
-        {/* SIDEBAR */}
-        <div>
-          <AgendaSidebar date={selectedDate} />
-        </div>
-
+        <CalendarGrid
+          selectedDate={selectedDate}
+          onSelectDay={setSelectedDate}
+          onNuevaCita={() => setShowNuevaCita(true)}
+        />
       </div>
 
       {/* MODAL DETALLE */}

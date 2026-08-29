@@ -6,11 +6,10 @@ export default function AgendaSidebar({ date }) {
   return (
     <div className="bg-white rounded-xl shadow p-4 space-y-4">
       <h3 className="text-xl font-bold">{fecha}</h3>
-      {/* Sidebar limpio — sin citas, sin botones, sin tarjetas */}
+      {/* Sidebar limpio — sin citas */}
     </div>
   );
 }
-
 
   return (
     <div className="bg-white rounded-xl shadow p-4 space-y-4">

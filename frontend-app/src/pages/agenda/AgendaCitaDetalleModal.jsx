@@ -1,4 +1,5 @@
 import { useAgendaStore } from "../../store/agendaStore";
+import { useEmpleadosStore } from "../../store/empleadosStore";
 
 // 🔥 Iconos para tipo de cita
 const iconoTipoCita = (tipo) => {
@@ -21,24 +22,24 @@ const iconoTipoFirma = (tipo) => {
 
 export default function AgendaCitaDetalleModal({ onEditarCita }) {
   const { citaActual, setCitaActual } = useAgendaStore();
+  const { empleados, cargarEmpleados } = useEmpleadosStore();
 
   if (!citaActual) return null;
 
-  // 🔥 Apoderado corregido: soporta string, objeto, id y null
-  const apoderadoLabel =
-    citaActual.apoderado
-      ? typeof citaActual.apoderado === "string"
-        ? citaActual.apoderado
-        : `${citaActual.apoderado.nombre} ${citaActual.apoderado.apellidos}`
-      : citaActual.apoderado_id
-      ? citaActual.apoderado_id
-      : "—";
+  // 🔥 Cargar empleados si no están cargados
+  if (empleados.length === 0) cargarEmpleados();
+
+  // 🔥 Resolver nombre del apoderado
+  const apoderadoObj = empleados.find(e => e.id === citaActual.apoderado_id);
+
+  const apoderadoLabel = apoderadoObj
+    ? `${apoderadoObj.nombre} ${apoderadoObj.apellidos}`
+    : "—";
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-xl shadow p-6 w-full max-w-md space-y-4 relative">
 
-        {/* Botón cerrar */}
         <button
           className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
           onClick={() => setCitaActual(null)}
@@ -74,7 +75,6 @@ export default function AgendaCitaDetalleModal({ onEditarCita }) {
           <strong>Observaciones:</strong> {citaActual.observaciones || "—"}
         </div>
 
-        {/* Botón editar */}
         <button
           className="btn-primary w-full"
           onClick={() => onEditarCita(citaActual.id)}
@@ -82,7 +82,6 @@ export default function AgendaCitaDetalleModal({ onEditarCita }) {
           Editar cita
         </button>
 
-        {/* Botón cerrar */}
         <button
           className="btn-secondary w-full mt-2"
           onClick={() => setCitaActual(null)}

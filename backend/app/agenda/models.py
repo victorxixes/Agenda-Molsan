@@ -20,7 +20,7 @@ class Cita(Base):
     apoderado_id = Column(Integer, ForeignKey("empleados_v2.id"), nullable=True)
 
     observaciones = Column(String, nullable=True)
-    estado = Column(String, default="Pendiente")
+    
 
     # ORM relations (CORREGIDAS)
     notario = relationship("Notaria", back_populates="citas", lazy="joined")

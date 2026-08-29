@@ -25,7 +25,7 @@ export default function AgendaCard({ cita, onEditarCita }) {
   return (
     <GlassCard
       className="flex flex-col gap-2 cursor-pointer"
-      onClick={() => setCitaActual(cita)}
+      onClick={() => cargarCita(cita.id)}
     >
       <div className="flex items-center gap-3">
         <IconAgenda size={26} />

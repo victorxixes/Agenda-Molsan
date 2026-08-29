@@ -61,7 +61,7 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
         notario_id: citaActual.notario_id,
         tipo_firma: citaActual.tipo_firma || "",
         apoderado_id: citaActual.apoderado_id || null,
-        observaciones: citaActual.observaciones || "",
+        observaciones: citaActual.observaciones?.trim() || "",
       });
     }
   }, [citaActual]);
@@ -115,9 +115,13 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
 
   const notarioSeleccionado = notarias.find((n) => n.id === form.notario_id);
 
-  const apoderadoLabel = citaActual?.apoderado
-    ? `${citaActual.apoderado.nombre} ${citaActual.apoderado.apellidos}`
-    : form.apoderado_id || "—";
+  // 🔥 Apoderado corregido: soporta string, objeto, id y null
+  const apoderadoLabel =
+    citaActual?.apoderado
+      ? typeof citaActual.apoderado === "string"
+        ? citaActual.apoderado
+        : `${citaActual.apoderado.nombre} ${citaActual.apoderado.apellidos}`
+      : form.apoderado_id || "—";
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
@@ -163,7 +167,7 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
           />
         </div>
 
-        {/* Tipo de cita con iconos */}
+        {/* Tipo de cita */}
         <select
           className="input"
           value={form.tipo_cita}
@@ -185,7 +189,7 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
           <option value="Otros">📄 Otros</option>
         </select>
 
-        {/* Notario / notaría */}
+        {/* Notario */}
         <BuscadorNotariaPremium
           notarios={notarias}
           onSelect={seleccionarNotaria}
@@ -218,7 +222,7 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
           readOnly
         />
 
-        {/* Tipo firma con icono */}
+        {/* Tipo firma */}
         <input
           type="text"
           className="input bg-gray-100"

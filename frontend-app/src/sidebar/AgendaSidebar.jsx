@@ -10,7 +10,6 @@ export default function AgendaSidebar({ date }) {
     </div>
   );
 }
-
   return (
     <div className="bg-white rounded-xl shadow p-4 space-y-4">
 

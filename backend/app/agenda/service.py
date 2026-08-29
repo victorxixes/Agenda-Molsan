@@ -13,22 +13,20 @@ def cita_con_relaciones(db: Session, cita: Cita):
     if not cita:
         return None
 
-    notario = None
-    apoderado = None
+    # Relaciones ORM
+    notario = cita.notario
+    apoderado_obj = cita.apoderado
 
-    # NOTARIO
-    if cita.notario_id:
-        try:
-            notario = db.query(Notaria).filter(Notaria.id == cita.notario_id).first()
-        except:
-            notario = None
+    # Resolver apoderado
+    apoderado_nombre = None
 
-    # APODERADO (empleado)
-    if cita.apoderado_id:
-        try:
-            apoderado = db.query(Empleado).filter(Empleado.id == cita.apoderado_id).first()
-        except:
-            apoderado = None
+    # Caso 1: apoderado es relación ORM
+    if apoderado_obj:
+        apoderado_nombre = f"{apoderado_obj.nombre} {apoderado_obj.apellidos}"
+
+    # Caso 2: apoderado_id es NULL pero la cita tiene apoderado como string
+    elif hasattr(cita, "apoderado") and isinstance(cita.apoderado, str):
+        apoderado_nombre = cita.apoderado
 
     return {
         "id": cita.id,
@@ -40,8 +38,8 @@ def cita_con_relaciones(db: Session, cita: Cita):
         "estado": cita.estado,
         "observaciones": cita.observaciones,
         "notario": notario,
-        "apoderado": apoderado,
-        "apoderado_id": cita.apoderado_id,
+        "apoderado": apoderado_nombre,
+        "apoderado_id": cita.apoderado_id
     }
 
 # ---------------------------------------------------------

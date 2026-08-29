@@ -5,7 +5,7 @@ import GlassCard from "../../components/ui/GlassCard.jsx";
 import BuscadorNotariaPremium from "../../components/agenda/BuscadorNotariaPremium.jsx";
 
 export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
-  const { cargarCita, citaActual, editar, cambiarEstado } = useAgendaStore();
+  const { cargarCita, citaActual, editar } = useAgendaStore();
   const { notarias, cargarNotarias } = useCTNStore();
 
   const TIPOS_CITA = ["Firma notarial", "Reunión", "Visita", "Otros"];
@@ -17,8 +17,8 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
     tipo_cita: "",
     notario_id: null,
     tipo_firma: "",
+    apoderado: "",
     apoderado_id: null,
-    estado: "",
     observaciones: "",
   });
 
@@ -42,8 +42,8 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
         tipo_cita: citaActual.tipo_cita,
         notario_id: citaActual.notario_id,
         tipo_firma: citaActual.tipo_firma,
+        apoderado: citaActual.apoderado || "",
         apoderado_id: citaActual.apoderado_id || null,
-        estado: citaActual.estado,
         observaciones: citaActual.observaciones || "",
       });
     }
@@ -60,7 +60,12 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
       ...prev,
       notario_id: n.id,
       tipo_firma: prev.tipo_cita === "Firma notarial" ? tipoFirmaTraducida : "",
-      observaciones: n.observacion || prev.observaciones,
+      apoderado: n.apoderado || n.apoderado_s || "",
+      apoderado_id: n.apoderado_id || null,
+      observaciones:
+        prev.tipo_cita === "Firma notarial"
+          ? (n.observacion || prev.observaciones)
+          : prev.observaciones,
     }));
   };
 
@@ -73,7 +78,6 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
     if (!form.hora_fin) return setError("La hora de fin es obligatoria");
     if (!form.tipo_cita) return setError("El tipo de cita es obligatorio");
 
-    // Validación coherente con backend
     if (form.tipo_cita === "Firma notarial") {
       if (!form.notario_id) return setError("Debes seleccionar una notaría");
       if (!form.tipo_firma) return setError("Debes seleccionar el tipo de firma");
@@ -89,15 +93,17 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
     }
   };
 
-  // Cambiar estado
-  const cambiarEstadoCita = async (nuevoEstado) => {
-    await cambiarEstado(citaId, nuevoEstado);
-    setForm(prev => ({ ...prev, estado: nuevoEstado }));
-  };
-
   if (!open) return null;
 
   const notarioSeleccionado = notarias.find((n) => n.id === form.notario_id);
+
+  // Icono tipo firma
+  const iconoFirma =
+    form.tipo_firma === "Videoconferencia"
+      ? "🎥"
+      : form.tipo_firma === "Presencial"
+      ? "📍"
+      : "—";
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
@@ -118,6 +124,7 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
           </div>
         )}
 
+        {/* Fecha */}
         <input
           type="date"
           className="input"
@@ -125,6 +132,7 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
           onChange={(e) => setForm({ ...form, fecha: e.target.value })}
         />
 
+        {/* Horas */}
         <div className="grid grid-cols-2 gap-3">
           <input
             type="time"
@@ -141,6 +149,7 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
           />
         </div>
 
+        {/* Tipo de cita */}
         <select
           className="input"
           value={form.tipo_cita}
@@ -160,11 +169,13 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
           ))}
         </select>
 
+        {/* Buscador notaría */}
         <BuscadorNotariaPremium
           notarios={notarias}
           onSelect={seleccionarNotaria}
         />
 
+        {/* Notario seleccionado */}
         {notarioSeleccionado && (
           <div className="space-y-2 bg-white/40 p-3 rounded-lg">
             <div className="font-semibold">
@@ -184,35 +195,23 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
           </div>
         )}
 
-        {/* Apoderado (solo mostrar, no editar) */}
-        <input
-          type="text"
-          className="input bg-gray-100"
-          value={form.apoderado_id || "—"}
-          readOnly
-        />
-
         {/* Tipo firma */}
         <input
           type="text"
           className="input bg-gray-100"
-          value={form.tipo_firma || ""}
+          value={`${iconoFirma} ${form.tipo_firma || ""}`}
           readOnly
         />
 
-        {/* Estados */}
-        <div className="flex gap-2">
-          {["Pendiente", "Confirmada", "En curso", "Finalizada", "Cancelada"].map((estado) => (
-            <button
-              key={estado}
-              className={`btn ${form.estado === estado ? "btn-primary" : ""}`}
-              onClick={() => cambiarEstadoCita(estado)}
-            >
-              {estado}
-            </button>
-          ))}
-        </div>
+        {/* Apoderado */}
+        <input
+          type="text"
+          className="input bg-gray-100"
+          value={form.apoderado || "—"}
+          readOnly
+        />
 
+        {/* Observaciones */}
         <textarea
           className="input"
           placeholder="Observaciones"

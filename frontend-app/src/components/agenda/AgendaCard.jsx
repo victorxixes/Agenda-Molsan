@@ -1,17 +1,26 @@
 import GlassCard from "../ui/GlassCard.jsx";
 import IconAgenda from "../icons/IconAgenda.jsx";
 import { useAgendaStore } from "../../store/agendaStore";
+import { useEmpleadosStore } from "../../store/empleadosStore";
 
 export default function AgendaCard({ cita, onEditarCita }) {
   const { setCitaActual } = useAgendaStore();
+  const { empleados, cargarEmpleados } = useEmpleadosStore();
 
+  // Cargar empleados si no están cargados
+  if (empleados.length === 0) cargarEmpleados();
+
+  // Resolver nombre del notario
   const notarioNombre = cita.notario
     ? `${cita.notario.nombre} ${cita.notario.apellidos}`
     : cita.notario_id || "Notaría";
 
-  const apoderadoNombre = cita.apoderado
-    ? `${cita.apoderado.nombre} ${cita.apoderado.apellidos}`
-    : cita.apoderado_id || "—";
+  // Resolver nombre del apoderado
+  const apoderadoObj = empleados.find(e => e.id === cita.apoderado_id);
+
+  const apoderadoNombre = apoderadoObj
+    ? `${apoderadoObj.nombre} ${apoderadoObj.apellidos}`
+    : "—";
 
   return (
     <GlassCard

@@ -1,9 +1,33 @@
 import { useAgendaStore } from "../../store/agendaStore";
 
+// 🔥 Iconos para tipo de cita
+const iconoTipoCita = (tipo) => {
+  switch (tipo) {
+    case "Firma notarial": return "🖋";
+    case "Reunión": return "👥";
+    case "Visita": return "👣";
+    default: return "📄";
+  }
+};
+
+// 🔥 Iconos para tipo de firma
+const iconoTipoFirma = (tipo) => {
+  switch (tipo) {
+    case "Videoconferencia": return "🎥";
+    case "Presencial": return "📍";
+    default: return "—";
+  }
+};
+
 export default function AgendaCitaDetalleModal({ onEditarCita }) {
   const { citaActual, setCitaActual } = useAgendaStore();
 
   if (!citaActual) return null;
+
+  const apoderadoLabel =
+    citaActual.apoderado
+      ? `${citaActual.apoderado.nombre} ${citaActual.apoderado.apellidos}`
+      : citaActual.apoderado_id || "—";
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
@@ -20,12 +44,30 @@ export default function AgendaCitaDetalleModal({ onEditarCita }) {
         <h2 className="text-2xl font-bold">Detalle de la cita</h2>
 
         <div><strong>Fecha:</strong> {citaActual.fecha}</div>
-        <div><strong>Hora:</strong> {citaActual.hora_inicio} - {citaActual.hora_fin}</div>
-        <div><strong>Tipo:</strong> {citaActual.tipo_cita}</div>
-        <div><strong>Notario:</strong> {citaActual.notario?.nombre} {citaActual.notario?.apellidos}</div>
-        <div><strong>Apoderado:</strong> {citaActual.apoderado || "—"}</div>
-        <div><strong>Tipo firma:</strong> {citaActual.tipo_firma || "—"}</div>
-        <div><strong>Observaciones:</strong> {citaActual.observaciones || "—"}</div>
+
+        <div>
+          <strong>Hora:</strong> {citaActual.hora_inicio} - {citaActual.hora_fin}
+        </div>
+
+        <div>
+          <strong>Tipo:</strong> {iconoTipoCita(citaActual.tipo_cita)} {citaActual.tipo_cita}
+        </div>
+
+        <div>
+          <strong>Notario:</strong> {citaActual.notario?.nombre} {citaActual.notario?.apellidos}
+        </div>
+
+        <div>
+          <strong>Apoderado:</strong> {apoderadoLabel}
+        </div>
+
+        <div>
+          <strong>Tipo firma:</strong> {iconoTipoFirma(citaActual.tipo_firma)} {citaActual.tipo_firma || "—"}
+        </div>
+
+        <div>
+          <strong>Observaciones:</strong> {citaActual.observaciones || "—"}
+        </div>
 
         {/* Botón editar */}
         <button

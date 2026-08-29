@@ -9,6 +9,7 @@ export default function AgendaCitaDetalleModal({ onEditarCita }) {
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-xl shadow p-6 w-full max-w-md space-y-4 relative">
 
+        {/* Botón cerrar */}
         <button
           className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
           onClick={() => setCitaActual(null)}
@@ -27,7 +28,7 @@ export default function AgendaCitaDetalleModal({ onEditarCita }) {
         <div><strong>Estado:</strong> {citaActual.estado}</div>
         <div><strong>Observaciones:</strong> {citaActual.observaciones || "—"}</div>
 
-        {/* 🔥 BOTÓN EDITAR */}
+        {/* Botón editar */}
         <button
           className="btn-primary w-full"
           onClick={() => onEditarCita(citaActual.id)}
@@ -35,6 +36,7 @@ export default function AgendaCitaDetalleModal({ onEditarCita }) {
           Editar cita
         </button>
 
+        {/* Botón cerrar */}
         <button
           className="btn-secondary w-full mt-2"
           onClick={() => setCitaActual(null)}

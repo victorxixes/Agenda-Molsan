@@ -13,12 +13,10 @@ export default function AgendaCard({ cita, onEditarCita }) {
     cargarEmpleados();
   }, []);
 
-  // Resolver nombre del notario
   const notarioNombre = cita.notario
     ? `${cita.notario.nombre} ${cita.notario.apellidos}`
     : cita.notario_id || "Notaría";
 
-  // Resolver nombre del apoderado
   const apoderadoObj = empleados.find(e => e.id === cita.apoderado_id);
 
   const apoderadoNombre = apoderadoObj

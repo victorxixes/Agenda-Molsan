@@ -11,7 +11,7 @@ export const useAgendaStore = create((set, get) => ({
   mesActual: null,
 
   // ---------------------------------------------------------
-  // SET CITA ACTUAL (solo para limpiar o cerrar modal)
+  // SET CITA ACTUAL
   // ---------------------------------------------------------
   setCitaActual: (cita) => set({ citaActual: cita }),
 
@@ -44,10 +44,10 @@ export const useAgendaStore = create((set, get) => ({
   },
 
   // ---------------------------------------------------------
-  // CARGAR UNA CITA COMPLETA (DETALLE)
+  // CARGAR UNA CITA COMPLETA
   // ---------------------------------------------------------
   cargarCita: async (id) => {
-    const data = await agendaAPI.obtener(id);   // ← CITA COMPLETA
+    const data = await agendaAPI.obtener(id);
     set({ citaActual: data });
   },
 
@@ -59,10 +59,8 @@ export const useAgendaStore = create((set, get) => ({
 
     await crearLog("agenda", "crear", `Cita creada para el día ${res.fecha}`, res);
 
-    // refrescar día
     await get().cargarDia(res.fecha);
 
-    // refrescar mes si está cargado
     const { mesActual } = get();
     if (mesActual) await get().cargarMes(mesActual);
   },
@@ -75,7 +73,6 @@ export const useAgendaStore = create((set, get) => ({
 
     await crearLog("agenda", "editar", `Cita ${id} editada`, res);
 
-    // refrescar día real devuelto por backend
     await get().cargarDia(res.fecha);
 
     const { mesActual } = get();
@@ -103,7 +100,7 @@ export const useAgendaStore = create((set, get) => ({
   },
 
   // ---------------------------------------------------------
-  // CAMBIAR ESTADO (si algún día lo vuelves a usar)
+  // CAMBIAR ESTADO
   // ---------------------------------------------------------
   cambiarEstado: async (id, nuevoEstado) => {
     const res = await agendaAPI.cambiarEstado(id, nuevoEstado);

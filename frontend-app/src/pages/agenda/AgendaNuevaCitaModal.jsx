@@ -134,24 +134,27 @@ const seleccionarNotaria = (n) => {
           />
         </div>
 
-        <select
-          className="input"
-          value={form.tipo_cita}
-          onChange={(e) => {
-            const tipo = e.target.value;
+       <select
+  className="input"
+  value={form.tipo_cita}
+  onChange={(e) => {
+    const tipo = e.target.value;
 
-            setForm(prev => ({
-              ...prev,
-              tipo_cita: tipo,
-              tipo_firma: tipo === "Firma notarial" ? prev.tipo_firma : "",
-            }));
-          }}
-        >
-          <option value="">Selecciona tipo de cita</option>
-          {TIPOS_CITA.map((t) => (
-            <option key={t} value={t}>{t}</option>
-          ))}
-        </select>
+    setForm(prev => ({
+      ...prev,
+      tipo_cita: tipo,
+      tipo_firma: tipo === "Firma notarial" ? prev.tipo_firma : "",
+    }));
+  }}
+>
+  <option value="">Selecciona tipo de cita</option>
+
+  <option value="Firma notarial">🖋 Firma notarial</option>
+  <option value="Reunión">👥 Reunión</option>
+  <option value="Visita">👣 Visita</option>
+  <option value="Otros">📄 Otros</option>
+</select>
+
 
         <BuscadorNotariaPremium
           notarios={notarias}

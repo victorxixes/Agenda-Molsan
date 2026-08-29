@@ -5,6 +5,25 @@ import { useCTNStore } from "../../store/ctnStore";
 import GlassCard from "../../components/ui/GlassCard.jsx";
 import BuscadorNotariaPremium from "../../components/agenda/BuscadorNotariaPremium.jsx";
 
+// 🔥 Iconos para tipo de cita
+const iconoTipoCita = (tipo) => {
+  switch (tipo) {
+    case "Firma notarial": return "🖋";
+    case "Reunión": return "👥";
+    case "Visita": return "👣";
+    default: return "📄";
+  }
+};
+
+// 🔥 Iconos para tipo de firma
+const iconoTipoFirma = (tipo) => {
+  switch (tipo) {
+    case "Videoconferencia": return "🎥";
+    case "Presencial": return "📍";
+    default: return "—";
+  }
+};
+
 export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada }) {
   const { crear } = useAgendaStore();
   const { notarias, cargarNotarias } = useCTNStore();
@@ -18,8 +37,8 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
     tipo_cita: "",
     notario_id: null,
     tipo_firma: "",
-    apoderado: "",        // 🔥 nombre visible
-    apoderado_id: null,   // 🔥 ID para backend
+    apoderado: "",
+    apoderado_id: null,
     observaciones: "",
   });
 
@@ -35,35 +54,31 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
       }));
     }
   }, [open]);
-const seleccionarNotaria = (n) => {
-  const tipoFirmaTraducida =
-    n.vc === "SI" ? "Videoconferencia" :
-    n.vc === "NO" ? "Presencial" :
-    n.vc || "";
 
-  setForm(prev => ({
-    ...prev,
-    notario_id: n.id,
+  const seleccionarNotaria = (n) => {
+    const tipoFirmaTraducida =
+      n.vc === "SI" ? "Videoconferencia" :
+      n.vc === "NO" ? "Presencial" :
+      n.vc || "";
 
-    // 🔥 Tipo de firma SIEMPRE que la cita sea notarial
-    tipo_firma:
-      prev.tipo_cita === "Firma notarial"
-        ? tipoFirmaTraducida
-        : prev.tipo_firma,   // ← mantiene el valor si ya estaba
+    setForm(prev => ({
+      ...prev,
+      notario_id: n.id,
 
-    // 🔥 Apoderado automático
-    apoderado: n.apoderado || n.apoderado_s || "",
+      tipo_firma:
+        prev.tipo_cita === "Firma notarial"
+          ? tipoFirmaTraducida
+          : prev.tipo_firma,
 
-    // 🔥 ID del apoderado si existe
-    apoderado_id: n.apoderado_id || null,
+      apoderado: n.apoderado || n.apoderado_s || "",
+      apoderado_id: n.apoderado_id || null,
 
-    // 🔥 Observaciones automáticas
-    observaciones:
-      prev.tipo_cita === "Firma notarial"
-        ? (n.observacion || prev.observaciones)
-        : prev.observaciones,
-  }));
-};
+      observaciones:
+        prev.tipo_cita === "Firma notarial"
+          ? (n.observacion || prev.observaciones)
+          : prev.observaciones,
+    }));
+  };
 
   const guardar = async () => {
     setError("");
@@ -111,6 +126,7 @@ const seleccionarNotaria = (n) => {
           </div>
         )}
 
+        {/* Fecha */}
         <input
           type="date"
           className="input"
@@ -118,6 +134,7 @@ const seleccionarNotaria = (n) => {
           onChange={(e) => setForm({ ...form, fecha: e.target.value })}
         />
 
+        {/* Horas */}
         <div className="grid grid-cols-2 gap-3">
           <input
             type="time"
@@ -134,33 +151,35 @@ const seleccionarNotaria = (n) => {
           />
         </div>
 
-       <select
-  className="input"
-  value={form.tipo_cita}
-  onChange={(e) => {
-    const tipo = e.target.value;
+        {/* Tipo de cita con iconos */}
+        <select
+          className="input"
+          value={form.tipo_cita}
+          onChange={(e) => {
+            const tipo = e.target.value;
 
-    setForm(prev => ({
-      ...prev,
-      tipo_cita: tipo,
-      tipo_firma: tipo === "Firma notarial" ? prev.tipo_firma : "",
-    }));
-  }}
->
-  <option value="">Selecciona tipo de cita</option>
+            setForm(prev => ({
+              ...prev,
+              tipo_cita: tipo,
+              tipo_firma: tipo === "Firma notarial" ? prev.tipo_firma : "",
+            }));
+          }}
+        >
+          <option value="">Selecciona tipo de cita</option>
 
-  <option value="Firma notarial">🖋 Firma notarial</option>
-  <option value="Reunión">👥 Reunión</option>
-  <option value="Visita">👣 Visita</option>
-  <option value="Otros">📄 Otros</option>
-</select>
+          <option value="Firma notarial">🖋 Firma notarial</option>
+          <option value="Reunión">👥 Reunión</option>
+          <option value="Visita">👣 Visita</option>
+          <option value="Otros">📄 Otros</option>
+        </select>
 
-
+        {/* Buscador notaría */}
         <BuscadorNotariaPremium
           notarios={notarias}
           onSelect={seleccionarNotaria}
         />
 
+        {/* Notario seleccionado */}
         {notarioSeleccionado && (
           <div className="space-y-2 bg-white/40 p-3 rounded-lg">
             <div className="font-semibold">
@@ -180,23 +199,19 @@ const seleccionarNotaria = (n) => {
           </div>
         )}
 
-        {/* 🔥 Tipo de firma */}
-   {/* 🔥 Tipo de firma con icono */}
-<input
-  type="text"
-  className="input bg-gray-100"
-  value={
-    form.tipo_firma === "Videoconferencia"
-      ? `🎥 ${form.tipo_firma}`
-      : form.tipo_firma === "Presencial"
-      ? `📍 ${form.tipo_firma}`
-      : "—"
-  }
-  readOnly
-/>
+        {/* Tipo de firma con icono */}
+        <input
+          type="text"
+          className="input bg-gray-100"
+          value={
+            form.tipo_firma
+              ? `${iconoTipoFirma(form.tipo_firma)} ${form.tipo_firma}`
+              : "—"
+          }
+          readOnly
+        />
 
-
-        {/* 🔥 Apoderado */}
+        {/* Apoderado */}
         <input
           type="text"
           className="input bg-gray-100"
@@ -204,6 +219,7 @@ const seleccionarNotaria = (n) => {
           readOnly
         />
 
+        {/* Observaciones */}
         <textarea
           className="input"
           placeholder="Observaciones"

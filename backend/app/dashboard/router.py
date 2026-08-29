@@ -11,17 +11,18 @@ router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
 def dashboard_agenda_kpis(db: Session = Depends(get_db)):
     hoy = date.today()
 
+    # KPIs basados en fecha (no en estado)
     citas_hoy = db.query(Cita).filter(Cita.fecha == hoy).count()
-    citas_pendientes = db.query(Cita).filter(Cita.estado == "Pendiente").count()
 
-    firmas_hechas = db.query(Cita).filter(Cita.estado == "Hecha").count()
-    firmas_pendientes = db.query(Cita).filter(Cita.estado == "Pendiente").count()
+    citas_pendientes = db.query(Cita).filter(Cita.fecha > hoy).count()
+    firmas_hechas = db.query(Cita).filter(Cita.fecha < hoy).count()
+    firmas_pendientes = citas_pendientes
 
-    presenciales_hechas = db.query(Cita).filter(Cita.tipo_firma == "P", Cita.estado == "Hecha").count()
-    presenciales_pendientes = db.query(Cita).filter(Cita.tipo_firma == "P", Cita.estado == "Pendiente").count()
+    presenciales_hechas = db.query(Cita).filter(Cita.tipo_firma == "P", Cita.fecha < hoy).count()
+    presenciales_pendientes = db.query(Cita).filter(Cita.tipo_firma == "P", Cita.fecha > hoy).count()
 
-    vc_hechas = db.query(Cita).filter(Cita.tipo_firma == "VC", Cita.estado == "Hecha").count()
-    vc_pendientes = db.query(Cita).filter(Cita.tipo_firma == "VC", Cita.estado == "Pendiente").count()
+    vc_hechas = db.query(Cita).filter(Cita.tipo_firma == "VC", Cita.fecha < hoy).count()
+    vc_pendientes = db.query(Cita).filter(Cita.tipo_firma == "VC", Cita.fecha > hoy).count()
 
     return {
         "citasHoy": citas_hoy,
@@ -36,6 +37,7 @@ def dashboard_agenda_kpis(db: Session = Depends(get_db)):
         "citasPorHora": []
     }
 
+
 @router.get("/resumen")
 def dashboard_resumen(db: Session = Depends(get_db)):
     hoy = date.today()
@@ -43,21 +45,23 @@ def dashboard_resumen(db: Session = Depends(get_db)):
     # Citas del día
     citas_dia = db.query(Cita).filter(Cita.fecha == hoy).all()
 
+    # Realizadas = fecha < hoy
+    # Pendientes = fecha > hoy
     firmas_realizadas = {
         "videoconferencia": db.query(Cita)
-            .filter(Cita.tipo_firma == "VC", Cita.estado == "Hecha")
+            .filter(Cita.tipo_firma == "VC", Cita.fecha < hoy)
             .count(),
         "presencial": db.query(Cita)
-            .filter(Cita.tipo_firma == "P", Cita.estado == "Hecha")
+            .filter(Cita.tipo_firma == "P", Cita.fecha < hoy)
             .count(),
     }
 
     firmas_pendientes = {
         "videoconferencia": db.query(Cita)
-            .filter(Cita.tipo_firma == "VC", Cita.estado == "Pendiente")
+            .filter(Cita.tipo_firma == "VC", Cita.fecha > hoy)
             .count(),
         "presencial": db.query(Cita)
-            .filter(Cita.tipo_firma == "P", Cita.estado == "Pendiente")
+            .filter(Cita.tipo_firma == "P", Cita.fecha > hoy)
             .count(),
     }
 
@@ -79,21 +83,21 @@ def dashboard_resumen(db: Session = Depends(get_db)):
             "videoconferencia": {
                 "firmadas": sum(
                     1 for c in citas_apo
-                    if c.tipo_firma == "VC" and c.estado == "Hecha"
+                    if c.tipo_firma == "VC" and c.fecha < hoy
                 ),
                 "pendientes": sum(
                     1 for c in citas_apo
-                    if c.tipo_firma == "VC" and c.estado == "Pendiente"
+                    if c.tipo_firma == "VC" and c.fecha > hoy
                 ),
             },
             "presencial": {
                 "firmadas": sum(
                     1 for c in citas_apo
-                    if c.tipo_firma == "P" and c.estado == "Hecha"
+                    if c.tipo_firma == "P" and c.fecha < hoy
                 ),
                 "pendientes": sum(
                     1 for c in citas_apo
-                    if c.tipo_firma == "P" and c.estado == "Pendiente"
+                    if c.tipo_firma == "P" and c.fecha > hoy
                 ),
             },
         })
@@ -106,7 +110,6 @@ def dashboard_resumen(db: Session = Depends(get_db)):
             "hora_fin": c.hora_fin.strftime("%H:%M") if c.hora_fin else None,
             "tipo_cita": c.tipo_cita,
             "tipo_firma": c.tipo_firma,
-            "estado": c.estado,
             "notario_id": c.notario_id,
             "apoderado_id": c.apoderado_id,
             "observaciones": c.observaciones,

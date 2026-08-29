@@ -29,7 +29,6 @@ def cita_con_relaciones(db: Session, cita: Cita):
         "hora_fin": cita.hora_fin,
         "tipo_cita": cita.tipo_cita,
         "tipo_firma": cita.tipo_firma,
-        "estado": cita.estado,
         "observaciones": cita.observaciones,
         "notario": notario,
         "apoderado": apoderado_obj,      # ✅ objeto, no string

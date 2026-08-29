@@ -17,7 +17,6 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
     tipo_cita: "",
     notario_id: null,
     tipo_firma: "",
-    apoderado: "",
     apoderado_id: null,
     observaciones: "",
   });
@@ -30,9 +29,9 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
       cargarCita(citaId);
       cargarNotarias();
     }
-  }, [open, citaId]);
+  }, [open, citaId, cargarCita, cargarNotarias]);
 
-  // Rellenar formulario
+  // Rellenar formulario con la cita actual
   useEffect(() => {
     if (citaActual) {
       setForm({
@@ -41,8 +40,7 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
         hora_fin: citaActual.hora_fin,
         tipo_cita: citaActual.tipo_cita,
         notario_id: citaActual.notario_id,
-        tipo_firma: citaActual.tipo_firma,
-        apoderado: citaActual.apoderado || "",
+        tipo_firma: citaActual.tipo_firma || "",
         apoderado_id: citaActual.apoderado_id || null,
         observaciones: citaActual.observaciones || "",
       });
@@ -60,8 +58,6 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
       ...prev,
       notario_id: n.id,
       tipo_firma: prev.tipo_cita === "Firma notarial" ? tipoFirmaTraducida : "",
-      apoderado: n.apoderado || n.apoderado_s || "",
-      apoderado_id: n.apoderado_id || null,
       observaciones:
         prev.tipo_cita === "Firma notarial"
           ? (n.observacion || prev.observaciones)
@@ -97,13 +93,9 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
 
   const notarioSeleccionado = notarias.find((n) => n.id === form.notario_id);
 
-  // Icono tipo firma
-  const iconoFirma =
-    form.tipo_firma === "Videoconferencia"
-      ? "🎥"
-      : form.tipo_firma === "Presencial"
-      ? "📍"
-      : "—";
+  const apoderadoLabel = citaActual?.apoderado
+    ? `${citaActual.apoderado.nombre} ${citaActual.apoderado.apellidos}`
+    : form.apoderado_id || "—";
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
@@ -169,13 +161,12 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
           ))}
         </select>
 
-        {/* Buscador notaría */}
+        {/* Notario / notaría */}
         <BuscadorNotariaPremium
           notarios={notarias}
           onSelect={seleccionarNotaria}
         />
 
-        {/* Notario seleccionado */}
         {notarioSeleccionado && (
           <div className="space-y-2 bg-white/40 p-3 rounded-lg">
             <div className="font-semibold">
@@ -195,19 +186,19 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
           </div>
         )}
 
-        {/* Tipo firma */}
-        <input
-          type="text"
-          className="input bg-gray-100"
-          value={`${iconoFirma} ${form.tipo_firma || ""}`}
-          readOnly
-        />
-
         {/* Apoderado */}
         <input
           type="text"
           className="input bg-gray-100"
-          value={form.apoderado || "—"}
+          value={apoderadoLabel}
+          readOnly
+        />
+
+        {/* Tipo firma */}
+        <input
+          type="text"
+          className="input bg-gray-100"
+          value={form.tipo_firma || ""}
           readOnly
         />
 

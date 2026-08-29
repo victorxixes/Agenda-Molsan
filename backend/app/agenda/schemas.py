@@ -14,14 +14,13 @@ class CitaBase(BaseModel):
     notario_id: Optional[int] = None
     tipo_firma: Optional[str] = None
 
-    apoderado_id: Optional[int] = None   # 🔥 AÑADIDO
+    apoderado_id: Optional[int] = None  # ✅ AÑADIDO
 
     observaciones: Optional[str] = None
-  
 
 
 # =========================================================
-# CREATE
+# CREATE (el apoderado se asigna automáticamente)
 # =========================================================
 class CitaCreate(CitaBase):
 
@@ -41,7 +40,7 @@ class CitaCreate(CitaBase):
 
 
 # =========================================================
-# UPDATE
+# UPDATE (no se permite cambiar apoderado)
 # =========================================================
 class CitaUpdate(BaseModel):
     fecha: Optional[date] = None
@@ -52,7 +51,7 @@ class CitaUpdate(BaseModel):
     notario_id: Optional[int] = None
     tipo_firma: Optional[str] = None
 
-    apoderado_id: Optional[int] = None   # 🔥 AÑADIDO
+    apoderado_id: Optional[int] = None  # ✅ AÑADIDO
 
     observaciones: Optional[str] = None
 
@@ -86,7 +85,7 @@ class CitaResponse(CitaBase):
     id: int
 
     notario: Optional[NotarioResponse] = None
-    apoderado: Optional[ApoderadoResponse] = None
+    apoderado: Optional[ApoderadoResponse] = None  # ✅ objeto completo
     apoderado_id: Optional[int] = None
 
     class Config:

@@ -1,14 +1,17 @@
+import { useEffect } from "react";
 import GlassCard from "../ui/GlassCard.jsx";
 import IconAgenda from "../icons/IconAgenda.jsx";
 import { useAgendaStore } from "../../store/agendaStore";
 import { useEmpleadosStore } from "../../store/empleadosStore";
 
 export default function AgendaCard({ cita, onEditarCita }) {
-  const { setCitaActual } = useAgendaStore();
+  const { cargarCita } = useAgendaStore();
   const { empleados, cargarEmpleados } = useEmpleadosStore();
 
-  // Cargar empleados si no están cargados
-  if (empleados.length === 0) cargarEmpleados();
+  // Cargar empleados una sola vez
+  useEffect(() => {
+    cargarEmpleados();
+  }, []);
 
   // Resolver nombre del notario
   const notarioNombre = cita.notario

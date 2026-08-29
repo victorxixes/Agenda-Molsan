@@ -70,7 +70,8 @@ export default function AgendaPage() {
       </div>
 
       {/* MODAL DETALLE */}
-      <AgendaCitaDetalleModal />
+      <AgendaCitaDetalleModal onEditarCita={handleEditarCita} />
+
 
       {/* MODAL NUEVA CITA */}
       <AgendaNuevaCitaModal

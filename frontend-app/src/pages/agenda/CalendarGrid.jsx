@@ -72,9 +72,12 @@ export default function CalendarGrid({ selectedDate, onSelectDay, onNuevaCita })
               ? `${cita.notario.nombre} ${cita.notario.apellidos}`
               : cita.notario_id || "—";
 
-            const apoderadoNombre = cita.apoderado
-              ? `${cita.apoderado.nombre} ${cita.apoderado.apellidos}`
-              : cita.apoderado_id || "—";
+const apoderadoNombre =
+  cita.apoderado && cita.apoderado.trim() !== ""
+    ? cita.apoderado
+    : cita.apoderado_id
+    ? cita.apoderado_id
+    : "—";
 
             return (
               <div

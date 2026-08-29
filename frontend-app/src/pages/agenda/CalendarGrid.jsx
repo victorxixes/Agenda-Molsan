@@ -55,7 +55,7 @@ export default function CalendarGrid({ selectedDate, onSelectDay, onNuevaCita })
         className="h-28 border rounded-lg p-2 bg-white hover:bg-gray-50 transition cursor-pointer"
         onClick={() => {
           onSelectDay(new Date(year, month, day));
-          onNuevaCita();   // 🔥 abrir modal al pinchar día
+          onNuevaCita();
         }}
       >
         <div className="font-semibold">{day}</div>
@@ -72,12 +72,13 @@ export default function CalendarGrid({ selectedDate, onSelectDay, onNuevaCita })
               ? `${cita.notario.nombre} ${cita.notario.apellidos}`
               : cita.notario_id || "—";
 
-const apoderadoNombre =
-  cita.apoderado && cita.apoderado.trim() !== ""
-    ? cita.apoderado
-    : cita.apoderado_id
-    ? cita.apoderado_id
-    : "—";
+            // 🔥 Apoderado corregido + visual mejorado
+            const apoderadoNombre =
+              cita.apoderado && cita.apoderado.trim() !== ""
+                ? cita.apoderado
+                : cita.apoderado_id
+                ? cita.apoderado_id
+                : "—";
 
             return (
               <div
@@ -100,8 +101,10 @@ Hora: ${cita.hora_inicio}`}
                   {notarioNombre}
                 </div>
 
-                <div className="text-xs text-gray-700">
-                  {apoderadoNombre}
+                {/* 🔥 Apoderado con icono y color */}
+                <div className="text-xs text-blue-700 font-medium flex items-center gap-1">
+                  <span>👤</span>
+                  <span>{apoderadoNombre}</span>
                 </div>
               </div>
             );

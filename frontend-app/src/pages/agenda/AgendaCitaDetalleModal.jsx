@@ -2,7 +2,6 @@ import { useEffect } from "react";
 import { useAgendaStore } from "../../store/agendaStore";
 import { useEmpleadosStore } from "../../store/empleadosStore";
 
-// 🔥 Iconos para tipo de cita
 const iconoTipoCita = (tipo) => {
   switch (tipo) {
     case "Firma notarial": return "🖋";
@@ -12,7 +11,6 @@ const iconoTipoCita = (tipo) => {
   }
 };
 
-// 🔥 Iconos para tipo de firma
 const iconoTipoFirma = (tipo) => {
   switch (tipo) {
     case "Videoconferencia": return "🎥";
@@ -22,24 +20,25 @@ const iconoTipoFirma = (tipo) => {
 };
 
 export default function AgendaCitaDetalleModal({ onEditarCita }) {
-  const { citaActual, setCitaActual } = useAgendaStore();
-  const { empleados, cargarEmpleados } = useEmpleadosStore();
+  const citaActual = useAgendaStore((s) => s.citaActual);
+  const setCitaActual = useAgendaStore((s) => s.setCitaActual);
+
+  const empleados = useEmpleadosStore((s) => s.empleados);
+  const cargarEmpleados = useEmpleadosStore((s) => s.cargarEmpleados);
+
+  // 🔥 Los hooks SIEMPRE deben ejecutarse
+  useEffect(() => {
+    cargarEmpleados();
+  }, [cargarEmpleados]);
 
   if (!citaActual) return null;
 
-  // 🔥 Cargar empleados una sola vez
-  useEffect(() => {
-    cargarEmpleados();
-  }, []);
-
-  // 🔥 Resolver nombre del apoderado
   const apoderadoObj = empleados.find(e => e.id === citaActual.apoderado_id);
 
   const apoderadoLabel = apoderadoObj
     ? `${apoderadoObj.nombre} ${apoderadoObj.apellidos}`
     : "—";
 
-  // 🔥 Resolver nombre del notario (evitar undefined undefined)
   const notarioLabel = citaActual.notario
     ? `${citaActual.notario.nombre} ${citaActual.notario.apellidos}`
     : citaActual.notario_id || "—";

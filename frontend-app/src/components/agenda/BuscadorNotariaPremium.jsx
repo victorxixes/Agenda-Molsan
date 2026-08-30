@@ -16,7 +16,7 @@ export default function BuscadorNotariaPremium({ notarios, onSelect }) {
   const seleccionar = (n) => {
     setBuscar(`${n.nombre} ${n.apellidos}`);
     setMostrarLista(false);
-    onSelect(n);
+    onSelect(n); // 🔥 Enviamos el objeto COMPLETO del CTN
   };
 
   return (
@@ -52,21 +52,24 @@ export default function BuscadorNotariaPremium({ notarios, onSelect }) {
                 Código: {n.codigo} — NIF: {n.nif}
               </div>
 
+              {/* 🔥 Tipo firma desde VC */}
               {n.vc && (
                 <div className="text-xs text-blue-600 mt-1">
                   Tipo firma: {n.vc === "SI" ? "Videoconferencia" : "Presencial"}
                 </div>
               )}
 
-              {n.apoderado && (
+              {/* 🔥 Apoderado principal del CTN */}
+              {n.apoderado_s && (
                 <div className="text-xs text-green-600">
-                  Apoderado: {n.apoderado}
+                  Apoderado: {n.apoderado_s}
                 </div>
               )}
 
-              {n.apoderado_s && (
-                <div className="text-xs text-green-600">
-                  Apoderado suplente: {n.apoderado_s}
+              {/* 🔥 Observación del CTN */}
+              {n.observacion && (
+                <div className="text-xs text-gray-700 mt-1">
+                  Observación: {n.observacion}
                 </div>
               )}
             </div>

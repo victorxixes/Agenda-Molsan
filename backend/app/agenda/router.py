@@ -67,7 +67,7 @@ def create_table_agenda_citas(db: Session = Depends(get_db)):
     db.commit()
     return {"status": "agenda_citas creada correctamente"}
 # ---------------------------------------------------------
-# DESCRIBE CITA (solo si viene de SQLAlchemy)
+# DESCRIBE TABLE (solo si viene de SQLAlchemy)
 # ---------------------------------------------------------
 @router.get("/__describe_table_agenda_citas__")
 def describe_table_agenda_citas(db: Session = Depends(get_db)):
@@ -79,6 +79,18 @@ def describe_table_agenda_citas(db: Session = Depends(get_db)):
     """)
     columns = [row[0] for row in result]
     return {"columns": columns}
+
+# ---------------------------------------------------------
+# ALTER  TABLE (solo si viene de SQLAlchemy)
+# ---------------------------------------------------------
+@router.post("/__alter_table_agenda_citas__")
+def alter_table_agenda_citas(db: Session = Depends(get_db)):
+    db.execute("ALTER TABLE agenda_citas ADD COLUMN IF NOT EXISTS vc VARCHAR;")
+    db.execute("ALTER TABLE agenda_citas ADD COLUMN IF NOT EXISTS observacion VARCHAR;")
+    db.execute("ALTER TABLE agenda_citas ADD COLUMN IF NOT EXISTS apoderado_s VARCHAR;")
+    db.execute("ALTER TABLE agenda_citas ADD COLUMN IF NOT EXISTS estado VARCHAR DEFAULT 'Pendiente';")
+    db.commit()
+    return {"status": "agenda_citas actualizada"}
 
 # ---------------------------------------------------------
 # SANEAR CITA (solo si viene de SQLAlchemy)

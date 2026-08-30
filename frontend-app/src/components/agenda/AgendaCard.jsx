@@ -23,6 +23,12 @@ export default function AgendaCard({ cita, onEditarCita }) {
     ? `${apoderadoObj.nombre} ${apoderadoObj.apellidos}`
     : "—";
 
+  // 🔥 Tipo de firma traducido desde vc
+  const tipoFirma =
+    cita.vc === "SI" ? "Videoconferencia" :
+    cita.vc === "NO" ? "Presencial" :
+    "—";
+
   return (
     <GlassCard
       className="flex flex-col gap-2 cursor-pointer"
@@ -40,16 +46,16 @@ export default function AgendaCard({ cita, onEditarCita }) {
       </p>
 
       <p style={{ color: "#1F3A5F" }}>
-        Tipo de firma: {cita.tipo_firma || "—"}
+        Tipo de firma: {tipoFirma}
       </p>
 
       <p style={{ color: "#1F3A5F" }}>
         Apoderado: {apoderadoNombre}
       </p>
 
-      {cita.observaciones && (
+      {cita.observacion && (
         <p className="text-sm" style={{ color: "#6A7A8C" }}>
-          {cita.observaciones}
+          {cita.observacion}
         </p>
       )}
 

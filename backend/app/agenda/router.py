@@ -20,6 +20,14 @@ from backend.app.agenda.service import (
 
 router = APIRouter(prefix="/agenda", tags=["Agenda"])
 
+# ---------------------------------------------------------
+# BORRAR TABLA agenda_citas (uso temporal desde Swagger)
+# ---------------------------------------------------------
+@router.delete("/__drop_table_agenda_citas__")
+def drop_table_agenda_citas(db: Session = Depends(get_db)):
+    db.execute("DROP TABLE IF EXISTS agenda_citas CASCADE;")
+    db.commit()
+    return {"status": "agenda_citas borrada"}
 
 # ---------------------------------------------------------
 # SANEAR CITA (solo si viene de SQLAlchemy)

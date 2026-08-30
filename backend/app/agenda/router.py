@@ -20,16 +20,19 @@ from backend.app.agenda.service import (
 
 router = APIRouter(prefix="/agenda", tags=["Agenda"])
 
+
 # ---------------------------------------------------------
-# BORRAR TABLA agenda_citas (uso temporal desde Swagger)
+# BORRAR TABLA agenda_citas
 # ---------------------------------------------------------
 @router.delete("/__drop_table_agenda_citas__")
 def drop_table_agenda_citas(db: Session = Depends(get_db)):
     db.execute("DROP TABLE IF EXISTS agenda_citas CASCADE;")
     db.commit()
     return {"status": "agenda_citas borrada"}
+
+
 # ---------------------------------------------------------
-# CHEQUEAR TABLA agenda_citas (uso temporal desde Swagger)
+# CHEQUEAR TABLA
 # ---------------------------------------------------------
 @router.get("/__check_table_agenda_citas__")
 def check_table_agenda_citas(db: Session = Depends(get_db)):
@@ -42,8 +45,9 @@ def check_table_agenda_citas(db: Session = Depends(get_db)):
     exists = result.scalar()
     return {"agenda_citas_exists": exists}
 
+
 # ---------------------------------------------------------
-# CREAR TABLA agenda_citas (uso temporal desde Swagger)
+# CREAR TABLA
 # ---------------------------------------------------------
 @router.post("/__create_table_agenda_citas__")
 def create_table_agenda_citas(db: Session = Depends(get_db)):
@@ -66,8 +70,10 @@ def create_table_agenda_citas(db: Session = Depends(get_db)):
     """)
     db.commit()
     return {"status": "agenda_citas creada correctamente"}
+
+
 # ---------------------------------------------------------
-# DESCRIBE TABLE (solo si viene de SQLAlchemy)
+# DESCRIBE TABLE
 # ---------------------------------------------------------
 @router.get("/__describe_table_agenda_citas__")
 def describe_table_agenda_citas(db: Session = Depends(get_db)):
@@ -80,8 +86,9 @@ def describe_table_agenda_citas(db: Session = Depends(get_db)):
     columns = [row[0] for row in result]
     return {"columns": columns}
 
+
 # ---------------------------------------------------------
-# ALTER  TABLE (solo si viene de SQLAlchemy)
+# ALTER TABLE
 # ---------------------------------------------------------
 @router.post("/__alter_table_agenda_citas__")
 def alter_table_agenda_citas(db: Session = Depends(get_db)):
@@ -92,32 +99,13 @@ def alter_table_agenda_citas(db: Session = Depends(get_db)):
     db.commit()
     return {"status": "agenda_citas actualizada"}
 
+
 # ---------------------------------------------------------
-# SANEAR CITA (solo si viene de SQLAlchemy)
+# SANEAR (ELIMINADO: YA NO SE USA)
 # ---------------------------------------------------------
-def _sanear(c: Cita | dict | None):
-    if not c:
-        return None
-
-    # Si viene del service como dict, lo devolvemos tal cual
-    if isinstance(c, dict):
-        return c
-
-    # Si viene como SQLAlchemy, lo convertimos
-    salida = {
-        "id": c.id,
-        "fecha": c.fecha,
-        "hora_inicio": c.hora_inicio,
-        "hora_fin": c.hora_fin,
-        "tipo_cita": c.tipo_cita,
-        "tipo_firma": c.tipo_firma,
-        "estado": c.estado,
-        "observaciones": c.observacion,
-        "notario_id": c.notario_id,
-        "apoderado_id": c.apoderado_id,
-    }
-
-    return salida
+def _sanear(c):
+    # 🔥 Ya no se usa porque service.py devuelve dict completo y correcto
+    return c
 
 
 # ---------------------------------------------------------

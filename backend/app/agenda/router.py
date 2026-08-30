@@ -112,7 +112,7 @@ def _sanear(c: Cita | dict | None):
         "tipo_cita": c.tipo_cita,
         "tipo_firma": c.tipo_firma,
         "estado": c.estado,
-        "observaciones": c.observaciones,
+        "observaciones": c.observacion,
         "notario_id": c.notario_id,
         "apoderado_id": c.apoderado_id,
     }

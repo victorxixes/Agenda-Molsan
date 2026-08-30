@@ -13,15 +13,22 @@ class Cita(Base):
     hora_fin = Column(Time, nullable=False)
     tipo_cita = Column(String, nullable=False)
 
-    # Relaciones CORRECTAS
-    notario_id = Column(Integer, ForeignKey("ctn_notarios.id"), nullable=True)
-    tipo_firma = Column(String, nullable=True)
+    # 🔥 Coincide con importer CTN (vc = SI/NO)
+    vc = Column(String, nullable=True)
 
+    # 🔥 Coincide con service.py y schemas.py
+    observacion = Column(String, nullable=True)
+
+    # 🔥 Coincide con importer CTN
+    apoderado_s = Column(String, nullable=True)
+
+    # 🔥 Estado de la cita
+    estado = Column(String, default="Pendiente")
+
+    # Relaciones
+    notario_id = Column(Integer, ForeignKey("ctn_notarios.id"), nullable=True)
     apoderado_id = Column(Integer, ForeignKey("empleados_v2.id"), nullable=True)
 
-    observaciones = Column(String, nullable=True)
-    
-
-    # ORM relations (CORREGIDAS)
+    # ORM relations
     notario = relationship("Notaria", back_populates="citas", lazy="joined")
     apoderado = relationship("Empleado", lazy="joined")

@@ -29,6 +29,28 @@ def drop_table_agenda_citas(db: Session = Depends(get_db)):
     db.commit()
     return {"status": "agenda_citas borrada"}
 
+@router.post("/__create_table_agenda_citas__")
+def create_table_agenda_citas(db: Session = Depends(get_db)):
+    db.execute("""
+        CREATE TABLE IF NOT EXISTS agenda_citas (
+            id SERIAL PRIMARY KEY,
+            fecha DATE NOT NULL,
+            hora_inicio TIME NOT NULL,
+            hora_fin TIME NOT NULL,
+            tipo_cita VARCHAR NOT NULL,
+
+            vc VARCHAR,
+            observacion VARCHAR,
+            apoderado_s VARCHAR,
+            estado VARCHAR DEFAULT 'Pendiente',
+
+            notario_id INTEGER REFERENCES ctn_notarios(id),
+            apoderado_id INTEGER REFERENCES empleados_v2(id)
+        );
+    """)
+    db.commit()
+    return {"status": "agenda_citas creada correctamente"}
+
 # ---------------------------------------------------------
 # SANEAR CITA (solo si viene de SQLAlchemy)
 # ---------------------------------------------------------

@@ -36,32 +36,32 @@ export default function EmpleadosList() {
       {/* Buscador */}
       <BuscadorEmpleados />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {empleados.map((empleado) => (
-          <div
-            key={empleado.id}
-            className="bg-white p-4 rounded-xl border border-neutral-300 shadow-md cursor-pointer hover:bg-neutral-50"
-            onClick={() => navigate(`/empleados/${empleado.id}`)}
-          >
-            <div className="flex items-center gap-2">
-              <EstadoBadge activo={empleado.activo} />
-              <h3 className="font-semibold text-neutral-800">
-                {empleado.nombre} {empleado.apellidos}
-              </h3>
-            </div>
-
-            <p className="text-neutral-600 text-sm">
-              {empleado.rol_nombre || "Sin rol"}
-            </p>
-
-            <img
-              src={getFotoURL(empleado.foto)}
-              alt="Foto"
-              className="w-12 h-12 rounded-full object-cover mt-2 border"
-            />
-          </div>
-        ))}
+     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+  {(empleados || []).map((empleado) => (
+    <div
+      key={empleado.id}
+      className="bg-white p-4 rounded-xl border border-neutral-300 shadow-md cursor-pointer hover:bg-neutral-50"
+      onClick={() => navigate(`/empleados/${empleado.id}`)}
+    >
+      <div className="flex items-center gap-2">
+        <EstadoBadge activo={empleado.activo} />
+        <h3 className="font-semibold text-neutral-800">
+          {empleado.nombre} {empleado.apellidos}
+        </h3>
       </div>
+
+      <p className="text-neutral-600 text-sm">
+        {empleado.rol_nombre || "Sin rol"}
+      </p>
+
+      <img
+        src={getFotoURL(empleado.foto)}
+        alt="Foto"
+        className="w-12 h-12 rounded-full object-cover mt-2 border"
+      />
+    </div>
+  ))}
+</div>
     </div>
   );
 }

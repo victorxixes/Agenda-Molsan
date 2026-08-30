@@ -194,7 +194,7 @@ export default function EditarEmpleado({ empleadoId }) {
             className="border rounded px-2 py-1 w-full"
           >
             <option value="">Seleccionar rol</option>
-            {roles.map((r) => (
+            {(roles || []).map((r) => (
               <option key={r.id} value={r.id}>
                 {r.nombre}
               </option>

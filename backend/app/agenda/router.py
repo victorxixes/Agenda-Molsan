@@ -66,6 +66,19 @@ def create_table_agenda_citas(db: Session = Depends(get_db)):
     """)
     db.commit()
     return {"status": "agenda_citas creada correctamente"}
+# ---------------------------------------------------------
+# DESCRIBE CITA (solo si viene de SQLAlchemy)
+# ---------------------------------------------------------
+@router.get("/__describe_table_agenda_citas__")
+def describe_table_agenda_citas(db: Session = Depends(get_db)):
+    result = db.execute("""
+        SELECT column_name
+        FROM information_schema.columns
+        WHERE table_name = 'agenda_citas'
+        ORDER BY ordinal_position;
+    """)
+    columns = [row[0] for row in result]
+    return {"columns": columns}
 
 # ---------------------------------------------------------
 # SANEAR CITA (solo si viene de SQLAlchemy)

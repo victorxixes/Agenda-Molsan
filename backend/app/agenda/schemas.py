@@ -14,8 +14,7 @@ class CitaBase(BaseModel):
     notario_id: Optional[int] = None
     tipo_firma: Optional[str] = None
 
-    apoderado_id: Optional[int] = None  # ✅ AÑADIDO
-
+    apoderado_id: Optional[int] = None
     observaciones: Optional[str] = None
 
 
@@ -40,7 +39,7 @@ class CitaCreate(CitaBase):
 
 
 # =========================================================
-# UPDATE (no se permite cambiar apoderado)
+# UPDATE
 # =========================================================
 class CitaUpdate(BaseModel):
     fecha: Optional[date] = None
@@ -51,8 +50,7 @@ class CitaUpdate(BaseModel):
     notario_id: Optional[int] = None
     tipo_firma: Optional[str] = None
 
-    apoderado_id: Optional[int] = None  # ✅ AÑADIDO
-
+    apoderado_id: Optional[int] = None
     observaciones: Optional[str] = None
 
 
@@ -84,9 +82,13 @@ class ApoderadoResponse(BaseModel):
 class CitaResponse(CitaBase):
     id: int
 
+    # 🔥 Relaciones completas
     notario: Optional[NotarioResponse] = None
-    apoderado: Optional[ApoderadoResponse] = None  # ✅ objeto completo
-    apoderado_id: Optional[int] = None
+    apoderado: Optional[ApoderadoResponse] = None
+
+    # 🔥 Campos adicionales que ahora devuelve service.py
+    apoderado_s: Optional[str] = None
+    estado: Optional[str] = None
 
     class Config:
         orm_mode = True

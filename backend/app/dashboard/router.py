@@ -11,18 +11,15 @@ router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
 def dashboard_agenda_kpis(db: Session = Depends(get_db)):
     hoy = date.today()
 
-    # KPIs basados en fecha (no en estado)
     citas_hoy = db.query(Cita).filter(Cita.fecha == hoy).count()
-
     citas_pendientes = db.query(Cita).filter(Cita.fecha > hoy).count()
-    firmas_hechas = db.query(Cita).filter(Cita.fecha < hoy).count()
-    firmas_pendientes = citas_pendientes
 
-    presenciales_hechas = db.query(Cita).filter(Cita.tipo_firma == "P", Cita.fecha < hoy).count()
-    presenciales_pendientes = db.query(Cita).filter(Cita.tipo_firma == "P", Cita.fecha > hoy).count()
+    # Firmas VC / Presencial según tu modelo
+    firmas_hechas = db.query(Cita).filter(Cita.vc == "SI", Cita.fecha < hoy).count()
+    firmas_pendientes = db.query(Cita).filter(Cita.vc == "SI", Cita.fecha > hoy).count()
 
-    vc_hechas = db.query(Cita).filter(Cita.tipo_firma == "VC", Cita.fecha < hoy).count()
-    vc_pendientes = db.query(Cita).filter(Cita.tipo_firma == "VC", Cita.fecha > hoy).count()
+    presenciales_hechas = db.query(Cita).filter(Cita.vc == "NO", Cita.fecha < hoy).count()
+    presenciales_pendientes = db.query(Cita).filter(Cita.vc == "NO", Cita.fecha > hoy).count()
 
     return {
         "citasHoy": citas_hoy,
@@ -31,8 +28,8 @@ def dashboard_agenda_kpis(db: Session = Depends(get_db)):
         "firmasPendientes": firmas_pendientes,
         "presencialesHechas": presenciales_hechas,
         "presencialesPendientes": presenciales_pendientes,
-        "vcHechas": vc_hechas,
-        "vcPendientes": vc_pendientes,
+        "vcHechas": firmas_hechas,
+        "vcPendientes": firmas_pendientes,
         "citasPorProvincia": [],
         "citasPorHora": []
     }
@@ -42,32 +39,28 @@ def dashboard_agenda_kpis(db: Session = Depends(get_db)):
 def dashboard_resumen(db: Session = Depends(get_db)):
     hoy = date.today()
 
-    # Citas del día
     citas_dia = db.query(Cita).filter(Cita.fecha == hoy).all()
 
-    # Realizadas = fecha < hoy
-    # Pendientes = fecha > hoy
     firmas_realizadas = {
         "videoconferencia": db.query(Cita)
-            .filter(Cita.tipo_firma == "VC", Cita.fecha < hoy)
+            .filter(Cita.vc == "SI", Cita.fecha < hoy)
             .count(),
         "presencial": db.query(Cita)
-            .filter(Cita.tipo_firma == "P", Cita.fecha < hoy)
+            .filter(Cita.vc == "NO", Cita.fecha < hoy)
             .count(),
     }
 
     firmas_pendientes = {
         "videoconferencia": db.query(Cita)
-            .filter(Cita.tipo_firma == "VC", Cita.fecha > hoy)
+            .filter(Cita.vc == "SI", Cita.fecha > hoy)
             .count(),
         "presencial": db.query(Cita)
-            .filter(Cita.tipo_firma == "P", Cita.fecha > hoy)
+            .filter(Cita.vc == "NO", Cita.fecha > hoy)
             .count(),
     }
 
     por_apoderado = []
 
-    # Apoderados reales (ID)
     apoderados = (
         db.query(Cita.apoderado_id)
         .filter(Cita.apoderado_id.isnot(None))
@@ -81,38 +74,26 @@ def dashboard_resumen(db: Session = Depends(get_db)):
         por_apoderado.append({
             "apoderado_id": apo_id,
             "videoconferencia": {
-                "firmadas": sum(
-                    1 for c in citas_apo
-                    if c.tipo_firma == "VC" and c.fecha < hoy
-                ),
-                "pendientes": sum(
-                    1 for c in citas_apo
-                    if c.tipo_firma == "VC" and c.fecha > hoy
-                ),
+                "firmadas": sum(1 for c in citas_apo if c.vc == "SI" and c.fecha < hoy),
+                "pendientes": sum(1 for c in citas_apo if c.vc == "SI" and c.fecha > hoy),
             },
             "presencial": {
-                "firmadas": sum(
-                    1 for c in citas_apo
-                    if c.tipo_firma == "P" and c.fecha < hoy
-                ),
-                "pendientes": sum(
-                    1 for c in citas_apo
-                    if c.tipo_firma == "P" and c.fecha > hoy
-                ),
+                "firmadas": sum(1 for c in citas_apo if c.vc == "NO" and c.fecha < hoy),
+                "pendientes": sum(1 for c in citas_apo if c.vc == "NO" and c.fecha > hoy),
             },
         })
 
     citas_dia_serializadas = [
         {
             "id": c.id,
-            "fecha": c.fecha.isoformat() if c.fecha else None,
-            "hora_inicio": c.hora_inicio.strftime("%H:%M") if c.hora_inicio else None,
-            "hora_fin": c.hora_fin.strftime("%H:%M") if c.hora_fin else None,
+            "fecha": c.fecha.isoformat(),
+            "hora_inicio": c.hora_inicio.strftime("%H:%M"),
+            "hora_fin": c.hora_fin.strftime("%H:%M"),
             "tipo_cita": c.tipo_cita,
-            "tipo_firma": c.tipo_firma,
+            "vc": c.vc,
             "notario_id": c.notario_id,
             "apoderado_id": c.apoderado_id,
-            "observaciones": c.observaciones,
+            "observacion": c.observacion,
         }
         for c in citas_dia
     ]

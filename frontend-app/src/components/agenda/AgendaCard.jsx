@@ -13,21 +13,32 @@ export default function AgendaCard({ cita, onEditarCita }) {
     cargarEmpleados();
   }, []);
 
+  // 🔥 Notario
   const notarioNombre = cita.notario
     ? `${cita.notario.nombre} ${cita.notario.apellidos}`
     : cita.notario_id || "Notaría";
 
+  // 🔥 Apoderado empleado
   const apoderadoObj = empleados.find(e => e.id === cita.apoderado_id);
-
-  const apoderadoNombre = apoderadoObj
+  const apoderadoEmpleado = apoderadoObj
     ? `${apoderadoObj.nombre} ${apoderadoObj.apellidos}`
-    : "—";
+    : null;
+
+  // 🔥 Apoderado final (prioridad CTN → empleado → id → —)
+  const apoderadoNombre =
+    cita.apoderado_s ||
+    apoderadoEmpleado ||
+    cita.apoderado_id ||
+    "—";
 
   // 🔥 Tipo de firma traducido desde vc
   const tipoFirma =
     cita.vc === "SI" ? "Videoconferencia" :
     cita.vc === "NO" ? "Presencial" :
     "—";
+
+  // 🔥 Observación del CTN
+  const observacion = cita.observacion || "—";
 
   return (
     <GlassCard
@@ -53,9 +64,9 @@ export default function AgendaCard({ cita, onEditarCita }) {
         Apoderado: {apoderadoNombre}
       </p>
 
-      {cita.observacion && (
+      {observacion && (
         <p className="text-sm" style={{ color: "#6A7A8C" }}>
-          {cita.observacion}
+          {observacion}
         </p>
       )}
 

@@ -11,11 +11,11 @@ const iconoTipoCita = (tipo) => {
   }
 };
 
-// 🔥 Iconos para tipo de firma
-const iconoTipoFirma = (tipo) => {
-  switch (tipo) {
-    case "Videoconferencia": return "🎥";
-    case "Presencial": return "📍";
+// 🔥 Iconos para tipo de firma basado en vc
+const iconoTipoFirma = (vc) => {
+  switch (vc) {
+    case "SI": return "🎥";
+    case "NO": return "📍";
     default: return "📄";
   }
 };
@@ -63,9 +63,9 @@ export default function CalendarGrid({ selectedDate, onSelectDay, onNuevaCita })
         <div className="mt-1 space-y-1">
           {citas.map((cita) => {
 
-            // 🔥 Icono final: primero tipo_firma, si no existe → tipo_cita
-            const icono = cita.tipo_firma
-              ? iconoTipoFirma(cita.tipo_firma)
+            // 🔥 Icono final: primero vc, si no existe → tipo_cita
+            const icono = cita.vc
+              ? iconoTipoFirma(cita.vc)
               : iconoTipoCita(cita.tipo_cita);
 
             const notarioNombre = cita.notario
@@ -92,7 +92,9 @@ export default function CalendarGrid({ selectedDate, onSelectDay, onNuevaCita })
                 }}
                 title={`Notario: ${notarioNombre}
 Apoderado: ${apoderadoNombre}
-Hora: ${cita.hora_inicio}`}
+Hora: ${cita.hora_inicio}
+Tipo firma: ${cita.vc === "SI" ? "Videoconferencia" : cita.vc === "NO" ? "Presencial" : "—"}
+Observación: ${cita.observacion || "—"}`}
               >
                 <div className="flex items-center gap-1 text-sm">
                   <span>{icono}</span>

@@ -18,11 +18,11 @@ def cita_con_relaciones(db: Session, cita: Cita):
     notario = cita.notario
     apoderado_obj = cita.apoderado
 
-    # Tipo firma calculado desde VC
+    # Tipo firma calculado desde VC (solo visual)
     tipo_firma = (
         "Videoconferencia" if cita.vc == "SI"
         else "Presencial" if cita.vc == "NO"
-        else ""
+        else None
     )
 
     return {
@@ -32,24 +32,25 @@ def cita_con_relaciones(db: Session, cita: Cita):
         "hora_fin": cita.hora_fin,
         "tipo_cita": cita.tipo_cita,
 
-        # 🔥 Tipo firma REAL calculado desde VC
+        # 🔥 Campos REALES del modelo
+        "vc": cita.vc,
+        "observacion": cita.observacion,
+
+        # 🔥 Campo visual (no existe en DB, pero el front lo usa)
         "tipo_firma": tipo_firma,
 
-        # 🔥 Observaciones reales de la notaría
-        "observaciones": cita.observacion,
-
-        # 🔥 Notario completo (coincide con NotarioResponse)
+        # 🔥 Notario completo
         "notario_id": cita.notario_id,
         "notario": notario,
 
-        # 🔥 Apoderado completo (coincide con ApoderadoResponse)
+        # 🔥 Apoderado completo
         "apoderado_id": cita.apoderado_id,
         "apoderado": apoderado_obj,
 
-        # 🔥 Campo adicional que ahora acepta CitaResponse
+        # 🔥 Campo adicional opcional
         "apoderado_s": getattr(cita, "apoderado_s", None),
 
-        # 🔥 Estado si lo usas
+        # 🔥 Estado si existe
         "estado": cita.estado,
     }
 

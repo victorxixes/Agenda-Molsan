@@ -11,10 +11,11 @@ const iconoTipoCita = (tipo) => {
   }
 };
 
-const iconoTipoFirma = (tipo) => {
-  switch (tipo) {
-    case "Videoconferencia": return "🎥";
-    case "Presencial": return "📍";
+// 🔥 Tipo de firma basado en vc
+const iconoTipoFirma = (vc) => {
+  switch (vc) {
+    case "SI": return "🎥 Videoconferencia";
+    case "NO": return "📍 Presencial";
     default: return "—";
   }
 };
@@ -26,7 +27,6 @@ export default function AgendaCitaDetalleModal({ onEditarCita }) {
   const empleados = useEmpleadosStore((s) => s.empleados);
   const cargarEmpleados = useEmpleadosStore((s) => s.cargarEmpleados);
 
-  // 🔥 Los hooks SIEMPRE deben ejecutarse
   useEffect(() => {
     cargarEmpleados();
   }, [cargarEmpleados]);
@@ -75,11 +75,11 @@ export default function AgendaCitaDetalleModal({ onEditarCita }) {
         </div>
 
         <div>
-          <strong>Tipo firma:</strong> {iconoTipoFirma(citaActual.tipo_firma)} {citaActual.tipo_firma || "—"}
+          <strong>Tipo firma:</strong> {iconoTipoFirma(citaActual.vc)}
         </div>
 
         <div>
-          <strong>Observaciones:</strong> {citaActual.observaciones || "—"}
+          <strong>Observaciones:</strong> {citaActual.observacion || "—"}
         </div>
 
         <button

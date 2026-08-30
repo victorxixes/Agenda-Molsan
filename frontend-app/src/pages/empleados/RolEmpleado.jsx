@@ -58,7 +58,7 @@ export default function RolEmpleado({ empleadoId }) {
           }}
         >
           <option value="">Seleccionar rol</option>
-          {roles.map((r) => (
+         {(roles || []).map((r) => (
             <option key={r.id} value={r.id}>
               {r.nombre}
             </option>

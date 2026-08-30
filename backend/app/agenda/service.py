@@ -19,8 +19,16 @@ def cita_con_relaciones(db: Session, cita: Cita):
     if not cita:
         return None
 
+    # Relaciones ORM
     notario = cita.notario
-    apoderado_obj = cita.apoderado  # ✅ relación ORM Empleado
+    apoderado_obj = cita.apoderado
+
+    # Tipo firma calculado desde VC
+    tipo_firma = (
+        "Videoconferencia" if cita.vc == "SI"
+        else "Presencial" if cita.vc == "NO"
+        else ""
+    )
 
     return {
         "id": cita.id,
@@ -28,12 +36,26 @@ def cita_con_relaciones(db: Session, cita: Cita):
         "hora_inicio": cita.hora_inicio,
         "hora_fin": cita.hora_fin,
         "tipo_cita": cita.tipo_cita,
-        "tipo_firma": cita.tipo_firma,
-        "observaciones": cita.observaciones,
+
+        # 🔥 Tipo firma REAL calculado desde VC
+        "tipo_firma": tipo_firma,
+
+        # 🔥 Observaciones reales de la notaría
+        "observaciones": cita.observacion,
+
+        # 🔥 Notario completo
+        "notario_id": cita.notario_id,
         "notario": notario,
-        "apoderado": apoderado_obj,      # ✅ objeto, no string
+
+        # 🔥 Apoderado completo
         "apoderado_id": cita.apoderado_id,
+        "apoderado": apoderado_obj,
+        "apoderado_s": getattr(cita, "apoderado_s", None),
+
+        # 🔥 Estado si lo usas
+        "estado": cita.estado,
     }
+
 
 # ---------------------------------------------------------
 # OBTENER CITA POR ID

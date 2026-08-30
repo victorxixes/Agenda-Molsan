@@ -1,25 +1,34 @@
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+from sqlalchemy import func
+from datetime import date
+
+from backend.app.database import get_db
+from backend.app.agenda.models import Cita
+
+router = APIRouter()
+
 @router.get("/dashboard/agenda")
 def dashboard_agenda(db: Session = Depends(get_db)):
     hoy = date.today()
 
+    # Citas del día
     citas_hoy = db.query(Cita).filter(Cita.fecha == hoy).count()
-    citas_pendientes = db.query(Cita).filter(Cita.estado == "pendiente").count()
 
-    firmas_hechas = db.query(Cita).filter(Cita.estado == "hecha").count()
-    firmas_pendientes = db.query(Cita).filter(Cita.estado == "pendiente").count()
+    # Pendientes según estado
+    citas_pendientes = db.query(Cita).filter(Cita.estado == "Pendiente").count()
 
-    presenciales_hechas = db.query(Cita).filter(Cita.tipo_firma == "P", Cita.estado == "hecha").count()
-    presenciales_pendientes = db.query(Cita).filter(Cita.tipo_firma == "P", Cita.estado == "pendiente").count()
+    # Firmas VC y presenciales según tu modelo (vc = "SI" / "NO")
+    firmas_hechas = db.query(Cita).filter(Cita.vc == "SI", Cita.estado == "Hecha").count()
+    firmas_pendientes = db.query(Cita).filter(Cita.vc == "SI", Cita.estado == "Pendiente").count()
 
-    vc_hechas = db.query(Cita).filter(Cita.tipo_firma == "VC", Cita.estado == "hecha").count()
-    vc_pendientes = db.query(Cita).filter(Cita.tipo_firma == "VC", Cita.estado == "pendiente").count()
+    presenciales_hechas = db.query(Cita).filter(Cita.vc == "NO", Cita.estado == "Hecha").count()
+    presenciales_pendientes = db.query(Cita).filter(Cita.vc == "NO", Cita.estado == "Pendiente").count()
 
-    citas_por_provincia = (
-        db.query(Cita.provincia, func.count())
-        .group_by(Cita.provincia)
-        .all()
-    )
+    # Tu modelo NO tiene provincia → se elimina
+    citas_por_provincia = []
 
+    # Citas por hora
     citas_por_hora = (
         db.query(Cita.hora_inicio, func.count())
         .group_by(Cita.hora_inicio)
@@ -33,11 +42,9 @@ def dashboard_agenda(db: Session = Depends(get_db)):
         "firmasPendientes": firmas_pendientes,
         "presencialesHechas": presenciales_hechas,
         "presencialesPendientes": presenciales_pendientes,
-        "vcHechas": vc_hechas,
-        "vcPendientes": vc_pendientes,
-        "citasPorProvincia": [
-            {"provincia": p, "total": t} for p, t in citas_por_provincia
-        ],
+        "vcHechas": firmas_hechas,
+        "vcPendientes": firmas_pendientes,
+        "citasPorProvincia": [],
         "citasPorHora": [
             {"hora": h.strftime("%H:%M"), "total": t} for h, t in citas_por_hora
         ]

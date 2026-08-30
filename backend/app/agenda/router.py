@@ -28,7 +28,23 @@ def drop_table_agenda_citas(db: Session = Depends(get_db)):
     db.execute("DROP TABLE IF EXISTS agenda_citas CASCADE;")
     db.commit()
     return {"status": "agenda_citas borrada"}
+# ---------------------------------------------------------
+# CHEQUEAR TABLA agenda_citas (uso temporal desde Swagger)
+# ---------------------------------------------------------
+@router.get("/__check_table_agenda_citas__")
+def check_table_agenda_citas(db: Session = Depends(get_db)):
+    result = db.execute("""
+        SELECT EXISTS (
+            SELECT FROM information_schema.tables 
+            WHERE table_name = 'agenda_citas'
+        );
+    """)
+    exists = result.scalar()
+    return {"agenda_citas_exists": exists}
 
+# ---------------------------------------------------------
+# CREAR TABLA agenda_citas (uso temporal desde Swagger)
+# ---------------------------------------------------------
 @router.post("/__create_table_agenda_citas__")
 def create_table_agenda_citas(db: Session = Depends(get_db)):
     db.execute("""

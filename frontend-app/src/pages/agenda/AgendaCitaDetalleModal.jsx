@@ -11,11 +11,10 @@ const iconoTipoCita = (tipo) => {
   }
 };
 
-// 🔥 Tipo de firma basado en vc
-const iconoTipoFirma = (vc) => {
-  switch (vc) {
-    case "SI": return "🎥 Videoconferencia";
-    case "NO": return "📍 Presencial";
+const iconoTipoFirma = (tipo) => {
+  switch (tipo) {
+    case "Videoconferencia": return "🎥";
+    case "Presencial": return "📍";
     default: return "—";
   }
 };
@@ -33,11 +32,25 @@ export default function AgendaCitaDetalleModal({ onEditarCita }) {
 
   if (!citaActual) return null;
 
+  // 🔥 Apoderado del CTN
+  const apoderadoCTN = citaActual.apoderado_s;
+
+  // 🔥 Apoderado de empleados
   const apoderadoObj = empleados.find(e => e.id === citaActual.apoderado_id);
 
-  const apoderadoLabel = apoderadoObj
+  const apoderadoEmpleado = apoderadoObj
     ? `${apoderadoObj.nombre} ${apoderadoObj.apellidos}`
-    : "—";
+    : null;
+
+  // 🔥 Apoderado final (prioridad CTN → empleado → id → —)
+  const apoderadoLabel =
+    apoderadoCTN ||
+    apoderadoEmpleado ||
+    citaActual.apoderado_id ||
+    "—";
+
+  // 🔥 Observación del CTN
+  const observacionLabel = citaActual.observacion || "—";
 
   const notarioLabel = citaActual.notario
     ? `${citaActual.notario.nombre} ${citaActual.notario.apellidos}`
@@ -75,11 +88,11 @@ export default function AgendaCitaDetalleModal({ onEditarCita }) {
         </div>
 
         <div>
-          <strong>Tipo firma:</strong> {iconoTipoFirma(citaActual.vc)}
+          <strong>Tipo firma:</strong> {iconoTipoFirma(citaActual.tipo_firma)} {citaActual.tipo_firma || "—"}
         </div>
 
         <div>
-          <strong>Observaciones:</strong> {citaActual.observacion || "—"}
+          <strong>Observaciones:</strong> {observacionLabel}
         </div>
 
         <button

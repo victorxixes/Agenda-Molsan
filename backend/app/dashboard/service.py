@@ -7,9 +7,6 @@ from backend.app.empleados.models import Empleado
 from backend.app.mensajes.models import Mensaje
 from backend.app.logs.models import Log
 
-# ---------------------------------------------------------
-# IMPORTAR CTN DE FORMA SEGURA
-# ---------------------------------------------------------
 try:
     from backend.app.ctn.models import Notaria as Notario, Zona, Firma
     CTN_ENABLED = True
@@ -24,24 +21,15 @@ def resumen_agenda(db: Session, empleado_id: int):
     inicio_semana = hoy - timedelta(days=hoy.weekday())
     fin_semana = inicio_semana + timedelta(days=6)
 
-    # -------------------------
-    # FILTRO SEGÚN ROL
-    # -------------------------
     filtro = None
     if hasattr(empleado, "rol") and empleado.rol == "apoderado":
         filtro = (Cita.apoderado_id == empleado_id)
 
-    # -------------------------
-    # CITAS DEL DÍA
-    # -------------------------
     q_hoy = db.query(Cita).filter(Cita.fecha == hoy)
     if filtro:
         q_hoy = q_hoy.filter(filtro)
     citas_hoy = q_hoy.count()
 
-    # -------------------------
-    # CITAS DE LA SEMANA
-    # -------------------------
     q_semana = db.query(Cita).filter(
         Cita.fecha >= inicio_semana,
         Cita.fecha <= fin_semana
@@ -50,18 +38,12 @@ def resumen_agenda(db: Session, empleado_id: int):
         q_semana = q_semana.filter(filtro)
     citas_semana = q_semana.count()
 
-    # -------------------------
-    # FIRMAS VC / PRESENCIAL
-    # -------------------------
-    firmas_vc_hoy = q_hoy.filter(Cita.tipo_firma == "VideoConferencia").count()
-    firmas_p_hoy = q_hoy.filter(Cita.tipo_firma == "Presencial").count()
+    firmas_vc_hoy = q_hoy.filter(Cita.vc == "SI").count()
+    firmas_p_hoy = q_hoy.filter(Cita.vc == "NO").count()
 
-    firmas_vc_semana = q_semana.filter(Cita.tipo_firma == "VideoConferencia").count()
-    firmas_p_semana = q_semana.filter(Cita.tipo_firma == "Presencial").count()
+    firmas_vc_semana = q_semana.filter(Cita.vc == "SI").count()
+    firmas_p_semana = q_semana.filter(Cita.vc == "NO").count()
 
-    # -------------------------
-    # FIRMAS POR MES (AÑO ACTUAL)
-    # -------------------------
     año_actual = hoy.year
     firmas_por_mes = {}
 
@@ -77,18 +59,14 @@ def resumen_agenda(db: Session, empleado_id: int):
             q_mes = q_mes.filter(filtro)
 
         firmas_por_mes[mes] = {
-            "vc": q_mes.filter(Cita.tipo_firma == "VideoConferencia").count(),
-            "p": q_mes.filter(Cita.tipo_firma == "Presencial").count()
+            "vc": q_mes.filter(Cita.vc == "SI").count(),
+            "p": q_mes.filter(Cita.vc == "NO").count()
         }
 
     firmas_por_mes_array = [
         {"mes": mes, "vc": valores["vc"], "p": valores["p"]}
         for mes, valores in firmas_por_mes.items()
     ]
-
-    # ======================================================
-    # 🔥 DASHBOARD AVANZADO
-    # ======================================================
 
     total_empleados = db.query(Empleado).count()
     empleados_activos = db.query(Empleado).filter(Empleado.activo == True).count()

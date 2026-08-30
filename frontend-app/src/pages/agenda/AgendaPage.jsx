@@ -9,31 +9,28 @@ import AgendaCitaDetalleModal from "./AgendaCitaDetalleModal.jsx";
 import { useAgendaStore } from "../../store/agendaStore";
 
 export default function AgendaPage() {
-  const { cargarMes, cargarDia, citasDia, setCitaActual } = useAgendaStore();
+  const cargarMes = useAgendaStore((s) => s.cargarMes);
+  const cargarDia = useAgendaStore((s) => s.cargarDia);
+  const citasDia = useAgendaStore((s) => s.citasDia);
+  const setCitaActual = useAgendaStore((s) => s.setCitaActual);
 
   const [selectedDate, setSelectedDate] = useState(new Date());
 
-  // MODAL NUEVA CITA
   const [showNuevaCita, setShowNuevaCita] = useState(false);
-
-  // MODAL EDITAR
   const [modalEditarOpen, setModalEditarOpen] = useState(false);
   const [citaEditId, setCitaEditId] = useState(null);
 
-  // Cargar citas del mes
   useEffect(() => {
     const year = selectedDate.getFullYear();
     const month = String(selectedDate.getMonth() + 1).padStart(2, "0");
     cargarMes(`${year}-${month}`);
-  }, [selectedDate]);
+  }, [selectedDate, cargarMes]);
 
-  // Cargar citas del día
   useEffect(() => {
     const fecha = selectedDate.toISOString().split("T")[0];
     cargarDia(fecha);
-  }, [selectedDate]);
+  }, [selectedDate, cargarDia]);
 
-  // Abrir modal de edición
   const handleEditarCita = (id) => {
     setCitaEditId(id);
     setModalEditarOpen(true);
@@ -41,31 +38,27 @@ export default function AgendaPage() {
 
   return (
     <>
-      {/* 🔥 SOLO EL CALENDARIO, SIN SIDEBAR */}
-     <div className="w-full px-2 lg:px-4 xl:px-8 max-w-none">
-  <CalendarHeader
-    selectedDate={selectedDate}
-    onChange={setSelectedDate}
-  />
+      <div className="w-full px-2 lg:px-4 xl:px-8 max-w-none">
+        <CalendarHeader
+          selectedDate={selectedDate}
+          onChange={setSelectedDate}
+        />
 
-  <CalendarGrid
-    selectedDate={selectedDate}
-    onSelectDay={setSelectedDate}
-    onNuevaCita={() => setShowNuevaCita(true)}
-  />
-</div>
+        <CalendarGrid
+          selectedDate={selectedDate}
+          onSelectDay={setSelectedDate}
+          onNuevaCita={() => setShowNuevaCita(true)}
+        />
+      </div>
 
-      {/* MODAL DETALLE */}
       <AgendaCitaDetalleModal onEditarCita={handleEditarCita} />
 
-      {/* MODAL NUEVA CITA */}
       <AgendaNuevaCitaModal
         open={showNuevaCita}
         onClose={() => setShowNuevaCita(false)}
         fechaSeleccionada={selectedDate}
       />
 
-      {/* MODAL EDITAR */}
       <AgendaNuevaEditarCitaModal
         citaId={citaEditId}
         open={modalEditarOpen}

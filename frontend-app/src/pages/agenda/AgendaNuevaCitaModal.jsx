@@ -5,7 +5,7 @@ import { useCTNStore } from "../../store/ctnStore";
 import GlassCard from "../../components/ui/GlassCard.jsx";
 import BuscadorNotariaPremium from "../../components/agenda/BuscadorNotariaPremium.jsx";
 
-// 🔥 Iconos para tipo de cita
+// Iconos
 const iconoTipoCita = (tipo) => {
   switch (tipo) {
     case "Firma notarial": return "🖋";
@@ -15,7 +15,6 @@ const iconoTipoCita = (tipo) => {
   }
 };
 
-// 🔥 Iconos para tipo de firma (solo visual)
 const iconoTipoFirma = (vc) => {
   switch (vc) {
     case "SI": return "🎥 Videoconferencia";
@@ -30,7 +29,7 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
 
   const TIPOS_CITA = ["Firma notarial", "Reunión", "Visita", "Otros"];
 
-  // 🔥 FORMULARIO ALINEADO CON EL BACKEND
+  // Formulario alineado con backend
   const [form, setForm] = useState({
     fecha: "",
     hora_inicio: "",
@@ -38,7 +37,7 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
     tipo_cita: "",
     notario_id: null,
     vc: "",
-    apoderado: "",
+    apoderado_s: "",
     apoderado_id: null,
     observacion: "",
   });
@@ -56,19 +55,19 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
     }
   }, [open]);
 
-  // 🔥 Selección de notaría → rellena todo automáticamente
+  // Selección de notaría → rellena todo automáticamente
   const seleccionarNotaria = (n) => {
     setForm(prev => ({
       ...prev,
       notario_id: n.id,
       vc: n.vc || "",
-      apoderado: n.apoderado || n.apoderado_s || "",
+      apoderado_s: n.apoderado_s || "",
       apoderado_id: n.apoderado_id || null,
       observacion: n.observacion?.trim() || "",
     }));
   };
 
-  // 🔥 Guardar cita
+  // Guardar cita
   const guardar = async () => {
     setError("");
 
@@ -201,7 +200,7 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
           </div>
         )}
 
-        {/* Tipo de firma (solo visual) */}
+        {/* Tipo de firma */}
         <input
           type="text"
           className="input bg-gray-100"
@@ -209,11 +208,11 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
           readOnly
         />
 
-        {/* Apoderado */}
+        {/* Apoderado del CTN */}
         <input
           type="text"
           className="input bg-gray-100"
-          value={form.apoderado || ""}
+          value={form.apoderado_s || ""}
           readOnly
         />
 

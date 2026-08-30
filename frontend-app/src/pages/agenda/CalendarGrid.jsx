@@ -72,15 +72,23 @@ export default function CalendarGrid({ selectedDate, onSelectDay, onNuevaCita })
               ? `${cita.notario.nombre} ${cita.notario.apellidos}`
               : cita.notario_id || "—";
 
-            // 🔥 Apoderado corregido: soporta string y objeto
+            // 🔥 Apoderado final (prioridad CTN → empleado → id → —)
             const apoderadoNombre =
-              cita.apoderado
-                ? typeof cita.apoderado === "string"
-                  ? cita.apoderado
-                  : `${cita.apoderado.nombre} ${cita.apoderado.apellidos}`
-                : cita.apoderado_id
-                ? cita.apoderado_id
+              cita.apoderado_s ||
+              (cita.apoderado
+                ? `${cita.apoderado.nombre} ${cita.apoderado.apellidos}`
+                : null) ||
+              cita.apoderado_id ||
+              "—";
+
+            const tipoFirmaLabel =
+              cita.vc === "SI"
+                ? "Videoconferencia"
+                : cita.vc === "NO"
+                ? "Presencial"
                 : "—";
+
+            const observacionLabel = cita.observacion || "—";
 
             return (
               <div
@@ -93,8 +101,8 @@ export default function CalendarGrid({ selectedDate, onSelectDay, onNuevaCita })
                 title={`Notario: ${notarioNombre}
 Apoderado: ${apoderadoNombre}
 Hora: ${cita.hora_inicio}
-Tipo firma: ${cita.vc === "SI" ? "Videoconferencia" : cita.vc === "NO" ? "Presencial" : "—"}
-Observación: ${cita.observacion || "—"}`}
+Tipo firma: ${tipoFirmaLabel}
+Observación: ${observacionLabel}`}
               >
                 <div className="flex items-center gap-1 text-sm">
                   <span>{icono}</span>

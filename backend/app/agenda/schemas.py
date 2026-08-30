@@ -12,14 +12,14 @@ class CitaBase(BaseModel):
     tipo_cita: str
 
     notario_id: Optional[int] = None
-    tipo_firma: Optional[str] = None
+    vc: Optional[str] = None  # SI / NO
 
     apoderado_id: Optional[int] = None
-    observaciones: Optional[str] = None
+    observacion: Optional[str] = None
 
 
 # =========================================================
-# CREATE (el apoderado se asigna automáticamente)
+# CREATE
 # =========================================================
 class CitaCreate(CitaBase):
 
@@ -30,11 +30,11 @@ class CitaCreate(CitaBase):
             raise ValueError("El campo notario_id es obligatorio para citas de firma")
         return v
 
-    @validator("tipo_firma")
-    def validar_tipo_firma(cls, v, values):
+    @validator("vc")
+    def validar_vc(cls, v, values):
         tipo = (values.get("tipo_cita") or "").lower()
         if tipo.startswith("firma") and not v:
-            raise ValueError("El campo tipo_firma es obligatorio para citas de firma")
+            raise ValueError("El campo vc es obligatorio para citas de firma")
         return v
 
 
@@ -48,10 +48,10 @@ class CitaUpdate(BaseModel):
 
     tipo_cita: Optional[str] = None
     notario_id: Optional[int] = None
-    tipo_firma: Optional[str] = None
+    vc: Optional[str] = None
 
     apoderado_id: Optional[int] = None
-    observaciones: Optional[str] = None
+    observacion: Optional[str] = None
 
 
 # =========================================================
@@ -82,11 +82,9 @@ class ApoderadoResponse(BaseModel):
 class CitaResponse(CitaBase):
     id: int
 
-    # 🔥 Relaciones completas
     notario: Optional[NotarioResponse] = None
     apoderado: Optional[ApoderadoResponse] = None
 
-    # 🔥 Campos adicionales que ahora devuelve service.py
     apoderado_s: Optional[str] = None
     estado: Optional[str] = None
 

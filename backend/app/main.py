@@ -22,16 +22,16 @@ app = FastAPI(title="Agenda Intranet Backend")
 # ---------------------------------------------------------
 
 origins = [
-    "https://agenda-intranet.onrender.com",
-    "https://agenda-intranet-b.onrender.com",
     "https://agenda-intranet-f.onrender.com",
-    "https://agenda-intranet-frontend.onrender.com"
+    "https://agenda-intranet-frontend.onrender.com",
+    "https://agenda-intranet-b.onrender.com",
+    "https://agenda-intranet.onrender.com",
 ]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],   # 🔥 Render-friendly
-    allow_credentials=True,
+    allow_origins=origins,        # ✔ NO usar "*"
+    allow_credentials=True,       # ✔ Necesario para login
     allow_methods=["*"],
     allow_headers=["*"],
 )

@@ -14,11 +14,11 @@ const iconoTipoCita = (tipo) => {
   }
 };
 
-// 🔥 Iconos para tipo de firma
-const iconoTipoFirma = (tipo) => {
-  switch (tipo) {
-    case "Videoconferencia": return "🎥";
-    case "Presencial": return "📍";
+// 🔥 Tipo de firma basado en vc
+const iconoTipoFirma = (vc) => {
+  switch (vc) {
+    case "SI": return "🎥 Videoconferencia";
+    case "NO": return "📍 Presencial";
     default: return "—";
   }
 };
@@ -29,15 +29,16 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
 
   const TIPOS_CITA = ["Firma notarial", "Reunión", "Visita", "Otros"];
 
+  // 🔥 FORMULARIO ALINEADO CON EL BACKEND
   const [form, setForm] = useState({
     fecha: "",
     hora_inicio: "",
     hora_fin: "",
     tipo_cita: "",
     notario_id: null,
-    tipo_firma: "",
+    vc: "",
     apoderado_id: null,
-    observaciones: "",
+    observacion: "",
   });
 
   const [error, setError] = useState("");
@@ -59,35 +60,23 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
         hora_fin: citaActual.hora_fin,
         tipo_cita: citaActual.tipo_cita,
         notario_id: citaActual.notario_id,
-        tipo_firma: citaActual.tipo_firma || "",
+        vc: citaActual.vc || "",
         apoderado_id: citaActual.apoderado_id || null,
-        observaciones: citaActual.observaciones?.trim() || "",
+        observacion: citaActual.observacion?.trim() || "",
       });
     }
   }, [citaActual]);
 
   // Seleccionar notaría
   const seleccionarNotaria = (n) => {
-  const tipoFirmaTraducida =
-    n.vc === "SI" ? "Videoconferencia" :
-    n.vc === "NO" ? "Presencial" :
-    "";
-
-  setForm(prev => ({
-    ...prev,
-    notario_id: n.id,
-
-    // SIEMPRE autorellenar tipo_firma
-    tipo_firma: tipoFirmaTraducida,
-
-    // SIEMPRE autorellenar apoderado_id
-    apoderado_id: n.apoderado_id || null,
-
-    // SIEMPRE autorellenar observaciones
-    observaciones: n.observacion?.trim() || "",
-  }));
-};
-
+    setForm(prev => ({
+      ...prev,
+      notario_id: n.id,
+      vc: n.vc || "",
+      apoderado_id: n.apoderado_id || null,
+      observacion: n.observacion?.trim() || "",
+    }));
+  };
 
   // Guardar cambios
   const guardar = async () => {
@@ -100,11 +89,21 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
 
     if (form.tipo_cita === "Firma notarial") {
       if (!form.notario_id) return setError("Debes seleccionar una notaría");
-      if (!form.tipo_firma) return setError("Debes seleccionar el tipo de firma");
+      if (!form.vc) return setError("Debes seleccionar el tipo de firma");
     }
 
     try {
-      await editar(citaId, form);
+      await editar(citaId, {
+        fecha: form.fecha,
+        hora_inicio: form.hora_inicio,
+        hora_fin: form.hora_fin,
+        tipo_cita: form.tipo_cita,
+        notario_id: form.notario_id,
+        apoderado_id: form.apoderado_id,
+        observacion: form.observacion,
+        vc: form.vc,
+      });
+
       alert("Cita actualizada correctamente");
       onClose();
     } catch (err) {
@@ -117,7 +116,6 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
 
   const notarioSeleccionado = notarias.find((n) => n.id === form.notario_id);
 
-  // 🔥 Apoderado corregido: soporta string, objeto, id y null
   const apoderadoLabel =
     citaActual?.apoderado
       ? typeof citaActual.apoderado === "string"
@@ -179,7 +177,7 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
             setForm(prev => ({
               ...prev,
               tipo_cita: tipo,
-              tipo_firma: tipo === "Firma notarial" ? prev.tipo_firma : "",
+              vc: tipo === "Firma notarial" ? prev.vc : "",
             }));
           }}
         >
@@ -228,11 +226,7 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
         <input
           type="text"
           className="input bg-gray-100"
-          value={
-            form.tipo_firma
-              ? `${iconoTipoFirma(form.tipo_firma)} ${form.tipo_firma}`
-              : "—"
-          }
+          value={iconoTipoFirma(form.vc)}
           readOnly
         />
 
@@ -240,8 +234,8 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
         <textarea
           className="input"
           placeholder="Observaciones"
-          value={form.observaciones}
-          onChange={(e) => setForm({ ...form, observaciones: e.target.value })}
+          value={form.observacion}
+          onChange={(e) => setForm({ ...form, observacion: e.target.value })}
         />
 
         <button className="btn-primary w-full" onClick={guardar}>

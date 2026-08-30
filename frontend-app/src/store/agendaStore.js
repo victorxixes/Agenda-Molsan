@@ -55,6 +55,10 @@ export const useAgendaStore = create((set, get) => ({
   // CREAR CITA
   // ---------------------------------------------------------
   crear: async (data) => {
+    // data debe contener:
+    // fecha, hora_inicio, hora_fin, tipo_cita,
+    // notario_id, apoderado_id, observacion, vc
+
     const res = await agendaAPI.crear(data);
 
     await crearLog("agenda", "crear", `Cita creada para el día ${res.fecha}`, res);
@@ -69,6 +73,8 @@ export const useAgendaStore = create((set, get) => ({
   // EDITAR CITA
   // ---------------------------------------------------------
   editar: async (id, data) => {
+    // data debe contener los mismos campos que crear()
+
     const res = await agendaAPI.editar(id, data);
 
     await crearLog("agenda", "editar", `Cita ${id} editada`, res);

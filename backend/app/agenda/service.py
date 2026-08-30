@@ -25,9 +25,14 @@ def cita_con_relaciones(db: Session, cita: Cita):
         else None
     )
 
-    # 🔥 Datos reales del CTN
-    apoderado_s = notario.apoderado_s if notario else None
-    observacion_ctn = notario.observacion if notario else None
+    # 🔥 Apoderado REAL de la cita (empleado)
+    if apoderado_obj:
+        apoderado_s = f"{apoderado_obj.nombre} {apoderado_obj.apellidos}"
+    else:
+        apoderado_s = cita.apoderado_s  # fallback
+
+    # 🔥 Observación REAL de la cita (no del CTN)
+    observacion = cita.observacion
 
     return {
         "id": cita.id,
@@ -36,30 +41,19 @@ def cita_con_relaciones(db: Session, cita: Cita):
         "hora_fin": cita.hora_fin,
         "tipo_cita": cita.tipo_cita,
 
-        # 🔥 Campos REALES del modelo
         "vc": cita.vc,
-
-        # 🔥 Observación del CTN (NO la de la cita)
-        "observacion": observacion_ctn,
-
-        # 🔥 Tipo firma visual
         "tipo_firma": tipo_firma,
 
-        # 🔥 Notario completo
         "notario_id": cita.notario_id,
         "notario": notario,
 
-        # 🔥 Apoderado completo (empleado)
         "apoderado_id": cita.apoderado_id,
         "apoderado": apoderado_obj,
-
-        # 🔥 Apoderado del CTN
         "apoderado_s": apoderado_s,
 
-        # 🔥 Estado
+        "observacion": observacion,
         "estado": cita.estado,
     }
-
 
 # ---------------------------------------------------------
 # OBTENER CITA POR ID
@@ -125,11 +119,17 @@ def listar_citas_mes(db: Session, year: int, month: int):
 # ---------------------------------------------------------
 def crear_cita(db: Session, data):
     cita = Cita(**data.dict())
+
+    # 🔥 Rellenar apoderado_s automáticamente
+    if cita.apoderado_id:
+        apo = db.query(Empleado).filter(Empleado.id == cita.apoderado_id).first()
+        if apo:
+            cita.apoderado_s = f"{apo.nombre} {apo.apellidos}"
+
     db.add(cita)
     db.commit()
     db.refresh(cita)
     return cita_con_relaciones(db, cita)
-
 
 # ---------------------------------------------------------
 # EDITAR CITA

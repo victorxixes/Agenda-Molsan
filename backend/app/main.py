@@ -19,6 +19,7 @@ from backend.app.intranet.noticias.models import Noticia
 from backend.app.intranet.documentos.models import Documento
 from backend.app.logs.models import Log
 from backend.app.mensajes.models import Mensaje
+from backend.app.mensajes.models import Mensaje, UsuarioEstado
 
 
 sqlalchemy.orm.configure_mappers()

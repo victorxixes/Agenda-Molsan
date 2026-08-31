@@ -7,7 +7,7 @@ export const dashboardAPI = {
   },
 
   resumen: async () => {
-    const res = await axios.get("/dashboard/resumen");
+    const res = await axios.get("api/dashboard/resumen");
     return res.data;
   }
 };

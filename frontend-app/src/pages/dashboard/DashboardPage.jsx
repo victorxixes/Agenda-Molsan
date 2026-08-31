@@ -16,9 +16,6 @@ export default function DashboardPage() {
     kpis,
     citas_dia,
     por_apoderado,
-    citas_por_hora,
-    actividad_semanal,
-    ctn,
   } = data;
 
   return (
@@ -139,5 +136,7 @@ export default function DashboardPage() {
           ))}
         </div>
       </div>
-     );
+
+    </div>
+  );
 }

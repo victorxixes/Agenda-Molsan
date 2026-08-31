@@ -23,10 +23,6 @@ export default function EmpleadosList() {
   const navigate = useNavigate();
   const { empleados, cargarEmpleados } = useEmpleadosStore();
 
-  // Cargar empleados SOLO una vez al montar
-  useEffect(() => {
-    cargarEmpleados();
-  }, []);
 
   return (
     <div className="p-6 space-y-6">

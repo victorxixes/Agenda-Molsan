@@ -1,6 +1,39 @@
 import { useMensajesStore } from "../store/mensajesStore";
 
 let wsChat = null;
+let chatHeartbeat = null;
+
+export function conectarChatWS(usuarioId) {
+  if (!usuarioId || isNaN(usuarioId)) return;
+
+  wsChat = new WebSocket(`${import.meta.env.VITE_WS_URL}/ws/chat/${usuarioId}`);
+
+  wsChat.onopen = () => {
+    chatHeartbeat = setInterval(() => {
+      if (wsChat.readyState === WebSocket.OPEN) {
+        wsChat.send(JSON.stringify({ tipo: "ping" }));
+      }
+    }, 25000);
+  };
+
+  wsChat.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+
+    if (data.tipo === "mensaje") {
+      useMensajesStore.getState().agregarMensajeRealtime(data);
+    }
+
+    if (data.tipo === "typing") {
+      useMensajesStore.getState().setTyping(true);
+      setTimeout(() => useMensajesStore.getState().setTyping(false), 1500);
+    }
+  };
+}
+
+export function desconectarChatWS() {
+  clearInterval(chatHeartbeat);
+  wsChat?.close();
+}
 
 export function conectarChatWS(usuarioId) {
   if (!usuarioId || isNaN(usuarioId)) return; // 🔥 evita /ws/chat/undefined

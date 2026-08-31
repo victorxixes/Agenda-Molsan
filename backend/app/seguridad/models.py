@@ -1,5 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, JSON
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, Integer, String, DateTime, JSON
 from datetime import datetime
 
 from backend.app.database import Base
@@ -14,36 +13,6 @@ class Rol(Base):
     id = Column(Integer, primary_key=True, index=True)
     nombre = Column(String, unique=True)
     descripcion = Column(String, nullable=True)
-
-    permisos = relationship("Permiso", back_populates="rol", cascade="all, delete")
-    empleados = relationship("Empleado", back_populates="rol")
-
-
-# ---------------------------------------------------------
-# PERMISOS POR MÓDULO
-# ---------------------------------------------------------
-class Permiso(Base):
-    __tablename__ = "permisos"
-    __allow_unmapped__ = True
-
-    id = Column(Integer, primary_key=True, index=True)
-    rol_id = Column(Integer, ForeignKey("roles.id"))   # ✔ CORREGIDO
-    modulo = Column(String)
-    acciones = Column(String)
-
-    rol = relationship("Rol", back_populates="permisos")
-
-
-# ---------------------------------------------------------
-# RELACIÓN ROL-PERMISO
-# ---------------------------------------------------------
-class RolPermiso(Base):
-    __tablename__ = "roles_permisos"
-    __allow_unmapped__ = True
-
-    id = Column(Integer, primary_key=True, index=True)
-    rol_id = Column(Integer, ForeignKey("roles.id"))        # ✔ CORREGIDO
-    permiso_id = Column(Integer, ForeignKey("permisos.id")) # ✔ CORREGIDO
 
 
 # ---------------------------------------------------------

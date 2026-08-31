@@ -2,7 +2,7 @@ import axios from "../api/axios";
 
 export const dashboardAPI = {
   full: async () => {
-    const res = await axios.get("/dashboard/full");
+    const res = await axios.get("api/dashboard/full");
     return res.data;
   },
 

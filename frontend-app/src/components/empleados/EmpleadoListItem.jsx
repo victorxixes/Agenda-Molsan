@@ -1,18 +1,13 @@
-import GlassListItem from "../ui/GlassListItem.jsx";
+export const getFotoURL = (foto) => {
+  const base = import.meta.env.VITE_API_URL.replace(/\/$/, "");
 
-const getFotoURL = (foto) => {
   if (!foto || foto.trim() === "") {
-    return `${import.meta.env.VITE_API_URL}/fotos/default-avatar.png`;
+    return `${base}/fotos/default.jpg`;
   }
 
-  // Si ya viene con /fotos/... no duplicamos la ruta
-  if (foto.startsWith("/fotos/")) {
-    return `${import.meta.env.VITE_API_URL}${foto}`;
-  }
-
-  // Si solo viene el nombre del archivo
-  return `${import.meta.env.VITE_API_URL}/fotos/${foto}`;
+  return `${base}/fotos/${foto}`;
 };
+
 
 
 

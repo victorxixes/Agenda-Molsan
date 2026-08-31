@@ -18,9 +18,11 @@ from backend.app.agenda.models import Cita
 from backend.app.intranet.noticias.models import Noticia
 from backend.app.intranet.documentos.models import Documento
 from backend.app.logs.models import Log
-from backend.app.mensajes.models import Mensaje
-from backend.app.mensajes.models import Mensaje, UsuarioEstado
+from backend.app.mensajes.models import Mensaje, UsuarioEstado   # 🔥 CORRECTO
 
+# 🔥 Fix schema mensajes ANTES de crear tablas
+from backend.app.mensajes.fix_schema import fix_mensajes_schema
+fix_mensajes_schema()
 
 sqlalchemy.orm.configure_mappers()
 Base.metadata.create_all(bind=engine)
@@ -49,9 +51,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 🔥 Fix schema mensajes
-from backend.app.mensajes.fix_schema import fix_mensajes_schema
-fix_mensajes_schema()
 
 # ---------------------------------------------------------
 # STATIC FILES

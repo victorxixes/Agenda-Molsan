@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { getFotoURL } from "../../helpers/getFotoURL";
 
 import { useEmpleadosStore } from "../../store/empleadosStore";
 import { useSeguridadStore } from "../../store/seguridadStore";
@@ -15,14 +16,6 @@ import EstadoEmpleado from "./EstadoEmpleado";
 import AuditoriaEmpleado from "./AuditoriaEmpleado";
 import EditarEmpleado from "./EditarEmpleado";
 
-const getFotoURL = (foto) => {
-  if (!foto || foto.trim() === "") {
-    return `${import.meta.env.VITE_API_URL}/api/fotos/default.jpg`;
-  }
-  return `${import.meta.env.VITE_API_URL}/api/fotos/${foto}`;
-};
-
-
 export default function EmpleadoDetalle() {
   const { empleadoId } = useParams();
 
@@ -35,7 +28,6 @@ export default function EmpleadoDetalle() {
 
   const [tab, setTab] = useState("resumen");
 
-  // Cargar empleado + roles SOLO una vez
   useEffect(() => {
     cargarEmpleado(empleadoId);
     cargarRoles();
@@ -55,7 +47,7 @@ export default function EmpleadoDetalle() {
         <img
           src={getFotoURL(empleado.foto)}
           alt="Foto empleado"
-          className="w-20 h-20 rounded-full object-cover border"
+          className="w-24 h-24 rounded-full object-cover border"
         />
 
         <div>

@@ -9,7 +9,7 @@ from backend.app.empleados.models import Empleado
 
 # Importar notarios del CTN si existe
 try:
-    from backend.app.ctn.models import Notaria as Notario, Zona, Firma
+    from backend.app.ctn.models import Notario
     CTN_ENABLED = True
 except Exception:
     CTN_ENABLED = False

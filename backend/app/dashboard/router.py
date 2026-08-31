@@ -4,8 +4,17 @@ from datetime import date
 
 from backend.app.database import get_db
 from backend.app.agenda.models import Cita
+from backend.app.empleados.models import Empleado
+
+# Importar notarios del CTN si existe
+try:
+    from backend.app.ctn.models import Notaria as Notario
+    CTN_ENABLED = True
+except Exception:
+    CTN_ENABLED = False
 
 router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
+
 
 @router.get("/agenda/kpis")
 def dashboard_agenda_kpis(db: Session = Depends(get_db)):
@@ -14,7 +23,6 @@ def dashboard_agenda_kpis(db: Session = Depends(get_db)):
     citas_hoy = db.query(Cita).filter(Cita.fecha == hoy).count()
     citas_pendientes = db.query(Cita).filter(Cita.fecha > hoy).count()
 
-    # Firmas VC / Presencial según tu modelo
     firmas_hechas = db.query(Cita).filter(Cita.vc == "SI", Cita.fecha < hoy).count()
     firmas_pendientes = db.query(Cita).filter(Cita.vc == "SI", Cita.fecha > hoy).count()
 
@@ -83,20 +91,44 @@ def dashboard_resumen(db: Session = Depends(get_db)):
             },
         })
 
-    citas_dia_serializadas = [
-        {
+    # 🔥 SERIALIZACIÓN COMPLETA DE LAS CITAS DEL DÍA
+    citas_dia_serializadas = []
+
+    for c in citas_dia:
+
+        # Obtener notario completo
+        notario = None
+        if CTN_ENABLED and c.notario_id:
+            notario_obj = db.query(Notario).filter(Notario.id == c.notario_id).first()
+            if notario_obj:
+                notario = {
+                    "id": notario_obj.id,
+                    "nombre": notario_obj.nombre,
+                    "apellidos": notario_obj.apellidos
+                }
+
+        # Obtener apoderado completo
+        apoderado = None
+        if c.apoderado_id:
+            apoderado_obj = db.query(Empleado).filter(Empleado.id == c.apoderado_id).first()
+            if apoderado_obj:
+                apoderado = {
+                    "id": apoderado_obj.id,
+                    "nombre": apoderado_obj.nombre,
+                    "apellidos": apoderado_obj.apellidos
+                }
+
+        citas_dia_serializadas.append({
             "id": c.id,
             "fecha": c.fecha.isoformat(),
             "hora_inicio": c.hora_inicio.strftime("%H:%M"),
             "hora_fin": c.hora_fin.strftime("%H:%M"),
             "tipo_cita": c.tipo_cita,
             "vc": c.vc,
-            "notario_id": c.notario_id,
-            "apoderado_id": c.apoderado_id,
+            "notario": notario,
+            "apoderado": apoderado,
             "observacion": c.observacion,
-        }
-        for c in citas_dia
-    ]
+        })
 
     return {
         "firmas_realizadas": firmas_realizadas,

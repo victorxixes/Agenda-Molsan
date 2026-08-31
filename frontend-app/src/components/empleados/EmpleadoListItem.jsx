@@ -1,15 +1,5 @@
-export const getFotoURL = (foto) => {
-  const base = import.meta.env.VITE_API_URL.replace(/\/$/, "");
-
-  if (!foto || foto.trim() === "") {
-    return `${base}/fotos/default.jpg`;
-  }
-
-  return `${base}/fotos/${foto}`;
-};
-
-
-
+import GlassListItem from "../ui/GlassListItem.jsx";
+import { getFotoURL } from "../../helpers/getFotoURL";
 
 export default function EmpleadoListItem({ empleado, onClick }) {
   return (

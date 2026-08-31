@@ -1,13 +1,22 @@
 from pydantic import BaseModel
+from typing import List, Dict, Optional
 
 class LoginRequest(BaseModel):
     usuario: str
     password: str
 
-class LoginResponse(BaseModel):
-    access_token: str
-    token_type: str = "bearer"
-    usuario_id: int
+class LoginEmpleadoResponse(BaseModel):
+    empleado_id: int
     nombre: str
-    rol: str
-    permisos: dict
+    foto: Optional[str] = None
+
+    rol_id: Optional[int] = None
+    rol_nombre: Optional[str] = None
+
+    modulos_visibles: List[str]
+    permisos_modulo: Dict[str, List[str]]
+
+    token: str
+
+    class Config:
+        orm_mode = True

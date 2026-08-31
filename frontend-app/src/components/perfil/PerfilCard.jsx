@@ -4,14 +4,15 @@ import GlassCard from "../../components/ui/GlassCard.jsx";
 export default function PerfilCard({ usuario }) {
   return (
     <GlassCard className="flex items-center gap-4">
-<img
-  src={
-    usuario.avatar
-      ? `${import.meta.env.VITE_API_URL}/fotos/${usuario.avatar}`
-      : `${import.meta.env.VITE_API_URL}/fotos/default-avatar.png`
-  }
-  className="w-14 h-14 rounded-full"
-/>
+      <img
+        src={
+          usuario.foto
+            ? `${import.meta.env.VITE_API_URL}/fotos/${usuario.foto}`
+            : `${import.meta.env.VITE_API_URL}/fotos/default-avatar.png`
+        }
+        className="w-14 h-14 rounded-full"
+      />
+
       <div>
         <p className="font-bold text-lg" style={{ color: "#1F3A5F" }}>
           {usuario.nombre}

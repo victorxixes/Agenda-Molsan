@@ -1,20 +1,6 @@
 import GlassCard from "../ui/GlassCard.jsx";
 import IconEmpleados from "../icons/IconEmpleados.jsx";
-
-const getFotoURL = (foto) => {
-  if (!foto || foto.trim() === "") {
-    return `${import.meta.env.VITE_API_URL}/fotos/default-avatar.png`;
-  }
-
-  // Si ya viene con /fotos/... no duplicamos la ruta
-  if (foto.startsWith("/fotos/")) {
-    return `${import.meta.env.VITE_API_URL}${foto}`;
-  }
-
-  // Si solo viene el nombre del archivo
-  return `${import.meta.env.VITE_API_URL}/fotos/${foto}`;
-};
-
+import { getFotoURL } from "../../helpers/getFotoURL";
 
 export default function EmpleadoCard({ empleado, onClick }) {
   return (

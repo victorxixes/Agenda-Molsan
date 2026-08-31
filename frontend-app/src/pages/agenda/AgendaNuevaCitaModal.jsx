@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAgendaStore } from "../../store/agendaStore";
 import { useCTNStore } from "../../store/ctnStore";
+import { useEmpleadosStore } from "../../store/empleadosStore";
 
 import GlassCard from "../../components/ui/GlassCard.jsx";
 import BuscadorNotariaPremium from "../../components/agenda/BuscadorNotariaPremium.jsx";
@@ -26,6 +27,7 @@ const iconoTipoFirma = (vc) => {
 export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada }) {
   const { crear } = useAgendaStore();
   const { notarias, cargarNotarias } = useCTNStore();
+  const { empleados, cargarEmpleados } = useEmpleadosStore();
 
   const TIPOS_CITA = ["Firma notarial", "Reunión", "Visita", "Otros"];
 
@@ -47,6 +49,7 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
   useEffect(() => {
     if (open) {
       cargarNotarias();
+      cargarEmpleados();
 
       setForm((f) => ({
         ...f,
@@ -55,7 +58,7 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
     }
   }, [open]);
 
-  // Selección de notaría → rellena todo automáticamente
+  // Selección de notaría → rellena datos del CTN
   const seleccionarNotaria = (n) => {
     setForm(prev => ({
       ...prev,
@@ -200,19 +203,27 @@ export default function AgendaNuevaCitaModal({ open, onClose, fechaSeleccionada 
           </div>
         )}
 
+        {/* Selector de apoderado */}
+        <select
+          className="input"
+          value={form.apoderado_id || ""}
+          onChange={(e) =>
+            setForm({ ...form, apoderado_id: Number(e.target.value) })
+          }
+        >
+          <option value="">Selecciona apoderado</option>
+          {empleados.map((emp) => (
+            <option key={emp.id} value={emp.id}>
+              {emp.nombre} {emp.apellidos}
+            </option>
+          ))}
+        </select>
+
         {/* Tipo de firma */}
         <input
           type="text"
           className="input bg-gray-100"
           value={iconoTipoFirma(form.vc)}
-          readOnly
-        />
-
-        {/* Apoderado del CTN */}
-        <input
-          type="text"
-          className="input bg-gray-100"
-          value={form.apoderado_s || ""}
           readOnly
         />
 

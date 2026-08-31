@@ -8,9 +8,7 @@ export default function DatosLaborales({ empleadoId }) {
   const [secciones, setSecciones] = useState([]);
   const [cargos, setCargos] = useState([]);
 
-  // Cargar empleado + maestros
-  useEffect(() => {
-    cargarEmpleado(empleadoId);
+
 
     fetch(`${import.meta.env.VITE_API_URL}/maestros/departamentos`)
       .then((r) => r.json())

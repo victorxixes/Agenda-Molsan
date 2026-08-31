@@ -7,9 +7,15 @@ const getFotoURL = (foto) => {
     return `${import.meta.env.VITE_API_URL}/fotos/default-avatar.png`;
   }
 
-  // Si la BD guarda "empleado_1.jpg"
+  // Si ya viene con /fotos/... no duplicamos la ruta
+  if (foto.startsWith("/fotos/")) {
+    return `${import.meta.env.VITE_API_URL}${foto}`;
+  }
+
+  // Si solo viene el nombre del archivo
   return `${import.meta.env.VITE_API_URL}/fotos/${foto}`;
 };
+
 
 
 export default function EmpleadoFoto({ empleado }) {

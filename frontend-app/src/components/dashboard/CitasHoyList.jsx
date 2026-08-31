@@ -121,15 +121,13 @@ export default function CitasHoyList() {
             <th className="p-2 border cursor-pointer" onClick={() => ordenar("vc")}>
               Tipo firma {iconoOrden("vc")}
             </th>
-
-            <th className="p-2 border">Acciones</th>
           </tr>
         </thead>
 
         <tbody>
           {citasProcesadas.length === 0 ? (
             <tr>
-              <td colSpan="7" className="p-4 text-center text-gray-500">
+              <td colSpan="6" className="p-4 text-center text-gray-500">
                 No hay citas hoy
               </td>
             </tr>
@@ -166,17 +164,6 @@ export default function CitasHoyList() {
 
                   <td className="p-2 border">
                     {iconoTipoFirma(cita.vc)}
-                  </td>
-
-                  <td className="p-2 border">
-                    <button
-                      className="btn btn-sm btn-primary"
-                      onClick={() => {
-                        useAgendaStore.getState().setCitaActual(cita);
-                      }}
-                    >
-                      Editar
-                    </button>
                   </td>
                 </tr>
               );

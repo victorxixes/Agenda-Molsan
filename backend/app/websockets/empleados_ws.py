@@ -37,11 +37,23 @@ async def empleados_ws(websocket: WebSocket):
 
     try:
         while True:
-            # Mantener conexión viva
-            await websocket.receive_text()
+            try:
+                data = await websocket.receive_json()
+
+                # ⭐ IGNORAR HEARTBEAT
+                if data.get("tipo") == "ping":
+                    continue
+
+                # Si algún día quieres procesar mensajes entrantes, aquí irían
+                # print("[WS-EMP] Mensaje recibido:", data)
+
+            except WebSocketDisconnect:
+                break
+            except Exception:
+                continue
 
     except WebSocketDisconnect:
-        conexiones_empleados.discard(websocket)
+        pass
 
-    except Exception:
+    finally:
         conexiones_empleados.discard(websocket)

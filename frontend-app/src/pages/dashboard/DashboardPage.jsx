@@ -87,51 +87,62 @@ export default function DashboardPage() {
   // EXPORTAR A EXCEL
   // -----------------------------
   const exportarExcel = () => {
-  let csv = "Fecha,Hora Inicio,Hora Fin,Tipo,Notario,Apoderado,Firma\n";
+    let csv = "Fecha,Hora Inicio,Hora Fin,Tipo,Notario,Apoderado,Firma\n";
 
-  citasOrdenadas.forEach((c) => {
-    csv += `${c.fecha},${c.hora_inicio},${c.hora_fin},${c.tipo_cita},${c.notario ? c.notario.nombre : ""},${c.apoderado ? c.apoderado.nombre : ""},${c.vc}\n`;
-  });
-
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-
-  const link = document.createElement("a");
-  link.href = url;
-  link.setAttribute("download", "citas_dashboard.csv");
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-};
-
-  // -----------------------------
-  // GRÁFICO DE ACTIVIDAD SEMANAL
-  // -----------------------------
-  useEffect(() => {
-    const ctx = document.getElementById("graficoActividad");
-
-    if (!ctx) return;
-
-    new Chart(ctx, {
-      type: "line",
-      data: {
-        labels: ["Citas", "VC", "Presencial"],
-        datasets: [
-          {
-            label: "Actividad semanal",
-            data: [
-              actividad_semanal.citas,
-              actividad_semanal.vc,
-              actividad_semanal.presencial,
-            ],
-            borderColor: "#1F3A5F",
-            backgroundColor: "rgba(31,58,95,0.3)",
-            tension: 0.3,
-          },
-        ],
-      },
+    citasOrdenadas.forEach((c) => {
+      csv += `${c.fecha},${c.hora_inicio},${c.hora_fin},${c.tipo_cita},${c.notario ? c.notario.nombre : ""},${c.apoderado ? c.apoderado.nombre : ""},${c.vc}\n`;
     });
-  }, [actividad_semanal]);
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "citas_dashboard.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // -----------------------------
+  // GRÁFICO DE ACTIVIDAD SEMANAL (Tailwind)
+  // -----------------------------
+  const GraficoActividad = () => (
+    <div className="space-y-2">
+      <div className="flex items-center">
+        <span className="w-32 font-semibold">Citas</span>
+        <div className="flex-1 bg-blue-100 h-4 rounded">
+          <div
+            className="bg-blue-600 h-4 rounded"
+            style={{ width: `${actividad_semanal.citas * 10}px` }}
+          ></div>
+        </div>
+        <span className="ml-2">{actividad_semanal.citas}</span>
+      </div>
+
+      <div className="flex items-center">
+        <span className="w-32 font-semibold">VC</span>
+        <div className="flex-1 bg-purple-100 h-4 rounded">
+          <div
+            className="bg-purple-600 h-4 rounded"
+            style={{ width: `${actividad_semanal.vc * 10}px` }}
+          ></div>
+        </div>
+        <span className="ml-2">{actividad_semanal.vc}</span>
+      </div>
+
+      <div className="flex items-center">
+        <span className="w-32 font-semibold">Presencial</span>
+        <div className="flex-1 bg-green-100 h-4 rounded">
+          <div
+            className="bg-green-600 h-4 rounded"
+            style={{ width: `${actividad_semanal.presencial * 10}px` }}
+          ></div>
+        </div>
+        <span className="ml-2">{actividad_semanal.presencial}</span>
+      </div>
+    </div>
+  );
 
   return (
     <div className="space-y-10 p-6">
@@ -302,7 +313,8 @@ export default function DashboardPage() {
         <h3 className="text-xl font-bold mb-4" style={{ color: "#1F3A5F" }}>
           Actividad semanal
         </h3>
-        <canvas id="graficoActividad" height="120"></canvas>
+
+        <GraficoActividad />
       </div>
 
       {/* 👤 Firmas por apoderado */}

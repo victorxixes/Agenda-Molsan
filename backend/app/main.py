@@ -100,7 +100,6 @@ app.include_router(auth_router, prefix="/api")
 
 app.include_router(seguridad_roles_router, prefix="/api")
 app.include_router(seguridad_api_router, prefix="/api")
-app.include_router(seguridad_roles_router, prefix="/api")
 app.include_router(permisos_router, prefix="/api")
 
 app.include_router(empleados_router, prefix="/api")

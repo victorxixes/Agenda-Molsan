@@ -5,14 +5,8 @@ from datetime import date, timedelta
 
 from backend.app.database import get_db
 from backend.app.agenda.models import Cita
+from backend.app.agenda.models import Notario as NotarioAgenda
 from backend.app.empleados.models import Empleado
-
-# Importar notarios del CTN si existe
-try:
-    from backend.app.ctn.models import Notario
-    CTN_ENABLED = True
-except Exception:
-    CTN_ENABLED = False
 
 router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
 
@@ -30,10 +24,11 @@ def dashboard_full(db: Session = Depends(get_db)):
     citas_dia_serializadas = []
 
     for c in citas_dia:
-        # Notario
+
+        # NOTARIO (usar el notario del módulo Agenda)
         notario = None
-        if CTN_ENABLED and c.notario_id:
-            n = db.query(Notario).filter(Notario.id == c.notario_id).first()
+        if c.notario_id:
+            n = db.query(NotarioAgenda).filter(NotarioAgenda.id == c.notario_id).first()
             if n:
                 notario = {
                     "id": n.id,
@@ -55,8 +50,8 @@ def dashboard_full(db: Session = Depends(get_db)):
         citas_dia_serializadas.append({
             "id": c.id,
             "fecha": c.fecha.isoformat(),
-            "hora_inicio": c.hora_inicio.strftime("%H:%M"),
-            "hora_fin": c.hora_fin.strftime("%H:%M"),
+            "hora_inicio": c.hora_inicio.strftime("%H:%M") if c.hora_inicio else "—",
+            "hora_fin": c.hora_fin.strftime("%H:%M") if c.hora_fin else "—",
             "tipo_cita": c.tipo_cita,
             "vc": c.vc,
             "notario": notario,
@@ -95,7 +90,6 @@ def dashboard_full(db: Session = Depends(get_db)):
     for (apo_id,) in apoderados_ids:
         citas_apo = db.query(Cita).filter(Cita.apoderado_id == apo_id).all()
 
-        # Obtener nombre del apoderado
         apo_obj = db.query(Empleado).filter(Empleado.id == apo_id).first()
         nombre_apo = f"{apo_obj.nombre} {apo_obj.apellidos}" if apo_obj else "—"
 
@@ -123,7 +117,8 @@ def dashboard_full(db: Session = Depends(get_db)):
     )
 
     citas_por_hora_serializadas = [
-        {"hora": h.strftime("%H:%M"), "total": t} for h, t in citas_por_hora
+        {"hora": h.strftime("%H:%M") if h else "—", "total": t}
+        for h, t in citas_por_hora
     ]
 
     # -----------------------------
@@ -153,23 +148,7 @@ def dashboard_full(db: Session = Depends(get_db)):
     }
 
     # -----------------------------
-    # 6. Datos CTN
-    # -----------------------------
-    if CTN_ENABLED:
-        ctn_data = {
-            "notarios": db.query(Notario).count(),
-            "zonas": db.query(Zona).count(),
-            "firmas": db.query(Firma).count()
-        }
-    else:
-        ctn_data = {
-            "notarios": 0,
-            "zonas": 0,
-            "firmas": 0
-        }
-
-    # -----------------------------
-    # 7. RESPUESTA FINAL
+    # 6. RESPUESTA FINAL
     # -----------------------------
     return {
         "kpis": {
@@ -182,6 +161,5 @@ def dashboard_full(db: Session = Depends(get_db)):
         "citas_dia": citas_dia_serializadas,
         "por_apoderado": por_apoderado,
         "citas_por_hora": citas_por_hora_serializadas,
-        "actividad_semanal": actividad_semanal,
-        "ctn": ctn_data
+        "actividad_semanal": actividad_semanal
     }

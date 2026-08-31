@@ -1,15 +1,6 @@
 import { useEffect, useState } from "react";
 import { useEmpleadosStore } from "../../store/empleadosStore";
-
-export const getFotoURL = (foto) => {
-  const base = import.meta.env.VITE_API_URL.replace(/\/$/, "");
-
-  if (!foto || foto.trim() === "") {
-    return `${base}/fotos/default.jpg`;
-  }
-
-  return `${base}/fotos/${foto}`;
-};
+import { getFotoURL } from "../../helpers/getFotoURL";
 
 export default function FotoEmpleado({ empleadoId }) {
   const {
@@ -64,9 +55,6 @@ export default function FotoEmpleado({ empleadoId }) {
 
     try {
       await subirFoto(empleadoId, archivo);
-
-      // ❌ Ya NO llamamos a cargarEmpleado
-      // El store + realtime ya actualizan la ficha automáticamente
 
       alert("Foto actualizada correctamente");
     } catch {

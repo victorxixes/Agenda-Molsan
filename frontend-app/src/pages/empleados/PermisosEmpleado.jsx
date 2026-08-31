@@ -11,11 +11,6 @@ export default function PermisosEmpleado({ empleadoId }) {
   const [permisos, setPermisos] = useState({});
   const [editando, setEditando] = useState(false);
 
-  // Cargar empleado SOLO una vez
-  useEffect(() => {
-    cargarEmpleado(empleadoId);
-  }, [empleadoId]);
-
   // Actualizar permisos cuando llega el empleado (solo si no está editando)
   useEffect(() => {
     if (empleadoActual && !editando) {

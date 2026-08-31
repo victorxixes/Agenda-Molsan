@@ -1,8 +1,5 @@
 import React, { useEffect, useState } from "react";
 import axios from "../../api/axios";
-import { Chart, LineController, LineElement, PointElement, LinearScale, Title, CategoryScale } from "chart.js";
-
-Chart.register(LineController, LineElement, PointElement, LinearScale, Title, CategoryScale);
 
 export default function DashboardPage() {
   const [data, setData] = useState(null);

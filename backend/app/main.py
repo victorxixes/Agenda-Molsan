@@ -49,6 +49,8 @@ app.mount("/fotos", StaticFiles(directory=FOTOS_DIR), name="fotos")
 # Seguridad (solo routers válidos)
 from backend.app.seguridad.router_roles import router as seguridad_roles_router
 from backend.app.seguridad.permisos_router import router as permisos_router
+from backend.app.seguridad.router_eventos import router as seguridad_eventos_router
+from backend.app.seguridad.router_auditoria import router as seguridad_auditoria_router
 
 # Auth
 from backend.app.auth.router import router as auth_router
@@ -92,6 +94,8 @@ app.include_router(auth_router, prefix="/api")
 # Seguridad
 app.include_router(seguridad_roles_router, prefix="/api")
 app.include_router(permisos_router, prefix="/api")
+app.include_router(seguridad_eventos_router, prefix="/api")
+app.include_router(seguridad_auditoria_router, prefix="/api")
 
 # Empleados / Maestros
 app.include_router(empleados_router, prefix="/api")

@@ -27,7 +27,7 @@ export default function UsuariosSidebar({ seleccionar }) {
             >
               {/* Avatar redondo */}
               <img
-                src={u.foto || "/default-avatar.png"}
+                src={u.foto ||`${import.meta.env.VITE_API_URL}/fotos/default-avatar.png`}
                 alt={u.nombre}
                 className="w-10 h-10 rounded-full object-cover border border-white/20"
               />

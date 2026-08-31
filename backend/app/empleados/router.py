@@ -205,32 +205,20 @@ def cambiar_rol(empleado_id: int, rol_id: int, db: Session = Depends(get_db)):
 # ---------------------------------------------------------
 # SUBIR FOTO
 # ---------------------------------------------------------
-@router.post("/{empleado_id}/foto")
-def subir_foto(empleado_id: int, archivo: UploadFile = File(...), db: Session = Depends(get_db)):
-    empleado = db.query(Empleado).filter(Empleado.id == empleado_id).first()
-    if not empleado:
-        raise HTTPException(status_code=404, detail="Empleado no encontrado")
+@router.post("/empleados/{id}/foto")
+async def subir_foto(id: int, archivo: UploadFile = File(...)):
+    filename = f"empleado_{id}.jpg"   # 🔥 nombre REAL del archivo
+    path = f"app/fotos/{filename}"
 
-    ruta = f"/fotos/{empleado_id}.jpg"
-    path_real = os.path.join(os.path.dirname(__file__), "..", "fotos", f"{empleado_id}.jpg")
+    with open(path, "wb") as f:
+        f.write(await archivo.read())
 
-    with open(path_real, "wb") as f:
-        f.write(archivo.file.read())
+    # 🔥 Actualizar BD con la ruta correcta
+    empleado = db.get_empleado(id)
+    empleado.foto = f"/fotos/{filename}"
+    db.save(empleado)
 
-    empleado.foto = ruta
-    db.commit()
-    db.refresh(empleado)
-
-    empleado = _sanear_jsonb_empleado(empleado)
-
-    broadcast_empleados({
-        "tipo": "empleado_foto_actualizada",
-        "descripcion": f"Foto actualizada: {empleado.nombre}",
-        "fecha": datetime.now().isoformat(),
-        "payload": empleado.__dict__
-    })
-
-    return empleado
+    return {"foto": f"/fotos/{filename}"}
 
 
 # ---------------------------------------------------------

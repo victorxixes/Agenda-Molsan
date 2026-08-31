@@ -1,54 +1,37 @@
-
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from backend.app.database import get_db
-from backend.app.seguridad.service import obtener_permisos_por_rol
+from backend.app.empleados.models import Empleado
 
 router = APIRouter(prefix="/seguridad", tags=["Seguridad"])
 
-@router.get("/permisos")
-def permisos_admin(db: Session = Depends(get_db)):
-    modulos = [
-        "dashboard",
-        "agenda",
-        "empleados",
-        "ctn",
-        "intranet",
-        "mensajes",
-        "seguridad",
-        "auditoria",
-        "sistema",
-        "utilidades",
-        "monitor",
-        "logs",
-        "perfil",
-    ]
+@router.get("/permisos/{empleado_id}")
+def permisos_por_empleado(empleado_id: int, db: Session = Depends(get_db)):
+    empleado = db.query(Empleado).filter(Empleado.id == empleado_id).first()
+    if not empleado:
+        raise HTTPException(status_code=404, detail="Empleado no encontrado")
 
-    acciones = {
-        modulo: ["ver", "crear", "editar", "eliminar"]
-        for modulo in modulos
-    }
+    # modulos_visibles: lista de strings
+    modulos = empleado.modulos_visibles or []
+
+    # permisos_modulo: dict modulo -> lista de acciones
+    acciones = empleado.permisos_modulo or {}
 
     return {
-        "rol": "Administrador",
+        "empleado_id": empleado_id,
+        "rol_id": empleado.rol_id,
         "modulos": modulos,
         "acciones": acciones,
     }
 
-@router.get("/permisos/{rol_id}")
-def permisos_por_rol(rol_id: int, db: Session = Depends(get_db)):
-    permisos = obtener_permisos_por_rol(db, rol_id)
-
-    modulos = [p.modulo for p in permisos]
-
-    acciones = {
-        p.modulo: p.acciones.split(",")
-        for p in permisos
-    }
+@router.get("/modulos/{empleado_id}")
+def modulos_por_empleado(empleado_id: int, db: Session = Depends(get_db)):
+    empleado = db.query(Empleado).filter(Empleado.id == empleado_id).first()
+    if not empleado:
+        raise HTTPException(status_code=404, detail="Empleado no encontrado")
 
     return {
-        "rol_id": rol_id,
-        "modulos": modulos,
-        "acciones": acciones,
+        "empleado_id": empleado_id,
+        "modulos": empleado.modulos_visibles or [],
     }

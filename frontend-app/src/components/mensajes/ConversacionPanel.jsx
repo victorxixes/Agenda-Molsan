@@ -94,7 +94,7 @@ export default function ConversacionPanel({ destinatario }) {
       {/* Header */}
       <div className="p-4 border-b border-neutral-300 flex items-center gap-3 bg-white">
         <img
-          src={destinatario.foto || "/default-avatar.png"}
+         src={  destinatario.foto ||  `${import.meta.env.VITE_API_URL}/fotos/default-avatar.png`}
           alt={destinatario.nombre}
           className="w-12 h-12 rounded-full object-cover"
         />
@@ -148,12 +148,15 @@ export default function ConversacionPanel({ destinatario }) {
                       : "bg-white border border-neutral-200 text-neutral-700 flex items-start gap-2 animate-pulse"
                   }`}
                 >
-                  {!esMio && (
-                    <img
-                      src={destinatario.foto}
-                      className="w-6 h-6 rounded-full object-cover"
-                    />
-                  )}
+                 {!esMio && (
+  <img
+    src={
+      destinatario.foto ||
+      `${import.meta.env.VITE_API_URL}/fotos/default-avatar.png`
+    }
+    className="w-6 h-6 rounded-full object-cover"
+  />
+)}
 
                   <div>
                     {m.texto}

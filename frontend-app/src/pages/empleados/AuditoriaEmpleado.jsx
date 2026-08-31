@@ -7,7 +7,7 @@ export default function AuditoriaEmpleado({ empleadoId }) {
 
   useEffect(() => {
     axios
-      .get(`${API}/logs/usuario/${empleadoId}`)
+      .get(`${API}/api/logs/usuario/${empleadoId}`)
       .then((res) => setEventos(res.data || []))
       .catch(() => setEventos([]));
   }, [empleadoId]);

@@ -12,7 +12,7 @@ import sqlalchemy
 # IMPORTAR MODELOS ANTES DE CREAR TABLAS
 from backend.app.seguridad.models import Rol, EventoSeguridad, Auditoria
 from backend.app.empleados.models import Empleado
-from backend.app.maestros.models import Maestro
+from backend.app.maestros.models import Departamento, Seccion, Cargo
 from backend.app.ctn.models import CTN
 from backend.app.agenda.models import Cita, Notario
 from backend.app.intranet.noticias.models import Noticia

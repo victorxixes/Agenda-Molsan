@@ -18,7 +18,15 @@ async def notificaciones_ws(websocket: WebSocket, usuario_id: int):
     try:
         while True:
             try:
-                await websocket.receive_text()
+                data = await websocket.receive_json()
+
+                # ⭐ IGNORAR HEARTBEAT
+                if data.get("tipo") == "ping":
+                    continue
+
+                # Si algún día quieres procesar mensajes entrantes, aquí irían
+                # print("[WS-NOTIF] Mensaje recibido:", data)
+
             except Exception:
                 continue
 

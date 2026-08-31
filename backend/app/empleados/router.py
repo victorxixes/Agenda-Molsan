@@ -206,19 +206,21 @@ def cambiar_rol(empleado_id: int, rol_id: int, db: Session = Depends(get_db)):
 # SUBIR FOTO
 # ---------------------------------------------------------
 @router.post("/{id}/foto")
-async def subir_foto(id: int, archivo: UploadFile = File(...)):
-    filename = f"empleado_{id}.jpg"   # 🔥 nombre REAL del archivo
-    path = f"app/fotos/{filename}"
+async def subir_foto(id: int, archivo: UploadFile = File(...), db: Session = Depends(get_db)):
+    filename = f"empleado_{id}.jpg"
+    path = f"/app/fotos/{filename}"   # 🔥 ruta del DISCO
 
+    # Guardar archivo
     with open(path, "wb") as f:
         f.write(await archivo.read())
 
-    # 🔥 Actualizar BD con la ruta correcta
-    empleado = db.get_empleado(id)
+    # Actualizar BD
+    empleado = db.query(Empleado).filter(Empleado.id == id).first()
     empleado.foto = f"/fotos/{filename}"
-    db.save(empleado)
+    db.commit()
 
     return {"foto": f"/fotos/{filename}"}
+
 
 
 # ---------------------------------------------------------

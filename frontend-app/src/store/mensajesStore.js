@@ -7,10 +7,43 @@ export const useMensajesStore = create((set, get) => ({
   conversacion: [],
   noLeidos: 0,
   usuarioActual: null,
+
+  // Estado typing del panel de conversación
   typing: false,
 
+  // Estado typing de la lista de conectados
+  typingEstados: {},
+
+  // -----------------------------
+  // SET TYPING (panel de chat)
+  // -----------------------------
   setTyping: (estado) => set({ typing: estado }),
 
+  // -----------------------------
+  // SET TYPING ESTADO (lista conectados)
+  // -----------------------------
+  setTypingEstado: (usuarioId) => {
+    set((state) => ({
+      typingEstados: {
+        ...state.typingEstados,
+        [usuarioId]: true,
+      },
+    }));
+
+    // limpiar typing después de 2s
+    setTimeout(() => {
+      set((state) => ({
+        typingEstados: {
+          ...state.typingEstados,
+          [usuarioId]: false,
+        },
+      }));
+    }, 2000);
+  },
+
+  // -----------------------------
+  // CARGAR CONECTADOS
+  // -----------------------------
   cargarConectados: async () => {
     try {
       const data = await mensajesAPI.conectados();
@@ -20,6 +53,9 @@ export const useMensajesStore = create((set, get) => ({
     }
   },
 
+  // -----------------------------
+  // CARGAR CONVERSACIÓN
+  // -----------------------------
   cargarConversacion: async (u1, u2) => {
     try {
       const data = await mensajesAPI.conversacion(u1, u2);
@@ -40,6 +76,9 @@ export const useMensajesStore = create((set, get) => ({
     }
   },
 
+  // -----------------------------
+  // MENSAJE EN TIEMPO REAL
+  // -----------------------------
   agregarMensajeRealtime: (msg) =>
     set((state) => ({
       conversacion: [
@@ -55,6 +94,9 @@ export const useMensajesStore = create((set, get) => ({
       ],
     })),
 
+  // -----------------------------
+  // ENVIAR MENSAJE
+  // -----------------------------
   enviarMensaje: async (data) => {
     try {
       const res = await mensajesAPI.enviar(data);
@@ -72,6 +114,9 @@ export const useMensajesStore = create((set, get) => ({
     }
   },
 
+  // -----------------------------
+  // MARCAR COMO LEÍDO
+  // -----------------------------
   marcarLeido: async (remitente, destinatario) => {
     try {
       await mensajesAPI.marcarLeido(remitente, destinatario);
@@ -81,6 +126,9 @@ export const useMensajesStore = create((set, get) => ({
     }
   },
 
+  // -----------------------------
+  // CARGAR NO LEÍDOS
+  // -----------------------------
   cargarNoLeidos: async (usuarioId) => {
     try {
       const data = await mensajesAPI.noLeidos(usuarioId);

@@ -12,9 +12,6 @@ const getFotoURL = (foto) => {
 export default function DatosPersonales({ empleadoId }) {
   const { empleadoActual, cargarEmpleado } = useEmpleadosStore();
 
-  useEffect(() => {
-    cargarEmpleado(empleadoId);
-  }, [empleadoId]);
 
   if (!empleadoActual) return <div className="p-6">Cargando datos...</div>;
 

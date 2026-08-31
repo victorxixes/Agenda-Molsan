@@ -5,7 +5,7 @@ export default function DashboardPage() {
   const [data, setData] = useState(null);
 
   useEffect(() => {
-    axios.get("api//dashboard/full").then((res) => {
+    axios.get("api/dashboard/full").then((res) => {
       setData(res.data);
     });
   }, []);

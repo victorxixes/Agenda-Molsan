@@ -11,10 +11,10 @@ const iconoTipoCita = (tipo) => {
   }
 };
 
-const iconoTipoFirma = (tipo) => {
-  switch (tipo) {
-    case "Videoconferencia": return "🎥";
-    case "Presencial": return "📍";
+const iconoTipoFirma = (vc) => {
+  switch (vc) {
+    case "SI": return "🎥 Videoconferencia";
+    case "NO": return "📍 Presencial";
     default: return "—";
   }
 };
@@ -22,6 +22,7 @@ const iconoTipoFirma = (tipo) => {
 export default function AgendaCitaDetalleModal({ onEditarCita }) {
   const citaActual = useAgendaStore((s) => s.citaActual);
   const setCitaActual = useAgendaStore((s) => s.setCitaActual);
+  const eliminar = useAgendaStore((s) => s.eliminar);
 
   const empleados = useEmpleadosStore((s) => s.empleados);
   const cargarEmpleados = useEmpleadosStore((s) => s.cargarEmpleados);
@@ -32,29 +33,47 @@ export default function AgendaCitaDetalleModal({ onEditarCita }) {
 
   if (!citaActual) return null;
 
-  // 🔥 Apoderado del CTN
+  // 1️⃣ Apoderado del CTN
   const apoderadoCTN = citaActual.apoderado_s;
 
-  // 🔥 Apoderado de empleados
-  const apoderadoObj = empleados.find(e => e.id === citaActual.apoderado_id);
+  // 2️⃣ Apoderado relación ORM
+  const apoderadoRel =
+    citaActual.apoderado
+      ? `${citaActual.apoderado.nombre} ${citaActual.apoderado.apellidos}`
+      : null;
 
+  // 3️⃣ Apoderado desde empleadosStore
+  const apoderadoObj = empleados.find(e => e.id === citaActual.apoderado_id);
   const apoderadoEmpleado = apoderadoObj
     ? `${apoderadoObj.nombre} ${apoderadoObj.apellidos}`
     : null;
 
-  // 🔥 Apoderado final (prioridad CTN → empleado → id → —)
+  // 4️⃣ Prioridad final
   const apoderadoLabel =
     apoderadoCTN ||
+    apoderadoRel ||
     apoderadoEmpleado ||
     citaActual.apoderado_id ||
     "—";
 
-  // 🔥 Observación del CTN
   const observacionLabel = citaActual.observacion || "—";
 
   const notarioLabel = citaActual.notario
     ? `${citaActual.notario.nombre} ${citaActual.notario.apellidos}`
     : citaActual.notario_id || "—";
+
+  const eliminarCita = async () => {
+    if (!confirm("¿Seguro que quieres eliminar esta cita?")) return;
+
+    try {
+      await eliminar(citaActual.id);
+      alert("Cita eliminada correctamente");
+      setCitaActual(null);
+    } catch (err) {
+      console.error(err);
+      alert("Error eliminando la cita");
+    }
+  };
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
@@ -88,7 +107,7 @@ export default function AgendaCitaDetalleModal({ onEditarCita }) {
         </div>
 
         <div>
-          <strong>Tipo firma:</strong> {iconoTipoFirma(citaActual.tipo_firma)} {citaActual.tipo_firma || "—"}
+          <strong>Tipo firma:</strong> {iconoTipoFirma(citaActual.vc)}
         </div>
 
         <div>
@@ -100,6 +119,13 @@ export default function AgendaCitaDetalleModal({ onEditarCita }) {
           onClick={() => onEditarCita(citaActual.id)}
         >
           Editar cita
+        </button>
+
+        <button
+          className="btn-danger w-full mt-2"
+          onClick={eliminarCita}
+        >
+          Eliminar cita
         </button>
 
         <button

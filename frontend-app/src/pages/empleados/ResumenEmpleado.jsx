@@ -2,16 +2,6 @@ import { useEffect, useState } from "react";
 import { useEmpleadosStore } from "../../store/empleadosStore";
 import { getFotoURL } from "../../helpers/getFotoURL";
 
-export const getFotoURL = (foto) => {
-  const base = import.meta.env.VITE_API_URL.replace(/\/$/, "");
-
-  if (!foto || foto.trim() === "") {
-    return `${base}/fotos/default.jpg`;
-  }
-
-  return `${base}/fotos/${foto}`;
-};
-
 export default function ResumenEmpleado({ empleadoId }) {
   const { empleadoActual, cargarEmpleado } = useEmpleadosStore();
 

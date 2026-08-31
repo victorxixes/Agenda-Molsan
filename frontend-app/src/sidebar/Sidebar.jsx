@@ -170,15 +170,16 @@ export default function Sidebar() {
     >
       {/* Avatar */}
       <div className="flex items-center gap-3 mb-6">
-       <img
-  src={
-    user?.avatar
-      ? `${import.meta.env.VITE_API_URL}/fotos/${user.avatar}`
-      : `${import.meta.env.VITE_API_URL}/fotos/default-avatar.png`
-  }
-  alt="avatar"
-  className="w-10 h-10 rounded-full border border-neutral-300"
-/>
+        <img
+          src={
+            user?.foto
+              ? `${import.meta.env.VITE_API_URL}/fotos/${user.foto}`
+              : `${import.meta.env.VITE_API_URL}/fotos/default-avatar.png`
+          }
+          alt="avatar"
+          className="w-10 h-10 rounded-full border border-neutral-300"
+        />
+
         {!collapsed && (
           <div>
             <p className="font-semibold" style={{ color: "#1F3A5F" }}>

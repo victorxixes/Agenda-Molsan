@@ -8,9 +8,7 @@ export default function EstadoEmpleado({ empleadoId }) {
     toggleActivo,
   } = useEmpleadosStore();
 
-  useEffect(() => {
-    cargarEmpleado(empleadoId);
-  }, [empleadoId]);
+
 
   if (!empleadoActual) return <div className="p-6">Cargando estado...</div>;
 

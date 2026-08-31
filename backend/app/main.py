@@ -51,7 +51,7 @@ app.add_middleware(
 # STATIC FILES
 # ---------------------------------------------------------
 FOTOS_DIR = os.path.join(os.path.dirname(__file__), "fotos")
-app.mount("/fotos", StaticFiles(directory=FOTOS_DIR), name="fotos")
+app.mount("/api/fotos", StaticFiles(directory="/tmp"), name="fotos")
 
 # ---------------------------------------------------------
 # IMPORTAR ROUTERS (REST)

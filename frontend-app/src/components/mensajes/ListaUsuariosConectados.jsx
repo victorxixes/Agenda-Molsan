@@ -1,9 +1,12 @@
 import React from "react";
 import GlassCard from "../ui/GlassCard.jsx";
 import IconEmpleados from "../icons/IconEmpleados.jsx";
+import { useMensajesStore } from "../../store/mensajesStore";
 
 export default function ListaUsuariosConectados({ usuarios, seleccionar }) {
-  // 🔥 Protección total
+  const { typingEstados } = useMensajesStore();
+
+  // Protección total
   const safe = Array.isArray(usuarios) ? usuarios : [];
 
   return (
@@ -23,22 +26,40 @@ export default function ListaUsuariosConectados({ usuarios, seleccionar }) {
 
         {safe.map((u) => (
           <button
-            key={u.id ?? u.usuario_id}
-            onClick={() => seleccionar(u.id ?? u.usuario_id)}
+            key={u.usuario_id}
+            onClick={() => seleccionar(u.usuario_id)}
             className="
-              w-full text-left p-2 rounded-lg
+              w-full text-left p-2 rounded-lg flex items-center gap-3
               hover:bg-neutral-100 transition
             "
           >
-            <p className="font-semibold" style={{ color: "#1F3A5F" }}>
-              {u.nombre || `Usuario ${u.id ?? u.usuario_id}`}
-            </p>
+            {/* FOTO */}
+            <img
+              src={u.foto || `${import.meta.env.VITE_API_URL}/fotos/default-avatar.png`}
+              alt={u.nombre}
+              className="w-10 h-10 rounded-full object-cover border border-white/20"
+            />
 
-            {u.rol && (
-              <p className="text-xs" style={{ color: "#6A7A8C" }}>
-                {u.rol}
-              </p>
-            )}
+            {/* INFO */}
+            <div className="flex flex-col">
+              <span className="font-semibold" style={{ color: "#1F3A5F" }}>
+                {u.nombre} {u.apellidos}
+              </span>
+
+              {/* ROL */}
+              {u.rol && (
+                <span className="text-xs" style={{ color: "#6A7A8C" }}>
+                  {u.rol}
+                </span>
+              )}
+
+              {/* ESTADO: escribiendo / online */}
+              {typingEstados[u.usuario_id] ? (
+                <span className="text-green-600 text-xs">escribiendo…</span>
+              ) : (
+                <span className="text-gray-500 text-xs">online</span>
+              )}
+            </div>
           </button>
         ))}
       </div>

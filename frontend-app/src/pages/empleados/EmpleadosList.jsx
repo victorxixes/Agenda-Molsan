@@ -3,12 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { useEmpleadosStore } from "../../store/empleadosStore";
 import BuscadorEmpleados from "./BuscadorEmpleados";
 
-const getFotoURL = (foto) => {
+export const getFotoURL = (foto) => {
+  const base = import.meta.env.VITE_API_URL.replace(/\/$/, "");
+
   if (!foto || foto.trim() === "") {
-    return `${import.meta.env.VITE_API_URL}/api/fotos/default.jpg`;
+    return `${base}/fotos/default.jpg`;
   }
 
-  return `${import.meta.env.VITE_API_URL}/api/fotos/${foto}`;
+  return `${base}/fotos/${foto}`;
 };
 
 const EstadoBadge = ({ activo }) => (

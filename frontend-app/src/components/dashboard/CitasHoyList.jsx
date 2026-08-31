@@ -47,21 +47,26 @@ export default function CitasHoyList() {
       const f = filtro.toLowerCase();
 
       lista = lista.filter((cita) => {
-        const apoderado =
-          cita.apoderado_s ||
-          empleados.find((e) => e.id === cita.apoderado_id)?.nombre ||
-          cita.apoderado_id ||
-          "";
+        const apoderadoObj =
+          cita.apoderado ||
+          empleados.find((e) => e.id === cita.apoderado_id);
 
-        const notario =
-          notariosCTN.find((n) => n.id === cita.notario_id)?.nombre ||
-          cita.notario_id ||
-          "";
+        const apoderadoNombre = apoderadoObj
+          ? `${apoderadoObj.nombre} ${apoderadoObj.apellidos}`
+          : cita.apoderado_s || "";
+
+        const notarioObj =
+          cita.notario ||
+          notariosCTN.find((n) => n.id === cita.notario_id);
+
+        const notarioNombre = notarioObj
+          ? `${notarioObj.nombre} ${notarioObj.apellidos}`
+          : "";
 
         return (
           cita.fecha.toLowerCase().includes(f) ||
-          apoderado.toLowerCase().includes(f) ||
-          notario.toLowerCase().includes(f) ||
+          apoderadoNombre.toLowerCase().includes(f) ||
+          notarioNombre.toLowerCase().includes(f) ||
           cita.tipo_cita.toLowerCase().includes(f)
         );
       });
@@ -136,16 +141,21 @@ export default function CitasHoyList() {
             </tr>
           ) : (
             citasProcesadas.map((cita) => {
-              const apoderado =
-                cita.apoderado_s ||
-                empleados.find((e) => e.id === cita.apoderado_id)?.nombre ||
-                cita.apoderado_id ||
-                "—";
+              const apoderadoObj =
+                cita.apoderado ||
+                empleados.find((e) => e.id === cita.apoderado_id);
 
-              const notario =
-                notariosCTN.find((n) => n.id === cita.notario_id)?.nombre ||
-                cita.notario_id ||
-                "—";
+              const apoderadoNombre = apoderadoObj
+                ? `${apoderadoObj.nombre} ${apoderadoObj.apellidos}`
+                : cita.apoderado_s || "—";
+
+              const notarioObj =
+                cita.notario ||
+                notariosCTN.find((n) => n.id === cita.notario_id);
+
+              const notarioNombre = notarioObj
+                ? `${notarioObj.nombre} ${notarioObj.apellidos}`
+                : "—";
 
               return (
                 <tr key={cita.id} className="hover:bg-gray-50">
@@ -159,9 +169,9 @@ export default function CitasHoyList() {
                     {iconoTipoCita(cita.tipo_cita)} {cita.tipo_cita}
                   </td>
 
-                  <td className="p-2 border">{notario}</td>
+                  <td className="p-2 border">{notarioNombre}</td>
 
-                  <td className="p-2 border">{apoderado}</td>
+                  <td className="p-2 border">{apoderadoNombre}</td>
 
                   <td className="p-2 border">
                     {iconoTipoFirma(cita.vc)}

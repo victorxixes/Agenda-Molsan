@@ -88,18 +88,19 @@ def dashboard_full(db: Session = Depends(get_db)):
         apo_obj = db.query(Empleado).filter(Empleado.id == apo_id).first()
         nombre_apo = f"{apo_obj.nombre} {apo_obj.apellidos}" if apo_obj else "—"
 
-        por_apoderado.append({
-            "apoderado_id": apo_id,
-            "nombre": nombre_apo,
-            "videoconferencia": {
-                "firmadas": sum(1 for c in citas_apo if c.vc == "SI" and c.fecha < hoy),
-                "pendientes": sum(1 for c in citas_apo if c.vc == "SI" and c.fecha > hoy),
-            },
-            "presencial": {
-                "firmadas": sum(1 for c in citas_apo if c.vc == "NO" and c.fecha < hoy),
-                "pendientes": sum(1 for c in citas_apo if c.vc == "NO" and c.fecha > hoy),
-            },
-        })
+       por_apoderado.append({
+    "apoderado_id": apo_id,
+    "nombre": nombre_apo,
+    "videoconferencia": {
+        "firmadas": sum(1 for c in citas_apo if c.vc == "SI" and c.fecha <= hoy),
+        "pendientes": sum(1 for c in citas_apo if c.vc == "SI" and c.fecha > hoy),
+    },
+    "presencial": {
+        "firmadas": sum(1 for c in citas_apo if c.vc == "NO" and c.fecha <= hoy),
+        "pendientes": sum(1 for c in citas_apo if c.vc == "NO" and c.fecha > hoy),
+    },
+})
+
 
     # -----------------------------
     # 4. Citas por hora

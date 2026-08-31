@@ -20,6 +20,7 @@ from backend.app.intranet.documentos.models import Documento
 from backend.app.logs.models import Log
 from backend.app.mensajes.models import Mensaje
 
+
 sqlalchemy.orm.configure_mappers()
 Base.metadata.create_all(bind=engine)
 
@@ -46,6 +47,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# 🔥 Fix schema mensajes
+from backend.app.mensajes.fix_schema import fix_mensajes_schema
+fix_mensajes_schema()
 
 # ---------------------------------------------------------
 # STATIC FILES

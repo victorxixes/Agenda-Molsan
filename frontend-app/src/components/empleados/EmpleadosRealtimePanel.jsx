@@ -13,7 +13,7 @@ export default function EmpleadosRealtimePanel() {
 
   // Procesar eventos realtime (solo una vez)
   useEffect(() => {
-    events.forEach((ev) => {
+    (events || []).forEach((ev) => {
       addRealtimeEmpleadoEvent(ev);
       procesarEventoRealtime(ev);
     });

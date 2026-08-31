@@ -16,11 +16,12 @@ import AuditoriaEmpleado from "./AuditoriaEmpleado";
 import EditarEmpleado from "./EditarEmpleado";
 
 const getFotoURL = (foto) => {
-  if (!foto || foto === "string" || foto.trim() === "") {
-    return "/placeholder.png";
+  if (!foto || foto.trim() === "") {
+    return `${import.meta.env.VITE_API_URL}/fotos/default-avatar.png`;
   }
-  if (foto.startsWith("http")) return foto;
-  return `${import.meta.env.VITE_API_URL}${foto}`;
+
+  // Si la BD guarda "empleado_1.jpg"
+  return `${import.meta.env.VITE_API_URL}/fotos/${foto}`;
 };
 
 export default function EmpleadoDetalle() {

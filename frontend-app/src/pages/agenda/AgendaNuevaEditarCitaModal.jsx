@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAgendaStore } from "../../store/agendaStore";
 import { useCTNStore } from "../../store/ctnStore";
+import { useEmpleadosStore } from "../../store/empleadosStore";
 import GlassCard from "../../components/ui/GlassCard.jsx";
 import BuscadorNotariaPremium from "../../components/agenda/BuscadorNotariaPremium.jsx";
 
@@ -23,8 +24,9 @@ const iconoTipoFirma = (tipo) => {
 };
 
 export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
-  const { cargarCita, citaActual, editar } = useAgendaStore();
+  const { cargarCita, citaActual, editar, eliminar } = useAgendaStore();
   const { notarias, cargarNotarias } = useCTNStore();
+  const { empleados, cargarEmpleados } = useEmpleadosStore();
 
   const [form, setForm] = useState({
     fecha: "",
@@ -41,13 +43,14 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
 
   const [error, setError] = useState("");
 
-  // Cargar cita + notarios
+  // Cargar cita + notarios + empleados
   useEffect(() => {
     if (open && citaId) {
       cargarCita(citaId);
       cargarNotarias();
+      cargarEmpleados();
     }
-  }, [open, citaId, cargarCita, cargarNotarias]);
+  }, [open, citaId, cargarCita, cargarNotarias, cargarEmpleados]);
 
   // Rellenar formulario con la cita actual
   useEffect(() => {
@@ -116,6 +119,20 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
     }
   };
 
+  // Eliminar cita
+  const eliminarCita = async () => {
+    if (!confirm("¿Seguro que quieres eliminar esta cita?")) return;
+
+    try {
+      await eliminar(citaId);
+      alert("Cita eliminada correctamente");
+      onClose();
+    } catch (err) {
+      console.error(err);
+      alert("Error eliminando la cita");
+    }
+  };
+
   if (!open) return null;
 
   const notarioSeleccionado = notarias.find((n) => n.id === form.notario_id);
@@ -126,7 +143,10 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
     (citaActual?.apoderado
       ? `${citaActual.apoderado.nombre} ${citaActual.apoderado.apellidos}`
       : null) ||
-    form.apoderado_id ||
+    (form.apoderado_id
+      ? empleados.find(e => e.id === form.apoderado_id)?.nombre + " " +
+        empleados.find(e => e.id === form.apoderado_id)?.apellidos
+      : null) ||
     "—";
 
   return (
@@ -221,13 +241,21 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
           </div>
         )}
 
-        {/* Apoderado */}
-        <input
-          type="text"
-          className="input bg-gray-100"
-          value={apoderadoLabel}
-          readOnly
-        />
+        {/* Selector de apoderado */}
+        <select
+          className="input"
+          value={form.apoderado_id || ""}
+          onChange={(e) =>
+            setForm({ ...form, apoderado_id: Number(e.target.value) })
+          }
+        >
+          <option value="">Selecciona apoderado</option>
+          {empleados.map((emp) => (
+            <option key={emp.id} value={emp.id}>
+              {emp.nombre} {emp.apellidos}
+            </option>
+          ))}
+        </select>
 
         {/* Tipo firma */}
         <input
@@ -251,6 +279,10 @@ export default function AgendaNuevaEditarCitaModal({ citaId, open, onClose }) {
 
         <button className="btn-primary w-full" onClick={guardar}>
           Guardar cambios
+        </button>
+
+        <button className="btn-danger w-full mt-2" onClick={eliminarCita}>
+          Eliminar cita
         </button>
 
       </GlassCard>

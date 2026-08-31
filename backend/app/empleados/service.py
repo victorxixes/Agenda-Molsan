@@ -106,7 +106,11 @@ def crear_empleado(db: Session, data: EmpleadoCreate):
     })
 
     return empleado
-
+# ---------------------------------------------------------
+#  EMPLEADO EXISTENTE
+# ---------------------------------------------------------
+def empleado_existe(db, usuario_id: int) -> bool:
+    return db.query(Empleado).filter(Empleado.id == usuario_id).first() is not None
 
 # ---------------------------------------------------------
 # EDITAR EMPLEADO

@@ -44,26 +44,30 @@ export default function FotoEmpleado({ empleadoId }) {
     reader.readAsDataURL(file);
   };
 
-  const handleUpload = async () => {
-    if (!archivo) {
-      setError("Selecciona una imagen primero");
-      return;
-    }
+ const handleUpload = async () => {
+  if (!archivo) {
+    setError("Selecciona una imagen primero");
+    return;
+  }
 
-    setSubiendo(true);
-    setError(null);
+  setSubiendo(true);
+  setError(null);
 
-    try {
-      await subirFoto(empleadoId, archivo);
+  try {
+    await subirFoto(empleadoId, archivo);
 
-      alert("Foto actualizada correctamente");
-    } catch {
-      setError("Error al subir la foto");
-    }
+    // ✔ Recargar empleado para actualizar la foto en el store
+    await cargarEmpleado(empleadoId);
 
-    setSubiendo(false);
-    setArchivo(null);
-  };
+    alert("Foto actualizada correctamente");
+  } catch {
+    setError("Error al subir la foto");
+  }
+
+  setSubiendo(false);
+  setArchivo(null);
+};
+
 
   if (!empleadoActual) return <div className="p-6">Cargando foto...</div>;
 

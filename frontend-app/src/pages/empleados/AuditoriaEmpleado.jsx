@@ -29,9 +29,15 @@ export default function AuditoriaEmpleado({ empleadoId }) {
             <div>
               <p className="font-semibold">{ev.modulo}</p>
               <p className="text-sm">{ev.descripcion}</p>
-              <p className="text-xs text-gray-600">{ev.datos}</p>
+
+              <pre className="text-xs text-gray-600 whitespace-pre-wrap">
+                {ev.datos ? JSON.stringify(ev.datos, null, 2) : ""}
+              </pre>
             </div>
-            <span className="text-gray-500 text-sm">{ev.fecha}</span>
+
+            <span className="text-gray-500 text-sm">
+              {new Date(ev.fecha).toLocaleString()}
+            </span>
           </li>
         ))}
       </ul>

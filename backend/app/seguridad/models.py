@@ -14,6 +14,8 @@ class Rol(Base):
     nombre = Column(String, unique=True)
     descripcion = Column(String, nullable=True)
 
+    # 🔥 RELACIÓN INVERSA CON EMPLEADOS
+    empleados = relationship("Empleado", back_populates="rol")
 
 # ---------------------------------------------------------
 # EVENTOS DE SEGURIDAD

@@ -22,6 +22,10 @@ async def chat_ws(websocket: WebSocket, usuario_id: int):
         while True:
             data = await websocket.receive_json()
 
+            # ⭐ IGNORAR HEARTBEAT
+            if data.get("tipo") == "ping":
+                continue
+
             if data.get("tipo") == "mensaje":
                 db: Session = next(get_db())
                 nuevo = crear_mensaje(db, data)

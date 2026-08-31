@@ -15,10 +15,16 @@ from backend.app.config import settings
 from backend.app.websockets.empleados_ws import broadcast_empleados
 
 
+# ---------------------------------------------------------
+# HASH PASSWORD
+# ---------------------------------------------------------
 def hash_password(password: str) -> str:
     return hashlib.sha256(password.encode()).hexdigest()
 
 
+# ---------------------------------------------------------
+# LOGIN EMPLEADO
+# ---------------------------------------------------------
 def login(db: Session, usuario: str, password: str):
     empleado = db.query(Empleado).filter(
         or_(Empleado.usuario == usuario, Empleado.dni == usuario)
@@ -106,11 +112,21 @@ def crear_empleado(db: Session, data: EmpleadoCreate):
     })
 
     return empleado
+
+
 # ---------------------------------------------------------
-#  EMPLEADO EXISTENTE
+# EMPLEADO EXISTE (para chat y conectados)
 # ---------------------------------------------------------
-def empleado_existe(db, usuario_id: int) -> bool:
+def empleado_existe(db: Session, usuario_id: int) -> bool:
     return db.query(Empleado).filter(Empleado.id == usuario_id).first() is not None
+
+
+# ---------------------------------------------------------
+# OBTENER EMPLEADO (para conectados con foto y nombre)
+# ---------------------------------------------------------
+def obtener_empleado(db: Session, empleado_id: int):
+    return db.query(Empleado).filter(Empleado.id == empleado_id).first()
+
 
 # ---------------------------------------------------------
 # EDITAR EMPLEADO

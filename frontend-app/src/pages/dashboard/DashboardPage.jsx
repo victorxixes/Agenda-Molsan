@@ -12,11 +12,46 @@ export default function DashboardPage() {
 
   if (!data) return <div>Cargando dashboard…</div>;
 
-  const {
-    kpis,
-    citas_dia,
-    por_apoderado,
-  } = data;
+  const { kpis, citas_dia, por_apoderado } = data;
+
+  // -----------------------------
+  // ORDENACIÓN + PAGINACIÓN
+  // -----------------------------
+  const [sortBy, setSortBy] = useState("fecha");
+  const [sortDirection, setSortDirection] = useState("asc");
+
+  const [page, setPage] = useState(1);
+  const pageSize = 5;
+
+  const ordenar = (campo) => {
+    if (sortBy === campo) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortBy(campo);
+      setSortDirection("asc");
+    }
+  };
+
+  const citasOrdenadas = [...citas_dia].sort((a, b) => {
+    const A = a[sortBy] || "";
+    const B = b[sortBy] || "";
+
+    if (A < B) return sortDirection === "asc" ? -1 : 1;
+    if (A > B) return sortDirection === "asc" ? 1 : -1;
+    return 0;
+  });
+
+  const totalPaginas = Math.ceil(citasOrdenadas.length / pageSize);
+
+  const citasPagina = citasOrdenadas.slice(
+    (page - 1) * pageSize,
+    page * pageSize
+  );
+
+  const iconoOrden = (campo) => {
+    if (sortBy !== campo) return "↕️";
+    return sortDirection === "asc" ? "⬆️" : "⬇️";
+  };
 
   return (
     <div className="space-y-10 p-6">
@@ -48,7 +83,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* 📅 Citas del día (tabla) */}
+      {/* 📅 Citas del día (tabla con ordenación + paginación) */}
       <div className="bg-white rounded-xl shadow p-4">
         <h3 className="text-xl font-bold mb-4" style={{ color: "#1F3A5F" }}>
           Citas del día
@@ -57,24 +92,48 @@ export default function DashboardPage() {
         <table className="w-full text-sm border-collapse">
           <thead>
             <tr className="bg-gray-100 text-left">
-              <th className="p-2 border">Fecha</th>
-              <th className="p-2 border">Hora</th>
-              <th className="p-2 border">Tipo</th>
+              <th
+                className="p-2 border cursor-pointer"
+                onClick={() => ordenar("fecha")}
+              >
+                Fecha {iconoOrden("fecha")}
+              </th>
+
+              <th
+                className="p-2 border cursor-pointer"
+                onClick={() => ordenar("hora_inicio")}
+              >
+                Hora {iconoOrden("hora_inicio")}
+              </th>
+
+              <th
+                className="p-2 border cursor-pointer"
+                onClick={() => ordenar("tipo_cita")}
+              >
+                Tipo {iconoOrden("tipo_cita")}
+              </th>
+
               <th className="p-2 border">Notario</th>
               <th className="p-2 border">Apoderado</th>
-              <th className="p-2 border">Firma</th>
+
+              <th
+                className="p-2 border cursor-pointer"
+                onClick={() => ordenar("vc")}
+              >
+                Firma {iconoOrden("vc")}
+              </th>
             </tr>
           </thead>
 
           <tbody>
-            {citas_dia.length === 0 ? (
+            {citasPagina.length === 0 ? (
               <tr>
                 <td colSpan="6" className="p-4 text-center text-gray-500">
                   No hay citas hoy
                 </td>
               </tr>
             ) : (
-              citas_dia.map((cita) => (
+              citasPagina.map((cita) => (
                 <tr key={cita.id} className="hover:bg-gray-50">
                   <td className="p-2 border">{cita.fecha}</td>
                   <td className="p-2 border">
@@ -101,6 +160,29 @@ export default function DashboardPage() {
             )}
           </tbody>
         </table>
+
+        {/* PAGINACIÓN */}
+        <div className="flex justify-between items-center mt-4">
+          <button
+            disabled={page === 1}
+            onClick={() => setPage(page - 1)}
+            className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
+          >
+            Anterior
+          </button>
+
+          <span>
+            Página {page} de {totalPaginas}
+          </span>
+
+          <button
+            disabled={page === totalPaginas}
+            onClick={() => setPage(page + 1)}
+            className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
+          >
+            Siguiente
+          </button>
+        </div>
       </div>
 
       {/* 👤 Firmas por apoderado */}
@@ -136,7 +218,6 @@ export default function DashboardPage() {
           ))}
         </div>
       </div>
-
     </div>
   );
 }

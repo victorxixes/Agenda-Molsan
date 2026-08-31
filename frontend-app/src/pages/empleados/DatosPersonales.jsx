@@ -2,12 +2,13 @@ import { useEffect } from "react";
 import { useEmpleadosStore } from "../../store/empleadosStore";
 
 const getFotoURL = (foto) => {
-  if (!foto || foto === "string" || foto.trim() === "") {
-    return "/placeholder.png";
+  if (!foto || foto.trim() === "") {
+    return `${import.meta.env.VITE_API_URL}/api/fotos/default.jpg`;
   }
-  if (foto.startsWith("http")) return foto;
-  return `${import.meta.env.VITE_API_URL}${foto}`;
+
+  return `${import.meta.env.VITE_API_URL}/api/fotos/${foto}`;
 };
+
 
 export default function DatosPersonales({ empleadoId }) {
   const { empleadoActual, cargarEmpleado } = useEmpleadosStore();

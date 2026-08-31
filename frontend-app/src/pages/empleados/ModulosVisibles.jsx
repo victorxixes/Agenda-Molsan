@@ -22,10 +22,6 @@ export default function ModulosVisibles({ empleadoId }) {
   const [modulosVisibles, setModulosVisibles] = useState([]);
   const [editando, setEditando] = useState(false);
 
-  // Cargar empleado SOLO una vez
-  useEffect(() => {
-    cargarEmpleado(empleadoId);
-  }, [empleadoId]);
 
   // Actualizar estado cuando llega el empleado (solo si no está editando)
   useEffect(() => {

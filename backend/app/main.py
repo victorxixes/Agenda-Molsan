@@ -9,6 +9,18 @@ import os
 from backend.app.database import Base, engine
 import sqlalchemy
 
+# IMPORTAR MODELOS ANTES DE CREAR TABLAS
+from backend.app.seguridad.models import Rol, EventoSeguridad, Auditoria
+from backend.app.empleados.models import Empleado
+from backend.app.maestros.models import Maestro
+from backend.app.ctn.models import CTN
+from backend.app.agenda.models import Cita, Notario
+from backend.app.intranet.noticias.models import Noticia
+from backend.app.intranet.documentos.models import Documento
+from backend.app.logs.models import Log
+from backend.app.mensajes.models import Mensaje
+from backend.app.realtime.models import RealtimeEvent
+
 sqlalchemy.orm.configure_mappers()
 Base.metadata.create_all(bind=engine)
 

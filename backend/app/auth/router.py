@@ -16,13 +16,16 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
 def login_empleado(data: LoginRequest, db: Session = Depends(get_db)):
     resultado = login_service(db, data.usuario, data.password)
 
-    empleado = resultado["empleado"]   # ← es un modelo SQLAlchemy
+    empleado = resultado["empleado"]   # ← modelo SQLAlchemy
     token = resultado["token"]
+
+    # ⭐ PASO 1: asegurar foto válida
+    foto = empleado.foto if empleado.foto else "default-avatar.png"
 
     return {
         "empleado_id": empleado.id,
         "nombre": empleado.nombre,
-        "foto": empleado.foto,
+        "foto": foto,   # ← siempre válido
 
         "rol_id": empleado.rol_id,
         "rol_nombre": empleado.rol.nombre if empleado.rol else None,
@@ -59,12 +62,14 @@ def login_admin(data: LoginRequest):
     if hash_password(data.password) != hash_password("admin"):
         raise HTTPException(status_code=400, detail="Contraseña incorrecta")
 
+    # ⭐ Para admin también devolvemos foto válida
+    foto = "default-avatar.png"
+
     return {
         "empleado_id": 1,
         "nombre": "Administrador",
-        "foto": "https://agenda-intranet-b.onrender.com/static/avatar.png",
+        "foto": foto,  # ← consistente con empleados
 
-        # 🔥 Seguridad unificada
         "rol_id": 0,
         "rol_nombre": "admin",
 

@@ -1,5 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { useDashboardStore } from "../../store/dashboardStore";
+import { useEmpleadosStore } from "../../store/empleadosStore";
+import { useCTNStore } from "../../store/ctnStore";
 
 const iconoTipoCita = (tipo) => {
   switch (tipo) {
@@ -21,6 +23,9 @@ const iconoTipoFirma = (vc) => {
 export default function CitasHoyList() {
   const { resumen } = useDashboardStore();
   const citasHoy = resumen?.citas_dia || [];
+
+  const empleados = useEmpleadosStore((s) => s.empleados);
+  const notariosCTN = useCTNStore((s) => s.notarias);
 
   const [sortBy, setSortBy] = useState("fecha");
   const [sortDirection, setSortDirection] = useState("asc");
@@ -44,16 +49,14 @@ export default function CitasHoyList() {
       lista = lista.filter((cita) => {
         const apoderado =
           cita.apoderado_s ||
-          (cita.apoderado
-            ? `${cita.apoderado.nombre} ${cita.apoderado.apellidos}`
-            : "") ||
+          empleados.find((e) => e.id === cita.apoderado_id)?.nombre ||
           cita.apoderado_id ||
           "";
 
         const notario =
-          cita.notario
-            ? `${cita.notario.nombre} ${cita.notario.apellidos}`
-            : cita.notario_id || "";
+          notariosCTN.find((n) => n.id === cita.notario_id)?.nombre ||
+          cita.notario_id ||
+          "";
 
         return (
           cita.fecha.toLowerCase().includes(f) ||
@@ -74,7 +77,7 @@ export default function CitasHoyList() {
     });
 
     return lista;
-  }, [citasHoy, filtro, sortBy, sortDirection]);
+  }, [citasHoy, filtro, sortBy, sortDirection, empleados, notariosCTN]);
 
   const iconoOrden = (campo) => {
     if (sortBy !== campo) return "↕️";
@@ -114,8 +117,8 @@ export default function CitasHoyList() {
               Notario {iconoOrden("notario_id")}
             </th>
 
-            <th className="p-2 border cursor-pointer" onClick={() => ordenar("apoderado_s")}>
-              Apoderado {iconoOrden("apoderado_s")}
+            <th className="p-2 border cursor-pointer" onClick={() => ordenar("apoderado_id")}>
+              Apoderado {iconoOrden("apoderado_id")}
             </th>
 
             <th className="p-2 border cursor-pointer" onClick={() => ordenar("vc")}>
@@ -135,16 +138,14 @@ export default function CitasHoyList() {
             citasProcesadas.map((cita) => {
               const apoderado =
                 cita.apoderado_s ||
-                (cita.apoderado
-                  ? `${cita.apoderado.nombre} ${cita.apoderado.apellidos}`
-                  : null) ||
+                empleados.find((e) => e.id === cita.apoderado_id)?.nombre ||
                 cita.apoderado_id ||
                 "—";
 
               const notario =
-                cita.notario
-                  ? `${cita.notario.nombre} ${cita.notario.apellidos}`
-                  : cita.notario_id || "—";
+                notariosCTN.find((n) => n.id === cita.notario_id)?.nombre ||
+                cita.notario_id ||
+                "—";
 
               return (
                 <tr key={cita.id} className="hover:bg-gray-50">

@@ -30,7 +30,7 @@ export default function DashboardPage() {
       </h2>
 
       <AgendaSection title="Citas del día">
-        <CitasHoyList citas={citasHoy} />
+        <CitasHoyList />
       </AgendaSection>
 
       <h3 className="text-xl font-semibold" style={{ color: "#1F3A5F" }}>

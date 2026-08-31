@@ -30,8 +30,8 @@ origins = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,        # ✔ NO usar "*"
-    allow_credentials=True,       # ✔ Necesario para login
+    allow_origins=origins,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -46,13 +46,8 @@ app.mount("/fotos", StaticFiles(directory=FOTOS_DIR), name="fotos")
 # IMPORTAR ROUTERS (REST)
 # ---------------------------------------------------------
 
-from backend.app.seguridad.router_fix_permisos_def import router as router_fix_permisos_def
-from backend.app.seguridad.router_fix_schema import router as router_fix_schema
-from backend.app.seguridad.router_fix_permisos import router as router_fix_permisos
-
-# Seguridad
+# Seguridad (solo routers válidos)
 from backend.app.seguridad.router_roles import router as seguridad_roles_router
-from backend.app.seguridad.router_api import router as seguridad_api_router
 from backend.app.seguridad.permisos_router import router as permisos_router
 
 # Auth
@@ -92,35 +87,38 @@ from backend.app.utilidades.router_force import router as force_router
 # INCLUIR ROUTERS REST
 # ---------------------------------------------------------
 
-app.include_router(router_fix_permisos_def, prefix="/api")
-app.include_router(router_fix_schema, prefix="/api")
-app.include_router(router_fix_permisos, prefix="/api")
-
 app.include_router(auth_router, prefix="/api")
 
+# Seguridad
 app.include_router(seguridad_roles_router, prefix="/api")
-app.include_router(seguridad_api_router, prefix="/api")
 app.include_router(permisos_router, prefix="/api")
 
+# Empleados / Maestros
 app.include_router(empleados_router, prefix="/api")
 app.include_router(maestros_router, prefix="/api")
 
+# Intranet
 app.include_router(noticias_router, prefix="/api")
 app.include_router(documentos_router, prefix="/api")
 
+# CTN
 app.include_router(ctn_router, prefix="/api")
 
+# Agenda
 app.include_router(agenda_router, prefix="/api")
 app.include_router(agenda_notarios_router, prefix="/api")
 
+# Auditoría / Dashboard / Informes
 app.include_router(auditoria_router, prefix="/api")
 app.include_router(dashboard_router, prefix="/api")
 app.include_router(informes_router, prefix="/api")
 
+# Logs / Mensajes / Realtime REST
 app.include_router(logs_router, prefix="/api")
 app.include_router(mensajes_router, prefix="/api")
 app.include_router(realtime_router, prefix="/api")
 
+# Utilidades
 app.include_router(utilidades_router, prefix="/api")
 app.include_router(create_router, prefix="/api")
 app.include_router(force_router, prefix="/api")

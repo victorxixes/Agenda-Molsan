@@ -95,14 +95,6 @@ export default function CitasHoyList() {
         Citas del día
       </h3>
 
-      <input
-        type="text"
-        className="input mb-3 w-full"
-        placeholder="Filtrar por apoderado, notario, tipo o fecha..."
-        value={filtro}
-        onChange={(e) => setFiltro(e.target.value)}
-      />
-
       <table className="w-full text-sm border-collapse">
         <thead>
           <tr className="bg-gray-100 text-left">

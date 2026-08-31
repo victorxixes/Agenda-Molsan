@@ -1,40 +1,33 @@
+# Este módulo queda como utilitario opcional.
+# El login REAL está en backend/app/empleados/service.py
+
 from datetime import datetime, timedelta
 import jwt
 
+from backend.app.config import settings
 from backend.app.empleados.models import Empleado
 
 
-# Configuración del token
-SECRET = "SUPER_SECRETO_CAMBIAR"
-ALGORITHM = "HS256"
-EXPIRACION_MINUTOS = 480
-
-
-# ---------------------------------------------------------
-# CREAR TOKEN JWT
-# ---------------------------------------------------------
 def crear_token(empleado: Empleado):
-    exp = datetime.utcnow() + timedelta(minutes=EXPIRACION_MINUTOS)
+    exp = datetime.utcnow() + timedelta(minutes=480)
 
     payload = {
-        "sub": empleado.id,
-        "exp": exp,
-        "rol": empleado.rol,
-        "modulos": empleado.modulos_visibles,
-        "permisos": empleado.permisos_modulo
+        "id": empleado.id,
+        "usuario": empleado.usuario,
+        "rol_id": empleado.rol_id,
+        "rol_nombre": empleado.rol.nombre if empleado.rol else None,
+        "exp": exp
     }
 
-    return jwt.encode(payload, SECRET, algorithm=ALGORITHM)
+    return jwt.encode(payload, settings.JWT_SECRET, algorithm=settings.ALGORITHM)
 
 
-# ---------------------------------------------------------
-# SERIALIZAR EMPLEADO PARA RESPUESTA
-# ---------------------------------------------------------
 def serializar_empleado(empleado: Empleado):
     return {
         "empleado_id": empleado.id,
         "nombre": empleado.nombre,
-        "rol": empleado.rol,
-        "modulos": empleado.modulos_visibles,
-        "permisos": empleado.permisos_modulo
+        "rol_id": empleado.rol_id,
+        "rol_nombre": empleado.rol.nombre if empleado.rol else None,
+        "modulos_visibles": empleado.modulos_visibles or [],
+        "permisos_modulo": empleado.permisos_modulo or {}
     }

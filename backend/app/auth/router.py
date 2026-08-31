@@ -16,22 +16,23 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
 def login_empleado(data: LoginRequest, db: Session = Depends(get_db)):
     resultado = login_service(db, data.usuario, data.password)
 
-    empleado = resultado["empleado"]   # ← ya es un dict
+    empleado = resultado["empleado"]   # ← es un modelo SQLAlchemy
     token = resultado["token"]
 
     return {
-        "empleado_id": empleado["id"],
-        "nombre": empleado["nombre"],
-        "foto": empleado.get("foto"),
+        "empleado_id": empleado.id,
+        "nombre": empleado.nombre,
+        "foto": empleado.foto,
 
-        "rol_id": empleado["rol_id"],
-        "rol_nombre": empleado["rol_nombre"],
+        "rol_id": empleado.rol_id,
+        "rol_nombre": empleado.rol.nombre if empleado.rol else None,
 
-        "modulos_visibles": empleado["modulos_visibles"],
-        "permisos_modulo": empleado["permisos_modulo"],
+        "modulos_visibles": empleado.modulos_visibles or [],
+        "permisos_modulo": empleado.permisos_modulo or {},
 
         "token": token
     }
+
 
 @router.post("/login/")
 def login_empleado_slash(data: LoginRequest, db: Session = Depends(get_db)):

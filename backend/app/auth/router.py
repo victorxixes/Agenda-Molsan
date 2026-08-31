@@ -16,15 +16,14 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
 def login_empleado(data: LoginRequest, db: Session = Depends(get_db)):
     resultado = login_service(db, data.usuario, data.password)
 
-    empleado = resultado["empleado"]
+    empleado = resultado["empleado"]   # ← ya es un dict
     token = resultado["token"]
 
     return {
         "empleado_id": empleado["id"],
         "nombre": empleado["nombre"],
-        "foto": empleado["foto"] if "foto" in empleado else None,
+        "foto": empleado.get("foto"),
 
-        # 🔥 Seguridad unificada
         "rol_id": empleado["rol_id"],
         "rol_nombre": empleado["rol_nombre"],
 
@@ -33,7 +32,6 @@ def login_empleado(data: LoginRequest, db: Session = Depends(get_db)):
 
         "token": token
     }
-
 
 @router.post("/login/")
 def login_empleado_slash(data: LoginRequest, db: Session = Depends(get_db)):

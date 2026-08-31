@@ -205,7 +205,7 @@ def cambiar_rol(empleado_id: int, rol_id: int, db: Session = Depends(get_db)):
 # ---------------------------------------------------------
 # SUBIR FOTO
 # ---------------------------------------------------------
-@router.post("/empleados/{id}/foto")
+@router.post("/{id}/foto")
 async def subir_foto(id: int, archivo: UploadFile = File(...)):
     filename = f"empleado_{id}.jpg"   # 🔥 nombre REAL del archivo
     path = f"app/fotos/{filename}"

@@ -13,13 +13,14 @@ import sqlalchemy
 from backend.app.seguridad.models import Rol, EventoSeguridad, Auditoria
 from backend.app.empleados.models import Empleado
 from backend.app.maestros.models import Departamento, Seccion, Cargo
-from backend.app.ctn.models import CTN
+from backend.app.ctn.models import Notaria
 from backend.app.agenda.models import Cita, Notario
 from backend.app.intranet.noticias.models import Noticia
 from backend.app.intranet.documentos.models import Documento
 from backend.app.logs.models import Log
 from backend.app.mensajes.models import Mensaje
 from backend.app.realtime.models import RealtimeEvent
+
 
 sqlalchemy.orm.configure_mappers()
 Base.metadata.create_all(bind=engine)

@@ -208,19 +208,16 @@ def cambiar_rol(empleado_id: int, rol_id: int, db: Session = Depends(get_db)):
 @router.post("/{id}/foto")
 async def subir_foto(id: int, archivo: UploadFile = File(...), db: Session = Depends(get_db)):
     filename = f"empleado_{id}.jpg"
-    path = f"app/fotos/{filename}"
+    path = f"/tmp/{filename}"   # 🔥 USAR /tmp EN PLAN GRATIS
 
     with open(path, "wb") as f:
         f.write(await archivo.read())
 
     empleado = db.query(Empleado).filter(Empleado.id == id).first()
-    empleado.foto = filename   # 🔥 PASO 1: guardar solo el nombre
+    empleado.foto = filename
     db.commit()
 
     return {"foto": filename}
-
-
-
 
 # ---------------------------------------------------------
 # ACTUALIZAR MÓDULOS VISIBLES

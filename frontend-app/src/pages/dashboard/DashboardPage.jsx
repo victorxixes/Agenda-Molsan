@@ -1,8 +1,24 @@
 import React, { useEffect, useState } from "react";
 import axios from "../../api/axios";
+import { saveAs } from "file-saver";
+import { Chart, LineController, LineElement, PointElement, LinearScale, Title, CategoryScale } from "chart.js";
+
+Chart.register(LineController, LineElement, PointElement, LinearScale, Title, CategoryScale);
 
 export default function DashboardPage() {
   const [data, setData] = useState(null);
+
+  // FILTROS
+  const [search, setSearch] = useState("");
+  const [filtroFirma, setFiltroFirma] = useState("TODAS");
+  const [filtroNotario, setFiltroNotario] = useState("TODOS");
+  const [filtroApoderado, setFiltroApoderado] = useState("TODOS");
+
+  // ORDENACIÓN + PAGINACIÓN
+  const [sortBy, setSortBy] = useState("fecha");
+  const [sortDirection, setSortDirection] = useState("asc");
+  const [page, setPage] = useState(1);
+  const pageSize = 5;
 
   useEffect(() => {
     axios.get("dashboard/full").then((res) => {
@@ -12,17 +28,39 @@ export default function DashboardPage() {
 
   if (!data) return <div>Cargando dashboard…</div>;
 
-  const { kpis, citas_dia, por_apoderado } = data;
+  const { kpis, citas_dia, por_apoderado, actividad_semanal } = data;
 
   // -----------------------------
-  // ORDENACIÓN + PAGINACIÓN
+  // FILTROS
   // -----------------------------
-  const [sortBy, setSortBy] = useState("fecha");
-  const [sortDirection, setSortDirection] = useState("asc");
+  const citasFiltradas = citas_dia.filter((c) => {
+    const texto = search.toLowerCase();
 
-  const [page, setPage] = useState(1);
-  const pageSize = 5;
+    const coincideTexto =
+      c.fecha.toLowerCase().includes(texto) ||
+      c.tipo_cita.toLowerCase().includes(texto) ||
+      (c.notario && `${c.notario.nombre} ${c.notario.apellidos}`.toLowerCase().includes(texto)) ||
+      (c.apoderado && `${c.apoderado.nombre} ${c.apoderado.apellidos}`.toLowerCase().includes(texto));
 
+    const coincideFirma =
+      filtroFirma === "TODAS" ||
+      (filtroFirma === "VC" && c.vc === "SI") ||
+      (filtroFirma === "PRESENCIAL" && c.vc === "NO");
+
+    const coincideNotario =
+      filtroNotario === "TODOS" ||
+      (c.notario && c.notario.id === Number(filtroNotario));
+
+    const coincideApoderado =
+      filtroApoderado === "TODOS" ||
+      (c.apoderado && c.apoderado.id === Number(filtroApoderado));
+
+    return coincideTexto && coincideFirma && coincideNotario && coincideApoderado;
+  });
+
+  // -----------------------------
+  // ORDENACIÓN
+  // -----------------------------
   const ordenar = (campo) => {
     if (sortBy === campo) {
       setSortDirection(sortDirection === "asc" ? "desc" : "asc");
@@ -32,7 +70,7 @@ export default function DashboardPage() {
     }
   };
 
-  const citasOrdenadas = [...citas_dia].sort((a, b) => {
+  const citasOrdenadas = [...citasFiltradas].sort((a, b) => {
     const A = a[sortBy] || "";
     const B = b[sortBy] || "";
 
@@ -42,16 +80,55 @@ export default function DashboardPage() {
   });
 
   const totalPaginas = Math.ceil(citasOrdenadas.length / pageSize);
-
-  const citasPagina = citasOrdenadas.slice(
-    (page - 1) * pageSize,
-    page * pageSize
-  );
+  const citasPagina = citasOrdenadas.slice((page - 1) * pageSize, page * pageSize);
 
   const iconoOrden = (campo) => {
     if (sortBy !== campo) return "↕️";
     return sortDirection === "asc" ? "⬆️" : "⬇️";
   };
+
+  // -----------------------------
+  // EXPORTAR A EXCEL
+  // -----------------------------
+  const exportarExcel = () => {
+    let csv = "Fecha,Hora Inicio,Hora Fin,Tipo,Notario,Apoderado,Firma\n";
+
+    citasOrdenadas.forEach((c) => {
+      csv += `${c.fecha},${c.hora_inicio},${c.hora_fin},${c.tipo_cita},${c.notario ? c.notario.nombre : ""},${c.apoderado ? c.apoderado.nombre : ""},${c.vc}\n`;
+    });
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    saveAs(blob, "citas_dashboard.csv");
+  };
+
+  // -----------------------------
+  // GRÁFICO DE ACTIVIDAD SEMANAL
+  // -----------------------------
+  useEffect(() => {
+    const ctx = document.getElementById("graficoActividad");
+
+    if (!ctx) return;
+
+    new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: ["Citas", "VC", "Presencial"],
+        datasets: [
+          {
+            label: "Actividad semanal",
+            data: [
+              actividad_semanal.citas,
+              actividad_semanal.vc,
+              actividad_semanal.presencial,
+            ],
+            borderColor: "#1F3A5F",
+            backgroundColor: "rgba(31,58,95,0.3)",
+            tension: 0.3,
+          },
+        ],
+      },
+    });
+  }, [actividad_semanal]);
 
   return (
     <div className="space-y-10 p-6">
@@ -59,31 +136,87 @@ export default function DashboardPage() {
         Dashboard de Firmas
       </h2>
 
-      {/* 🔵 KPIs principales */}
+      {/* 🔵 KPIs */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="p-6 bg-blue-50 border border-blue-200 rounded-xl shadow-sm">
           <div className="text-lg font-semibold">📅 Citas del día</div>
-          <div className="text-4xl font-bold text-blue-700">
-            {kpis.total_citas_hoy}
-          </div>
+          <div className="text-4xl font-bold text-blue-700">{kpis.total_citas_hoy}</div>
         </div>
 
         <div className="p-6 bg-purple-50 border border-purple-200 rounded-xl shadow-sm">
           <div className="text-lg font-semibold">🎥 Videoconferencia</div>
-          <div className="text-4xl font-bold text-purple-700">
-            {kpis.vc_hoy}
-          </div>
+          <div className="text-4xl font-bold text-purple-700">{kpis.vc_hoy}</div>
         </div>
 
         <div className="p-6 bg-green-50 border border-green-200 rounded-xl shadow-sm">
           <div className="text-lg font-semibold">📍 Presencial</div>
-          <div className="text-4xl font-bold text-green-700">
-            {kpis.presencial_hoy}
-          </div>
+          <div className="text-4xl font-bold text-green-700">{kpis.presencial_hoy}</div>
         </div>
       </div>
 
-      {/* 📅 Citas del día (tabla con ordenación + paginación) */}
+      {/* 🔍 FILTROS */}
+      <div className="bg-white p-4 rounded-xl shadow space-y-4">
+        <h3 className="text-xl font-bold" style={{ color: "#1F3A5F" }}>Filtros</h3>
+
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <input
+            type="text"
+            placeholder="Buscar…"
+            className="border p-2 rounded"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+
+          <select
+            className="border p-2 rounded"
+            value={filtroFirma}
+            onChange={(e) => setFiltroFirma(e.target.value)}
+          >
+            <option value="TODAS">Todas las firmas</option>
+            <option value="VC">Videoconferencia</option>
+            <option value="PRESENCIAL">Presencial</option>
+          </select>
+
+          <select
+            className="border p-2 rounded"
+            value={filtroNotario}
+            onChange={(e) => setFiltroNotario(e.target.value)}
+          >
+            <option value="TODOS">Todos los notarios</option>
+            {citas_dia.map((c) =>
+              c.notario ? (
+                <option key={c.notario.id} value={c.notario.id}>
+                  {c.notario.nombre} {c.notario.apellidos}
+                </option>
+              ) : null
+            )}
+          </select>
+
+          <select
+            className="border p-2 rounded"
+            value={filtroApoderado}
+            onChange={(e) => setFiltroApoderado(e.target.value)}
+          >
+            <option value="TODOS">Todos los apoderados</option>
+            {citas_dia.map((c) =>
+              c.apoderado ? (
+                <option key={c.apoderado.id} value={c.apoderado.id}>
+                  {c.apoderado.nombre} {c.apoderado.apellidos}
+                </option>
+              ) : null
+            )}
+          </select>
+        </div>
+
+        <button
+          onClick={exportarExcel}
+          className="px-4 py-2 bg-blue-600 text-white rounded"
+        >
+          📄 Exportar a Excel
+        </button>
+      </div>
+
+      {/* 📅 TABLA */}
       <div className="bg-white rounded-xl shadow p-4">
         <h3 className="text-xl font-bold mb-4" style={{ color: "#1F3A5F" }}>
           Citas del día
@@ -92,34 +225,18 @@ export default function DashboardPage() {
         <table className="w-full text-sm border-collapse">
           <thead>
             <tr className="bg-gray-100 text-left">
-              <th
-                className="p-2 border cursor-pointer"
-                onClick={() => ordenar("fecha")}
-              >
+              <th className="p-2 border cursor-pointer" onClick={() => ordenar("fecha")}>
                 Fecha {iconoOrden("fecha")}
               </th>
-
-              <th
-                className="p-2 border cursor-pointer"
-                onClick={() => ordenar("hora_inicio")}
-              >
+              <th className="p-2 border cursor-pointer" onClick={() => ordenar("hora_inicio")}>
                 Hora {iconoOrden("hora_inicio")}
               </th>
-
-              <th
-                className="p-2 border cursor-pointer"
-                onClick={() => ordenar("tipo_cita")}
-              >
+              <th className="p-2 border cursor-pointer" onClick={() => ordenar("tipo_cita")}>
                 Tipo {iconoOrden("tipo_cita")}
               </th>
-
               <th className="p-2 border">Notario</th>
               <th className="p-2 border">Apoderado</th>
-
-              <th
-                className="p-2 border cursor-pointer"
-                onClick={() => ordenar("vc")}
-              >
+              <th className="p-2 border cursor-pointer" onClick={() => ordenar("vc")}>
                 Firma {iconoOrden("vc")}
               </th>
             </tr>
@@ -141,19 +258,13 @@ export default function DashboardPage() {
                   </td>
                   <td className="p-2 border">{cita.tipo_cita}</td>
                   <td className="p-2 border">
-                    {cita.notario
-                      ? `${cita.notario.nombre} ${cita.notario.apellidos}`
-                      : "—"}
+                    {cita.notario ? `${cita.notario.nombre} ${cita.notario.apellidos}` : "—"}
                   </td>
                   <td className="p-2 border">
-                    {cita.apoderado
-                      ? `${cita.apoderado.nombre} ${cita.apoderado.apellidos}`
-                      : "—"}
+                    {cita.apoderado ? `${cita.apoderado.nombre} ${cita.apoderado.apellidos}` : "—"}
                   </td>
                   <td className="p-2 border">
-                    {cita.vc === "SI"
-                      ? "🎥 Videoconferencia"
-                      : "📍 Presencial"}
+                    {cita.vc === "SI" ? "🎥 Videoconferencia" : "📍 Presencial"}
                   </td>
                 </tr>
               ))
@@ -171,9 +282,7 @@ export default function DashboardPage() {
             Anterior
           </button>
 
-          <span>
-            Página {page} de {totalPaginas}
-          </span>
+          <span>Página {page} de {totalPaginas}</span>
 
           <button
             disabled={page === totalPaginas}
@@ -183,6 +292,14 @@ export default function DashboardPage() {
             Siguiente
           </button>
         </div>
+      </div>
+
+      {/* 📊 GRÁFICO ACTIVIDAD */}
+      <div className="bg-white rounded-xl shadow p-4">
+        <h3 className="text-xl font-bold mb-4" style={{ color: "#1F3A5F" }}>
+          Actividad semanal
+        </h3>
+        <canvas id="graficoActividad" height="120"></canvas>
       </div>
 
       {/* 👤 Firmas por apoderado */}

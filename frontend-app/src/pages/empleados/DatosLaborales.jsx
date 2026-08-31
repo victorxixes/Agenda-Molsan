@@ -8,20 +8,20 @@ export default function DatosLaborales({ empleadoId }) {
   const [secciones, setSecciones] = useState([]);
   const [cargos, setCargos] = useState([]);
 
+useEffect(() => {
+  fetch(`${import.meta.env.VITE_API_URL}/maestros/departamentos`)
+    .then((r) => r.json())
+    .then(setDepartamentos);
 
+  fetch(`${import.meta.env.VITE_API_URL}/maestros/secciones`)
+    .then((r) => r.json())
+    .then(setSecciones);
 
-    fetch(`${import.meta.env.VITE_API_URL}/maestros/departamentos`)
-      .then((r) => r.json())
-      .then(setDepartamentos);
+  fetch(`${import.meta.env.VITE_API_URL}/maestros/cargos`)
+    .then((r) => r.json())
+    .then(setCargos);
+}, [empleadoId]);
 
-    fetch(`${import.meta.env.VITE_API_URL}/maestros/secciones`)
-      .then((r) => r.json())
-      .then(setSecciones);
-
-    fetch(`${import.meta.env.VITE_API_URL}/maestros/cargos`)
-      .then((r) => r.json())
-      .then(setCargos);
-  }, [empleadoId]);
 
   if (!empleadoActual) return <div className="p-6">Cargando datos laborales...</div>;
 

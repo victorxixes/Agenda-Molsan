@@ -156,5 +156,12 @@ def dashboard_full(db: Session = Depends(get_db)):
         "citas_dia": citas_dia_serializadas,
         "por_apoderado": por_apoderado,
         "citas_por_hora": citas_por_hora_serializadas,
-        "actividad_semanal": actividad_semanal
+        "actividad_semanal": actividad_semanal,
+
+        # 🔥 RESTAURADO PARA QUE EL FRONT NO PETE
+        "ctn": {
+            "notarios": 0,
+            "zonas": 0,
+            "firmas": 0
+        }
     }

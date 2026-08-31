@@ -18,17 +18,37 @@ export default function EditarEmpleado({ empleadoId }) {
   const [secciones, setSecciones] = useState([]);
   const [cargos, setCargos] = useState([]);
 
-  const [form, setForm] = useState({
-    nombre: "",
-    apellidos: "",
-    usuario: "",
-    email_empresa: "",
-    rol_id: "",
-    activo: true,
-    departamento_id: "",
-    seccion_id: "",
-    cargo_id: "",
-  });
+ const [form, setForm] = useState({
+  // Datos personales
+  nombre: "",
+  apellidos: "",
+  dni: "",
+  telefono: "",
+  email_personal: "",
+  direccion: "",
+  fecha_nacimiento: "",
+  alergias: "",
+  persona_contacto: "",
+  telefono_contacto: "",
+  observaciones: "",
+
+  // Datos laborales
+  departamento_id: "",
+  seccion_id: "",
+  cargo_id: "",
+  email_empresa: "",
+  extension: "",
+  fecha_alta: "",
+  fecha_baja: "",
+
+  // Rol y estado
+  rol_id: "",
+  activo: true,
+
+  // Usuario
+  usuario: "",
+});
+
 
   // Cargar empleado + roles + maestros
   useEffect(() => {

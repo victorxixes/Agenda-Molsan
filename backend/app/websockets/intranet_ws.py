@@ -13,23 +13,23 @@ async def intranet_ws(websocket: WebSocket):
     await websocket.accept()
 
     try:
+        # Esperar el primer mensaje del cliente
         data = await websocket.receive_json()
-    except Exception:
-        await websocket.close()
-        return
+        usuario_id = data.get("usuario_id")
 
-    usuario_id = data.get("usuario_id")
-    if not usuario_id:
-        await websocket.close()
-        return
+        if not usuario_id:
+            await websocket.close()
+            return
 
-    intranet_connections[usuario_id] = websocket
-    print(f"[WS-INTRANET] Conectado: {usuario_id}")
+        intranet_connections[usuario_id] = websocket
+        print(f"[WS-INTRANET] Conectado: {usuario_id}")
 
-    try:
+        # Mantener la conexión abierta
         while True:
             try:
                 await websocket.receive_text()
+            except WebSocketDisconnect:
+                break
             except Exception:
                 continue
 
@@ -37,8 +37,7 @@ async def intranet_ws(websocket: WebSocket):
         print(f"[WS-INTRANET] Desconectado: {usuario_id}")
 
     finally:
-        if usuario_id in intranet_connections:
-            del intranet_connections[usuario_id]
+        intranet_connections.pop(usuario_id, None)
 
 
 async def intranet_broadcast(evento: dict):

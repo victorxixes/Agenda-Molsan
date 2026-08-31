@@ -10,24 +10,27 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
 # ---------------------------------------------------------
-# LOGIN EMPLEADOS (USANDO EL LOGIN BLINDADO DEL SERVICE)
+# LOGIN EMPLEADOS
 # ---------------------------------------------------------
 @router.post("/login")
 def login_empleado(data: LoginRequest, db: Session = Depends(get_db)):
-    print("USUARIO RECIBIDO:", data.usuario)
-    print("PASSWORD RECIBIDO:", data.password)
-
     resultado = login_service(db, data.usuario, data.password)
 
     empleado = resultado["empleado"]
     token = resultado["token"]
 
     return {
-        "empleado_id": empleado.id,
-        "nombre": empleado.nombre,
-        "foto": empleado.foto,
-        "modulos": empleado.modulos_visibles,
-        "permisos": empleado.permisos_modulo,
+        "empleado_id": empleado["id"],
+        "nombre": empleado["nombre"],
+        "foto": empleado["foto"] if "foto" in empleado else None,
+
+        # 🔥 Seguridad unificada
+        "rol_id": empleado["rol_id"],
+        "rol_nombre": empleado["rol_nombre"],
+
+        "modulos_visibles": empleado["modulos_visibles"],
+        "permisos_modulo": empleado["permisos_modulo"],
+
         "token": token
     }
 
@@ -58,9 +61,13 @@ def login_admin(data: LoginRequest):
         raise HTTPException(status_code=400, detail="Contraseña incorrecta")
 
     return {
-        "id": 1,
+        "empleado_id": 1,
         "nombre": "Administrador",
-        "avatar_url": "https://agenda-intranet-b.onrender.com/static/avatar.png",
+        "foto": "https://agenda-intranet-b.onrender.com/static/avatar.png",
+
+        # 🔥 Seguridad unificada
+        "rol_id": 0,
+        "rol_nombre": "admin",
 
         "modulos_visibles": [
             "dashboard",
@@ -98,5 +105,5 @@ def login_admin(data: LoginRequest):
             "documentos": ["ver", "crear", "editar"]
         },
 
-        "rol": "admin"
+        "token": "admin-token"
     }

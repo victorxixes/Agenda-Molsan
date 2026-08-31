@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import axios from "../../api/axios";
-import { saveAs } from "file-saver";
 import { Chart, LineController, LineElement, PointElement, LinearScale, Title, CategoryScale } from "chart.js";
 
 Chart.register(LineController, LineElement, PointElement, LinearScale, Title, CategoryScale);
@@ -91,15 +90,22 @@ export default function DashboardPage() {
   // EXPORTAR A EXCEL
   // -----------------------------
   const exportarExcel = () => {
-    let csv = "Fecha,Hora Inicio,Hora Fin,Tipo,Notario,Apoderado,Firma\n";
+  let csv = "Fecha,Hora Inicio,Hora Fin,Tipo,Notario,Apoderado,Firma\n";
 
-    citasOrdenadas.forEach((c) => {
-      csv += `${c.fecha},${c.hora_inicio},${c.hora_fin},${c.tipo_cita},${c.notario ? c.notario.nombre : ""},${c.apoderado ? c.apoderado.nombre : ""},${c.vc}\n`;
-    });
+  citasOrdenadas.forEach((c) => {
+    csv += `${c.fecha},${c.hora_inicio},${c.hora_fin},${c.tipo_cita},${c.notario ? c.notario.nombre : ""},${c.apoderado ? c.apoderado.nombre : ""},${c.vc}\n`;
+  });
 
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
-    saveAs(blob, "citas_dashboard.csv");
-  };
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement("a");
+  link.href = url;
+  link.setAttribute("download", "citas_dashboard.csv");
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
 
   // -----------------------------
   // GRÁFICO DE ACTIVIDAD SEMANAL

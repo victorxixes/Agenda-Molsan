@@ -1,5 +1,3 @@
-
-
 from pydantic import BaseModel
 from typing import List, Optional, Dict
 
@@ -18,16 +16,19 @@ class PermisoOut(PermisoBase):
 # ---------------------------------------------------------
 # ROLES
 # ---------------------------------------------------------
+# ---------------------------------------------------------
+# ROLES
+# ---------------------------------------------------------
 class RolBase(BaseModel):
     nombre: str
     descripcion: Optional[str] = None
 
 class RolCreate(RolBase):
-    permisos: List[PermisoBase]
+    pass
 
 class RolOut(RolBase):
     id: int
-    permisos: List[PermisoOut]
+
     class Config:
         orm_mode = True
 

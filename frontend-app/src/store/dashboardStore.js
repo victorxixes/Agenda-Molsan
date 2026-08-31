@@ -6,21 +6,16 @@ export const useDashboardStore = create((set) => ({
 
   cargarResumen: async () => {
     try {
-      const raw = await dashboardAPI.resumen();
+      // 🔥 Ahora llamamos al endpoint nuevo
+      const raw = await dashboardAPI.full();
 
       const safe = {
-        firmas_realizadas: raw?.firmas_realizadas || {
-          videoconferencia: 0,
-          presencial: 0
-        },
-
-        firmas_pendientes: raw?.firmas_pendientes || {
-          videoconferencia: 0,
-          presencial: 0
-        },
-
+        kpis: raw?.kpis || {},
+        citas_dia: raw?.citas_dia || [],
         por_apoderado: raw?.por_apoderado || [],
-        citas_dia: raw?.citas_dia || []
+        citas_por_hora: raw?.citas_por_hora || [],
+        actividad_semanal: raw?.actividad_semanal || {},
+        ctn: raw?.ctn || {}
       };
 
       set({ resumen: safe });
@@ -30,10 +25,12 @@ export const useDashboardStore = create((set) => ({
 
       set({
         resumen: {
-          firmas_realizadas: { videoconferencia: 0, presencial: 0 },
-          firmas_pendientes: { videoconferencia: 0, presencial: 0 },
+          kpis: {},
+          citas_dia: [],
           por_apoderado: [],
-          citas_dia: []
+          citas_por_hora: [],
+          actividad_semanal: {},
+          ctn: {}
         }
       });
     }

@@ -27,7 +27,15 @@ async def intranet_ws(websocket: WebSocket):
         # Mantener la conexión abierta
         while True:
             try:
-                await websocket.receive_text()
+                data = await websocket.receive_json()
+
+                # ⭐ IGNORAR HEARTBEAT
+                if data.get("tipo") == "ping":
+                    continue
+
+                # Si algún día quieres procesar mensajes entrantes, aquí irían
+                # print("[WS-INTRANET] Mensaje recibido:", data)
+
             except WebSocketDisconnect:
                 break
             except Exception:

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import axios from "../api/axios";
 
 export default function DashboardPage() {
   const [data, setData] = useState(null);

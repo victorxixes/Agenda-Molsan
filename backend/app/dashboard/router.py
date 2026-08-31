@@ -5,7 +5,6 @@ from datetime import date, timedelta
 
 from backend.app.database import get_db
 from backend.app.agenda.models import Cita
-from backend.app.agenda.models import Notario as NotarioAgenda
 from backend.app.empleados.models import Empleado
 
 router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
@@ -25,27 +24,23 @@ def dashboard_full(db: Session = Depends(get_db)):
 
     for c in citas_dia:
 
-        # NOTARIO (usar el notario del módulo Agenda)
+        # NOTARIO (relación ORM ya cargada)
         notario = None
-        if c.notario_id:
-            n = db.query(NotarioAgenda).filter(NotarioAgenda.id == c.notario_id).first()
-            if n:
-                notario = {
-                    "id": n.id,
-                    "nombre": n.nombre,
-                    "apellidos": n.apellidos
-                }
+        if c.notario:
+            notario = {
+                "id": c.notario.id,
+                "nombre": c.notario.nombre,
+                "apellidos": c.notario.apellidos
+            }
 
         # Apoderado
         apoderado = None
-        if c.apoderado_id:
-            a = db.query(Empleado).filter(Empleado.id == c.apoderado_id).first()
-            if a:
-                apoderado = {
-                    "id": a.id,
-                    "nombre": a.nombre,
-                    "apellidos": a.apellidos
-                }
+        if c.apoderado:
+            apoderado = {
+                "id": c.apoderado.id,
+                "nombre": c.apoderado.nombre,
+                "apellidos": c.apoderado.apellidos
+            }
 
         citas_dia_serializadas.append({
             "id": c.id,

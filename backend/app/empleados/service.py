@@ -11,6 +11,8 @@ from backend.app.auth.service import crear_token, serializar_empleado
 # ---------------------------------------------------------
 
 def hash_password(password: str) -> str:
+    if not password:
+        return ""
     return hashlib.sha256(password.encode()).hexdigest()
 
 
@@ -24,6 +26,7 @@ def login_empleado(db: Session, usuario: str, password: str):
     if not empleado:
         return None
 
+    # Comparación SHA256
     if not empleado.password:
         return None
 
@@ -45,6 +48,17 @@ def login_empleado(db: Session, usuario: str, password: str):
 
 def crear_empleado(db: Session, data: EmpleadoCreate):
 
+    # Evitar violaciones de FK: 0 → None
+    if data.departamento_id == 0:
+        data.departamento_id = None
+    if data.seccion_id == 0:
+        data.seccion_id = None
+    if data.cargo_id == 0:
+        data.cargo_id = None
+    if data.rol_id == 0:
+        data.rol_id = None
+
+    # Hash seguro
     hashed_password = hash_password(data.password) if data.password else None
 
     empleado = Empleado(
@@ -71,6 +85,7 @@ def crear_empleado(db: Session, data: EmpleadoCreate):
         password=hashed_password,
         foto=data.foto,
         rol_id=data.rol_id,
+        # JSONB: nombres EXACTOS del modelo
         modulos_visibles_list=data.modulos_visibles_list or [],
         permisos_modulo_dict=data.permisos_modulo_dict or {},
     )
@@ -92,17 +107,23 @@ def editar_empleado(db: Session, empleado_id: int, data: EmpleadoUpdate):
     if not empleado:
         return None
 
-    # Campos simples
+    # Evitar violaciones de FK: 0 → None
+    for campo in ["departamento_id", "seccion_id", "cargo_id", "rol_id"]:
+        valor = getattr(data, campo, None)
+        if valor == 0:
+            setattr(data, campo, None)
+
+    # Actualizar campos simples
     for campo, valor in data.dict(exclude_unset=True).items():
         if campo in ["modulos_visibles_list", "permisos_modulo_dict", "password"]:
             continue
         setattr(empleado, campo, valor)
 
-    # Password (si viene)
-    if data.password is not None:
+    # Actualizar password si viene en el update
+    if data.password is not None and data.password != "":
         empleado.password = hash_password(data.password)
 
-    # JSONB
+    # Actualizar JSONB
     if data.modulos_visibles_list is not None:
         empleado.modulos_visibles_list = data.modulos_visibles_list
 
@@ -119,7 +140,7 @@ def editar_empleado(db: Session, empleado_id: int, data: EmpleadoUpdate):
 # ELIMINAR EMPLEADO
 # ---------------------------------------------------------
 
-def eliminar_empleado(db: Session, empleado_id: int):
+def eliminar_empleado(db: Session, empleado_id: int) -> bool:
     empleado = db.query(Empleado).filter(Empleado.id == empleado_id).first()
     if not empleado:
         return False

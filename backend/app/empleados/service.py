@@ -4,7 +4,7 @@ from backend.app.empleados.schemas import EmpleadoCreate, EmpleadoUpdate
 from backend.app.seguridad.models import Rol
 from passlib.context import CryptContext
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["sha256_crypt"], deprecated="auto")
 
 
 # ---------------------------------------------------------
@@ -12,7 +12,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 # ---------------------------------------------------------
 def crear_empleado(db: Session, data: EmpleadoCreate):
 
-    hashed_password = pwd_context.hash(data.password) if data.password else None
+hashed_password = pwd_context.hash(data.password[:72])
 
     empleado = Empleado(
         nombre=data.nombre,

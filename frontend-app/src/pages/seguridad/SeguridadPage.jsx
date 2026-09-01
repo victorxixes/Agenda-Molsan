@@ -1,13 +1,22 @@
 import RolesList from "./RolesList";
-import CrearRol from "./CrearRol";
+import RolForm from "./RolForm";
+import RolDetalle from "./RolDetalle";
+import ModulosRol from "./ModulosRol";
+import PermisosRol from "./PermisosRol";
+import Auditoria from "./Auditoria";
 import EventosSeguridad from "./EventosSeguridad";
 
 export default function SeguridadPage() {
   return (
-    <div className="p-6 space-y-10">
-      <RolesList />
-      <CrearRol />
-      <EventosSeguridad />
-    </div>
+    <Routes>
+      <Route path="roles" element={<RolesList />} />
+      <Route path="roles/nuevo" element={<RolForm />} />
+      <Route path="roles/:id" element={<RolDetalle />} />
+      <Route path="roles/:id/modulos" element={<ModulosRol />} />
+      <Route path="roles/:id/permisos" element={<PermisosRol />} />
+
+      <Route path="auditoria" element={<Auditoria />} />
+      <Route path="eventos" element={<EventosSeguridad />} />
+    </Routes>
   );
 }

@@ -1,28 +1,40 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlalchemy.orm import Session
 import json
-import asyncio
-from datetime import datetime
 
 from backend.app.database import get_db
 from backend.app.empleados.models import Empleado
-from backend.app.seguridad.models import Rol
 from backend.app.empleados.schemas import EmpleadoCreate, EmpleadoUpdate, EmpleadoResponse
-from backend.app.empleados.service import crear_empleado, editar_empleado as editar_empleado_service, listar_empleados
+from backend.app.empleados.service import (
+    crear_empleado,
+    editar_empleado as editar_empleado_service,
+    listar_empleados,
+    obtener_empleado,
+    eliminar_empleado
+)
 from backend.app.websockets.empleados_ws import broadcast_empleados
 
 router = APIRouter(prefix="/empleados", tags=["Empleados"])
 
+
+# ---------------------------------------------------------
+# SANEAR CAMPOS JSONB → SQLite
+# ---------------------------------------------------------
 def _sanear_jsonb_empleado(e: Empleado):
 
+    # Relaciones anuladas para evitar recursión
     e.departamento = None
     e.seccion = None
     e.cargo = None
 
+    # Nombre del rol
     e.rol_nombre = e.rol.nombre if e.rol else None
 
-    # modulos_visibles_list
+    # -----------------------------
+    # MODULOS VISIBLES
+    # -----------------------------
     mv = e.modulos_visibles_list
+
     if isinstance(mv, str):
         try:
             mv = json.loads(mv)
@@ -31,14 +43,17 @@ def _sanear_jsonb_empleado(e: Empleado):
     elif mv is None:
         mv = []
 
-    # compatibilidad con ERP antiguo
+    # Compatibilidad ERP antiguo
     if hasattr(e, "modulos_visibles") and e.modulos_visibles:
         mv = e.modulos_visibles
 
     e.modulos_visibles_list = mv
 
-    # permisos_modulo_dict
+    # -----------------------------
+    # PERMISOS POR MÓDULO
+    # -----------------------------
     pm = e.permisos_modulo_dict
+
     if isinstance(pm, str):
         try:
             pm = json.loads(pm)
@@ -54,28 +69,52 @@ def _sanear_jsonb_empleado(e: Empleado):
 
     return e
 
+
+# ---------------------------------------------------------
+# LISTAR EMPLEADOS
+# ---------------------------------------------------------
 @router.get("", response_model=list[EmpleadoResponse])
 async def listar(db: Session = Depends(get_db)):
     empleados = listar_empleados(db)
-    return [_sanear_jsonb_empleado(e) for e in empleados]
+    empleados = [_sanear_jsonb_empleado(e) for e in empleados]
 
+    await broadcast_empleados()  # WebSocket
+    return empleados
+
+
+# ---------------------------------------------------------
+# CREAR EMPLEADO
+# ---------------------------------------------------------
 @router.post("/", response_model=EmpleadoResponse)
 async def crear(data: EmpleadoCreate, db: Session = Depends(get_db)):
     empleado = crear_empleado(db, data)
     empleado = _sanear_jsonb_empleado(empleado)
+
+    await broadcast_empleados()
     return empleado
 
+
+# ---------------------------------------------------------
+# EDITAR EMPLEADO
+# ---------------------------------------------------------
 @router.put("/{empleado_id}", response_model=EmpleadoResponse)
 async def editar(empleado_id: int, data: EmpleadoUpdate, db: Session = Depends(get_db)):
     empleado = editar_empleado_service(db, empleado_id, data)
     if not empleado:
         raise HTTPException(status_code=404, detail="Empleado no encontrado")
+
     empleado = _sanear_jsonb_empleado(empleado)
+
+    await broadcast_empleados()
     return empleado
 
+
+# ---------------------------------------------------------
+# ACTUALIZAR MÓDULOS DEL EMPLEADO
+# ---------------------------------------------------------
 @router.put("/{empleado_id}/modulos", response_model=EmpleadoResponse)
 async def actualizar_modulos(empleado_id: int, modulos: dict, db: Session = Depends(get_db)):
-    empleado = db.query(Empleado).filter(Empleado.id == empleado_id).first()
+    empleado = obtener_empleado(db, empleado_id)
     if not empleado:
         raise HTTPException(status_code=404, detail="Empleado no encontrado")
 
@@ -86,11 +125,17 @@ async def actualizar_modulos(empleado_id: int, modulos: dict, db: Session = Depe
 
     db.commit()
     db.refresh(empleado)
+
+    await broadcast_empleados()
     return _sanear_jsonb_empleado(empleado)
 
+
+# ---------------------------------------------------------
+# ACTUALIZAR PERMISOS DEL EMPLEADO
+# ---------------------------------------------------------
 @router.put("/{empleado_id}/permisos", response_model=EmpleadoResponse)
 async def actualizar_permisos(empleado_id: int, permisos: dict, db: Session = Depends(get_db)):
-    empleado = db.query(Empleado).filter(Empleado.id == empleado_id).first()
+    empleado = obtener_empleado(db, empleado_id)
     if not empleado:
         raise HTTPException(status_code=404, detail="Empleado no encontrado")
 
@@ -101,4 +146,19 @@ async def actualizar_permisos(empleado_id: int, permisos: dict, db: Session = De
 
     db.commit()
     db.refresh(empleado)
+
+    await broadcast_empleados()
     return _sanear_jsonb_empleado(empleado)
+
+
+# ---------------------------------------------------------
+# ELIMINAR EMPLEADO
+# ---------------------------------------------------------
+@router.delete("/{empleado_id}")
+async def eliminar(empleado_id: int, db: Session = Depends(get_db)):
+    ok = eliminar_empleado(db, empleado_id)
+    if not ok:
+        raise HTTPException(status_code=404, detail="Empleado no encontrado")
+
+    await broadcast_empleados()
+    return {"status": "ok"}

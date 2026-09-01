@@ -18,7 +18,7 @@ export const useAuthStore = create((set, get) => ({
       // 🔥 El backend devuelve:
       // empleado_id, nombre, foto, modulos, permisos, token
       const userData = {
-        id: data.empleado_id,
+        id: data.usuario_id,
         nombre: data.nombre,
         usuario: usuario, // el backend no lo devuelve
         foto: data.foto || null,

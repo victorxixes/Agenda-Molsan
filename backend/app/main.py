@@ -18,10 +18,11 @@ from backend.app.agenda.models import Cita
 from backend.app.intranet.noticias.models import Noticia
 from backend.app.intranet.documentos.models import Documento
 from backend.app.logs.models import Log
-from backend.app.mensajes.models import Mensaje, UsuarioEstado   # 🔥 CORRECTO
-from backend.app.mensajes.router_fix import router as mensajes_fix_router
+from backend.app.mensajes.models import Mensaje, UsuarioEstado   # ✔ correcto
 
-# 🔥 Fix schema mensajes ANTES de crear tablas
+# ---------------------------------------------------------
+# FIX SCHEMA MENSAJES (ANTES DE CREAR TABLAS)
+# ---------------------------------------------------------
 from backend.app.mensajes.fix_schema import fix_mensajes_schema
 fix_mensajes_schema()
 
@@ -36,7 +37,6 @@ app = FastAPI(title="Agenda Intranet Backend")
 # ---------------------------------------------------------
 # CORS
 # ---------------------------------------------------------
-
 origins = [
     "https://agenda-intranet-f.onrender.com",
     "https://agenda-intranet-frontend.onrender.com",
@@ -52,7 +52,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 # ---------------------------------------------------------
 # STATIC FILES
 # ---------------------------------------------------------
@@ -63,7 +62,7 @@ app.mount("/api/fotos", StaticFiles(directory="/tmp"), name="fotos")
 # IMPORTAR ROUTERS (REST)
 # ---------------------------------------------------------
 
-# Seguridad (solo routers válidos)
+# Seguridad
 from backend.app.seguridad.router_roles import router as seguridad_roles_router
 from backend.app.seguridad.permisos_router import router as permisos_router
 from backend.app.seguridad.router_eventos import router as seguridad_eventos_router
@@ -96,6 +95,9 @@ from backend.app.intranet.documentos.router import router as documentos_router
 from backend.app.logs.router import router as logs_router
 from backend.app.mensajes.router import router as mensajes_router
 from backend.app.realtime.router import router as realtime_router
+
+# Router de reparación del schema
+from backend.app.mensajes.router_fix import router as mensajes_fix_router
 
 # Utilidades
 from backend.app.utilidades.router import router as utilidades_router
@@ -138,6 +140,8 @@ app.include_router(informes_router, prefix="/api")
 app.include_router(logs_router, prefix="/api")
 app.include_router(mensajes_router, prefix="/api")
 app.include_router(realtime_router, prefix="/api")
+
+# Router de reparación del schema
 app.include_router(mensajes_fix_router)
 
 # Utilidades

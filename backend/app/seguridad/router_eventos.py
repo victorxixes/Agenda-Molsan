@@ -17,7 +17,6 @@ def listar_eventos(
     db: Session = Depends(get_db),
     usuario = Depends(get_current_user)
 ):
-    # 🔥 Seguridad real
     require_permission(usuario, "seguridad.ver")
 
     query = db.query(EventoSeguridad)

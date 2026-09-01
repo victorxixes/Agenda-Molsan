@@ -37,7 +37,7 @@ def conectados(db: Session = Depends(get_db)):
             "nombre": empleado.nombre,
             "apellidos": empleado.apellidos,
             "foto": empleado.foto,
-            "rol": empleado.rol_nombre,
+            "rol": empleado.rol.nombre if empleado.rol else None,
             "ultima_actividad": c.ultima_actividad,
         })
 

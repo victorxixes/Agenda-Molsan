@@ -1,8 +1,6 @@
-from sqlalchemy import Column, Integer, String, Text, ForeignKey
+from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
 from backend.app.database import Base
-from backend.app.agenda.models import Cita
-
 
 class Notaria(Base):
     __tablename__ = "ctn_notarios"
@@ -10,33 +8,29 @@ class Notaria(Base):
 
     id = Column(Integer, primary_key=True, index=True)
 
-    # Datos básicos
-    codigo = Column(String(50), nullable=True)
-    nombre = Column(String(150), nullable=True)
-    apellidos = Column(String(150), nullable=True)
-    nif = Column(String(50), nullable=True)
-    telefono = Column(String(50), nullable=True)
+    codigo = Column(String, nullable=True)
+    nombre = Column(String, nullable=True)
+    apellidos = Column(String, nullable=True)
+    nif = Column(String, nullable=True)
+    telefono = Column(String, nullable=True)
 
-    # Departamentos internos
-    departamento_cancelaciones = Column(String(150), nullable=True)
-    departamento_copias = Column(String(150), nullable=True)
-    otros_departamentos = Column(String(255), nullable=True)
+    departamento_cancelaciones = Column(String, nullable=True)
+    departamento_copias = Column(String, nullable=True)
+    otros_departamentos = Column(String, nullable=True)
 
-    # Dirección
-    cp = Column(String(10), nullable=True)
-    provincia = Column(String(100), nullable=True)
-    municipio = Column(String(100), nullable=True)
+    cp = Column(String, nullable=True)
+    provincia = Column(String, nullable=True)
+    municipio = Column(String, nullable=True)
 
-    # VC (valor catastral o código interno)
-    vc = Column(String(50), nullable=True)
+    vc = Column(String, nullable=True)
 
-    # Apoderados
-    apoderado = Column(String(150), nullable=True)
-    apoderado_s = Column(String(150), nullable=True)
+    apoderado = Column(String, nullable=True)
+    apoderado_s = Column(String, nullable=True)
 
-    # Observaciones
-    observacion = Column(Text, nullable=True)
+    observacion = Column(String, nullable=True)
 
-    # Relación opcional con apoderados (si existe tabla)
+    # Campo que usabas para importar apoderados
     apoderado_id = Column(Integer, nullable=True)
 
+    # Relación antigua con Cita del CTN (si existía)
+    # citas = relationship("Cita", back_populates="notario")

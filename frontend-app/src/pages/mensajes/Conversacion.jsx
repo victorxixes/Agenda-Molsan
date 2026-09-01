@@ -29,12 +29,13 @@ export default function ConversacionPage() {
     cargarConectados();
   }, []);
 
-  useEffect(() => {
-    if (usuarioId && destinatarioId) {
-      cargarConversacion(usuarioId, destinatarioId);
-      marcarLeido(destinatarioId, usuarioId);
-    }
-  }, [usuarioId, destinatarioId]);
+useEffect(() => {
+  if (!usuarioId || !destinatarioId) return;   // ← FIX
+
+  cargarConversacion(usuarioId, destinatarioId);
+  marcarLeido(destinatarioId, usuarioId);
+}, [usuarioId, destinatarioId]);
+
 
   return (
     <div className="p-4 grid grid-cols-3 gap-4">

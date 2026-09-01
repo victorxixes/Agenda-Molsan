@@ -1,45 +1,35 @@
-import hashlib
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
-from passlib.context import CryptContext
 
 from backend.app.database import get_db
 from backend.app.auth.schemas import LoginRequest
-from backend.app.empleados.models import Empleado
+from backend.app.empleados.service import login_empleado
+from backend.app.auth.service import crear_token, serializar_empleado
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
-pwd_context = CryptContext(schemes=["sha256_crypt"], deprecated="auto")
-
 
 # ---------------------------------------------------------
-# LOGIN EMPLEADOS
+# LOGIN EMPLEADOS (USANDO EL SERVICIO REAL)
 # ---------------------------------------------------------
 @router.post("/login")
 def login(data: LoginRequest, db: Session = Depends(get_db)):
-    empleado = db.query(Empleado).filter(Empleado.usuario == data.usuario).first()
+    resultado = login_empleado(db, data.usuario, data.password)
 
-    if not empleado:
-        raise HTTPException(status_code=401, detail="Usuario no encontrado")
-
-    if not pwd_context.verify(data.password, empleado.password):
-        raise HTTPException(status_code=401, detail="Contraseña incorrecta")
+    if not resultado:
+        raise HTTPException(status_code=401, detail="Credenciales incorrectas")
 
     return {
-        "empleado_id": empleado.id,
-        "nombre": empleado.nombre,
-        "foto": empleado.foto,
-        "rol_id": empleado.rol_id,
-        "rol_nombre": empleado.rol.nombre if empleado.rol else None,
-        "modulos_visibles": empleado.modulos_visibles_list,
-        "permisos_modulo": empleado.permisos_modulo_dict,
-        "token": "empleado-token"
+        "token": resultado["token"],
+        "empleado": resultado["empleado"]
     }
 
 
 # ---------------------------------------------------------
 # LOGIN ADMIN
 # ---------------------------------------------------------
+import hashlib
+
 def hash_password(password: str) -> str:
     return hashlib.sha256(password.encode()).hexdigest()
 

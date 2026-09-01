@@ -18,7 +18,7 @@ router = APIRouter(prefix="/empleados", tags=["Empleados"])
 
 
 # ---------------------------------------------------------
-# SANEAR CAMPOS JSONB → SQLite
+# SANEAR CAMPOS JSONB (PostgreSQL)
 # ---------------------------------------------------------
 def _sanear_jsonb_empleado(e: Empleado):
 
@@ -40,12 +40,15 @@ def _sanear_jsonb_empleado(e: Empleado):
             mv = json.loads(mv)
         except:
             mv = []
-    elif mv is None:
+    elif not isinstance(mv, list):
         mv = []
 
     # Compatibilidad ERP antiguo
     if hasattr(e, "modulos_visibles") and e.modulos_visibles:
-        mv = e.modulos_visibles
+        try:
+            mv = json.loads(e.modulos_visibles) if isinstance(e.modulos_visibles, str) else e.modulos_visibles
+        except:
+            mv = []
 
     e.modulos_visibles_list = mv
 
@@ -59,11 +62,15 @@ def _sanear_jsonb_empleado(e: Empleado):
             pm = json.loads(pm)
         except:
             pm = {}
-    elif pm is None:
+    elif not isinstance(pm, dict):
         pm = {}
 
+    # Compatibilidad ERP antiguo
     if hasattr(e, "permisos_modulo") and e.permisos_modulo:
-        pm = e.permisos_modulo
+        try:
+            pm = json.loads(e.permisos_modulo) if isinstance(e.permisos_modulo, str) else e.permisos_modulo
+        except:
+            pm = {}
 
     e.permisos_modulo_dict = pm
 
@@ -78,7 +85,7 @@ async def listar(db: Session = Depends(get_db)):
     empleados = listar_empleados(db)
     empleados = [_sanear_jsonb_empleado(e) for e in empleados]
 
-    await broadcast_empleados()  # WebSocket
+    await broadcast_empleados()
     return empleados
 
 
@@ -118,10 +125,12 @@ async def actualizar_modulos(empleado_id: int, modulos: dict, db: Session = Depe
     if not empleado:
         raise HTTPException(status_code=404, detail="Empleado no encontrado")
 
-    if "modulos_visibles" in modulos:
-        empleado.modulos_visibles_list = modulos["modulos_visibles"]
-    else:
-        empleado.modulos_visibles_list = modulos
+    # Asegurar JSONB válido
+    nuevos = modulos.get("modulos_visibles", modulos)
+    if not isinstance(nuevos, list):
+        raise HTTPException(status_code=400, detail="modulos_visibles debe ser una lista")
+
+    empleado.modulos_visibles_list = nuevos
 
     db.commit()
     db.refresh(empleado)
@@ -139,10 +148,30 @@ async def actualizar_permisos(empleado_id: int, permisos: dict, db: Session = De
     if not empleado:
         raise HTTPException(status_code=404, detail="Empleado no encontrado")
 
-    if "permisos_modulo" in permisos:
-        empleado.permisos_modulo_dict = permisos["permisos_modulo"]
-    else:
-        empleado.permisos_modulo_dict = permisos
+    nuevos = permisos.get("permisos_modulo", permisos)
+    if not isinstance(nuevos, dict):
+        raise HTTPException(status_code=400, detail="permisos_modulo debe ser un dict")
+
+    empleado.permisos_modulo_dict = nuevos
+
+    db.commit()
+    db.refresh(empleado)
+
+    await broadcast_empleados()
+    return _sanear_jsonb_empleado(empleado)
+
+
+# ---------------------------------------------------------
+# SUBIR FOTO DEL EMPLEADO
+# ---------------------------------------------------------
+@router.post("/{empleado_id}/foto", response_model=EmpleadoResponse)
+async def subir_foto(empleado_id: int, archivo: UploadFile = File(...), db: Session = Depends(get_db)):
+    empleado = obtener_empleado(db, empleado_id)
+    if not empleado:
+        raise HTTPException(status_code=404, detail="Empleado no encontrado")
+
+    contenido = await archivo.read()
+    empleado.foto = contenido.decode("latin1")  # o base64 si prefieres
 
     db.commit()
     db.refresh(empleado)

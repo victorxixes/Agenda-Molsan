@@ -19,7 +19,6 @@ class EmpleadoBase(BaseModel):
     seccion_id: Optional[int] = None
     cargo_id: Optional[int] = None
 
-    # 🔥 ROL DEL ERP
     rol_id: Optional[int] = None
 
     email_empresa: Optional[str] = None
@@ -34,15 +33,22 @@ class EmpleadoBase(BaseModel):
 
     foto: Optional[str] = None
 
-    modulos_visibles: Optional[List[str]] = Field(default_factory=list)
-    permisos_modulo: Optional[Dict[str, List[str]]] = Field(default_factory=dict)
+    # JSONB — nombres correctos según tu modelo SQLAlchemy
+    modulos_visibles_list: Optional[List[str]] = Field(default_factory=list)
+    permisos_modulo_dict: Optional[Dict[str, List[str]]] = Field(default_factory=dict)
+
 
 class EmpleadoCreate(EmpleadoBase):
+    # ⭐ Obligatorios
     nombre: str
     dni: str
+    usuario: str
+    password: str
+
 
 class EmpleadoUpdate(EmpleadoBase):
     pass
+
 
 class EmpleadoResponse(EmpleadoBase):
     id: int
@@ -51,6 +57,7 @@ class EmpleadoResponse(EmpleadoBase):
     class Config:
         orm_mode = True
         arbitrary_types_allowed = True
+
 
 class EmpleadoSearchResponse(BaseModel):
     total: int

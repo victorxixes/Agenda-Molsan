@@ -13,17 +13,18 @@ router = APIRouter(prefix="/seguridad/eventos", tags=["Seguridad - Eventos"])
 def listar_eventos(
     nivel: str | None = Query(None),
     usuario_id: int | None = Query(None),
-    limite: int = Query(200),
+    limite: int = Query(200, ge=1, le=500),
     db: Session = Depends(get_db),
     usuario = Depends(get_current_user)
 ):
     # 🔥 Seguridad real
-    require_permission(db, usuario, "seguridad.ver")
+    require_permission(usuario, "seguridad.ver")
 
     query = db.query(EventoSeguridad)
 
     if nivel:
-        query = query.filter(EventoSeguridad.detalle.ilike(f"%[{nivel.upper()}]%"))
+        nivel = nivel.upper().strip()
+        query = query.filter(EventoSeguridad.detalle.ilike(f"%[{nivel}]%"))
 
     if usuario_id:
         query = query.filter(EventoSeguridad.usuario_id == usuario_id)

@@ -1,12 +1,17 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
+import os
 
-# ⭐ FORZAMOS SQLITE (ignoramos settings)
-DATABASE_URL = "sqlite:///./molsan.db"
+# ⭐ LEEMOS LA VARIABLE DE ENTORNO
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+# ⭐ SI NO EXISTE, FALLAMOS (NO USAMOS SQLITE)
+if not DATABASE_URL:
+    raise RuntimeError("DATABASE_URL no está definida")
 
 engine = create_engine(
     DATABASE_URL,
-    connect_args={"check_same_thread": False}   # obligatorio en SQLite
+    pool_pre_ping=True
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

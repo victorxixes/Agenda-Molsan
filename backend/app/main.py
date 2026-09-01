@@ -96,7 +96,6 @@ from backend.app.intranet.documentos.router import router as documentos_router
 from backend.app.logs.router import router as logs_router
 from backend.app.mensajes.router import router as mensajes_router
 from backend.app.realtime.router import router as realtime_router
-app.include_router(mensajes_repair_router, prefix="/api")
 
 # Router de reparación del schema
 from backend.app.mensajes.router_fix import router as mensajes_fix_router
@@ -111,6 +110,7 @@ from backend.app.utilidades.router_force import router as force_router
 # ---------------------------------------------------------
 
 app.include_router(auth_router, prefix="/api")
+
 
 # Seguridad
 app.include_router(seguridad_roles_router, prefix="/api")
@@ -142,6 +142,8 @@ app.include_router(informes_router, prefix="/api")
 app.include_router(logs_router, prefix="/api")
 app.include_router(mensajes_router, prefix="/api")
 app.include_router(realtime_router, prefix="/api")
+app.include_router(mensajes_repair_router, prefix="/api")
+
 
 # Router de reparación del schema
 app.include_router(mensajes_fix_router, prefix="/api")

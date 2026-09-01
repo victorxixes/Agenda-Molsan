@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 
 from backend.app.database import get_db
-from backend.app.auth.schemas import LoginRequest, LoginSchema
+from backend.app.auth.schemas import LoginRequest
 from backend.app.empleados.models import Empleado
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
@@ -16,7 +16,7 @@ pwd_context = CryptContext(schemes=["sha256_crypt"], deprecated="auto")
 # LOGIN EMPLEADOS
 # ---------------------------------------------------------
 @router.post("/login")
-def login(data: LoginSchema, db: Session = Depends(get_db)):
+def login(data: LoginRequest, db: Session = Depends(get_db)):
     empleado = db.query(Empleado).filter(Empleado.usuario == data.usuario).first()
 
     if not empleado:

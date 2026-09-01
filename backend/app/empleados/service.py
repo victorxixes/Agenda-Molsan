@@ -72,8 +72,8 @@ def crear_empleado(db: Session, data: EmpleadoCreate):
     )
 
     # JSONB correctos según tu modelo
-    empleado.modulos_visibles = data.modulos_visibles or []
-    empleado.permisos_modulo = data.permisos_modulo or {}
+empleado.modulos_visibles_list = data.modulos_visibles_list or []
+empleado.permisos_modulo_dict = data.permisos_modulo_dict or {}
 
 
     db.add(empleado)
@@ -98,11 +98,12 @@ def editar_empleado(db: Session, empleado_id: int, data: EmpleadoUpdate):
             continue
         setattr(empleado, campo, valor)
 
-    if data.modulos_visibles_list is not None:
-        empleado.modulos_visibles_list = data.modulos_visibles_list
+  if data.modulos_visibles_list is not None:
+    empleado.modulos_visibles_list = data.modulos_visibles_list
 
-    if data.permisos_modulo_dict is not None:
-        empleado.permisos_modulo_dict = data.permisos_modulo_dict
+if data.permisos_modulo_dict is not None:
+    empleado.permisos_modulo_dict = data.permisos_modulo_dict
+
 
     db.commit()
     db.refresh(empleado)

@@ -11,10 +11,9 @@ export default function PermisosEmpleado({ empleadoId }) {
   const [permisos, setPermisos] = useState({});
   const [editando, setEditando] = useState(false);
 
-  // Actualizar permisos cuando llega el empleado (solo si no está editando)
   useEffect(() => {
     if (empleadoActual && !editando) {
-      setPermisos(empleadoActual.permisos_modulo || {});
+      setPermisos(empleadoActual.permisos_modulo_dict || {});
     }
   }, [empleadoActual]);
 
@@ -34,10 +33,9 @@ export default function PermisosEmpleado({ empleadoId }) {
   };
 
   const guardarCambios = async () => {
-    await guardarPermisos(empleadoId, permisos);
-
-    // ❌ NO recargar empleado
-    // El store + realtime ya actualizan automáticamente
+    await guardarPermisos(empleadoId, {
+      permisos_modulo_dict: permisos,
+    });
 
     alert("Permisos actualizados correctamente");
     setEditando(false);

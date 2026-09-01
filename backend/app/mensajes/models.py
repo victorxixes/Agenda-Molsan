@@ -10,8 +10,8 @@ class Mensaje(Base):
 
     id = Column(Integer, primary_key=True, index=True)
 
-    remitente_id = Column(Integer, ForeignKey("empleados.id"), nullable=False)
-    destinatario_id = Column(Integer, ForeignKey("empleados.id"), nullable=False)
+    remitente_id = Column(Integer, ForeignKey("empleados_v2.id"), nullable=False)
+    destinatario_id = Column(Integer, ForeignKey("empleados_v2.id"), nullable=False)
 
     # ✔ Debe coincidir con la BD
     mensaje = Column(String, nullable=False)
@@ -28,7 +28,7 @@ class UsuarioEstado(Base):
     id = Column(Integer, primary_key=True, index=True)
 
     # ✔ La tabla correcta es empleados
-    usuario_id = Column(Integer, ForeignKey("empleados.id"), nullable=False)
+    usuario_id = Column(Integer, ForeignKey("empleados_v2.id"), nullable=False)
 
     conectado = Column(Boolean, default=False)
     ultima_actividad = Column(DateTime, default=datetime.utcnow)

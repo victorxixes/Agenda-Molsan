@@ -22,19 +22,22 @@ def login_empleado(data: LoginRequest, db: Session = Depends(get_db)):
     # ⭐ PASO 1: asegurar foto válida
     foto = empleado.foto if empleado.foto else "default-avatar.png"
 
-    return {
-        "empleado_id": empleado.id,
-        "nombre": empleado.nombre,
-        "foto": foto,   # ← siempre válido
+return {
+    "usuario_id": empleado.id,        # ← ID REAL DEL CHAT
+    "empleado_id": empleado.id,       # ← ID DEL MÓDULO EMPLEADOS
 
-        "rol_id": empleado.rol_id,
-        "rol_nombre": empleado.rol.nombre if empleado.rol else None,
+    "nombre": empleado.nombre,
+    "foto": foto,
 
-        "modulos_visibles": empleado.modulos_visibles or [],
-        "permisos_modulo": empleado.permisos_modulo or {},
+    "rol_id": empleado.rol_id,
+    "rol_nombre": empleado.rol.nombre if empleado.rol else None,
 
-        "token": token
-    }
+    "modulos_visibles": empleado.modulos_visibles or [],
+    "permisos_modulo": empleado.permisos_modulo or {},
+
+    "token": token
+}
+
 
 
 @router.post("/login/")

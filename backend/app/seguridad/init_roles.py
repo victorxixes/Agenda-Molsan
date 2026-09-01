@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from backend.app.database import SessionLocal
 from backend.app.seguridad.models import Rol
+import json
 
 # ---------------------------------------------------------
 # ROLES BASE
@@ -14,6 +15,7 @@ ROLES_BASE = [
             "documentos", "intranet", "mensajes", "seguridad"
         ],
         "permisos_modulo_dict": {
+            "*": ["ver", "crear", "editar", "eliminar"],  # 🔥 superadmin real
             "dashboard": ["ver"],
             "agenda": ["ver", "crear", "editar", "eliminar"],
             "empleados": ["ver", "crear", "editar", "eliminar"],
@@ -73,18 +75,40 @@ def init_roles():
     db: Session = SessionLocal()
 
     for rol_data in ROLES_BASE:
+
+        # Saneo JSONB por si vienen como string
+        mv = rol_data["modulos_visibles_list"]
+        if isinstance(mv, str):
+            try:
+                mv = json.loads(mv)
+            except:
+                mv = []
+
+        pm = rol_data["permisos_modulo_dict"]
+        if isinstance(pm, str):
+            try:
+                pm = json.loads(pm)
+            except:
+                pm = {}
+
         existe = db.query(Rol).filter(Rol.nombre == rol_data["nombre"]).first()
+
         if not existe:
             nuevo = Rol(
                 nombre=rol_data["nombre"],
                 descripcion=rol_data["descripcion"],
-                modulos_visibles_list=rol_data["modulos_visibles_list"],
-                permisos_modulo_dict=rol_data["permisos_modulo_dict"],
+                modulos_visibles_list=mv,
+                permisos_modulo_dict=pm,
+
+                # Compatibilidad ERP antiguo
+                modulos_visibles=mv,
+                permisos_modulo=pm,
             )
             db.add(nuevo)
 
     db.commit()
     db.close()
+
 
 def init_seguridad():
     init_roles()

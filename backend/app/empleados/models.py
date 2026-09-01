@@ -53,8 +53,8 @@ class Empleado(Base):
     rol = relationship("Rol", back_populates="empleados")
 
     # JSONB (PostgreSQL)
-   modulos_visibles = Column(JSONB, nullable=True, default=list)
-   permisos_modulo = Column(JSONB, nullable=True, default=dict)
+    modulos_visibles_list = Column(JSONB, nullable=True, default=list)
+    permisos_modulo_dict = Column(JSONB, nullable=True, default=dict)
 
     # Fecha creación
     creado_en = Column(DateTime, default=datetime.utcnow)

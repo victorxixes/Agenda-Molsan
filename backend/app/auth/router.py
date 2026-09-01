@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from backend.app.database import get_db
 from backend.app.auth.schemas import LoginRequest
-from backend.app.empleados.service import login as login_service
+from backend.app.auth.service import login as login_service
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 

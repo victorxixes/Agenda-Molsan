@@ -13,16 +13,17 @@ router = APIRouter(prefix="/seguridad/auditoria", tags=["Seguridad - Auditoría"
 def listar_auditoria(
     modulo: str | None = Query(None),
     usuario_id: int | None = Query(None),
-    limite: int = Query(200),
+    limite: int = Query(200, ge=1, le=500),
     db: Session = Depends(get_db),
     usuario = Depends(get_current_user)
 ):
     # 🔥 Seguridad real
-    require_permission(db, usuario, "seguridad.ver")
+    require_permission(usuario, "seguridad.ver")
 
     query = db.query(Auditoria)
 
     if modulo:
+        modulo = modulo.strip()
         query = query.filter(Auditoria.modulo == modulo)
 
     if usuario_id:
@@ -35,4 +36,3 @@ def listar_auditoria(
     )
 
     return registros
-

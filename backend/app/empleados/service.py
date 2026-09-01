@@ -12,7 +12,6 @@ pwd_context = CryptContext(schemes=["sha256_crypt"], deprecated="auto")
 # ---------------------------------------------------------
 def crear_empleado(db: Session, data: EmpleadoCreate):
 
-    # SHA256_crypt no tiene límite de 72 bytes, pero truncamos por seguridad
     hashed_password = pwd_context.hash(data.password[:72]) if data.password else None
 
     empleado = Empleado(
@@ -41,7 +40,6 @@ def crear_empleado(db: Session, data: EmpleadoCreate):
         rol_id=data.rol_id,
     )
 
-    # ⭐ Convertir listas/dicts → JSON usando setters
     empleado.modulos_visibles_list = data.modulos_visibles or []
     empleado.permisos_modulo_dict = data.permisos_modulo or {}
 
@@ -61,13 +59,11 @@ def editar_empleado(db: Session, empleado_id: int, data: EmpleadoUpdate):
     if not empleado:
         return None
 
-    # Actualizar campos simples
     for campo, valor in data.dict(exclude_unset=True).items():
         if campo in ["modulos_visibles", "permisos_modulo"]:
-            continue  # Se manejan abajo
+            continue
         setattr(empleado, campo, valor)
 
-    # ⭐ Convertir listas/dicts → JSON usando setters
     if data.modulos_visibles is not None:
         empleado.modulos_visibles_list = data.modulos_visibles
 
@@ -101,7 +97,7 @@ def listar_empleados(db: Session):
 
 
 # ---------------------------------------------------------
-# ⭐ OBTENER EMPLEADO (NECESARIO PARA mensajes/router.py)
+# OBTENER EMPLEADO
 # ---------------------------------------------------------
 def obtener_empleado(db: Session, empleado_id: int):
     return db.query(Empleado).filter(Empleado.id == empleado_id).first()

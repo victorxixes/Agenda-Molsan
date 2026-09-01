@@ -2,21 +2,85 @@ from sqlalchemy.orm import Session
 from backend.app.database import SessionLocal
 from backend.app.seguridad.models import Rol
 
+# ---------------------------------------------------------
+# ROLES BASE
+# ---------------------------------------------------------
 ROLES_BASE = [
-    {"nombre": "Administrador", "descripcion": "Acceso total al ERP"},
-    {"nombre": "Direccion", "descripcion": "Gestión y supervisión"},
-    {"nombre": "Apoderado", "descripcion": "Acceso a agenda y firmas"},
-    {"nombre": "Gestor", "descripcion": "Acceso limitado"},
-    {"nombre": "Invitado", "descripcion": "Acceso mínimo"},
+    {
+        "nombre": "Administrador",
+        "descripcion": "Acceso total al ERP",
+        "modulos_visibles_list": [
+            "dashboard", "agenda", "empleados", "ctn",
+            "documentos", "intranet", "mensajes", "seguridad"
+        ],
+        "permisos_modulo_dict": {
+            "dashboard": ["ver"],
+            "agenda": ["ver", "crear", "editar", "eliminar"],
+            "empleados": ["ver", "crear", "editar", "eliminar"],
+            "ctn": ["ver", "crear", "editar", "eliminar"],
+            "documentos": ["ver", "crear", "editar", "eliminar"],
+            "intranet": ["ver", "crear", "editar", "eliminar"],
+            "mensajes": ["ver", "crear", "editar", "eliminar"],
+            "seguridad": ["ver", "crear", "editar", "eliminar"],
+        }
+    },
+    {
+        "nombre": "Direccion",
+        "descripcion": "Gestión y supervisión",
+        "modulos_visibles_list": [
+            "dashboard", "agenda", "empleados", "documentos", "mensajes"
+        ],
+        "permisos_modulo_dict": {
+            "dashboard": ["ver"],
+            "agenda": ["ver", "editar"],
+            "empleados": ["ver"],
+            "documentos": ["ver", "crear"],
+            "mensajes": ["ver", "crear"],
+        }
+    },
+    {
+        "nombre": "Apoderado",
+        "descripcion": "Acceso a agenda y firmas",
+        "modulos_visibles_list": ["agenda", "mensajes"],
+        "permisos_modulo_dict": {
+            "agenda": ["ver", "crear"],
+            "mensajes": ["ver", "crear"],
+        }
+    },
+    {
+        "nombre": "Gestor",
+        "descripcion": "Acceso limitado",
+        "modulos_visibles_list": ["agenda", "documentos"],
+        "permisos_modulo_dict": {
+            "agenda": ["ver"],
+            "documentos": ["ver"],
+        }
+    },
+    {
+        "nombre": "Invitado",
+        "descripcion": "Acceso mínimo",
+        "modulos_visibles_list": ["intranet"],
+        "permisos_modulo_dict": {
+            "intranet": ["ver"],
+        }
+    },
 ]
 
+# ---------------------------------------------------------
+# INICIALIZAR ROLES
+# ---------------------------------------------------------
 def init_roles():
     db: Session = SessionLocal()
 
-    for rol in ROLES_BASE:
-        existe = db.query(Rol).filter(Rol.nombre == rol["nombre"]).first()
+    for rol_data in ROLES_BASE:
+        existe = db.query(Rol).filter(Rol.nombre == rol_data["nombre"]).first()
         if not existe:
-            nuevo = Rol(**rol)
+            nuevo = Rol(
+                nombre=rol_data["nombre"],
+                descripcion=rol_data["descripcion"],
+                modulos_visibles_list=rol_data["modulos_visibles_list"],
+                permisos_modulo_dict=rol_data["permisos_modulo_dict"],
+            )
             db.add(nuevo)
 
     db.commit()

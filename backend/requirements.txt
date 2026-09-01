@@ -5,8 +5,6 @@ python-multipart
 passlib[bcrypt]
 python-jose
 SQLAlchemy==1.4.49
-psycopg2-binary
-python-dotenv
 requests
 pandas
 openpyxl

@@ -156,6 +156,26 @@ async def eliminar(empleado_id: int, db: Session = Depends(get_db)):
 
     return {"detail": "Empleado eliminado correctamente"}
 
+# ---------------------------------------------------------
+# FIX: AÑADIR COLUMNAS FALTANTES A LA TABLA EMPLEADOS
+# ---------------------------------------------------------
+@router.get("/fix-columns")
+async def fix_columns(db: Session = Depends(get_db)):
+    try:
+        db.execute("""
+            ALTER TABLE empleados 
+            ADD COLUMN IF NOT EXISTS modulos_visibles_list JSONB DEFAULT '[]';
+        """)
+        db.execute("""
+            ALTER TABLE empleados 
+            ADD COLUMN IF NOT EXISTS permisos_modulo_dict JSONB DEFAULT '{}';
+        """)
+        db.commit()
+        return {"status": "ok", "detail": "Columnas añadidas correctamente"}
+    except Exception as e:
+        return {"status": "error", "detail": str(e)}
+
+
 
 # ---------------------------------------------------------
 # CAMBIAR ESTADO

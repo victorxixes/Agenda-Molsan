@@ -5,11 +5,19 @@ from backend.app.empleados.models import Empleado
 from backend.app.empleados.schemas import EmpleadoCreate, EmpleadoUpdate
 from backend.app.auth.service import crear_token, serializar_empleado
 
+
+# ---------------------------------------------------------
+# HASH SEGURO
+# ---------------------------------------------------------
 def hash_password(password: str) -> str:
     if not password:
         return ""
     return hashlib.sha256(password.encode()).hexdigest()
 
+
+# ---------------------------------------------------------
+# LOGIN EMPLEADO
+# ---------------------------------------------------------
 def login_empleado(db: Session, usuario: str, password: str):
     empleado = db.query(Empleado).filter(Empleado.usuario == usuario).first()
     if not empleado:
@@ -18,17 +26,40 @@ def login_empleado(db: Session, usuario: str, password: str):
         return None
     if empleado.password != hash_password(password):
         return None
+
     return {
         "token": crear_token(empleado),
         "empleado": serializar_empleado(empleado)
     }
 
+
+# ---------------------------------------------------------
+# OBTENER EMPLEADO POR ID (NECESARIO PARA MENSAJES, SEGURIDAD, ETC.)
+# ---------------------------------------------------------
+def obtener_empleado(db: Session, empleado_id: int):
+    return db.query(Empleado).filter(Empleado.id == empleado_id).first()
+
+
+# ---------------------------------------------------------
+# OBTENER EMPLEADO POR USUARIO (UTIL PARA LOGIN)
+# ---------------------------------------------------------
+def obtener_empleado_por_usuario(db: Session, usuario: str):
+    return db.query(Empleado).filter(Empleado.usuario == usuario).first()
+
+
+# ---------------------------------------------------------
+# CREAR EMPLEADO
+# ---------------------------------------------------------
 def crear_empleado(db: Session, data: EmpleadoCreate):
 
     # Evitar FK rotas
     for campo in ["departamento_id", "seccion_id", "cargo_id", "rol_id"]:
         if getattr(data, campo) == 0:
             setattr(data, campo, None)
+
+    # Validación de usuario duplicado
+    if obtener_empleado_por_usuario(db, data.usuario):
+        raise ValueError("El usuario ya existe")
 
     empleado = Empleado(
         nombre=data.nombre,
@@ -62,35 +93,59 @@ def crear_empleado(db: Session, data: EmpleadoCreate):
     db.commit()
     db.refresh(empleado)
     return empleado
+
+
 # ---------------------------------------------------------
 # LISTAR EMPLEADOS
 # ---------------------------------------------------------
 def listar_empleados(db: Session):
     return db.query(Empleado).order_by(Empleado.id.asc()).all()
 
+
+# ---------------------------------------------------------
+# EDITAR EMPLEADO
+# ---------------------------------------------------------
 def editar_empleado(db: Session, empleado_id: int, data: EmpleadoUpdate):
     empleado = db.query(Empleado).filter(Empleado.id == empleado_id).first()
     if not empleado:
         return None
 
+    # Evitar FK rotas
     for campo in ["departamento_id", "seccion_id", "cargo_id", "rol_id"]:
         if getattr(data, campo) == 0:
             setattr(data, campo, None)
 
+    # Actualizar campos normales
     for campo, valor in data.dict(exclude_unset=True).items():
         if campo in ["modulos_visibles_list", "permisos_modulo_dict", "password"]:
             continue
         setattr(empleado, campo, valor)
 
+    # Actualizar contraseña
     if data.password:
         empleado.password = hash_password(data.password)
 
+    # Actualizar módulos visibles
     if data.modulos_visibles_list is not None:
         empleado.modulos_visibles_list = data.modulos_visibles_list
 
+    # Actualizar permisos del empleado
     if data.permisos_modulo_dict is not None:
         empleado.permisos_modulo_dict = data.permisos_modulo_dict
 
     db.commit()
     db.refresh(empleado)
     return empleado
+
+
+# ---------------------------------------------------------
+# ELIMINAR EMPLEADO
+# ---------------------------------------------------------
+def eliminar_empleado(db: Session, empleado_id: int):
+    empleado = db.query(Empleado).filter(Empleado.id == empleado_id).first()
+    if not empleado:
+        return False
+
+    db.delete(empleado)
+    db.commit()
+    return True

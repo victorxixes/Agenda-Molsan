@@ -1,33 +1,104 @@
-import axios from "./axios";
+import { create } from "zustand";
+import { seguridadAPI } from "../api/seguridad";
 
-export const seguridadAPI = {
+export const useSeguridadStore = create((set, get) => ({
+  roles: [],
+  rolActual: null,
+  eventos: [],
+  auditoria: [],
+  loading: false,
+  error: null,
+
+  // -----------------------------
   // ROLES
-  listarRoles: () =>
-    axios.get("/seguridad/roles").then(r => r.data),
+  // -----------------------------
+  cargarRoles: async () => {
+    try {
+      set({ loading: true });
+      const data = await seguridadAPI.listarRoles();
+      set({ roles: data, loading: false });
+    } catch (err) {
+      set({ loading: false, error: "Error cargando roles" });
+    }
+  },
 
-  obtenerRol: (id) =>
-    axios.get(`/seguridad/roles/${id}`).then(r => r.data),
+  cargarRol: async (id) => {
+    try {
+      set({ loading: true });
+      const data = await seguridadAPI.obtenerRol(id);
+      set({ rolActual: data, loading: false });
+    } catch (err) {
+      set({ loading: false, error: "Error cargando rol" });
+    }
+  },
 
-  crearRol: (data) =>
-    axios.post("/seguridad/roles", data).then(r => r.data),
+  crearRol: async (data) => {
+    try {
+      await seguridadAPI.crearRol(data);
+      await get().cargarRoles();
+    } catch (err) {
+      set({ error: "Error creando rol" });
+    }
+  },
 
-  actualizarRol: (id, data) =>
-    axios.put(`/seguridad/roles/${id}`, data).then(r => r.data),
+  actualizarRol: async (id, data) => {
+    try {
+      await seguridadAPI.actualizarRol(id, data);
+      await get().cargarRol(id);
+      await get().cargarRoles();
+    } catch (err) {
+      set({ error: "Error actualizando rol" });
+    }
+  },
 
-  eliminarRol: (id) =>
-    axios.delete(`/seguridad/roles/${id}`).then(r => r.data),
+  eliminarRol: async (id) => {
+    try {
+      await seguridadAPI.eliminarRol(id);
+      await get().cargarRoles();
+    } catch (err) {
+      set({ error: "Error eliminando rol" });
+    }
+  },
 
-  actualizarPermisosRol: (id, permisos) =>
-    axios.put(`/seguridad/roles/${id}/permisos`, permisos).then(r => r.data),
+  actualizarPermisosRol: async (id, permisos) => {
+    try {
+      await seguridadAPI.actualizarPermisosRol(id, permisos);
+      await get().cargarRol(id);
+    } catch (err) {
+      set({ error: "Error actualizando permisos del rol" });
+    }
+  },
 
-  actualizarModulosRol: (id, modulos) =>
-    axios.put(`/seguridad/roles/${id}/modulos`, modulos).then(r => r.data),
+  actualizarModulosRol: async (id, modulos) => {
+    try {
+      await seguridadAPI.actualizarModulosRol(id, modulos);
+      await get().cargarRol(id);
+    } catch (err) {
+      set({ error: "Error actualizando módulos del rol" });
+    }
+  },
 
-  // AUDITORÍA
-  listarAuditoria: () =>
-    axios.get("/seguridad/auditoria").then(r => r.data),
-
+  // -----------------------------
   // EVENTOS
-  listarEventos: () =>
-    axios.get("/seguridad/eventos").then(r => r.data),
-};
+  // -----------------------------
+  cargarEventos: async () => {
+    try {
+      const data = await seguridadAPI.listarEventos();
+      set({ eventos: data });
+    } catch (err) {
+      set({ error: "Error cargando eventos de seguridad" });
+    }
+  },
+
+  // -----------------------------
+  // AUDITORÍA
+  // -----------------------------
+  cargarAuditoria: async () => {
+    try {
+      const data = await seguridadAPI.listarAuditoria();
+      set({ auditoria: data });
+    } catch (err) {
+      set({ error: "Error cargando auditoría" });
+    }
+  },
+}));

@@ -23,11 +23,11 @@ from backend.app.mensajes.models import Mensaje, UsuarioEstado   # ✔ correcto
 # ---------------------------------------------------------
 # FIX SCHEMA MENSAJES (ANTES DE CREAR TABLAS)
 # ---------------------------------------------------------
-from backend.app.mensajes.fix_schema import fix_mensajes_schema
-fix_mensajes_schema()
-
 sqlalchemy.orm.configure_mappers()
 Base.metadata.create_all(bind=engine)
+
+from backend.app.mensajes.fix_schema import fix_mensajes_schema
+fix_mensajes_schema()
 
 # ---------------------------------------------------------
 # APP

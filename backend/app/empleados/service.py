@@ -10,7 +10,7 @@ from backend.app.auth.service import crear_token, serializar_empleado
 # HASH SEGURO (SHA256) — COMPATIBLE CON RENDER
 # ---------------------------------------------------------
 
-def hash_password(password: str):
+def hash_password(password: str) -> str:
     return hashlib.sha256(password.encode()).hexdigest()
 
 
@@ -24,7 +24,9 @@ def login_empleado(db: Session, usuario: str, password: str):
     if not empleado:
         return None
 
-    # Comparación SHA256
+    if not empleado.password:
+        return None
+
     if empleado.password != hash_password(password):
         return None
 
@@ -33,7 +35,7 @@ def login_empleado(db: Session, usuario: str, password: str):
 
     return {
         "token": token,
-        "empleado": empleado_serializado
+        "empleado": empleado_serializado,
     }
 
 
@@ -69,12 +71,9 @@ def crear_empleado(db: Session, data: EmpleadoCreate):
         password=hashed_password,
         foto=data.foto,
         rol_id=data.rol_id,
+        modulos_visibles_list=data.modulos_visibles_list or [],
+        permisos_modulo_dict=data.permisos_modulo_dict or {},
     )
-
-    # JSONB correctos según tu modelo
-empleado.modulos_visibles_list = data.modulos_visibles_list or []
-empleado.permisos_modulo_dict = data.permisos_modulo_dict or {}
-
 
     db.add(empleado)
     db.commit()
@@ -93,17 +92,22 @@ def editar_empleado(db: Session, empleado_id: int, data: EmpleadoUpdate):
     if not empleado:
         return None
 
+    # Campos simples
     for campo, valor in data.dict(exclude_unset=True).items():
-        if campo in ["modulos_visibles_list", "permisos_modulo_dict"]:
+        if campo in ["modulos_visibles_list", "permisos_modulo_dict", "password"]:
             continue
         setattr(empleado, campo, valor)
 
-  if data.modulos_visibles_list is not None:
-    empleado.modulos_visibles_list = data.modulos_visibles_list
+    # Password (si viene)
+    if data.password is not None:
+        empleado.password = hash_password(data.password)
 
-if data.permisos_modulo_dict is not None:
-    empleado.permisos_modulo_dict = data.permisos_modulo_dict
+    # JSONB
+    if data.modulos_visibles_list is not None:
+        empleado.modulos_visibles_list = data.modulos_visibles_list
 
+    if data.permisos_modulo_dict is not None:
+        empleado.permisos_modulo_dict = data.permisos_modulo_dict
 
     db.commit()
     db.refresh(empleado)

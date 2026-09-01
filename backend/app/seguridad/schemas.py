@@ -1,8 +1,8 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import List, Optional, Dict
 
 # ---------------------------------------------------------
-# PERMISOS
+# PERMISOS (NO se usan en roles, solo en empleados antiguos)
 # ---------------------------------------------------------
 class PermisoBase(BaseModel):
     modulo: str
@@ -13,21 +13,31 @@ class PermisoOut(PermisoBase):
     class Config:
         orm_mode = True
 
+
 # ---------------------------------------------------------
-# ROLES
+# ROLES COMPLETOS
 # ---------------------------------------------------------
 class RolBase(BaseModel):
     nombre: str
     descripcion: Optional[str] = None
+    permisos_modulo_dict: Dict[str, List[str]] = Field(default_factory=dict)
+    modulos_visibles_list: List[str] = Field(default_factory=list)
 
 class RolCreate(RolBase):
     pass
 
-class RolOut(RolBase):
+class RolUpdate(BaseModel):
+    nombre: Optional[str] = None
+    descripcion: Optional[str] = None
+    permisos_modulo_dict: Optional[Dict[str, List[str]]] = None
+    modulos_visibles_list: Optional[List[str]] = None
+
+class RolResponse(RolBase):
     id: int
 
     class Config:
         orm_mode = True
+
 
 # ---------------------------------------------------------
 # EVENTOS DE SEGURIDAD
@@ -50,6 +60,7 @@ class Evento(BaseModel):
 
     class Config:
         orm_mode = True
+
 
 # ---------------------------------------------------------
 # AUDITORÍA

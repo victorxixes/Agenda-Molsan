@@ -4,13 +4,13 @@ from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 
 from backend.app.database import get_db
-from backend.app.auth.schemas import LoginRequest
-from backend.app.auth.service import crear_token, serializar_empleado
+from backend.app.auth.schemas import LoginRequest, LoginSchema
 from backend.app.empleados.models import Empleado
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
 pwd_context = CryptContext(schemes=["sha256_crypt"], deprecated="auto")
+
 
 # ---------------------------------------------------------
 # LOGIN EMPLEADOS
@@ -26,12 +26,15 @@ def login(data: LoginSchema, db: Session = Depends(get_db)):
         raise HTTPException(status_code=401, detail="Contraseña incorrecta")
 
     return {
-        "id": empleado.id,
-        "usuario": empleado.usuario,
+        "empleado_id": empleado.id,
         "nombre": empleado.nombre,
-        "rol_id": empleado.rol_id
+        "foto": empleado.foto,
+        "rol_id": empleado.rol_id,
+        "rol_nombre": empleado.rol.nombre if empleado.rol else None,
+        "modulos_visibles": empleado.modulos_visibles_list,
+        "permisos_modulo": empleado.permisos_modulo_dict,
+        "token": "empleado-token"
     }
-
 
 
 # ---------------------------------------------------------

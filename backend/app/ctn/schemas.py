@@ -29,6 +29,9 @@ class NotariaBase(BaseModel):
 class NotariaCreate(NotariaBase):
     pass
 
+class NotariaUpdate(NotariaBase):
+    pass
+
 
 class NotariaResponse(NotariaBase):
     id: int

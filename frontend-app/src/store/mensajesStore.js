@@ -8,20 +8,11 @@ export const useMensajesStore = create((set, get) => ({
   noLeidos: 0,
   usuarioActual: null,
 
-  // Estado typing del panel de conversación
   typing: false,
-
-  // Estado typing de la lista de conectados
   typingEstados: {},
 
-  // -----------------------------
-  // SET TYPING (panel de chat)
-  // -----------------------------
   setTyping: (estado) => set({ typing: estado }),
 
-  // -----------------------------
-  // SET TYPING ESTADO (lista conectados)
-  // -----------------------------
   setTypingEstado: (usuarioId) => {
     set((state) => ({
       typingEstados: {
@@ -30,7 +21,6 @@ export const useMensajesStore = create((set, get) => ({
       },
     }));
 
-    // limpiar typing después de 2s
     setTimeout(() => {
       set((state) => ({
         typingEstados: {
@@ -41,22 +31,19 @@ export const useMensajesStore = create((set, get) => ({
     }, 2000);
   },
 
-  // -----------------------------
-  // CARGAR CONECTADOS
-  // -----------------------------
   cargarConectados: async () => {
     try {
       const data = await mensajesAPI.conectados();
       set({ conectados: Array.isArray(data) ? data : [] });
     } catch {
-      set({ conectados: [] });
+      set({ conectectados: [] });
     }
   },
 
-  // -----------------------------
-  // CARGAR CONVERSACIÓN
-  // -----------------------------
+  // ⭐ FIX CORRECTO
   cargarConversacion: async (u1, u2) => {
+    if (!u1 || !u2) return;   // ← FIX
+
     try {
       const data = await mensajesAPI.conversacion(u1, u2);
       const safe = Array.isArray(data) ? data : [];
@@ -76,9 +63,6 @@ export const useMensajesStore = create((set, get) => ({
     }
   },
 
-  // -----------------------------
-  // MENSAJE EN TIEMPO REAL
-  // -----------------------------
   agregarMensajeRealtime: (msg) =>
     set((state) => ({
       conversacion: [
@@ -94,9 +78,6 @@ export const useMensajesStore = create((set, get) => ({
       ],
     })),
 
-  // -----------------------------
-  // ENVIAR MENSAJE
-  // -----------------------------
   enviarMensaje: async (data) => {
     try {
       const res = await mensajesAPI.enviar(data);
@@ -114,10 +95,10 @@ export const useMensajesStore = create((set, get) => ({
     }
   },
 
-  // -----------------------------
-  // MARCAR COMO LEÍDO
-  // -----------------------------
+  // ⭐ FIX CORRECTO
   marcarLeido: async (remitente, destinatario) => {
+    if (!remitente || !destinatario) return;   // ← FIX
+
     try {
       await mensajesAPI.marcarLeido(remitente, destinatario);
       await get().cargarConversacion(remitente, destinatario);
@@ -126,9 +107,6 @@ export const useMensajesStore = create((set, get) => ({
     }
   },
 
-  // -----------------------------
-  // CARGAR NO LEÍDOS
-  // -----------------------------
   cargarNoLeidos: async (usuarioId) => {
     try {
       const data = await mensajesAPI.noLeidos(usuarioId);

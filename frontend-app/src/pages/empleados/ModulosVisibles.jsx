@@ -22,15 +22,12 @@ export default function ModulosVisibles({ empleadoId }) {
   const [modulosVisibles, setModulosVisibles] = useState([]);
   const [editando, setEditando] = useState(false);
 
-
-  // Actualizar estado cuando llega el empleado (solo si no está editando)
   useEffect(() => {
     if (empleadoActual && !editando) {
-      setModulosVisibles(empleadoActual.modulos_visibles || []);
+      setModulosVisibles(empleadoActual.modulos_visibles_list || []);
     }
   }, [empleadoActual]);
 
-  // Toggle módulo visible
   const toggleModulo = (modulo) => {
     setEditando(true);
 
@@ -45,12 +42,10 @@ export default function ModulosVisibles({ empleadoId }) {
     setModulosVisibles(nuevos);
   };
 
-  // Guardar cambios
   const guardarCambios = async () => {
-    await guardarModulos(empleadoId, modulosVisibles);
-
-    // ❌ Ya NO llamamos a cargarEmpleado
-    // El store + realtime ya actualizan automáticamente
+    await guardarModulos(empleadoId, {
+      modulos_visibles_list: modulosVisibles,
+    });
 
     alert("Módulos visibles actualizados correctamente");
     setEditando(false);

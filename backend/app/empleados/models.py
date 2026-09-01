@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Boolean, Text, ForeignKey
-from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship
+import json
 
 from backend.app.database import Base
 
@@ -50,6 +50,31 @@ class Empleado(Base):
     rol_id = Column(Integer, ForeignKey("roles.id"), nullable=True)
     rol = relationship("Rol", back_populates="empleados")
 
-    # Módulos y permisos
-    modulos_visibles = Column(JSONB, nullable=True, default=list)
-    permisos_modulo = Column(JSONB, nullable=True, default=dict)
+    # Módulos y permisos (SQLite → TEXT)
+    modulos_visibles = Column(Text, nullable=True, default="[]")
+    permisos_modulo = Column(Text, nullable=True, default="{}")
+
+    # -------------------------
+    # Helpers JSON → Python
+    # -------------------------
+    @property
+    def modulos_visibles_list(self):
+        try:
+            return json.loads(self.modulos_visibles or "[]")
+        except:
+            return []
+
+    @modulos_visibles_list.setter
+    def modulos_visibles_list(self, value):
+        self.modulos_visibles = json.dumps(value)
+
+    @property
+    def permisos_modulo_dict(self):
+        try:
+            return json.loads(self.permisos_modulo or "{}")
+        except:
+            return {}
+
+    @permisos_modulo_dict.setter
+    def permisos_modulo_dict(self, value):
+        self.permisos_modulo = json.dumps(value)

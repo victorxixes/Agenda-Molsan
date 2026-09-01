@@ -19,6 +19,7 @@ from backend.app.intranet.noticias.models import Noticia
 from backend.app.intranet.documentos.models import Documento
 from backend.app.logs.models import Log
 from backend.app.mensajes.models import Mensaje, UsuarioEstado   # 🔥 CORRECTO
+from backend.app.mensajes.router_fix import router as mensajes_fix_router
 
 # 🔥 Fix schema mensajes ANTES de crear tablas
 from backend.app.mensajes.fix_schema import fix_mensajes_schema
@@ -137,6 +138,7 @@ app.include_router(informes_router, prefix="/api")
 app.include_router(logs_router, prefix="/api")
 app.include_router(mensajes_router, prefix="/api")
 app.include_router(realtime_router, prefix="/api")
+app.include_router(mensajes_fix_router)
 
 # Utilidades
 app.include_router(utilidades_router, prefix="/api")

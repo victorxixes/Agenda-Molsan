@@ -29,6 +29,7 @@ class Notaria(Base):
 
     observacion = Column(String, nullable=True)
 
-    # 🔥 RELACIÓN INVERSA CORRECTA
-    citas = relationship("Cita", back_populates="notario")
+    # ⭐ Campo faltante que rompe el importador
+    apoderado_id = Column(Integer, nullable=True)
 
+    citas = relationship("Cita", back_populates="notario")

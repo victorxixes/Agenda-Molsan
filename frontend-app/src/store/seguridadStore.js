@@ -1,113 +1,33 @@
-import { create } from "zustand";
-import { seguridadAPI } from "../api/seguridad";
-import { crearLog } from "../lib/log";
+import axios from "./axios";
 
-export const useSeguridadStore = create((set, get) => ({
-  roles: [],
-  permisosBase: [],
-  permisosRol: {},
-  eventos: [],
-  loading: false,
+export const seguridadAPI = {
+  // ROLES
+  listarRoles: () =>
+    axios.get("/seguridad/roles").then(r => r.data),
 
-  // ---------------------------------------------------------
-  // REALTIME
-  // ---------------------------------------------------------
-  addRealtimeEvent: (ev) =>
-    set((state) => ({
-      eventos: [ev, ...state.eventos].slice(0, 200),
-    })),
+  obtenerRol: (id) =>
+    axios.get(`/seguridad/roles/${id}`).then(r => r.data),
 
-  // ---------------------------------------------------------
-  // CARGAR ROLES
-  // ---------------------------------------------------------
-  cargarRoles: async () => {
-    try {
-      set({ loading: true });
-      const data = await seguridadAPI.listarRoles();
-      set({ roles: Array.isArray(data) ? data : [], loading: false });
-    } catch (err) {
-      set({ loading: false });
-    }
-  },
+  crearRol: (data) =>
+    axios.post("/seguridad/roles", data).then(r => r.data),
 
-  // ---------------------------------------------------------
-  // CARGAR PERMISOS BASE
-  // ---------------------------------------------------------
-  cargarPermisosBase: async () => {
-    try {
-      const data = await seguridadAPI.listarPermisosBase();
-      set({ permisosBase: data || [] });
-    } catch (err) {
-      // manejar error si quieres
-    }
-  },
+  actualizarRol: (id, data) =>
+    axios.put(`/seguridad/roles/${id}`, data).then(r => r.data),
 
-  // ---------------------------------------------------------
-  // CARGAR PERMISOS DE UN ROL
-  // ---------------------------------------------------------
-  cargarPermisosRol: async (rolId) => {
-    try {
-      const data = await seguridadAPI.obtenerPermisosRol(rolId);
-      set((state) => ({
-        permisosRol: {
-          ...state.permisosRol,
-          [rolId]: data || [],
-        },
-      }));
-    } catch (err) {
-      // manejar error si quieres
-    }
-  },
+  eliminarRol: (id) =>
+    axios.delete(`/seguridad/roles/${id}`).then(r => r.data),
 
-  // ---------------------------------------------------------
-  // CREAR ROL
-  // ---------------------------------------------------------
-  crearRol: async (data) => {
-    try {
-      const res = await seguridadAPI.crearRol(data);
+  actualizarPermisosRol: (id, permisos) =>
+    axios.put(`/seguridad/roles/${id}/permisos`, permisos).then(r => r.data),
 
-      await crearLog(
-        "seguridad",
-        "rol_creado",
-        `Rol creado: ${res.nombre}`,
-        res
-      );
+  actualizarModulosRol: (id, modulos) =>
+    axios.put(`/seguridad/roles/${id}/modulos`, modulos).then(r => r.data),
 
-      await get().cargarRoles();
-    } catch (err) {
-      // manejar error
-    }
-  },
+  // AUDITORÍA
+  listarAuditoria: () =>
+    axios.get("/seguridad/auditoria").then(r => r.data),
 
-  // ---------------------------------------------------------
-  // EDITAR ROL
-  // ---------------------------------------------------------
-  editarRol: async (id, data) => {
-    try {
-      const res = await seguridadAPI.actualizarRol(id, data);
-
-      await crearLog(
-        "seguridad",
-        "rol_editado",
-        `Rol editado: ${res.nombre}`,
-        res
-      );
-
-      await get().cargarRoles();
-    } catch (err) {
-      // manejar error
-    }
-  },
-
-  // ---------------------------------------------------------
-  // CARGAR EVENTOS DE SEGURIDAD
-  // ---------------------------------------------------------
-  cargarEventos: async () => {
-    try {
-      const data = await seguridadAPI.listarEventos();
-      set({ eventos: Array.isArray(data) ? data : [] });
-    } catch (err) {
-      // manejar error
-    }
-  },
-}));
+  // EVENTOS
+  listarEventos: () =>
+    axios.get("/seguridad/eventos").then(r => r.data),
+};

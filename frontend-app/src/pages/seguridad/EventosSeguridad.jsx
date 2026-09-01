@@ -13,10 +13,12 @@ export default function EventosSeguridad() {
       <h2 className="text-xl font-bold">Eventos de seguridad</h2>
 
       {eventos.map((ev) => (
-        <div key={ev.id} className="border p-3 rounded">
-          <p className="font-semibold">{ev.tipo}</p>
-          <p className="text-sm text-neutral-600">{ev.descripcion}</p>
-          <p className="text-xs text-neutral-500">{ev.fecha}</p>
+        <div key={ev.id} className="border p-4 rounded">
+          <p><strong>Tipo:</strong> {ev.tipo}</p>
+          <p><strong>Usuario:</strong> {ev.usuario_id}</p>
+          <p><strong>Detalle:</strong> {ev.detalle}</p>
+          <p><strong>IP:</strong> {ev.ip}</p>
+          <p><strong>Fecha:</strong> {ev.creado_en}</p>
         </div>
       ))}
     </div>

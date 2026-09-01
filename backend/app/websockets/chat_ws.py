@@ -39,9 +39,9 @@ async def chat_ws(websocket: WebSocket, usuario_id: int):
 
             # ⭐ MENSAJE NORMAL
             if data.get("tipo") == "mensaje":
-                db: Session = next(get_db_ws())   # 🔥 sesión válida
+                db: Session = next(get_db_ws())   # ✔ sesión válida
                 nuevo = crear_mensaje(db, data)
-                db.close()
+                db.close()                        # ✔ cerrar sesión
 
                 dest = data.get("destinatario_id")
                 if dest in conexiones:

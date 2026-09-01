@@ -4,6 +4,7 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from sqlalchemy.orm import Session
 
 from backend.app.database_ws import get_db_ws
+from backend.app.mensajes.service import crear_mensaje
 
 router = APIRouter(prefix="/ws/chat", tags=["WebSocket Chat"])
 
@@ -25,9 +26,6 @@ async def broadcast_typing(usuario_id: int):
 
 @router.websocket("/{usuario_id}")
 async def chat_ws(websocket: WebSocket, usuario_id: int):
-    # Importar aquí para evitar carga temprana de modelos
-    from backend.app.mensajes.service import crear_mensaje
-
     await websocket.accept()
     conexiones[usuario_id] = websocket
 
@@ -41,8 +39,9 @@ async def chat_ws(websocket: WebSocket, usuario_id: int):
 
             # ⭐ MENSAJE NORMAL
             if data.get("tipo") == "mensaje":
-                db: Session = Depends(get_db_ws)
+                db: Session = next(get_db_ws())   # 🔥 sesión válida
                 nuevo = crear_mensaje(db, data)
+                db.close()
 
                 dest = data.get("destinatario_id")
                 if dest in conexiones:

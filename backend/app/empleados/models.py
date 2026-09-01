@@ -1,11 +1,13 @@
-from sqlalchemy import Column, Integer, String, Boolean, Text, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, Text, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
-import json
+from sqlalchemy.dialects.postgresql import JSONB
+from datetime import datetime
 
 from backend.app.database import Base
 
+
 class Empleado(Base):
-    __tablename__ = "empleados_v2"
+    __tablename__ = "empleados"
 
     id = Column(Integer, primary_key=True, index=True)
 
@@ -40,42 +42,19 @@ class Empleado(Base):
     activo = Column(Boolean, default=True)
 
     # Usuario interno
-    usuario = Column(String(100), nullable=True)
+    usuario = Column(String(100), unique=True, nullable=True)
     password = Column(String(255), nullable=True)
 
     # Foto
     foto = Column(String(255), nullable=True)
 
-    # 🔥 ROL DEL ERP
+    # Rol del ERP
     rol_id = Column(Integer, ForeignKey("roles.id"), nullable=True)
     rol = relationship("Rol", back_populates="empleados")
 
-    # Módulos y permisos (SQLite → TEXT)
-    modulos_visibles = Column(Text, nullable=True, default="[]")
-    permisos_modulo = Column(Text, nullable=True, default="{}")
+    # JSONB (PostgreSQL)
+    modulos_visibles = Column(JSONB, nullable=True, default=list)
+    permisos_modulo = Column(JSONB, nullable=True, default=dict)
 
-    # -------------------------
-    # Helpers JSON → Python
-    # -------------------------
-    @property
-    def modulos_visibles_list(self):
-        try:
-            return json.loads(self.modulos_visibles or "[]")
-        except:
-            return []
-
-    @modulos_visibles_list.setter
-    def modulos_visibles_list(self, value):
-        self.modulos_visibles = json.dumps(value)
-
-    @property
-    def permisos_modulo_dict(self):
-        try:
-            return json.loads(self.permisos_modulo or "{}")
-        except:
-            return {}
-
-    @permisos_modulo_dict.setter
-    def permisos_modulo_dict(self, value):
-        self.permisos_modulo = json.dumps(value)
-
+    # Fecha creación
+    creado_en = Column(DateTime, default=datetime.utcnow)

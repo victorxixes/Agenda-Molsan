@@ -16,6 +16,18 @@ from backend.app.websockets.empleados_ws import broadcast_empleados
 
 router = APIRouter(prefix="/empleados", tags=["Empleados"])
 
+@router.get("/debug-empleados")
+def debug(db: Session = Depends(get_db)):
+    empleados = db.query(Empleado).all()
+    salida = []
+    for e in empleados:
+        try:
+            _sanear_jsonb_empleado(e)
+            salida.append({"id": e.id, "ok": True})
+        except Exception as err:
+            salida.append({"id": e.id, "error": str(err)})
+    return salida
+
 
 # ---------------------------------------------------------
 # SANEAR CAMPOS JSONB (PostgreSQL)

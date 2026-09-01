@@ -3,7 +3,6 @@ from typing import Set
 
 router = APIRouter(prefix="/ws", tags=["empleados_ws"])
 
-# Usamos un set para evitar duplicados y mejorar rendimiento
 conexiones_empleados: Set[WebSocket] = set()
 
 
@@ -17,7 +16,6 @@ async def broadcast_empleados(evento: dict):
         except Exception:
             conexiones_muertas.append(ws)
 
-    # Eliminar conexiones muertas
     for ws in conexiones_muertas:
         conexiones_empleados.discard(ws)
 
@@ -26,13 +24,11 @@ async def broadcast_empleados(evento: dict):
 async def empleados_ws(websocket: WebSocket):
     await websocket.accept()
 
-    # Registrar conexión
     conexiones_empleados.add(websocket)
 
-    # Enviar ACK al conectar
     await websocket.send_json({
         "tipo": "ws_conectado",
-        "descripcion": "Conexión establecida con WS de empleados"
+        "descripcion": "Conexión establecida con WS de empleados",
     })
 
     try:
@@ -40,12 +36,8 @@ async def empleados_ws(websocket: WebSocket):
             try:
                 data = await websocket.receive_json()
 
-                # ⭐ IGNORAR HEARTBEAT
                 if data.get("tipo") == "ping":
                     continue
-
-                # Si algún día quieres procesar mensajes entrantes, aquí irían
-                # print("[WS-EMP] Mensaje recibido:", data)
 
             except WebSocketDisconnect:
                 break
@@ -54,6 +46,5 @@ async def empleados_ws(websocket: WebSocket):
 
     except WebSocketDisconnect:
         pass
-
     finally:
         conexiones_empleados.discard(websocket)

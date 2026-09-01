@@ -72,8 +72,9 @@ def crear_empleado(db: Session, data: EmpleadoCreate):
     )
 
     # JSONB correctos según tu modelo
-    empleado.modulos_visibles_list = data.modulos_visibles_list or []
-    empleado.permisos_modulo_dict = data.permisos_modulo_dict or {}
+    empleado.modulos_visibles = data.modulos_visibles or []
+    empleado.permisos_modulo = data.permisos_modulo or {}
+
 
     db.add(empleado)
     db.commit()

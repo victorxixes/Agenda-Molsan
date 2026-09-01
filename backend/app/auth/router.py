@@ -16,29 +16,22 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
 def login_empleado(data: LoginRequest, db: Session = Depends(get_db)):
     resultado = login_service(db, data.usuario, data.password)
 
-    empleado = resultado["empleado"]   # ← modelo SQLAlchemy
+    empleado = resultado["empleado"]
     token = resultado["token"]
 
-    # ⭐ PASO 1: asegurar foto válida
     foto = empleado.foto if empleado.foto else "default-avatar.png"
 
-return {
-    "usuario_id": empleado.id,        # ← ID REAL DEL CHAT
-    "empleado_id": empleado.id,       # ← ID DEL MÓDULO EMPLEADOS
-
-    "nombre": empleado.nombre,
-    "foto": foto,
-
-    "rol_id": empleado.rol_id,
-    "rol_nombre": empleado.rol.nombre if empleado.rol else None,
-
-    "modulos_visibles": empleado.modulos_visibles or [],
-    "permisos_modulo": empleado.permisos_modulo or {},
-
-    "token": token
-}
-
-
+    return {
+        "usuario_id": empleado.id,          # ← AÑADIDO
+        "empleado_id": empleado.id,
+        "nombre": empleado.nombre,
+        "foto": foto,
+        "rol_id": empleado.rol_id,
+        "rol_nombre": empleado.rol.nombre if empleado.rol else None,
+        "modulos_visibles": empleado.modulos_visibles or [],
+        "permisos_modulo": empleado.permisos_modulo or {},
+        "token": token
+    }
 
 @router.post("/login/")
 def login_empleado_slash(data: LoginRequest, db: Session = Depends(get_db)):

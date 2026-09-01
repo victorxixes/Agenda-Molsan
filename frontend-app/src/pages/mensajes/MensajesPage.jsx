@@ -21,16 +21,13 @@ export default function MensajesPage() {
 
   const [destinatario, setDestinatario] = useState(null);
 
-  useEffect(() => {
-    cargarConectados();
-  }, []);
+ useEffect(() => {
+  if (!usuarioId || !destinatario) return;   // ← FIX
 
-  useEffect(() => {
-    if (usuarioId && destinatario) {
-      cargarConversacion(usuarioId, destinatario);
-      marcarLeido(destinatario, usuarioId);
-    }
-  }, [usuarioId, destinatario]);
+  cargarConversacion(usuarioId, destinatario);
+  marcarLeido(destinatario, usuarioId);
+}, [usuarioId, destinatario]);
+
 
   return (
     <div className="p-4 grid grid-cols-3 gap-4">

@@ -78,3 +78,4 @@ class Empleado(Base):
     @permisos_modulo_dict.setter
     def permisos_modulo_dict(self, value):
         self.permisos_modulo = json.dumps(value)
+

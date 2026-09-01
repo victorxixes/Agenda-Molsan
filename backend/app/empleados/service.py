@@ -1,18 +1,43 @@
 from sqlalchemy.orm import Session
-from backend.app.empleados.models import Empleado
-from backend.app.empleados.schemas import EmpleadoCreate, EmpleadoUpdate
-from backend.app.seguridad.models import Rol
 from passlib.context import CryptContext
 
-pwd_context = CryptContext(schemes=["sha256_crypt"], deprecated="auto")
+from backend.app.empleados.models import Empleado
+from backend.app.empleados.schemas import EmpleadoCreate, EmpleadoUpdate
+from backend.app.auth.service import crear_token, serializar_empleado
+
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+
+# ---------------------------------------------------------
+# LOGIN REAL
+# ---------------------------------------------------------
+
+def login_empleado(db: Session, usuario: str, password: str):
+    empleado = db.query(Empleado).filter(Empleado.usuario == usuario).first()
+
+    if not empleado:
+        return None
+
+    if not pwd_context.verify(password, empleado.password):
+        return None
+
+    token = crear_token(empleado)
+    empleado_serializado = serializar_empleado(empleado)
+
+    return {
+        "token": token,
+        "empleado": empleado_serializado
+    }
 
 
 # ---------------------------------------------------------
 # CREAR EMPLEADO
 # ---------------------------------------------------------
+
 def crear_empleado(db: Session, data: EmpleadoCreate):
 
-    hashed_password = pwd_context.hash(data.password[:72]) if data.password else None
+    hashed_password = pwd_context.hash(data.password) if data.password else None
 
     empleado = Empleado(
         nombre=data.nombre,
@@ -53,6 +78,7 @@ def crear_empleado(db: Session, data: EmpleadoCreate):
 # ---------------------------------------------------------
 # EDITAR EMPLEADO
 # ---------------------------------------------------------
+
 def editar_empleado(db: Session, empleado_id: int, data: EmpleadoUpdate):
 
     empleado = db.query(Empleado).filter(Empleado.id == empleado_id).first()
@@ -79,6 +105,7 @@ def editar_empleado(db: Session, empleado_id: int, data: EmpleadoUpdate):
 # ---------------------------------------------------------
 # ELIMINAR EMPLEADO
 # ---------------------------------------------------------
+
 def eliminar_empleado(db: Session, empleado_id: int):
     empleado = db.query(Empleado).filter(Empleado.id == empleado_id).first()
     if not empleado:
@@ -92,6 +119,7 @@ def eliminar_empleado(db: Session, empleado_id: int):
 # ---------------------------------------------------------
 # LISTAR EMPLEADOS
 # ---------------------------------------------------------
+
 def listar_empleados(db: Session):
     return db.query(Empleado).all()
 
@@ -99,5 +127,6 @@ def listar_empleados(db: Session):
 # ---------------------------------------------------------
 # OBTENER EMPLEADO
 # ---------------------------------------------------------
+
 def obtener_empleado(db: Session, empleado_id: int):
     return db.query(Empleado).filter(Empleado.id == empleado_id).first()

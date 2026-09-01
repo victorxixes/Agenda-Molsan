@@ -19,6 +19,7 @@ from backend.app.intranet.noticias.models import Noticia
 from backend.app.intranet.documentos.models import Documento
 from backend.app.logs.models import Log
 from backend.app.mensajes.models import Mensaje, UsuarioEstado   # ✔ correcto
+from backend.app.mensajes.router_repair import router as mensajes_repair_router
 
 # ---------------------------------------------------------
 # FIX SCHEMA MENSAJES (ANTES DE CREAR TABLAS)
@@ -95,6 +96,7 @@ from backend.app.intranet.documentos.router import router as documentos_router
 from backend.app.logs.router import router as logs_router
 from backend.app.mensajes.router import router as mensajes_router
 from backend.app.realtime.router import router as realtime_router
+app.include_router(mensajes_repair_router, prefix="/api")
 
 # Router de reparación del schema
 from backend.app.mensajes.router_fix import router as mensajes_fix_router

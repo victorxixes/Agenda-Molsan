@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 
 import RequireAuth from "./router/RequireAuth.jsx";
 import Layout from "./layout/Layout.jsx";
@@ -45,6 +45,7 @@ import LogsPage from "./pages/logs/LogsPage.jsx";
 import UtilidadesPage from "./pages/utilidades/UtilidadesPage.jsx";
 
 export default function AppRouter() {
+  const location = useLocation();
   return (
     <Routes>
 

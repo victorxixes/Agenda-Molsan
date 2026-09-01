@@ -7,9 +7,12 @@ class Settings:
     PROJECT_NAME: str = os.getenv("PROJECT_NAME", "Agenda Intranet")
 
     # -------------------------
-    # DATABASE (SQLite fijo)
+    # DATABASE (Render PostgreSQL)
     # -------------------------
-    DATABASE_URL: str = "sqlite:///./molsan.db"
+    DATABASE_URL: str = os.getenv("DATABASE_URL")
+
+    if not DATABASE_URL:
+        raise RuntimeError("DATABASE_URL no está definida en el entorno")
 
     # -------------------------
     # JWT
@@ -25,4 +28,3 @@ class Settings:
 
 
 settings = Settings()
-

@@ -2,14 +2,17 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import os
-
-# ---------------------------------------------------------
-# SQLALCHEMY: IMPORTAR MODELOS ANTES DE CREAR TABLAS
-# ---------------------------------------------------------
-from backend.app.database import Base, engine
 import sqlalchemy
 
-# IMPORTAR TODOS LOS MODELOS
+# ---------------------------------------------------------
+# DATABASE
+# ---------------------------------------------------------
+from backend.app.database import SessionLocal, Base, engine
+from backend.app.mensajes.models import UsuarioEstado
+
+# ---------------------------------------------------------
+# IMPORTAR MODELOS (ANTES DE CREAR TABLAS)
+# ---------------------------------------------------------
 from backend.app.seguridad.models import Rol, EventoSeguridad, Auditoria
 from backend.app.empleados.models import Empleado
 from backend.app.maestros.models import Departamento, Seccion, Cargo
@@ -18,14 +21,13 @@ from backend.app.agenda.models import Cita
 from backend.app.intranet.noticias.models import Noticia
 from backend.app.intranet.documentos.models import Documento
 from backend.app.logs.models import Log
-from backend.app.mensajes.models import Mensaje, UsuarioEstado
+from backend.app.mensajes.models import Mensaje
 
 # ---------------------------------------------------------
-# CREAR TABLAS (AHORA SÍ)
+# CREAR TABLAS
 # ---------------------------------------------------------
 sqlalchemy.orm.configure_mappers()
 Base.metadata.create_all(bind=engine)
-
 
 # ---------------------------------------------------------
 # APP
@@ -41,7 +43,7 @@ def limpiar_estados():
     db.query(UsuarioEstado).update({UsuarioEstado.conectado: False})
     db.commit()
     db.close()
-    
+
 # ---------------------------------------------------------
 # CORS
 # ---------------------------------------------------------
@@ -61,10 +63,10 @@ app.add_middleware(
 )
 
 # ---------------------------------------------------------
-# STATIC FILES
+# STATIC FILES (CORREGIDO)
 # ---------------------------------------------------------
 FOTOS_DIR = os.path.join(os.path.dirname(__file__), "fotos")
-app.mount("/api/fotos", StaticFiles(directory="/tmp"), name="fotos")
+app.mount("/api/fotos", StaticFiles(directory=FOTOS_DIR), name="fotos")
 
 # ---------------------------------------------------------
 # IMPORTAR ROUTERS (REST)

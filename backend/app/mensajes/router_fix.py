@@ -1,12 +1,14 @@
 from fastapi import APIRouter
 from backend.app.database import engine
 
-router = APIRouter()
+router = APIRouter(
+    prefix="/api/mensajes",
+    tags=["MensajesFix"]
+)
 
-@router.post("/api/mensajes/fix")
+@router.post("/fix")
 def fix_mensajes_schema():
     with engine.connect() as conn:
-        # Verificar si la columna existe
         result = conn.execute("""
             SELECT column_name 
             FROM information_schema.columns

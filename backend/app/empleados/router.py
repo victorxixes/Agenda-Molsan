@@ -38,8 +38,8 @@ def _sanear_jsonb_empleado(e: Empleado):
 
     e.rol_nombre = e.rol.nombre if e.rol else None
 
-    # modulos_visibles
-    mv = e.modulos_visibles
+    # modulos_visibles_list
+    mv = e.modulos_visibles_list
     if isinstance(mv, str):
         try:
             mv = json.loads(mv)
@@ -47,10 +47,10 @@ def _sanear_jsonb_empleado(e: Empleado):
             mv = []
     elif mv is None:
         mv = []
-    e.modulos_visibles = mv
+    e.modulos_visibles_list = mv
 
-    # permisos_modulo
-    pm = e.permisos_modulo
+    # permisos_modulo_dict
+    pm = e.permisos_modulo_dict
     if isinstance(pm, str):
         try:
             pm = json.loads(pm)
@@ -58,7 +58,7 @@ def _sanear_jsonb_empleado(e: Empleado):
             pm = {}
     elif pm is None:
         pm = {}
-    e.permisos_modulo = pm
+    e.permisos_modulo_dict = pm
 
     return e
 

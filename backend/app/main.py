@@ -142,7 +142,7 @@ app.include_router(informes_router, prefix="/api")
 app.include_router(logs_router, prefix="/api")
 app.include_router(mensajes_router, prefix="/api")
 app.include_router(realtime_router, prefix="/api")
-app.include_router(mensajes_repair_router, prefix="/api")
+app.include_router(mensajes_repair_router)
 
 
 # Router de reparación del schema

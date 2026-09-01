@@ -1,12 +1,17 @@
 from sqlalchemy.orm import Session
-from passlib.context import CryptContext
+import hashlib
 
 from backend.app.empleados.models import Empleado
 from backend.app.empleados.schemas import EmpleadoCreate, EmpleadoUpdate
 from backend.app.auth.service import crear_token, serializar_empleado
 
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# ---------------------------------------------------------
+# HASH SEGURO (SHA256) — COMPATIBLE CON RENDER
+# ---------------------------------------------------------
+
+def hash_password(password: str):
+    return hashlib.sha256(password.encode()).hexdigest()
 
 
 # ---------------------------------------------------------
@@ -19,7 +24,8 @@ def login_empleado(db: Session, usuario: str, password: str):
     if not empleado:
         return None
 
-    if not pwd_context.verify(password, empleado.password):
+    # Comparación SHA256
+    if empleado.password != hash_password(password):
         return None
 
     token = crear_token(empleado)
@@ -37,7 +43,7 @@ def login_empleado(db: Session, usuario: str, password: str):
 
 def crear_empleado(db: Session, data: EmpleadoCreate):
 
-    hashed_password = pwd_context.hash(data.password) if data.password else None
+    hashed_password = hash_password(data.password) if data.password else None
 
     empleado = Empleado(
         nombre=data.nombre,
@@ -65,8 +71,9 @@ def crear_empleado(db: Session, data: EmpleadoCreate):
         rol_id=data.rol_id,
     )
 
-    empleado.modulos_visibles_list = data.modulos_visibles or []
-    empleado.permisos_modulo_dict = data.permisos_modulo or {}
+    # JSONB correctos según tu modelo
+    empleado.modulos_visibles_list = data.modulos_visibles_list or []
+    empleado.permisos_modulo_dict = data.permisos_modulo_dict or {}
 
     db.add(empleado)
     db.commit()
@@ -86,15 +93,15 @@ def editar_empleado(db: Session, empleado_id: int, data: EmpleadoUpdate):
         return None
 
     for campo, valor in data.dict(exclude_unset=True).items():
-        if campo in ["modulos_visibles", "permisos_modulo"]:
+        if campo in ["modulos_visibles_list", "permisos_modulo_dict"]:
             continue
         setattr(empleado, campo, valor)
 
-    if data.modulos_visibles is not None:
-        empleado.modulos_visibles_list = data.modulos_visibles
+    if data.modulos_visibles_list is not None:
+        empleado.modulos_visibles_list = data.modulos_visibles_list
 
-    if data.permisos_modulo is not None:
-        empleado.permisos_modulo_dict = data.permisos_modulo
+    if data.permisos_modulo_dict is not None:
+        empleado.permisos_modulo_dict = data.permisos_modulo_dict
 
     db.commit()
     db.refresh(empleado)

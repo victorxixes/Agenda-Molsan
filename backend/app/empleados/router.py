@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlalchemy.orm import Session
 import os
 import json
+import asyncio
 from datetime import datetime
 
 from backend.app.database import get_db
@@ -28,7 +29,7 @@ router = APIRouter(prefix="/empleados", tags=["Empleados"])
 
 
 # ---------------------------------------------------------
-# SANEAR JSONB
+# SANEAR JSONB / CAMPOS JSON
 # ---------------------------------------------------------
 def _sanear_jsonb_empleado(e: Empleado):
     e.departamento = None
@@ -37,13 +38,18 @@ def _sanear_jsonb_empleado(e: Empleado):
 
     e.rol_nombre = e.rol.nombre if e.rol else None
 
+    # modulos_visibles
     mv = e.modulos_visibles
     if isinstance(mv, str):
-        mv = mv.split(",")
+        try:
+            mv = json.loads(mv)
+        except:
+            mv = []
     elif mv is None:
         mv = []
     e.modulos_visibles = mv
 
+    # permisos_modulo
     pm = e.permisos_modulo
     if isinstance(pm, str):
         try:
@@ -90,12 +96,12 @@ def crear(data: EmpleadoCreate, db: Session = Depends(get_db)):
     empleado = crear_empleado(db, data)
     empleado = _sanear_jsonb_empleado(empleado)
 
-    broadcast_empleados({
+    asyncio.create_task(broadcast_empleados({
         "tipo": "empleado_creado",
         "descripcion": f"Empleado creado: {empleado.nombre}",
         "fecha": datetime.now().isoformat(),
         "payload": empleado.__dict__
-    })
+    }))
 
     return empleado
 
@@ -116,12 +122,12 @@ def editar(empleado_id: int, data: EmpleadoUpdate, db: Session = Depends(get_db)
 
     empleado = _sanear_jsonb_empleado(empleado)
 
-    broadcast_empleados({
+    asyncio.create_task(broadcast_empleados({
         "tipo": "empleado_actualizado",
         "descripcion": f"Empleado actualizado: {empleado.nombre}",
         "fecha": datetime.now().isoformat(),
         "payload": empleado.__dict__
-    })
+    }))
 
     return empleado
 
@@ -138,18 +144,18 @@ def eliminar(empleado_id: int, db: Session = Depends(get_db)):
     db.delete(empleado)
     db.commit()
 
-    broadcast_empleados({
+    asyncio.create_task(broadcast_empleados({
         "tipo": "empleado_eliminado",
         "descripcion": f"Empleado eliminado: ID {empleado_id}",
         "fecha": datetime.now().isoformat(),
         "payload": {"id": empleado_id}
-    })
+    }))
 
     return {"detail": "Empleado eliminado correctamente"}
 
 
 # ---------------------------------------------------------
-# CAMBIAR ESTADO (ACTIVAR / DESACTIVAR)
+# CAMBIAR ESTADO
 # ---------------------------------------------------------
 @router.put("/{empleado_id}/estado")
 def cambiar_estado(empleado_id: int, db: Session = Depends(get_db)):
@@ -163,12 +169,12 @@ def cambiar_estado(empleado_id: int, db: Session = Depends(get_db)):
 
     empleado = _sanear_jsonb_empleado(empleado)
 
-    broadcast_empleados({
+    asyncio.create_task(broadcast_empleados({
         "tipo": "empleado_estado_cambiado",
         "descripcion": f"Estado cambiado: {empleado.nombre}",
         "fecha": datetime.now().isoformat(),
         "payload": empleado.__dict__
-    })
+    }))
 
     return empleado
 
@@ -192,12 +198,12 @@ def cambiar_rol(empleado_id: int, rol_id: int, db: Session = Depends(get_db)):
 
     empleado = _sanear_jsonb_empleado(empleado)
 
-    broadcast_empleados({
+    asyncio.create_task(broadcast_empleados({
         "tipo": "empleado_rol_cambiado",
         "descripcion": f"Rol cambiado: {empleado.nombre}",
         "fecha": datetime.now().isoformat(),
         "payload": empleado.__dict__
-    })
+    }))
 
     return empleado
 
@@ -219,8 +225,9 @@ async def subir_foto(id: int, archivo: UploadFile = File(...), db: Session = Dep
 
     return {"foto": filename}
 
+
 # ---------------------------------------------------------
-# ACTUALIZAR MÓDULOS VISIBLES
+# ACTUALIZAR MÓDULOS
 # ---------------------------------------------------------
 @router.put("/{empleado_id}/modulos")
 def actualizar_modulos(empleado_id: int, modulos: list, db: Session = Depends(get_db)):
@@ -234,12 +241,12 @@ def actualizar_modulos(empleado_id: int, modulos: list, db: Session = Depends(ge
 
     empleado = _sanear_jsonb_empleado(empleado)
 
-    broadcast_empleados({
+    asyncio.create_task(broadcast_empleados({
         "tipo": "empleado_modulos_actualizados",
         "descripcion": f"Módulos actualizados: {empleado.nombre}",
         "fecha": datetime.now().isoformat(),
         "payload": empleado.__dict__
-    })
+    }))
 
     return empleado
 
@@ -259,11 +266,11 @@ def actualizar_permisos(empleado_id: int, permisos: dict, db: Session = Depends(
 
     empleado = _sanear_jsonb_empleado(empleado)
 
-    broadcast_empleados({
+    asyncio.create_task(broadcast_empleados({
         "tipo": "empleado_permisos_actualizados",
         "descripcion": f"Permisos actualizados: {empleado.nombre}",
         "fecha": datetime.now().isoformat(),
         "payload": empleado.__dict__
-    })
+    }))
 
     return empleado

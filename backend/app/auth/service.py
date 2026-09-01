@@ -1,6 +1,3 @@
-# Este módulo queda como utilitario opcional.
-# El login REAL está en backend/app/empleados/service.py
-
 from datetime import datetime, timedelta
 import jwt
 
@@ -8,8 +5,14 @@ from backend.app.config import settings
 from backend.app.empleados.models import Empleado
 
 
+# ---------------------------------------------------------
+# CREAR TOKEN JWT
+# ---------------------------------------------------------
+
 def crear_token(empleado: Empleado):
-    exp = datetime.utcnow() + timedelta(minutes=480)
+    exp = datetime.utcnow() + timedelta(
+        minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
+    )
 
     payload = {
         "id": empleado.id,
@@ -21,6 +24,10 @@ def crear_token(empleado: Empleado):
 
     return jwt.encode(payload, settings.JWT_SECRET, algorithm=settings.ALGORITHM)
 
+
+# ---------------------------------------------------------
+# SERIALIZAR EMPLEADO PARA RESPUESTA
+# ---------------------------------------------------------
 
 def serializar_empleado(empleado: Empleado):
     return {

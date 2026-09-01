@@ -97,3 +97,10 @@ def eliminar_empleado(db: Session, empleado_id: int):
 # ---------------------------------------------------------
 def listar_empleados(db: Session):
     return db.query(Empleado).all()
+
+
+# ---------------------------------------------------------
+# ⭐ OBTENER EMPLEADO (NECESARIO PARA mensajes/router.py)
+# ---------------------------------------------------------
+def obtener_empleado(db: Session, empleado_id: int):
+    return db.query(Empleado).filter(Empleado.id == empleado_id).first()

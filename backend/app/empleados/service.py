@@ -26,7 +26,6 @@ def login_empleado(db: Session, usuario: str, password: str):
     if not empleado:
         return None
 
-    # Comparación SHA256
     if not empleado.password:
         return None
 
@@ -58,7 +57,6 @@ def crear_empleado(db: Session, data: EmpleadoCreate):
     if data.rol_id == 0:
         data.rol_id = None
 
-    # Hash seguro
     hashed_password = hash_password(data.password) if data.password else None
 
     empleado = Empleado(
@@ -85,7 +83,6 @@ def crear_empleado(db: Session, data: EmpleadoCreate):
         password=hashed_password,
         foto=data.foto,
         rol_id=data.rol_id,
-        # JSONB: nombres EXACTOS del modelo
         modulos_visibles_list=data.modulos_visibles_list or [],
         permisos_modulo_dict=data.permisos_modulo_dict or {},
     )
@@ -113,13 +110,13 @@ def editar_empleado(db: Session, empleado_id: int, data: EmpleadoUpdate):
         if valor == 0:
             setattr(data, campo, None)
 
-    # Actualizar campos simples
+    # Actualizar campos simples (excepto JSONB y password)
     for campo, valor in data.dict(exclude_unset=True).items():
         if campo in ["modulos_visibles_list", "permisos_modulo_dict", "password"]:
             continue
         setattr(empleado, campo, valor)
 
-    # Actualizar password si viene en el update
+    # Actualizar password si viene
     if data.password is not None and data.password != "":
         empleado.password = hash_password(data.password)
 

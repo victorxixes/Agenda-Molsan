@@ -5,7 +5,7 @@ from backend.app.database import Base
 
 
 class Mensaje(Base):
-    __tablename__ = "mensajes"
+    __tablename__ = "mensajes_usuarios_estado"
     __allow_unmapped__ = True
 
     id = Column(Integer, primary_key=True, index=True)

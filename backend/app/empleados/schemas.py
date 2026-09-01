@@ -1,7 +1,6 @@
 from pydantic import BaseModel, Field
 from typing import Optional, Dict, List
 
-
 class EmpleadoBase(BaseModel):
     nombre: Optional[str] = None
     apellidos: Optional[str] = None
@@ -34,10 +33,8 @@ class EmpleadoBase(BaseModel):
 
     foto: Optional[str] = None
 
-    # JSONB — nombres correctos según tu modelo SQLAlchemy
     modulos_visibles_list: Optional[List[str]] = Field(default_factory=list)
     permisos_modulo_dict: Optional[Dict[str, List[str]]] = Field(default_factory=dict)
-
 
 class EmpleadoCreate(EmpleadoBase):
     nombre: str
@@ -45,10 +42,8 @@ class EmpleadoCreate(EmpleadoBase):
     usuario: str
     password: str
 
-
 class EmpleadoUpdate(EmpleadoBase):
     pass
-
 
 class EmpleadoResponse(EmpleadoBase):
     id: int
@@ -56,13 +51,3 @@ class EmpleadoResponse(EmpleadoBase):
 
     class Config:
         orm_mode = True
-        arbitrary_types_allowed = True
-
-
-class EmpleadoSearchResponse(BaseModel):
-    total: int
-    page: int
-    pages: int
-    limit: int
-    offset: int
-    items: list[EmpleadoResponse]

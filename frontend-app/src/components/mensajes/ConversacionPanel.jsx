@@ -53,12 +53,13 @@ export default function ConversacionPanel({ destinatario }) {
   // ---------------------------------------------------------
   // Cargar conversación
   // ---------------------------------------------------------
-  useEffect(() => {
-    if (remitenteId && destinatario) {
-      cargarConversacion(remitenteId, destinatario.id);
-      marcarLeido(destinatario.id, remitenteId);
-    }
-  }, [remitenteId, destinatario]);
+useEffect(() => {
+  if (!remitenteId || !destinatario?.id) return;   // ← FIX
+
+  cargarConversacion(remitenteId, destinatario.id);
+  marcarLeido(destinatario.id, remitenteId);
+}, [remitenteId, destinatario]);
+
 
   // ---------------------------------------------------------
   // Auto-scroll + sonido

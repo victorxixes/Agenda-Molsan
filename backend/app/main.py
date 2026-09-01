@@ -26,11 +26,22 @@ from backend.app.mensajes.models import Mensaje, UsuarioEstado
 sqlalchemy.orm.configure_mappers()
 Base.metadata.create_all(bind=engine)
 
+
 # ---------------------------------------------------------
 # APP
 # ---------------------------------------------------------
 app = FastAPI(title="Agenda Intranet Backend")
 
+# ---------------------------------------------------------
+# LIMPIAR ESTADOS EN STARTUP
+# ---------------------------------------------------------
+@app.on_event("startup")
+def limpiar_estados():
+    db = SessionLocal()
+    db.query(UsuarioEstado).update({UsuarioEstado.conectado: False})
+    db.commit()
+    db.close()
+    
 # ---------------------------------------------------------
 # CORS
 # ---------------------------------------------------------

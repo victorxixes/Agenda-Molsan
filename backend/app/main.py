@@ -4,12 +4,12 @@ from fastapi.staticfiles import StaticFiles
 import os
 
 # ---------------------------------------------------------
-# SQLALCHEMY: REGISTRAR MODELOS ANTES DE IMPORTAR ROUTERS
+# SQLALCHEMY: IMPORTAR MODELOS ANTES DE CREAR TABLAS
 # ---------------------------------------------------------
 from backend.app.database import Base, engine
 import sqlalchemy
 
-# IMPORTAR MODELOS ANTES DE CREAR TABLAS
+# IMPORTAR TODOS LOS MODELOS
 from backend.app.seguridad.models import Rol, EventoSeguridad, Auditoria
 from backend.app.empleados.models import Empleado
 from backend.app.maestros.models import Departamento, Seccion, Cargo
@@ -18,17 +18,13 @@ from backend.app.agenda.models import Cita
 from backend.app.intranet.noticias.models import Noticia
 from backend.app.intranet.documentos.models import Documento
 from backend.app.logs.models import Log
-from backend.app.mensajes.models import Mensaje, UsuarioEstado   # ✔ correcto
-from backend.app.mensajes.router_repair import router as mensajes_repair_router
+from backend.app.mensajes.models import Mensaje, UsuarioEstado
 
 # ---------------------------------------------------------
-# FIX SCHEMA MENSAJES (ANTES DE CREAR TABLAS)
+# CREAR TABLAS (AHORA SÍ)
 # ---------------------------------------------------------
 sqlalchemy.orm.configure_mappers()
 Base.metadata.create_all(bind=engine)
-
-from backend.app.mensajes.fix_schema import fix_mensajes_schema
-fix_mensajes_schema()
 
 # ---------------------------------------------------------
 # APP
@@ -97,9 +93,6 @@ from backend.app.logs.router import router as logs_router
 from backend.app.mensajes.router import router as mensajes_router
 from backend.app.realtime.router import router as realtime_router
 
-# Router de reparación del schema
-from backend.app.mensajes.router_fix import router as mensajes_fix_router
-
 # Utilidades
 from backend.app.utilidades.router import router as utilidades_router
 from backend.app.utilidades.router_create import router as create_router
@@ -110,7 +103,6 @@ from backend.app.utilidades.router_force import router as force_router
 # ---------------------------------------------------------
 
 app.include_router(auth_router, prefix="/api")
-
 
 # Seguridad
 app.include_router(seguridad_roles_router, prefix="/api")
@@ -142,11 +134,6 @@ app.include_router(informes_router, prefix="/api")
 app.include_router(logs_router, prefix="/api")
 app.include_router(mensajes_router, prefix="/api")
 app.include_router(realtime_router, prefix="/api")
-app.include_router(mensajes_repair_router)
-
-
-# Router de reparación del schema
-app.include_router(mensajes_fix_router, prefix="/api")
 
 # Utilidades
 app.include_router(utilidades_router, prefix="/api")

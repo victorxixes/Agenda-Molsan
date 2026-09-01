@@ -10,31 +10,28 @@ from backend.app.empleados.models import Empleado
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
+pwd_context = CryptContext(schemes=["sha256_crypt"], deprecated="auto")
 
 # ---------------------------------------------------------
 # LOGIN EMPLEADOS
 # ---------------------------------------------------------
 @router.post("/login")
-def login(data: LoginRequest, db: Session = Depends(get_db)):
-
+def login(data: LoginSchema, db: Session = Depends(get_db)):
     empleado = db.query(Empleado).filter(Empleado.usuario == data.usuario).first()
 
     if not empleado:
-        raise HTTPException(status_code=400, detail="Usuario o contraseña incorrectos")
+        raise HTTPException(status_code=401, detail="Usuario no encontrado")
 
     if not pwd_context.verify(data.password, empleado.password):
-        raise HTTPException(status_code=400, detail="Usuario o contraseña incorrectos")
-
-    token = crear_token(empleado)
-    empleado_serializado = serializar_empleado(empleado)
+        raise HTTPException(status_code=401, detail="Contraseña incorrecta")
 
     return {
-        "access_token": token,
-        "token_type": "bearer",
-        **empleado_serializado
+        "id": empleado.id,
+        "usuario": empleado.usuario,
+        "nombre": empleado.nombre,
+        "rol_id": empleado.rol_id
     }
+
 
 
 # ---------------------------------------------------------

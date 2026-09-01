@@ -2,15 +2,15 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 import os
 
-# ⭐ LEEMOS LA VARIABLE DE ENTORNO
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-# ⭐ SI NO EXISTE, FALLAMOS (NO USAMOS SQLITE)
 if not DATABASE_URL:
     raise RuntimeError("DATABASE_URL no está definida")
 
+# ⭐ Forzar IPv4 + SSL requerido por Supabase
 engine = create_engine(
     DATABASE_URL,
+    connect_args={"sslmode": "require"},
     pool_pre_ping=True
 )
 

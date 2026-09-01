@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field
 from typing import Optional, Dict, List
 
+
 class EmpleadoBase(BaseModel):
     nombre: Optional[str] = None
     apellidos: Optional[str] = None
@@ -39,7 +40,6 @@ class EmpleadoBase(BaseModel):
 
 
 class EmpleadoCreate(EmpleadoBase):
-    # ⭐ Obligatorios
     nombre: str
     dni: str
     usuario: str

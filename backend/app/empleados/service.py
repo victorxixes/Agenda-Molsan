@@ -62,6 +62,11 @@ def crear_empleado(db: Session, data: EmpleadoCreate):
     db.commit()
     db.refresh(empleado)
     return empleado
+# ---------------------------------------------------------
+# LISTAR EMPLEADOS
+# ---------------------------------------------------------
+def listar_empleados(db: Session):
+    return db.query(Empleado).order_by(Empleado.id.asc()).all()
 
 def editar_empleado(db: Session, empleado_id: int, data: EmpleadoUpdate):
     empleado = db.query(Empleado).filter(Empleado.id == empleado_id).first()

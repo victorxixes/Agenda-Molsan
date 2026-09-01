@@ -3,7 +3,7 @@ from __future__ import annotations
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from sqlalchemy.orm import Session
 
-from backend.app.database import get_db
+from backend.app.database_ws import get_db_ws
 
 router = APIRouter(prefix="/ws/chat", tags=["WebSocket Chat"])
 
@@ -41,7 +41,7 @@ async def chat_ws(websocket: WebSocket, usuario_id: int):
 
             # ⭐ MENSAJE NORMAL
             if data.get("tipo") == "mensaje":
-                db: Session = next(get_db())
+                db: Session = Depends(get_db_ws)
                 nuevo = crear_mensaje(db, data)
 
                 dest = data.get("destinatario_id")

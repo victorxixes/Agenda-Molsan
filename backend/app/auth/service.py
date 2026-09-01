@@ -9,7 +9,7 @@ from backend.app.empleados.models import Empleado
 # CREAR TOKEN JWT
 # ---------------------------------------------------------
 
-def crear_token(empleado: Empleado):
+def crear_token(empleado: Empleado) -> str:
     exp = datetime.utcnow() + timedelta(
         minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
     )
@@ -19,7 +19,7 @@ def crear_token(empleado: Empleado):
         "usuario": empleado.usuario,
         "rol_id": empleado.rol_id,
         "rol_nombre": empleado.rol.nombre if empleado.rol else None,
-        "exp": exp
+        "exp": exp,
     }
 
     return jwt.encode(payload, settings.JWT_SECRET, algorithm=settings.ALGORITHM)
@@ -29,12 +29,12 @@ def crear_token(empleado: Empleado):
 # SERIALIZAR EMPLEADO PARA RESPUESTA
 # ---------------------------------------------------------
 
-def serializar_empleado(empleado: Empleado):
+def serializar_empleado(empleado: Empleado) -> dict:
     return {
         "empleado_id": empleado.id,
         "nombre": empleado.nombre,
         "rol_id": empleado.rol_id,
         "rol_nombre": empleado.rol.nombre if empleado.rol else None,
-        "modulos_visibles": empleado.modulos_visibles or [],
-        "permisos_modulo": empleado.permisos_modulo or {}
+        "modulos_visibles_list": empleado.modulos_visibles_list or [],
+        "permisos_modulo_dict": empleado.permisos_modulo_dict or {},
     }

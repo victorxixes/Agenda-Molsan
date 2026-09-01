@@ -22,10 +22,10 @@ from backend.app.empleados.service import (
     listar_empleados,
 )
 
-# 🔥 Importar broadcast realtime
 from backend.app.websockets.empleados_ws import broadcast_empleados
 
 router = APIRouter(prefix="/empleados", tags=["Empleados"])
+
 
 # ---------------------------------------------------------
 # FIX: AÑADIR COLUMNAS FALTANTES A LA TABLA EMPLEADOS
@@ -46,33 +46,36 @@ async def fix_columns(db: Session = Depends(get_db)):
     except Exception as e:
         return {"status": "error", "detail": str(e)}
 
+
 # ---------------------------------------------------------
 # SANEAR JSONB / CAMPOS JSON
 # ---------------------------------------------------------
 def _sanear_jsonb_empleado(e: Empleado):
+    # Evitar recursión en relaciones
     e.departamento = None
     e.seccion = None
     e.cargo = None
 
+    # Rol nombre
     e.rol_nombre = e.rol.nombre if e.rol else None
 
     # modulos_visibles_list
-    mv = e.modulos_visibles
+    mv = e.modulos_visibles_list
     if isinstance(mv, str):
         try:
             mv = json.loads(mv)
-        except:
+        except Exception:
             mv = []
     elif mv is None:
         mv = []
     e.modulos_visibles_list = mv
 
     # permisos_modulo_dict
-    pm = e.permisos_modulo
+    pm = e.permisos_modulo_dict
     if isinstance(pm, str):
         try:
             pm = json.loads(pm)
-        except:
+        except Exception:
             pm = {}
     elif pm is None:
         pm = {}
@@ -119,7 +122,7 @@ async def crear(data: EmpleadoCreate, db: Session = Depends(get_db)):
         "tipo": "empleado_creado",
         "descripcion": f"Empleado creado: {empleado.nombre}",
         "fecha": datetime.now().isoformat(),
-        "payload": empleado.__dict__
+        "payload": empleado.__dict__,
     }))
 
     return empleado
@@ -146,7 +149,7 @@ async def editar(empleado_id: int, data: EmpleadoUpdate, db: Session = Depends(g
         "tipo": "empleado_actualizado",
         "descripcion": f"Empleado actualizado: {empleado.nombre}",
         "fecha": datetime.now().isoformat(),
-        "payload": empleado.__dict__
+        "payload": empleado.__dict__,
     }))
 
     return empleado
@@ -169,13 +172,10 @@ async def eliminar(empleado_id: int, db: Session = Depends(get_db)):
         "tipo": "empleado_eliminado",
         "descripcion": f"Empleado eliminado: ID {empleado_id}",
         "fecha": datetime.now().isoformat(),
-        "payload": {"id": empleado_id}
+        "payload": {"id": empleado_id},
     }))
 
     return {"detail": "Empleado eliminado correctamente"}
-
-
-
 
 
 # ---------------------------------------------------------
@@ -198,7 +198,7 @@ async def cambiar_estado(empleado_id: int, db: Session = Depends(get_db)):
         "tipo": "empleado_estado_cambiado",
         "descripcion": f"Estado cambiado: {empleado.nombre}",
         "fecha": datetime.now().isoformat(),
-        "payload": empleado.__dict__
+        "payload": empleado.__dict__,
     }))
 
     return empleado
@@ -228,7 +228,7 @@ async def cambiar_rol(empleado_id: int, rol_id: int, db: Session = Depends(get_d
         "tipo": "empleado_rol_cambiado",
         "descripcion": f"Rol cambiado: {empleado.nombre}",
         "fecha": datetime.now().isoformat(),
-        "payload": empleado.__dict__
+        "payload": empleado.__dict__,
     }))
 
     return empleado
@@ -240,14 +240,18 @@ async def cambiar_rol(empleado_id: int, rol_id: int, db: Session = Depends(get_d
 @router.post("/{id}/foto")
 async def subir_foto(id: int, archivo: UploadFile = File(...), db: Session = Depends(get_db)):
     filename = f"empleado_{id}.jpg"
-    path = f"/tmp/{filename}"   # 🔥 USAR /tmp EN PLAN GRATIS
+    path = f"/tmp/{filename}"
 
     with open(path, "wb") as f:
         f.write(await archivo.read())
 
     empleado = db.query(Empleado).filter(Empleado.id == id).first()
+    if not empleado:
+        raise HTTPException(status_code=404, detail="Empleado no encontrado")
+
     empleado.foto = filename
     db.commit()
+    db.refresh(empleado)
 
     return {"foto": filename}
 
@@ -256,12 +260,12 @@ async def subir_foto(id: int, archivo: UploadFile = File(...), db: Session = Dep
 # ACTUALIZAR MÓDULOS
 # ---------------------------------------------------------
 @router.put("/{empleado_id}/modulos")
-async def actualizar_modulos(empleado_id: int, modulos: list, db: Session = Depends(get_db)):
+async def actualizar_modulos(empleado_id: int, modulos: list[str], db: Session = Depends(get_db)):
     empleado = db.query(Empleado).filter(Empleado.id == empleado_id).first()
     if not empleado:
         raise HTTPException(status_code=404, detail="Empleado no encontrado")
 
-    empleado.modulos_visibles = modulos
+    empleado.modulos_visibles_list = modulos
     db.commit()
     db.refresh(empleado)
 
@@ -272,7 +276,7 @@ async def actualizar_modulos(empleado_id: int, modulos: list, db: Session = Depe
         "tipo": "empleado_modulos_actualizados",
         "descripcion": f"Módulos actualizados: {empleado.nombre}",
         "fecha": datetime.now().isoformat(),
-        "payload": empleado.__dict__
+        "payload": empleado.__dict__,
     }))
 
     return empleado
@@ -287,7 +291,7 @@ async def actualizar_permisos(empleado_id: int, permisos: dict, db: Session = De
     if not empleado:
         raise HTTPException(status_code=404, detail="Empleado no encontrado")
 
-    empleado.permisos_modulo = permisos
+    empleado.permisos_modulo_dict = permisos
     db.commit()
     db.refresh(empleado)
 
@@ -298,7 +302,7 @@ async def actualizar_permisos(empleado_id: int, permisos: dict, db: Session = De
         "tipo": "empleado_permisos_actualizados",
         "descripcion": f"Permisos actualizados: {empleado.nombre}",
         "fecha": datetime.now().isoformat(),
-        "payload": empleado.__dict__
+        "payload": empleado.__dict__,
     }))
 
     return empleado

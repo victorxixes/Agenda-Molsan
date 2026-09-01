@@ -34,7 +34,11 @@ def usuario_desconectado(db: Session, usuario_id: int):
 
 
 def listar_usuarios_conectados(db: Session):
-    return db.query(UsuarioEstado).filter(UsuarioEstado.conectado == True).all()
+    return (
+        db.query(UsuarioEstado)
+        .filter(UsuarioEstado.conectado == True)
+        .all()
+    )
 
 
 # ---------------------------------------------------------

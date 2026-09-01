@@ -22,6 +22,9 @@ class NotariaBase(BaseModel):
 
     observacion: str | None = None
 
+    # ⭐ Campo faltante
+    apoderado_id: int | None = None
+
 
 class NotariaCreate(NotariaBase):
     pass

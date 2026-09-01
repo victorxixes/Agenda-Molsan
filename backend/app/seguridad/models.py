@@ -5,18 +5,25 @@ from datetime import datetime
 from backend.app.database import Base
 
 # ---------------------------------------------------------
-# ROLES
+# ROLES COMPLETOS
 # ---------------------------------------------------------
 class Rol(Base):
     __tablename__ = "roles"
     __allow_unmapped__ = True
 
     id = Column(Integer, primary_key=True, index=True)
-    nombre = Column(String, unique=True)
+    nombre = Column(String, unique=True, nullable=False)
     descripcion = Column(String, nullable=True)
 
-    # 🔥 RELACIÓN INVERSA CON EMPLEADOS
+    # 🔥 Permisos por módulo (JSON)
+    permisos_modulo_dict = Column(JSON, default=dict)
+
+    # 🔥 Módulos visibles del rol (JSON)
+    modulos_visibles_list = Column(JSON, default=list)
+
+    # 🔥 Relación con empleados
     empleados = relationship("Empleado", back_populates="rol")
+
 
 # ---------------------------------------------------------
 # EVENTOS DE SEGURIDAD

@@ -1,3 +1,6 @@
+import React, { useEffect } from "react";
+import { Outlet, useLocation } from "react-router-dom";   // ⭐ ESTA LÍNEA ES OBLIGATORIA
+import Sidebar from "../sidebar/Sidebar.jsx";
 import { useAuthStore } from "../store/authStore";
 import axios from "../api/axios";
 

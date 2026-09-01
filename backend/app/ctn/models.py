@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String, Text, ForeignKey
 from sqlalchemy.orm import relationship
 from backend.app.database import Base
+from backend.app.agenda.models import Cita
 
 
 class Notaria(Base):
@@ -39,5 +40,5 @@ class Notaria(Base):
     # Relación opcional con apoderados (si existe tabla)
     apoderado_id = Column(Integer, nullable=True)
 
-    # Relación con citas
+    # Relación con citas (agenda_citas)
     citas = relationship("Cita", back_populates="notario")

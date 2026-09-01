@@ -67,7 +67,7 @@ def _sanear_jsonb_empleado(e: Empleado):
 # LISTAR
 # ---------------------------------------------------------
 @router.get("", response_model=list[EmpleadoResponse])
-def listar(db: Session = Depends(get_db)):
+async def listar(db: Session = Depends(get_db)):
     empleados = listar_empleados(db)
     return [_sanear_jsonb_empleado(e) for e in empleados]
 
@@ -76,7 +76,7 @@ def listar(db: Session = Depends(get_db)):
 # OBTENER
 # ---------------------------------------------------------
 @router.get("/{empleado_id}", response_model=EmpleadoResponse)
-def obtener(empleado_id: int, db: Session = Depends(get_db)):
+async def obtener(empleado_id: int, db: Session = Depends(get_db)):
     empleado = db.query(Empleado).filter(Empleado.id == empleado_id).first()
     if not empleado:
         raise HTTPException(status_code=404, detail="Empleado no encontrado")
@@ -107,12 +107,11 @@ async def crear(data: EmpleadoCreate, db: Session = Depends(get_db)):
     return empleado
 
 
-
 # ---------------------------------------------------------
 # EDITAR
 # ---------------------------------------------------------
 @router.put("/{empleado_id}", response_model=EmpleadoResponse)
-def editar(empleado_id: int, data: EmpleadoUpdate, db: Session = Depends(get_db)):
+async def editar(empleado_id: int, data: EmpleadoUpdate, db: Session = Depends(get_db)):
 
     if data.rol_id:
         if not db.query(Rol).filter(Rol.id == data.rol_id).first():
@@ -124,7 +123,8 @@ def editar(empleado_id: int, data: EmpleadoUpdate, db: Session = Depends(get_db)
 
     empleado = _sanear_jsonb_empleado(empleado)
 
-    asyncio.create_task(broadcast_empleados({
+    loop = asyncio.get_running_loop()
+    loop.create_task(broadcast_empleados({
         "tipo": "empleado_actualizado",
         "descripcion": f"Empleado actualizado: {empleado.nombre}",
         "fecha": datetime.now().isoformat(),
@@ -138,7 +138,7 @@ def editar(empleado_id: int, data: EmpleadoUpdate, db: Session = Depends(get_db)
 # ELIMINAR
 # ---------------------------------------------------------
 @router.delete("/{empleado_id}")
-def eliminar(empleado_id: int, db: Session = Depends(get_db)):
+async def eliminar(empleado_id: int, db: Session = Depends(get_db)):
     empleado = db.query(Empleado).filter(Empleado.id == empleado_id).first()
     if not empleado:
         raise HTTPException(status_code=404, detail="Empleado no encontrado")
@@ -146,7 +146,8 @@ def eliminar(empleado_id: int, db: Session = Depends(get_db)):
     db.delete(empleado)
     db.commit()
 
-    asyncio.create_task(broadcast_empleados({
+    loop = asyncio.get_running_loop()
+    loop.create_task(broadcast_empleados({
         "tipo": "empleado_eliminado",
         "descripcion": f"Empleado eliminado: ID {empleado_id}",
         "fecha": datetime.now().isoformat(),
@@ -160,7 +161,7 @@ def eliminar(empleado_id: int, db: Session = Depends(get_db)):
 # CAMBIAR ESTADO
 # ---------------------------------------------------------
 @router.put("/{empleado_id}/estado")
-def cambiar_estado(empleado_id: int, db: Session = Depends(get_db)):
+async def cambiar_estado(empleado_id: int, db: Session = Depends(get_db)):
     empleado = db.query(Empleado).filter(Empleado.id == empleado_id).first()
     if not empleado:
         raise HTTPException(status_code=404, detail="Empleado no encontrado")
@@ -171,7 +172,8 @@ def cambiar_estado(empleado_id: int, db: Session = Depends(get_db)):
 
     empleado = _sanear_jsonb_empleado(empleado)
 
-    asyncio.create_task(broadcast_empleados({
+    loop = asyncio.get_running_loop()
+    loop.create_task(broadcast_empleados({
         "tipo": "empleado_estado_cambiado",
         "descripcion": f"Estado cambiado: {empleado.nombre}",
         "fecha": datetime.now().isoformat(),
@@ -185,7 +187,7 @@ def cambiar_estado(empleado_id: int, db: Session = Depends(get_db)):
 # CAMBIAR ROL
 # ---------------------------------------------------------
 @router.put("/{empleado_id}/rol/{rol_id}")
-def cambiar_rol(empleado_id: int, rol_id: int, db: Session = Depends(get_db)):
+async def cambiar_rol(empleado_id: int, rol_id: int, db: Session = Depends(get_db)):
     empleado = db.query(Empleado).filter(Empleado.id == empleado_id).first()
     if not empleado:
         raise HTTPException(status_code=404, detail="Empleado no encontrado")
@@ -200,7 +202,8 @@ def cambiar_rol(empleado_id: int, rol_id: int, db: Session = Depends(get_db)):
 
     empleado = _sanear_jsonb_empleado(empleado)
 
-    asyncio.create_task(broadcast_empleados({
+    loop = asyncio.get_running_loop()
+    loop.create_task(broadcast_empleados({
         "tipo": "empleado_rol_cambiado",
         "descripcion": f"Rol cambiado: {empleado.nombre}",
         "fecha": datetime.now().isoformat(),
@@ -232,7 +235,7 @@ async def subir_foto(id: int, archivo: UploadFile = File(...), db: Session = Dep
 # ACTUALIZAR MÓDULOS
 # ---------------------------------------------------------
 @router.put("/{empleado_id}/modulos")
-def actualizar_modulos(empleado_id: int, modulos: list, db: Session = Depends(get_db)):
+async def actualizar_modulos(empleado_id: int, modulos: list, db: Session = Depends(get_db)):
     empleado = db.query(Empleado).filter(Empleado.id == empleado_id).first()
     if not empleado:
         raise HTTPException(status_code=404, detail="Empleado no encontrado")
@@ -243,7 +246,8 @@ def actualizar_modulos(empleado_id: int, modulos: list, db: Session = Depends(ge
 
     empleado = _sanear_jsonb_empleado(empleado)
 
-    asyncio.create_task(broadcast_empleados({
+    loop = asyncio.get_running_loop()
+    loop.create_task(broadcast_empleados({
         "tipo": "empleado_modulos_actualizados",
         "descripcion": f"Módulos actualizados: {empleado.nombre}",
         "fecha": datetime.now().isoformat(),
@@ -257,7 +261,7 @@ def actualizar_modulos(empleado_id: int, modulos: list, db: Session = Depends(ge
 # ACTUALIZAR PERMISOS
 # ---------------------------------------------------------
 @router.put("/{empleado_id}/permisos")
-def actualizar_permisos(empleado_id: int, permisos: dict, db: Session = Depends(get_db)):
+async def actualizar_permisos(empleado_id: int, permisos: dict, db: Session = Depends(get_db)):
     empleado = db.query(Empleado).filter(Empleado.id == empleado_id).first()
     if not empleado:
         raise HTTPException(status_code=404, detail="Empleado no encontrado")
@@ -268,7 +272,8 @@ def actualizar_permisos(empleado_id: int, permisos: dict, db: Session = Depends(
 
     empleado = _sanear_jsonb_empleado(empleado)
 
-    asyncio.create_task(broadcast_empleados({
+    loop = asyncio.get_running_loop()
+    loop.create_task(broadcast_empleados({
         "tipo": "empleado_permisos_actualizados",
         "descripcion": f"Permisos actualizados: {empleado.nombre}",
         "fecha": datetime.now().isoformat(),

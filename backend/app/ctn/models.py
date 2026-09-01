@@ -40,5 +40,3 @@ class Notaria(Base):
     # Relación opcional con apoderados (si existe tabla)
     apoderado_id = Column(Integer, nullable=True)
 
-    # Relación con citas (agenda_citas)
-    citas = relationship("Cita", back_populates="notario")

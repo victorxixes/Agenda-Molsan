@@ -29,24 +29,24 @@ export default function MensajesChat() {
   // ---------------------------------------------------------
   // WebSocket del chat
   // ---------------------------------------------------------
-  useEffect(() => {
-    if (!user?.id) return;
+useEffect(() => {
+  if (!user?.id) return;
 
-    const ws = connectChat(user.id, (msg) => {
-      // Nuevo mensaje recibido
-      if (msg.tipo === "nuevo_mensaje") {
-        cargarConversacion(msg.remitente_id, msg.destinatario_id);
-      }
+  const ws = connectChat(user.id, (msg) => {
+    if (msg.tipo === "nuevo_mensaje") {
+      if (!destinatarioId) return;  // ← FIX
+      cargarConversacion(user.id, destinatarioId);
+    }
 
-      // Indicador escribiendo
-      if (msg.tipo === "typing") {
-        setTyping(true);
-        setTimeout(() => setTyping(false), 1500);
-      }
-    });
+    if (msg.tipo === "typing") {
+      setTyping(true);
+      setTimeout(() => setTyping(false), 1500);
+    }
+  });
 
-    return () => ws.close();
-  }, [user]);
+  return () => ws.close();
+}, [user, destinatarioId]);  // ← añadir dependencia
+
 
   // ---------------------------------------------------------
   // Obtener destinatario seleccionado

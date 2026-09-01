@@ -12,7 +12,8 @@ pwd_context = CryptContext(schemes=["sha256_crypt"], deprecated="auto")
 # ---------------------------------------------------------
 def crear_empleado(db: Session, data: EmpleadoCreate):
 
-hashed_password = pwd_context.hash(data.password[:72]) if data.password else None
+    # SHA256_crypt no tiene límite de 72 bytes, pero truncamos por seguridad
+    hashed_password = pwd_context.hash(data.password[:72]) if data.password else None
 
     empleado = Empleado(
         nombre=data.nombre,

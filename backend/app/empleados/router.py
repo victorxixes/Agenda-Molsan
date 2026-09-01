@@ -87,7 +87,7 @@ def obtener(empleado_id: int, db: Session = Depends(get_db)):
 # CREAR
 # ---------------------------------------------------------
 @router.post("/", response_model=EmpleadoResponse)
-def crear(data: EmpleadoCreate, db: Session = Depends(get_db)):
+async def crear(data: EmpleadoCreate, db: Session = Depends(get_db)):
 
     if data.rol_id:
         if not db.query(Rol).filter(Rol.id == data.rol_id).first():
@@ -96,7 +96,8 @@ def crear(data: EmpleadoCreate, db: Session = Depends(get_db)):
     empleado = crear_empleado(db, data)
     empleado = _sanear_jsonb_empleado(empleado)
 
-    asyncio.create_task(broadcast_empleados({
+    loop = asyncio.get_running_loop()
+    loop.create_task(broadcast_empleados({
         "tipo": "empleado_creado",
         "descripcion": f"Empleado creado: {empleado.nombre}",
         "fecha": datetime.now().isoformat(),
@@ -104,6 +105,7 @@ def crear(data: EmpleadoCreate, db: Session = Depends(get_db)):
     }))
 
     return empleado
+
 
 
 # ---------------------------------------------------------

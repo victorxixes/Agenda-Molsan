@@ -1,41 +1,40 @@
 import hashlib
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
+from passlib.context import CryptContext
 
 from backend.app.database import get_db
 from backend.app.auth.schemas import LoginRequest
-from backend.app.auth.service import login as login_service
+from backend.app.auth.service import crear_token, serializar_empleado
+from backend.app.empleados.models import Empleado
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 # ---------------------------------------------------------
 # LOGIN EMPLEADOS
 # ---------------------------------------------------------
 @router.post("/login")
-def login_empleado(data: LoginRequest, db: Session = Depends(get_db)):
-    resultado = login_service(db, data.usuario, data.password)
+def login(data: LoginRequest, db: Session = Depends(get_db)):
 
-    empleado = resultado["empleado"]
-    token = resultado["token"]
+    empleado = db.query(Empleado).filter(Empleado.usuario == data.usuario).first()
 
-    foto = empleado.foto if empleado.foto else "default-avatar.png"
+    if not empleado:
+        raise HTTPException(status_code=400, detail="Usuario o contraseña incorrectos")
+
+    if not pwd_context.verify(data.password, empleado.password):
+        raise HTTPException(status_code=400, detail="Usuario o contraseña incorrectos")
+
+    token = crear_token(empleado)
+    empleado_serializado = serializar_empleado(empleado)
 
     return {
-        "usuario_id": empleado.id,          # ← AÑADIDO
-        "empleado_id": empleado.id,
-        "nombre": empleado.nombre,
-        "foto": foto,
-        "rol_id": empleado.rol_id,
-        "rol_nombre": empleado.rol.nombre if empleado.rol else None,
-        "modulos_visibles": empleado.modulos_visibles or [],
-        "permisos_modulo": empleado.permisos_modulo or {},
-        "token": token
+        "access_token": token,
+        "token_type": "bearer",
+        **empleado_serializado
     }
-
-@router.post("/login/")
-def login_empleado_slash(data: LoginRequest, db: Session = Depends(get_db)):
-    return login_empleado(data, db)
 
 
 # ---------------------------------------------------------
@@ -58,13 +57,12 @@ def login_admin(data: LoginRequest):
     if hash_password(data.password) != hash_password("admin"):
         raise HTTPException(status_code=400, detail="Contraseña incorrecta")
 
-    # ⭐ Para admin también devolvemos foto válida
     foto = "default-avatar.png"
 
     return {
         "empleado_id": 1,
         "nombre": "Administrador",
-        "foto": foto,  # ← consistente con empleados
+        "foto": foto,
 
         "rol_id": 0,
         "rol_nombre": "admin",

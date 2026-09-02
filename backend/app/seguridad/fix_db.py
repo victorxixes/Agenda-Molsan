@@ -61,3 +61,116 @@ def reset_empleados():
 
     finally:
         db.close()
+
+@router.get("/reset-secciones")
+def reset_secciones():
+    db = SessionLocal()
+    try:
+        db.execute("DROP TABLE IF EXISTS secciones CASCADE;")
+
+        db.execute("""
+            CREATE TABLE secciones (
+                id SERIAL PRIMARY KEY,
+                nombre VARCHAR(150) NOT NULL
+            );
+        """)
+
+        db.commit()
+        return {"detail": "Tabla 'secciones' eliminada y recreada correctamente."}
+
+    except Exception as e:
+        db.rollback()
+        return {"error": str(e)}
+
+    finally:
+        db.close()
+
+@router.get("/reset-cargos")
+def reset_cargos():
+    db = SessionLocal()
+    try:
+        db.execute("DROP TABLE IF EXISTS cargos CASCADE;")
+
+        db.execute("""
+            CREATE TABLE cargos (
+                id SERIAL PRIMARY KEY,
+                nombre VARCHAR(150) NOT NULL
+            );
+        """)
+
+        db.commit()
+        return {"detail": "Tabla 'cargos' eliminada y recreada correctamente."}
+
+    except Exception as e:
+        db.rollback()
+        return {"error": str(e)}
+
+    finally:
+        db.close()
+
+@router.get("/reset-todo")
+def reset_todo():
+    db = SessionLocal()
+    try:
+        # Departamentos
+        db.execute("DROP TABLE IF EXISTS departamentos CASCADE;")
+        db.execute("""
+            CREATE TABLE departamentos (
+                id SERIAL PRIMARY KEY,
+                nombre VARCHAR(150) NOT NULL,
+                descripcion VARCHAR(255)
+            );
+        """)
+
+        # Secciones
+        db.execute("DROP TABLE IF EXISTS secciones CASCADE;")
+        db.execute("""
+            CREATE TABLE secciones (
+                id SERIAL PRIMARY KEY,
+                nombre VARCHAR(150) NOT NULL
+            );
+        """)
+
+        # Cargos
+        db.execute("DROP TABLE IF EXISTS cargos CASCADE;")
+        db.execute("""
+            CREATE TABLE cargos (
+                id SERIAL PRIMARY KEY,
+                nombre VARCHAR(150) NOT NULL
+            );
+        """)
+
+        # Empleados
+        db.execute("DROP TABLE IF EXISTS empleados CASCADE;")
+        db.execute("""
+            CREATE TABLE empleados (
+                id SERIAL PRIMARY KEY,
+                nombre VARCHAR(150) NOT NULL,
+                apellidos VARCHAR(150) NOT NULL,
+                dni VARCHAR(50),
+                telefono VARCHAR(50),
+                email_personal VARCHAR(150),
+                email_empresa VARCHAR(150),
+                extension VARCHAR(50),
+                fecha_alta DATE,
+                departamento_id INTEGER,
+                seccion_id INTEGER,
+                cargo_id INTEGER,
+                usuario VARCHAR(150) UNIQUE NOT NULL,
+                password VARCHAR(255) NOT NULL,
+                activo BOOLEAN DEFAULT TRUE,
+                modulos_visibles_list JSONB,
+                permisos_modulo_dict JSONB,
+                rol_id INTEGER
+            );
+        """)
+
+        db.commit()
+        return {"detail": "Todas las tablas maestras y empleados han sido reseteadas correctamente."}
+
+    except Exception as e:
+        db.rollback()
+        return {"error": str(e)}
+
+    finally:
+        db.close()

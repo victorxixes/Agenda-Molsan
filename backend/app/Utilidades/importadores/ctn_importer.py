@@ -2,8 +2,7 @@ import pandas as pd
 from sqlalchemy.orm import Session
 
 from backend.app.ctn.models import Notaria
-from backend.app.ctn.utils.normalizador_excel import normalizar_excel, normalizar_columnas
-
+from backend.app.Utilidades.importadores.normalizador_excel import normalizar_excel, normalizar_columnas
 
 def limpiar(valor):
     if pd.isna(valor):

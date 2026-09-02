@@ -1,8 +1,7 @@
 from sqlalchemy.orm import Session
 
-from backend.app.maestros.models import Departamento, Seccion, Cargo
+from backend.app.empleados.models import Departamento, Seccion, Cargo
 from backend.app.maestros.schemas import DepartamentoCreate, SeccionCreate, CargoCreate
-
 
 # -------------------------
 # DEPARTAMENTOS

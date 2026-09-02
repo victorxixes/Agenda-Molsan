@@ -64,8 +64,30 @@ def importar_excel_ctn(db: Session, file):
             }
 
         df = pd.read_csv(csv_buffer)
-        df = normalizar_columnas(df)
+   
+# --- FIX: detectar la fila donde empieza la tabla ---
+# La fila 1 es basura, la fila 2 es la cabecera real
+# Buscamos la fila donde aparece "Código"
+fila_header = None
+for i, row in df.iterrows():
+    if "Código" in row.values or "codigo" in row.values:
+        fila_header = i
+        break
 
+if fila_header is None:
+    return {
+        "message": "No se encontró la cabecera de la tabla (no aparece 'Código')",
+        "columnas_detectadas": list(df.columns),
+        "total_importadas": 0
+    }
+
+# Reprocesar el dataframe usando esa fila como cabecera real
+df.columns = df.iloc[fila_header]
+df = df[fila_header + 1:]
+
+# Normalizar columnas
+df = normalizar_columnas(df)
+     
     except Exception as e:
         return {
             "message": f"Error leyendo el archivo: {str(e)}",

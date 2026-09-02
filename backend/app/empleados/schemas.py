@@ -1,59 +1,42 @@
-from pydantic import BaseModel, Field
-from typing import Optional, Dict, List
-
+from pydantic import BaseModel
+from typing import Optional, List, Dict
 
 class EmpleadoBase(BaseModel):
-    nombre: Optional[str] = None
-    apellidos: Optional[str] = None
-    dni: Optional[str] = None
-    telefono: Optional[str] = None
-    email_personal: Optional[str] = None
-    direccion: Optional[str] = None
-    fecha_nacimiento: Optional[str] = None
+    nombre: Optional[str]
+    apellidos: Optional[str]
+    dni: Optional[str]
+    telefono: Optional[str]
+    email_personal: Optional[str]
+    email_empresa: Optional[str]
+    extension: Optional[str]
+    usuario: Optional[str]
+    password: Optional[str]
 
-    alergias: Optional[str] = None
-    persona_contacto: Optional[str] = None
-    telefono_contacto: Optional[str] = None
-    observaciones: Optional[str] = None
+    direccion: Optional[str]
+    fecha_nacimiento: Optional[str]
+    alergias: Optional[str]
+    persona_contacto: Optional[str]
+    telefono_contacto: Optional[str]
+    observaciones: Optional[str]
+    foto: Optional[str]
 
-    departamento_id: Optional[int] = None
-    seccion_id: Optional[int] = None
-    cargo_id: Optional[int] = None
+    departamento_id: Optional[int]
+    seccion_id: Optional[int]
+    cargo_id: Optional[int]
+    rol_id: Optional[int]
 
-    rol_id: Optional[int] = None
+    fecha_alta: Optional[str]
+    fecha_baja: Optional[str]
+    activo: Optional[bool]
 
-    email_empresa: Optional[str] = None
-    extension: Optional[str] = None
-    fecha_alta: Optional[str] = None
-    fecha_baja: Optional[str] = None
-
-    activo: Optional[bool] = True
-
-    usuario: Optional[str] = None
-    password: Optional[str] = None
-
-    foto: Optional[str] = None
-
-    # JSONB → Python list/dict
-    modulos_visibles_list: Optional[List[str]] = Field(default_factory=list)
-    permisos_modulo_dict: Optional[Dict[str, List[str]]] = Field(default_factory=dict)
-
+    modulos_visibles_list: Optional[List[str]] = []
+    permisos_modulo_dict: Optional[Dict] = {}
 
 class EmpleadoCreate(EmpleadoBase):
-    nombre: str
-    dni: str
-    usuario: str
-    password: str
-    rol_id: Optional[int] = None  # recomendado para seguridad
-
-
-class EmpleadoUpdate(EmpleadoBase):
     pass
 
-
-class EmpleadoResponse(EmpleadoBase):
+class Empleado(EmpleadoBase):
     id: int
-    rol_nombre: Optional[str] = None
 
     class Config:
         orm_mode = True

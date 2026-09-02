@@ -62,6 +62,30 @@ def reset_empleados():
     finally:
         db.close()
 
+@router.get("/reset-roles")
+def reset_roles():
+    db = SessionLocal()
+    try:
+        db.execute("DROP TABLE IF EXISTS roles CASCADE;")
+
+        db.execute("""
+            CREATE TABLE roles (
+                id SERIAL PRIMARY KEY,
+                nombre VARCHAR(150) UNIQUE NOT NULL,
+                descripcion VARCHAR(255)
+            );
+        """)
+
+        db.commit()
+        return {"detail": "Tabla 'roles' eliminada y recreada correctamente."}
+
+    except Exception as e:
+        db.rollback()
+        return {"error": str(e)}
+
+    finally:
+        db.close()
+
 @router.get("/reset-secciones")
 def reset_secciones():
     db = SessionLocal()

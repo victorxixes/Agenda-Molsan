@@ -83,6 +83,9 @@ from backend.app.seguridad.logs.router import router as seguridad_logs_router
 from backend.app.intranet.documentos.router import router as documentos_router
 from backend.app.intranet.noticias.router import router as noticias_router
 
+# MENSAJES
+from backend.app.mensajes.router_ws import router as mensajes_ws_router
+
 # ---------------------------------------------------------
 # INCLUIR ROUTERS REST
 # ---------------------------------------------------------
@@ -98,3 +101,4 @@ app.include_router(seguridad_logs_router, prefix="/api")
 app.include_router(documentos_router, prefix="/api")
 app.include_router(reset_intranet_router, prefix="/api")
 app.include_router(noticias_router, prefix="/api")
+app.include_router(mensajes_ws_router, prefix="/api")

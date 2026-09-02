@@ -18,5 +18,5 @@ class Noticia(Base):
 
     fichero = Column(String, nullable=True)
 
-    # CORREGIDO: la tabla correcta es empleados_v2
+    # CORREGIDO: la tabla correcta es empleados
     usuario_id = Column(Integer, ForeignKey("empleados.id"), nullable=True)

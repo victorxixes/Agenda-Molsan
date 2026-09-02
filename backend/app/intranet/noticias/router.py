@@ -13,7 +13,6 @@ from backend.app.intranet.noticias.service import (
 
 # WebSockets
 from backend.app.websockets.intranet_ws import intranet_broadcast
-from backend.app.websockets.notificaciones_ws import broadcast_notificacion
 
 router = APIRouter(
     prefix="/intranet/noticias",

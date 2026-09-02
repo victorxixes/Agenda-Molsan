@@ -44,5 +44,3 @@ class Empleado(Base):
     # Seguridad interna (🔥 PostgreSQL JSONB)
     modulos_visibles_list = Column(JSONB, default=list)
     permisos_modulo_dict = Column(JSONB, default=dict)
-
-    permisos_modulo_dict = Column(JSON)

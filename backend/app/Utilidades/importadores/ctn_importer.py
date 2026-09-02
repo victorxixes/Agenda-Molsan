@@ -8,7 +8,6 @@ def limpiar(valor):
         return ""
     return str(valor).strip()
 
-# Mapeo explícito de cabeceras del Excel → campos del modelo Notaria
 HEADER_MAP = {
     "código": "codigo",
     "codigo": "codigo",
@@ -36,16 +35,12 @@ def importar_excel_ctn(db: Session, file):
         wb = load_workbook(filename=BytesIO(contenido), data_only=True)
         ws = wb.active
 
-        # Fila 2 = cabecera real
         raw_headers = [limpiar(c.value) for c in ws[2]]
-
-        # Normalizar cabeceras
         headers = [h.lower().strip() for h in raw_headers if h]
 
-        # Validación mínima
         if not any(h in ("código", "codigo") for h in headers):
             return {
-                "message": "Error: no se ha encontrado columna 'Código' en la cabecera",
+                "message": "Error: no se ha encontrado columna 'Código'",
                 "total_importadas": 0,
                 "columnas_detectadas": raw_headers,
             }
@@ -53,7 +48,6 @@ def importar_excel_ctn(db: Session, file):
         filas = []
         for row in ws.iter_rows(min_row=3, values_only=True):
 
-            # Fila completamente vacía
             if all(c is None for c in row):
                 filas.append({"__fila_vacia__": True})
                 continue
@@ -63,18 +57,14 @@ def importar_excel_ctn(db: Session, file):
                 valor = row[i] if i < len(row) else None
                 valor = limpiar(valor)
 
-                # Limpieza avanzada
-                valor = valor.replace("\n", "; ")  # multilineas
+                valor = valor.replace("\n", "; ")
                 valor = valor.replace("\r", "")
-                valor = valor.replace("..", ".")
-                valor = valor.replace("...", ".")
-                valor = valor.replace(" ", " ").strip()
+                valor = valor.replace("...", ".").replace("..", ".")
+                valor = valor.strip()
 
-                # Teléfonos con puntos
                 if header in ("teléfono", "telefono"):
                     valor = valor.replace(".", "")
 
-                # Código con ceros
                 if header in ("código", "codigo"):
                     valor = valor.zfill(7)
 
@@ -83,10 +73,7 @@ def importar_excel_ctn(db: Session, file):
             filas.append(fila)
 
     except Exception as e:
-        return {
-            "message": f"Error leyendo Excel: {str(e)}",
-            "total_importadas": 0
-        }
+        return {"message": f"Error leyendo Excel: {str(e)}", "total_importadas": 0}
 
     nuevas = 0
     actualizadas = 0
@@ -110,7 +97,6 @@ def importar_excel_ctn(db: Session, file):
                 filas_erroneas += 1
                 continue
 
-            # Evitar duplicados dentro del Excel
             if codigo in codigos_vistos:
                 duplicados_ignorados += 1
                 continue

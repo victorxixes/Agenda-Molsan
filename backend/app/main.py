@@ -64,6 +64,10 @@ from backend.app.herramientasswager.crear_tablas import router as herramientas_r
 from backend.app.ctn.router import router as ctn_router
 from backend.app.Utilidades.router import router as utilidades_router
 
+#Seguridad
+from backend.app.seguridad.auditoria.router import router as seguridad_auditoria_router
+from backend.app.seguridad.logs.router import router as seguridad_logs_router
+
 # ---------------------------------------------------------
 # INCLUIR ROUTERS REST
 # ---------------------------------------------------------
@@ -74,4 +78,6 @@ app.include_router(maestros_router, prefix="/api")
 app.include_router(herramientas_router, prefix="/api")
 app.include_router(ctn_router, prefix="/api")
 app.include_router(utilidades_router, prefix="/api")
+app.include_router(seguridad_auditoria_router, prefix="/api")
+app.include_router(seguridad_logs_router, prefix="/api")
 

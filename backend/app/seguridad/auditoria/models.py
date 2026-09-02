@@ -5,7 +5,7 @@ from backend.app.database import Base
 
 
 class Auditoria(Base):
-    __tablename__ = "auditoria2"
+    __tablename__ = "seguridad_auditoria"
     __allow_unmapped__ = True
 
     id = Column(Integer, primary_key=True, index=True)
@@ -14,8 +14,6 @@ class Auditoria(Base):
     modulo = Column(String, nullable=True)
     accion = Column(String, nullable=True)
     descripcion = Column(String, nullable=True)
+    ip = Column(String(50), nullable=True)
 
     fecha = Column(DateTime, default=datetime.utcnow)
-
-    # IP del usuario o del sistema
-    ip = Column(String(50), nullable=True)

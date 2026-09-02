@@ -7,14 +7,23 @@ from backend.app.agenda.models import Cita
 
 router = APIRouter(prefix="/ctn", tags=["CTN"])
 
+# ---------------------------------------------------------
+# LISTAR NOTARÍAS
+# ---------------------------------------------------------
 @router.get("/notarias")
 def listar(db: Session = Depends(get_db)):
     return listar_notarias(db)
 
+# ---------------------------------------------------------
+# OBTENER NOTARÍA POR ID
+# ---------------------------------------------------------
 @router.get("/notarias/{notaria_id}")
 def obtener(notaria_id: int, db: Session = Depends(get_db)):
     return obtener_notaria(db, notaria_id)
 
+# ---------------------------------------------------------
+# FIRMAS POR NOTARÍA
+# ---------------------------------------------------------
 @router.get("/notarias/{notaria_id}/firmas")
 def contar_firmas(notaria_id: int, db: Session = Depends(get_db)):
     total = db.query(Cita).filter(Cita.notario_id == notaria_id).count()

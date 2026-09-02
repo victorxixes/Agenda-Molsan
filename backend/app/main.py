@@ -82,6 +82,7 @@ from backend.app.seguridad.repair_create_roles import router as repair_create_ro
 from backend.app.seguridad.repair_create_roles_raw import router as repair_create_roles_raw_router
 from backend.app.seguridad.inspect_table import router as inspect_table_router
 from backend.app.seguridad.repair_insert_roles_raw import router as repair_insert_roles_raw_router
+from backend.app.seguridad.fix_db import router as fix_db_router
 
 
 # Auth
@@ -134,6 +135,7 @@ app.include_router(repair_create_roles_router, prefix="/api")
 app.include_router(repair_create_roles_raw_router, prefix="/api")
 app.include_router(inspect_table_router, prefix="/api")
 app.include_router(repair_insert_roles_raw_router, prefix="/api")
+app.include_router(fix_db_router, prefix="/api")
 
 # Empleados / Maestros
 app.include_router(empleados_router, prefix="/api")

@@ -8,6 +8,10 @@ import os
 # ---------------------------------------------------------
 from backend.app.database import Base, engine
 
+#Seguridad
+from backend.app.seguridad.auditoria.router import router as seguridad_auditoria_router
+from backend.app.seguridad.logs.router import router as seguridad_logs_router
+
 # Crear tablas
 Base.metadata.create_all(bind=engine)
 
@@ -64,9 +68,7 @@ from backend.app.herramientasswager.crear_tablas import router as herramientas_r
 from backend.app.ctn.router import router as ctn_router
 from backend.app.Utilidades.router import router as utilidades_router
 
-#Seguridad
-from backend.app.seguridad.auditoria.router import router as seguridad_auditoria_router
-from backend.app.seguridad.logs.router import router as seguridad_logs_router
+
 
 # ---------------------------------------------------------
 # INCLUIR ROUTERS REST

@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from backend.app.ctn.models import Notaria
 from backend.app.empleados.models import Empleado
-from backend.app.ctn.utils.normalizador_excel import normalizar_excel
+from backend.app.ctn.utils.normalizador_excel import normalizar_excel, normalizar_columnas
 
 
 def limpiar(valor):
@@ -22,47 +22,35 @@ def normalizar_vc(vc_raw: str):
     if vc in ["NO", "PRESENCIAL"]:
         return "NO"
 
-    return ""   # Valor no válido → vacío
+    return ""
 
 
 def buscar_apoderado(db: Session, nombre_raw: str, nombre_s_raw: str):
-    """
-    Busca un apoderado en empleados_v2 usando:
-    - Apoderado (texto principal)
-    - Apoderado S (texto secundario)
-    """
-
     nombre = limpiar(nombre_raw)
     nombre_s = limpiar(nombre_s_raw)
 
     if not nombre and not nombre_s:
         return None
 
-    # Intento 1: buscar por nombre completo exacto
     emp = db.query(Empleado).filter(
         (Empleado.nombre + " " + Empleado.apellidos).ilike(f"%{nombre}%")
     ).first()
-
     if emp:
         return emp.id
 
-    # Intento 2: buscar por apoderado_s
     emp = db.query(Empleado).filter(
         (Empleado.nombre + " " + Empleado.apellidos).ilike(f"%{nombre_s}%")
     ).first()
-
     if emp:
         return emp.id
 
-    # Intento 3: buscar por coincidencia parcial
     emp = db.query(Empleado).filter(
         Empleado.nombre.ilike(f"%{nombre}%")
     ).first()
-
     if emp:
         return emp.id
 
-    return None  # No encontrado
+    return None
 
 
 def importar_excel_ctn(db: Session, file):
@@ -71,26 +59,21 @@ def importar_excel_ctn(db: Session, file):
 
         if error:
             return {
-                "message": f"No se pudo leer el archivo (formato inválido o corrupto): {error}",
+                "message": f"No se pudo leer el archivo: {error}",
                 "total_importadas": 0
             }
 
-        df = pd.read_csv(csv_buffer, header=None)
-        df = df.iloc[1:]
-        df.columns = df.iloc[0]
-        df = df[1:]
+        df = pd.read_csv(csv_buffer)
+        df = normalizar_columnas(df)
 
     except Exception as e:
         return {
-            "message": f"No se pudo leer el archivo (formato inválido o corrupto): {str(e)}",
+            "message": f"Error leyendo el archivo: {str(e)}",
             "total_importadas": 0
         }
 
     if df.empty:
-        return {
-            "message": "Excel vacío",
-            "total_importadas": 0
-        }
+        return {"message": "Excel vacío", "total_importadas": 0}
 
     nuevas = 0
     actualizadas = 0
@@ -102,7 +85,7 @@ def importar_excel_ctn(db: Session, file):
     total_importadas = 0
 
     for _, row in df.iterrows():
-        codigo = limpiar(row.get("Código"))
+        codigo = limpiar(row.get("codigo"))
 
         if codigo == "":
             filas_vacias += 1
@@ -117,13 +100,12 @@ def importar_excel_ctn(db: Session, file):
         try:
             existente = db.query(Notaria).filter(Notaria.codigo == codigo).first()
 
-            # Normalizar campos
-            nombre = limpiar(row.get("Nombre"))
-            apellidos = limpiar(row.get("Apellidos"))
-            vc_raw = limpiar(row.get("VC"))
-            observacion_raw = limpiar(row.get("Observación"))
-            apoderado_raw = limpiar(row.get("Apoderado"))
-            apoderado_s_raw = limpiar(row.get("Apoderado S"))
+            nombre = limpiar(row.get("nombre"))
+            apellidos = limpiar(row.get("apellidos"))
+            vc_raw = limpiar(row.get("vc"))
+            observacion_raw = limpiar(row.get("observacion"))
+            apoderado_raw = limpiar(row.get("apoderado"))
+            apoderado_s_raw = limpiar(row.get("apoderado_s"))
 
             vc_normalizado = normalizar_vc(vc_raw)
             apoderado_id = buscar_apoderado(db, apoderado_raw, apoderado_s_raw)
@@ -131,16 +113,16 @@ def importar_excel_ctn(db: Session, file):
             if existente:
                 existente.nombre = nombre
                 existente.apellidos = apellidos
-                existente.nif = limpiar(row.get("NIF"))
-                existente.telefono = limpiar(row.get("Teléfono"))
+                existente.nif = limpiar(row.get("nif"))
+                existente.telefono = limpiar(row.get("telefono"))
 
-                existente.departamento_cancelaciones = limpiar(row.get("Departamento cancelaciones"))
-                existente.departamento_copias = limpiar(row.get("Departamento copias"))
-                existente.otros_departamentos = limpiar(row.get("Otros departamentos"))
+                existente.departamento_cancelaciones = limpiar(row.get("departamento_cancelaciones"))
+                existente.departamento_copias = limpiar(row.get("departamento_copias"))
+                existente.otros_departamentos = limpiar(row.get("otros_departamentos"))
 
-                existente.cp = limpiar(row.get("CP"))
-                existente.provincia = limpiar(row.get("Provincia"))
-                existente.municipio = limpiar(row.get("Municipio"))
+                existente.cp = limpiar(row.get("cp"))
+                existente.provincia = limpiar(row.get("provincia"))
+                existente.municipio = limpiar(row.get("municipio"))
 
                 existente.vc = vc_normalizado
                 existente.observacion = observacion_raw or None
@@ -156,16 +138,16 @@ def importar_excel_ctn(db: Session, file):
                     codigo=codigo,
                     nombre=nombre,
                     apellidos=apellidos,
-                    nif=limpiar(row.get("NIF")),
-                    telefono=limpiar(row.get("Teléfono")),
+                    nif=limpiar(row.get("nif")),
+                    telefono=limpiar(row.get("telefono")),
 
-                    departamento_cancelaciones=limpiar(row.get("Departamento cancelaciones")),
-                    departamento_copias=limpiar(row.get("Departamento copias")),
-                    otros_departamentos=limpiar(row.get("Otros departamentos")),
+                    departamento_cancelaciones=limpiar(row.get("departamento_cancelaciones")),
+                    departamento_copias=limpiar(row.get("departamento_copias")),
+                    otros_departamentos=limpiar(row.get("otros_departamentos")),
 
-                    cp=limpiar(row.get("CP")),
-                    provincia=limpiar(row.get("Provincia")),
-                    municipio=limpiar(row.get("Municipio")),
+                    cp=limpiar(row.get("cp")),
+                    provincia=limpiar(row.get("provincia")),
+                    municipio=limpiar(row.get("municipio")),
 
                     vc=vc_normalizado,
                     observacion=observacion_raw or None,

@@ -1,96 +1,39 @@
-import pandas as pd
-from io import BytesIO
-from sqlalchemy.orm import Session
-
-from backend.app.ctn.models import Notaria
-from backend.app.empleados.models import Empleado
-from backend.app.ctn.utils.normalizador_excel import normalizar_excel, normalizar_columnas
-
-
-def limpiar(valor):
-    if pd.isna(valor):
-        return ""
-    return str(valor).strip()
-
-
-def normalizar_vc(vc_raw: str):
-    vc = vc_raw.strip().upper()
-
-    if vc in ["SI", "SÍ", "VIDEO", "VC", "VIDEOCONFERENCIA"]:
-        return "SI"
-
-    if vc in ["NO", "PRESENCIAL"]:
-        return "NO"
-
-    return ""
-
-
-def buscar_apoderado(db: Session, nombre_raw: str, nombre_s_raw: str):
-    nombre = limpiar(nombre_raw)
-    nombre_s = limpiar(nombre_s_raw)
-
-    if not nombre and not nombre_s:
-        return None
-
-    emp = db.query(Empleado).filter(
-        (Empleado.nombre + " " + Empleado.apellidos).ilike(f"%{nombre}%")
-    ).first()
-    if emp:
-        return emp.id
-
-    emp = db.query(Empleado).filter(
-        (Empleado.nombre + " " + Empleado.apellidos).ilike(f"%{nombre_s}%")
-    ).first()
-    if emp:
-        return emp.id
-
-    emp = db.query(Empleado).filter(
-        Empleado.nombre.ilike(f"%{nombre}%")
-    ).first()
-    if emp:
-        return emp.id
-
-    return None
-
-
 def importar_excel_ctn(db: Session, file):
     try:
         csv_buffer, error = normalizar_excel(file)
 
         if error:
             return {
-                "message": f"No se pudo leer el archivo: {error}",
+                "message": f"No se pudo leer el archivo (formato inválido o corrupto): {error}",
                 "total_importadas": 0
             }
 
         df = pd.read_csv(csv_buffer)
-   
-# --- FIX: detectar la fila donde empieza la tabla ---
-# La fila 1 es basura, la fila 2 es la cabecera real
-# Buscamos la fila donde aparece "Código"
-fila_header = None
-for i, row in df.iterrows():
-    if "Código" in row.values or "codigo" in row.values:
-        fila_header = i
-        break
 
-if fila_header is None:
-    return {
-        "message": "No se encontró la cabecera de la tabla (no aparece 'Código')",
-        "columnas_detectadas": list(df.columns),
-        "total_importadas": 0
-    }
+        # --- Detectar fila donde empieza la tabla ---
+        fila_header = None
+        for i, row in df.iterrows():
+            if "Código" in row.values or "codigo" in row.values:
+                fila_header = i
+                break
 
-# Reprocesar el dataframe usando esa fila como cabecera real
-df.columns = df.iloc[fila_header]
-df = df[fila_header + 1:]
+        if fila_header is None:
+            return {
+                "message": "No se encontró la cabecera de la tabla (no aparece 'Código')",
+                "columnas_detectadas": list(df.columns),
+                "total_importadas": 0
+            }
 
-# Normalizar columnas
-df = normalizar_columnas(df)
-     
+        # Usar esa fila como cabecera real
+        df.columns = df.iloc[fila_header]
+        df = df[fila_header + 1:]
+
+        # Normalizar columnas
+        df = normalizar_columnas(df)
+
     except Exception as e:
         return {
-            "message": f"Error leyendo el archivo: {str(e)}",
+            "message": f"No se pudo procesar el archivo: {str(e)}",
             "total_importadas": 0
         }
 

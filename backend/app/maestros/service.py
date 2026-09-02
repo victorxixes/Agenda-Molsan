@@ -1,117 +1,42 @@
 from sqlalchemy.orm import Session
+from backend.app.maestros.models import Departamento, Seccion, Cargo, Rol
 
-from backend.app.empleados.models import Departamento, Seccion, Cargo
-from backend.app.maestros.schemas import DepartamentoCreate, SeccionCreate, CargoCreate
+# ---------------------------
+# GENERIC CRUD
+# ---------------------------
 
-# -------------------------
-# DEPARTAMENTOS
-# -------------------------
-def listar_departamentos(db: Session):
-    return db.query(Departamento).all()
+def listar(db: Session, modelo):
+    return db.query(modelo).order_by(modelo.id.asc()).all()
 
+def obtener(db: Session, modelo, id: int):
+    return db.query(modelo).filter(modelo.id == id).first()
 
-def crear_departamento(db: Session, data: DepartamentoCreate):
-    dep = Departamento(**data.dict())
-    db.add(dep)
+def crear(db: Session, modelo, nombre: str):
+    existente = db.query(modelo).filter(modelo.nombre == nombre).first()
+    if existente:
+        raise ValueError("Ya existe un registro con ese nombre")
+
+    registro = modelo(nombre=nombre)
+    db.add(registro)
     db.commit()
-    db.refresh(dep)
-    return dep
+    db.refresh(registro)
+    return registro
 
-
-def editar_departamento(db: Session, id: int, data: DepartamentoCreate):
-    dep = db.query(Departamento).filter(Departamento.id == id).first()
-    if not dep:
+def editar(db: Session, modelo, id: int, nombre: str):
+    registro = obtener(db, modelo, id)
+    if not registro:
         return None
 
-    for k, v in data.dict().items():
-        setattr(dep, k, v)
-
+    registro.nombre = nombre
     db.commit()
-    db.refresh(dep)
-    return dep
+    db.refresh(registro)
+    return registro
 
-
-def eliminar_departamento(db: Session, id: int):
-    dep = db.query(Departamento).filter(Departamento.id == id).first()
-    if not dep:
+def eliminar(db: Session, modelo, id: int):
+    registro = obtener(db, modelo, id)
+    if not registro:
         return False
 
-    db.delete(dep)
-    db.commit()
-    return True
-
-
-# -------------------------
-# SECCIONES
-# -------------------------
-def listar_secciones(db: Session):
-    return db.query(Seccion).all()
-
-
-def crear_seccion(db: Session, data: SeccionCreate):
-    sec = Seccion(**data.dict())
-    db.add(sec)
-    db.commit()
-    db.refresh(sec)
-    return sec
-
-
-def editar_seccion(db: Session, id: int, data: SeccionCreate):
-    sec = db.query(Seccion).filter(Seccion.id == id).first()
-    if not sec:
-        return None
-
-    for k, v in data.dict().items():
-        setattr(sec, k, v)
-
-    db.commit()
-    db.refresh(sec)
-    return sec
-
-
-def eliminar_seccion(db: Session, id: int):
-    sec = db.query(Seccion).filter(Seccion.id == id).first()
-    if not sec:
-        return False
-
-    db.delete(sec)
-    db.commit()
-    return True
-
-
-# -------------------------
-# CARGOS
-# -------------------------
-def listar_cargos(db: Session):
-    return db.query(Cargo).all()
-
-
-def crear_cargo(db: Session, data: CargoCreate):
-    cargo = Cargo(**data.dict())
-    db.add(cargo)
-    db.commit()
-    db.refresh(cargo)
-    return cargo
-
-
-def editar_cargo(db: Session, id: int, data: CargoCreate):
-    cargo = db.query(Cargo).filter(Cargo.id == id).first()
-    if not cargo:
-        return None
-
-    for k, v in data.dict().items():
-        setattr(cargo, k, v)
-
-    db.commit()
-    db.refresh(cargo)
-    return cargo
-
-
-def eliminar_cargo(db: Session, id: int):
-    cargo = db.query(Cargo).filter(Cargo.id == id).first()
-    if not cargo:
-        return False
-
-    db.delete(cargo)
+    db.delete(registro)
     db.commit()
     return True

@@ -1,6 +1,10 @@
 from pydantic import BaseModel
 from typing import Optional, List, Dict
 
+class LoginEmpleado(BaseModel):
+    usuario: str
+    password: str
+    
 class EmpleadoBase(BaseModel):
     nombre: Optional[str] = None
     apellidos: Optional[str] = None

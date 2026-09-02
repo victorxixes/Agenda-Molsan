@@ -13,7 +13,6 @@ def limpiar(valor):
 
 def importar_excel_ctn(db: Session, file):
     try:
-        # Leer Excel normalizado
         csv_buffer, error = normalizar_excel(file)
 
         if error:
@@ -24,12 +23,12 @@ def importar_excel_ctn(db: Session, file):
 
         df = pd.read_csv(csv_buffer)
 
-        # ⭐ IGNORAR FILA 1 (título)
-        # ⭐ USAR FILA 2 COMO CABECERA REAL
+        # Ignorar fila 1 (título)
+        # Usar fila 2 como cabecera
         df.columns = df.iloc[1]
         df = df.iloc[2:]
 
-        # ⭐ Convertir todo a string para evitar NaN / inf
+        # ⭐ Convertir TODO a string para evitar NaN / inf / objetos raros
         df = df.astype(str)
 
     except Exception as e:
@@ -98,6 +97,7 @@ def importar_excel_ctn(db: Session, file):
 
     db.commit()
 
+    # ⭐ Convertir contadores a enteros seguros
     return {
         "message": "Importación CTN completada correctamente",
         "total_importadas": int(total_importadas),

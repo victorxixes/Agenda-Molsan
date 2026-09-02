@@ -1,9 +1,9 @@
 from sqlalchemy.orm import Session
 import hashlib
 
-from backend.app.empleados.models import Empleado
-from backend.app.empleados.schemas import EmpleadoCreate, EmpleadoUpdate
-from backend.app.auth.service import crear_token, serializar_empleado
+from app.empleados.models import Empleado
+from app.empleados.schemas import EmpleadoCreate, EmpleadoUpdate
+from app.auth.service import crear_token, serializar_empleado
 
 
 # ---------------------------------------------------------
@@ -34,14 +34,14 @@ def login_empleado(db: Session, usuario: str, password: str):
 
 
 # ---------------------------------------------------------
-# OBTENER EMPLEADO POR ID (NECESARIO PARA MENSAJES, SEGURIDAD, ETC.)
+# OBTENER EMPLEADO POR ID
 # ---------------------------------------------------------
 def obtener_empleado(db: Session, empleado_id: int):
     return db.query(Empleado).filter(Empleado.id == empleado_id).first()
 
 
 # ---------------------------------------------------------
-# OBTENER EMPLEADO POR USUARIO (UTIL PARA LOGIN)
+# OBTENER EMPLEADO POR USUARIO
 # ---------------------------------------------------------
 def obtener_empleado_por_usuario(db: Session, usuario: str):
     return db.query(Empleado).filter(Empleado.usuario == usuario).first()
@@ -67,24 +67,28 @@ def crear_empleado(db: Session, data: EmpleadoCreate):
         dni=data.dni,
         telefono=data.telefono,
         email_personal=data.email_personal,
+        email_empresa=data.email_empresa,
+        extension=data.extension,
+        usuario=data.usuario,
+        password=hash_password(data.password),
+
         direccion=data.direccion,
         fecha_nacimiento=data.fecha_nacimiento,
         alergias=data.alergias,
         persona_contacto=data.persona_contacto,
         telefono_contacto=data.telefono_contacto,
         observaciones=data.observaciones,
+        foto=data.foto,
+
         departamento_id=data.departamento_id,
         seccion_id=data.seccion_id,
         cargo_id=data.cargo_id,
-        email_empresa=data.email_empresa,
-        extension=data.extension,
+        rol_id=data.rol_id,
+
         fecha_alta=data.fecha_alta,
         fecha_baja=data.fecha_baja,
         activo=data.activo,
-        usuario=data.usuario,
-        password=hash_password(data.password),
-        foto=data.foto,
-        rol_id=data.rol_id,
+
         modulos_visibles_list=data.modulos_visibles_list or [],
         permisos_modulo_dict=data.permisos_modulo_dict or {},
     )

@@ -94,7 +94,6 @@ from backend.app.auth.router import router as auth_router
 # Empleados / Maestros
 from backend.app.empleados.router import router as empleados_router
 from backend.app.maestros.router import router as maestros_router
-from backend.app.empleados.router_debug_list import router as empleados_debug_router
 
 # CTN
 from backend.app.ctn.router import router as ctn_router
@@ -148,7 +147,6 @@ app.include_router(fix_db_router, prefix="/api")
 # Empleados / Maestros
 app.include_router(empleados_router, prefix="/api")
 app.include_router(maestros_router, prefix="/api")
-app.include_router(empleados_debug_router, prefix="/api")
 
 # Intranet
 app.include_router(noticias_router, prefix="/api")

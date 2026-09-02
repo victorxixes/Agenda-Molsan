@@ -1,41 +1,6 @@
-from sqlalchemy import Column, Integer, String, Boolean, Text, ForeignKey
-from sqlalchemy.orm import relationship
-from backend.app.database import Base
 
-# ---------------------------------------------------------
-# DEPARTAMENTOS
-# ---------------------------------------------------------
+# Este módulo ya no define modelos ORM.
+# Las tablas Departamento, Seccion y Cargo ahora viven en:
+# backend/app/empleados/models.py
 
-class Departamento(Base):
-    __tablename__ = "departamentos"
-
-    id = Column(Integer, primary_key=True, index=True)
-    nombre = Column(String(150), nullable=False)
-
-    empleados = relationship("Empleado", back_populates="departamento")
-
-
-# ---------------------------------------------------------
-# SECCIONES
-# ---------------------------------------------------------
-
-class Seccion(Base):
-    __tablename__ = "secciones"
-
-    id = Column(Integer, primary_key=True, index=True)
-    nombre = Column(String(150), nullable=False)
-
-    empleados = relationship("Empleado", back_populates="seccion")
-
-
-# ---------------------------------------------------------
-# CARGOS
-# ---------------------------------------------------------
-
-class Cargo(Base):
-    __tablename__ = "cargos"
-
-    id = Column(Integer, primary_key=True, index=True)
-    nombre = Column(String(150), nullable=False)
-
-    empleados = relationship("Empleado", back_populates="cargo")
+# Puedes dejar este fichero vacío o usarlo para utilidades del módulo "maestros".

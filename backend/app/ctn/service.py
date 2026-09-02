@@ -1,6 +1,6 @@
 import pandas as pd
 from sqlalchemy.orm import Session
-from backend.app.ctn.models import CTN
+from backend.app.ctn.models import Notaria
 
 # ---------------------------------------------------------
 # IMPORTAR CTN (NOTARIOS)

@@ -54,9 +54,13 @@ from backend.app.auth.router import router as auth_router
 # Empleados (CRUD completo)
 from backend.app.empleados.router import router as empleados_router
 
+# Maestros 
+from backend.app.maestros.router import router as maestros_router
+
 # ---------------------------------------------------------
 # INCLUIR ROUTERS REST
 # ---------------------------------------------------------
 
 app.include_router(auth_router, prefix="/api")
 app.include_router(empleados_router, prefix="/api")
+app.include_router(maestros_router, prefix="/api")

@@ -68,7 +68,9 @@ from backend.app.herramientasswager.crear_tablas import router as herramientas_r
 from backend.app.ctn.router import router as ctn_router
 from backend.app.Utilidades.router import router as utilidades_router
 
-
+# INTRANET
+from backend.app.intranet.documentos.models import Documento
+from backend.app.intranet.noticias.models import Noticia
 
 # ---------------------------------------------------------
 # INCLUIR ROUTERS REST
@@ -82,4 +84,5 @@ app.include_router(ctn_router, prefix="/api")
 app.include_router(utilidades_router, prefix="/api")
 app.include_router(seguridad_auditoria_router, prefix="/api")
 app.include_router(seguridad_logs_router, prefix="/api")
-
+app.include_router(documentos_router, prefix="/api")
+app.include_router(noticias_router, prefix="/api")

@@ -1,15 +1,12 @@
 from io import BytesIO
 from openpyxl import load_workbook
 from sqlalchemy.orm import Session
-
 from backend.app.ctn.models import Notaria
-
 
 def limpiar(valor):
     if valor is None:
         return ""
     return str(valor).strip()
-
 
 # Mapeo explícito de cabeceras del Excel → campos del modelo Notaria
 HEADER_MAP = {
@@ -33,7 +30,6 @@ HEADER_MAP = {
     "observacion": "observacion",
 }
 
-
 def importar_excel_ctn(db: Session, file):
     try:
         contenido = file.file.read()
@@ -43,10 +39,10 @@ def importar_excel_ctn(db: Session, file):
         # Fila 2 = cabecera real
         raw_headers = [limpiar(c.value) for c in ws[2]]
 
-        # Normalizar cabeceras (lower, sin espacios extra)
+        # Normalizar cabeceras
         headers = [h.lower().strip() for h in raw_headers if h]
 
-        # Comprobar que al menos tenemos "Código"
+        # Validación mínima
         if not any(h in ("código", "codigo") for h in headers):
             return {
                 "message": "Error: no se ha encontrado columna 'Código' en la cabecera",
@@ -56,16 +52,34 @@ def importar_excel_ctn(db: Session, file):
 
         filas = []
         for row in ws.iter_rows(min_row=3, values_only=True):
-            # Si la fila está completamente vacía, la marcamos como vacía luego
+
+            # Fila completamente vacía
             if all(c is None for c in row):
                 filas.append({"__fila_vacia__": True})
                 continue
 
             fila = {}
             for i, header in enumerate(headers):
-                # Protección ante filas con menos columnas que la cabecera
                 valor = row[i] if i < len(row) else None
-                fila[header] = limpiar(valor)
+                valor = limpiar(valor)
+
+                # Limpieza avanzada
+                valor = valor.replace("\n", "; ")  # multilineas
+                valor = valor.replace("\r", "")
+                valor = valor.replace("..", ".")
+                valor = valor.replace("...", ".")
+                valor = valor.replace(" ", " ").strip()
+
+                # Teléfonos con puntos
+                if header in ("teléfono", "telefono"):
+                    valor = valor.replace(".", "")
+
+                # Código con ceros
+                if header in ("código", "codigo"):
+                    valor = valor.zfill(7)
+
+                fila[header] = valor
+
             filas.append(fila)
 
     except Exception as e:
@@ -85,34 +99,30 @@ def importar_excel_ctn(db: Session, file):
 
     for fila in filas:
         try:
-            # Fila completamente vacía
             if fila.get("__fila_vacia__"):
                 filas_vacias += 1
                 continue
 
-            # Obtener código con cabeceras normalizadas
-            codigo_raw = fila.get("código") or fila.get("codigo") or ""
-            codigo = limpiar(codigo_raw)
+            codigo = fila.get("código") or fila.get("codigo") or ""
+            codigo = limpiar(codigo)
 
             if codigo == "":
-                filas_vacias += 1
+                filas_erroneas += 1
                 continue
 
-            # Evitar duplicados dentro del propio Excel
+            # Evitar duplicados dentro del Excel
             if codigo in codigos_vistos:
                 duplicados_ignorados += 1
                 continue
 
             codigos_vistos.add(codigo)
 
-            # Construir nueva_data usando HEADER_MAP
             nueva_data = {}
             for header, value in fila.items():
                 if header in HEADER_MAP:
                     campo_modelo = HEADER_MAP[header]
                     nueva_data[campo_modelo] = limpiar(value)
 
-            # Asegurarnos de que al menos tenemos código
             nueva_data["codigo"] = codigo
 
             existente = db.query(Notaria).filter(Notaria.codigo == codigo).first()
@@ -130,7 +140,6 @@ def importar_excel_ctn(db: Session, file):
 
         except Exception as e:
             filas_erroneas += 1
-            # Log de contexto para futuros errores
             print(f"[CTN IMPORT ERROR] Código={codigo} Fila={fila} Error={e}")
             continue
 

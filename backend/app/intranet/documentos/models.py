@@ -17,5 +17,5 @@ class Documento(Base):
 
     fichero = Column(String, nullable=False)
 
-    # CORREGIDO: la tabla correcta es empleados_v2
-    usuario_id = Column(Integer, ForeignKey("empleados_v2.id"), nullable=True)
+    # CORREGIDO: la tabla correcta es empleados
+    usuario_id = Column(Integer, ForeignKey("empleados.id"), nullable=True)

@@ -1,5 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlalchemy.orm import Session
+import shutil
+import os
 
 from backend.app.database import SessionLocal
 from backend.app.empleados.schemas import EmpleadoCreate, EmpleadoUpdate
@@ -59,3 +61,36 @@ def eliminar(empleado_id: int, db: Session = Depends(get_db)):
     if not ok:
         raise HTTPException(status_code=404, detail="Empleado no encontrado")
     return {"status": "ok", "message": "Empleado eliminado"}
+
+@router.post("/{empleado_id}/foto")
+def subir_foto(empleado_id: int, archivo: UploadFile = File(...), db: Session = Depends(get_db)):
+    empleado = obtener_empleado(db, empleado_id)
+    if not empleado:
+        raise HTTPException(status_code=404, detail="Empleado no encontrado")
+
+    # Carpeta destino REAL
+    fotos_dir = os.path.join(os.path.dirname(__file__), "..", "fotos", "empleados")
+    os.makedirs(fotos_dir, exist_ok=True)
+
+    # Nombre del archivo
+    extension = archivo.filename.split(".")[-1]
+    nombre_archivo = f"empleado_{empleado_id}.{extension}"
+
+    ruta_archivo = os.path.join(fotos_dir, nombre_archivo)
+
+    # Guardar archivo
+    with open(ruta_archivo, "wb") as buffer:
+        shutil.copyfileobj(archivo.file, buffer)
+
+    # URL pública
+    url_publica = f"/api/fotos/empleados/{nombre_archivo}"
+
+    # Guardar en BD
+    empleado.foto = url_publica
+    db.commit()
+    db.refresh(empleado)
+
+    return {
+        "status": "ok",
+        "foto_url": url_publica
+    }

@@ -1,80 +1,19 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-
 from backend.app.database import get_db
-from backend.app.empleados.service import obtener_empleado
-
-from backend.app.mensajes.service import (
-    usuario_conectado,
-    usuario_desconectado,
-    listar_usuarios_conectados,
-    listar_conversacion,
-    crear_mensaje,
-    marcar_conversacion_leida,
-    mensajes_no_leidos
-)
-
 from backend.app.mensajes.schemas import MensajeCreate
+from backend.app.mensajes.service import enviar_mensaje, listar_conversacion, marcar_leido
 
 router = APIRouter(prefix="/mensajes", tags=["Mensajes"])
 
-
-# ⭐ LISTAR CONECTADOS (solo empleados, con foto y nombre)
-@router.get("/conectados")
-def conectados(db: Session = Depends(get_db)):
-    conectados_raw = listar_usuarios_conectados(db)
-    resultado = []
-
-    for c in conectados_raw:
-        empleado = obtener_empleado(db, c.usuario_id)
-
-        # Solo empleados
-        if not empleado:
-            continue
-
-        resultado.append({
-            "usuario_id": empleado.id,
-            "nombre": empleado.nombre,
-            "apellidos": empleado.apellidos,
-            "foto": empleado.foto,
-            "rol": empleado.rol.nombre if empleado.rol else None,
-            "ultima_actividad": c.ultima_actividad,
-        })
-
-    return resultado
-
-
-# ⭐ CONECTAR
-@router.post("/conectar/{usuario_id}")
-def conectar(usuario_id: int, db: Session = Depends(get_db)):
-    return usuario_conectado(db, usuario_id)
-
-
-# ⭐ DESCONECTAR
-@router.post("/desconectar/{usuario_id}")
-def desconectar(usuario_id: int, db: Session = Depends(get_db)):
-    return usuario_desconectado(db, usuario_id)
-
-
-# ⭐ CONVERSACIÓN
-@router.get("/conversacion/{usuario1}/{usuario2}")
-def conversacion(usuario1: int, usuario2: int, db: Session = Depends(get_db)):
-    return listar_conversacion(db, usuario1, usuario2)
-
-
-# ⭐ ENVIAR MENSAJE
 @router.post("/")
-def enviar(data: MensajeCreate, db: Session = Depends(get_db)):
-    return crear_mensaje(db, data)
+def enviar(datos: MensajeCreate, db: Session = Depends(get_db)):
+    return enviar_mensaje(db, datos.dict())
 
+@router.get("/{usuario_id}/{otro_id}")
+def conversacion(usuario_id: int, otro_id: int, db: Session = Depends(get_db)):
+    return listar_conversacion(db, usuario_id, otro_id)
 
-# ⭐ MARCAR LEÍDO
-@router.put("/leido/{remitente}/{destinatario}")
-def marcar_leido(remitente: int, destinatario: int, db: Session = Depends(get_db)):
-    return marcar_conversacion_leida(db, remitente, destinatario)
-
-
-# ⭐ NO LEÍDOS
-@router.get("/no-leidos/{usuario_id}")
-def no_leidos(usuario_id: int, db: Session = Depends(get_db)):
-    return mensajes_no_leidos(db, usuario_id)
+@router.put("/leido/{mensaje_id}")
+def leido(mensaje_id: int, db: Session = Depends(get_db)):
+    return marcar_leido(db, mensaje_id)

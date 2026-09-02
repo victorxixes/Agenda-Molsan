@@ -84,6 +84,7 @@ from backend.app.auth.router import router as auth_router
 # Empleados / Maestros
 from backend.app.empleados.router import router as empleados_router
 from backend.app.maestros.router import router as maestros_router
+from backend.app.seguridad.repair_router import router as repair_router
 
 # CTN
 from backend.app.ctn.router import router as ctn_router
@@ -126,6 +127,8 @@ app.include_router(seguridad_auditoria_router, prefix="/api")
 # Empleados / Maestros
 app.include_router(empleados_router, prefix="/api")
 app.include_router(maestros_router, prefix="/api")
+app.include_router(repair_router, prefix="/api")
+
 
 # Intranet
 app.include_router(noticias_router, prefix="/api")

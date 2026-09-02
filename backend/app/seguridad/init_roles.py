@@ -15,7 +15,7 @@ ROLES_BASE = [
             "documentos", "intranet", "mensajes", "seguridad"
         ],
         "permisos_modulo_dict": {
-            "*": ["ver", "crear", "editar", "eliminar"],  # 🔥 superadmin real
+            "*": ["ver", "crear", "editar", "eliminar"],
             "dashboard": ["ver"],
             "agenda": ["ver", "crear", "editar", "eliminar"],
             "empleados": ["ver", "crear", "editar", "eliminar"],
@@ -76,7 +76,6 @@ def init_roles():
 
     for rol_data in ROLES_BASE:
 
-        # Saneo JSONB por si vienen como string
         mv = rol_data["modulos_visibles_list"]
         if isinstance(mv, str):
             try:
@@ -94,13 +93,12 @@ def init_roles():
         existe = db.query(Rol).filter(Rol.nombre == rol_data["nombre"]).first()
 
         if not existe:
-               nuevo = Rol(
-               nombre=rol_data["nombre"],
-               descripcion=rol_data["descripcion"],
-               modulos_visibles_list=mv,
-               permisos_modulo_dict=pm
+            nuevo = Rol(
+                nombre=rol_data["nombre"],
+                descripcion=rol_data["descripcion"],
+                modulos_visibles_list=mv,
+                permisos_modulo_dict=pm
             )
-
             db.add(nuevo)
 
     db.commit()

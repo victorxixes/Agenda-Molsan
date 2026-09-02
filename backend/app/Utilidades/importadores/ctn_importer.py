@@ -1,39 +1,33 @@
-import pandas as pd
+from openpyxl import load_workbook
 from sqlalchemy.orm import Session
-
 from backend.app.ctn.models import Notaria
-from backend.app.Utilidades.importadores.normalizador_excel import normalizar_excel
-
 
 def limpiar(valor):
-    if pd.isna(valor):
+    if valor is None:
         return ""
     return str(valor).strip()
 
-
 def importar_excel_ctn(db: Session, file):
     try:
-        csv_buffer, error = normalizar_excel(file)
+        contenido = file.file.read()
 
-        if error:
-            return {
-                "message": f"No se pudo leer el archivo: {error}",
-                "total_importadas": 0
-            }
+        # Cargar Excel con openpyxl
+        wb = load_workbook(filename=BytesIO(contenido), data_only=True)
+        ws = wb.active
 
-        df = pd.read_csv(csv_buffer)
+        # Fila 1 = título → ignorar
+        # Fila 2 = cabecera real
+        headers = [limpiar(c.value) for c in ws[2]]
 
-        # Ignorar fila 1 (título)
-        # Usar fila 2 como cabecera
-        df.columns = df.iloc[1]
-        df = df.iloc[2:]
-
-        # ⭐ Convertir TODO a string para evitar NaN / inf / objetos raros
-        df = df.astype(str)
+        # Crear lista de diccionarios con filas 3+
+        filas = []
+        for row in ws.iter_rows(min_row=3, values_only=True):
+            fila = {headers[i]: limpiar(row[i]) for i in range(len(headers))}
+            filas.append(fila)
 
     except Exception as e:
         return {
-            "message": f"Error procesando el archivo: {str(e)}",
+            "message": f"Error leyendo Excel: {str(e)}",
             "total_importadas": 0
         }
 
@@ -46,9 +40,9 @@ def importar_excel_ctn(db: Session, file):
 
     codigos_vistos = set()
 
-    for _, row in df.iterrows():
+    for fila in filas:
         try:
-            codigo = limpiar(row.get("Código")) or limpiar(row.get("codigo"))
+            codigo = limpiar(fila.get("Código")) or limpiar(fila.get("codigo"))
 
             if codigo == "":
                 filas_vacias += 1
@@ -64,20 +58,20 @@ def importar_excel_ctn(db: Session, file):
 
             nueva_data = {
                 "codigo": codigo,
-                "nombre": limpiar(row.get("Nombre")),
-                "apellidos": limpiar(row.get("Apellidos")),
-                "nif": limpiar(row.get("NIF")),
-                "telefono": limpiar(row.get("Teléfono")),
-                "departamento_cancelaciones": limpiar(row.get("Departamento cancelaciones")),
-                "departamento_copias": limpiar(row.get("Departamento copias")),
-                "otros_departamentos": limpiar(row.get("Otros departamentos")),
-                "cp": limpiar(row.get("CP")),
-                "provincia": limpiar(row.get("Provincia")),
-                "municipio": limpiar(row.get("Municipio")),
-                "vc": limpiar(row.get("VC")),
-                "apoderado": limpiar(row.get("Apoderado")),
-                "apoderado_s": limpiar(row.get("Apoderado S")),
-                "observacion": limpiar(row.get("Observación")),
+                "nombre": limpiar(fila.get("Nombre")),
+                "apellidos": limpiar(fila.get("Apellidos")),
+                "nif": limpiar(fila.get("NIF")),
+                "telefono": limpiar(fila.get("Teléfono")),
+                "departamento_cancelaciones": limpiar(fila.get("Departamento cancelaciones")),
+                "departamento_copias": limpiar(fila.get("Departamento copias")),
+                "otros_departamentos": limpiar(fila.get("Otros departamentos")),
+                "cp": limpiar(fila.get("CP")),
+                "provincia": limpiar(fila.get("Provincia")),
+                "municipio": limpiar(fila.get("Municipio")),
+                "vc": limpiar(fila.get("VC")),
+                "apoderado": limpiar(fila.get("Apoderado")),
+                "apoderado_s": limpiar(fila.get("Apoderado S")),
+                "observacion": limpiar(fila.get("Observación")),
             }
 
             if existente:
@@ -97,14 +91,13 @@ def importar_excel_ctn(db: Session, file):
 
     db.commit()
 
-    # ⭐ Convertir contadores a enteros seguros
     return {
         "message": "Importación CTN completada correctamente",
-        "total_importadas": int(total_importadas),
-        "nuevas": int(nuevas),
-        "actualizadas": int(actualizadas),
-        "duplicados_ignorados": int(duplicados_ignorados),
-        "filas_vacias": int(filas_vacias),
-        "filas_erroneas": int(filas_erroneas),
-        "columnas_detectadas": list(df.columns)
+        "total_importadas": total_importadas,
+        "nuevas": nuevas,
+        "actualizadas": actualizadas,
+        "duplicados_ignorados": duplicados_ignorados,
+        "filas_vacias": filas_vacias,
+        "filas_erroneas": filas_erroneas,
+        "columnas_detectadas": headers
     }

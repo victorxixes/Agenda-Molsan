@@ -32,6 +32,9 @@ Base.metadata.create_all(bind=engine)
 # APP
 # ---------------------------------------------------------
 app = FastAPI(title="Agenda Intranet Backend")
+@app.get("/")
+def root():
+    return {"status": "ok"}
 
 # ---------------------------------------------------------
 # LIMPIAR ESTADOS EN STARTUP

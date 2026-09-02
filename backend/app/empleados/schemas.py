@@ -13,6 +13,9 @@ class EmpleadoBase(BaseModel):
     password: Optional[str] = None
 
     direccion: Optional[str] = None
+    codigo_postal: Optional[str] = None
+    poblacion: Optional[str] = None
+    provincia: Optional[str] = None
     fecha_nacimiento: Optional[str] = None
     alergias: Optional[str] = None
     persona_contacto: Optional[str] = None

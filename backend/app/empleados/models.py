@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String, Boolean, JSON
+from sqlalchemy import Column, Integer, String, Boolean
+from sqlalchemy.dialects.postgresql import JSONB
 from backend.app.database import Base
 
 class Empleado(Base):
@@ -14,7 +15,7 @@ class Empleado(Base):
     email_personal = Column(String)
     email_empresa = Column(String)
     extension = Column(String)
-    usuario = Column(String)
+    usuario = Column(String, unique=True)
     password = Column(String)
 
     # Datos personales
@@ -40,6 +41,8 @@ class Empleado(Base):
     fecha_baja = Column(String)
     activo = Column(Boolean, default=True)
 
-    # Seguridad interna
-    modulos_visibles_list = Column(JSON)
+    # Seguridad interna (🔥 PostgreSQL JSONB)
+    modulos_visibles_list = Column(JSONB, default=list)
+    permisos_modulo_dict = Column(JSONB, default=dict)
+
     permisos_modulo_dict = Column(JSON)

@@ -14,6 +14,8 @@ from backend.app.intranet.documentos.service import (
 
 # WebSockets
 from backend.app.websockets.intranet_ws import intranet_broadcast
+from backend.app.websockets.notificaciones_ws import broadcast_notificacion
+
 
 router = APIRouter(
     prefix="/intranet/documentos",

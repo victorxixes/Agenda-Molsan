@@ -1,45 +1,18 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from datetime import datetime
 
 from backend.app.database import get_db
+from backend.app.seguridad.auditoria.service import obtener_auditoria, obtener_metricas
 
-router = APIRouter(prefix="/auditoria", tags=["Auditoria"])
+router = APIRouter(
+    prefix="/seguridad/auditoria",
+    tags=["Seguridad - Auditoría"]
+)
 
-# ---------------------------------------------------------
-# LISTAR AUDITORÍA
-# ---------------------------------------------------------
 @router.get("/")
 def listar_auditoria(db: Session = Depends(get_db)):
-    # Ejemplo mínimo
-    return [
-        {
-            "id": 1,
-            "usuario": "admin",
-            "accion": "login",
-            "descripcion": "Inicio de sesión",
-            "fecha": datetime.now().isoformat()
-        }
-    ]
+    return obtener_auditoria(db)
 
-# ---------------------------------------------------------
-# MÉTRICAS
-# ---------------------------------------------------------
 @router.get("/metricas")
-def metricas_auditoria(db: Session = Depends(get_db)):
-    return {
-        "total_registros": 1,
-        "por_modulo": [
-            {"modulo": "auth", "cantidad": 1}
-        ],
-        "por_accion": [
-            {"accion": "login", "cantidad": 1}
-        ],
-        "ultimos_logins": [
-            {
-                "usuario_id": 1,
-                "fecha": datetime.now().isoformat(),
-                "modulo": "auth"
-            }
-        ]
-    }
+def metricas(db: Session = Depends(get_db)):
+    return obtener_metricas(db)

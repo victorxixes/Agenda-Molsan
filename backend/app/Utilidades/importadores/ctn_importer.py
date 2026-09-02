@@ -10,7 +10,7 @@ def importar_excel_ctn(db: Session, file):
     df = pd.read_excel(BytesIO(contenido), header=1, dtype=str)
 
     df = df.fillna("")
-    df = df.astype(str).apply(lambda col: col.str.strip())
+df = df.applymap(limpiar_valor)
 
     if "Otros departamentos" in df.columns:
         df["Otros departamentos"] = df["Otros departamentos"].str.replace("\n", "; ")
@@ -117,3 +117,11 @@ def importar_excel_ctn(db: Session, file):
         "filas_erroneas": filas_erroneas,
         "columnas_detectadas": columnas_detectadas
     }
+
+def limpiar_valor(x):
+    if x is None:
+        return ""
+    x = str(x).strip()
+    if x.lower() in ["nan", "none", "null"]:
+        return ""
+    return x

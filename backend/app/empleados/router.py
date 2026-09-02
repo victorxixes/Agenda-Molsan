@@ -4,7 +4,7 @@ import shutil
 import os
 
 from backend.app.database import SessionLocal
-from backend.app.empleados.schemas import EmpleadoCreate, EmpleadoUpdate
+from backend.app.empleados.schemas import EmpleadoCreate, EmpleadoUpdate, LoginEmpleado
 from backend.app.empleados.service import (
     listar_empleados,
     crear_empleado,

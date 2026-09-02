@@ -1,89 +1,85 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from backend.app.database import get_db
-from backend.app.maestros.service import (
-    listar_departamentos, crear_departamento, editar_departamento, eliminar_departamento,
-    listar_secciones, crear_seccion, editar_seccion, eliminar_seccion,
-    listar_cargos, crear_cargo, editar_cargo, eliminar_cargo
-)
-from backend.app.maestros.schemas import (
-    DepartamentoCreate, SeccionCreate, CargoCreate
-)
+from backend.app.database import SessionLocal
+from backend.app.maestros.schemas import MaestroCreate, MaestroUpdate
+from backend.app.maestros.models import Departamento, Seccion, Cargo, Rol
+from backend.app.maestros.service import listar, obtener, crear, editar, eliminar
 
 router = APIRouter(prefix="/maestros", tags=["Maestros"])
 
-# -------------------------
-# DEPARTAMENTOS
-# -------------------------
-@router.get("/departamentos")
-def get_departamentos(db: Session = Depends(get_db)):
-    return listar_departamentos(db)
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
-@router.post("/departamentos")
-def post_departamento(data: DepartamentoCreate, db: Session = Depends(get_db)):
-    return crear_departamento(db, data)
+# ---------------------------
+# Helper para evitar repetir código
+# ---------------------------
 
-@router.put("/departamentos/{id}")
-def put_departamento(id: int, data: DepartamentoCreate, db: Session = Depends(get_db)):
-    dep = editar_departamento(db, id, data)
-    if not dep:
-        raise HTTPException(404, "Departamento no encontrado")
-    return dep
+MODELOS = {
+    "departamentos": Departamento,
+    "secciones": Seccion,
+    "cargos": Cargo,
+    "roles": Rol
+}
 
-@router.delete("/departamentos/{id}")
-def delete_departamento(id: int, db: Session = Depends(get_db)):
-    ok = eliminar_departamento(db, id)
+# ---------------------------
+# RUTAS CRUD GENERICAS
+# ---------------------------
+
+@router.get("/{tipo}")
+def listar_maestro(tipo: str, db: Session = Depends(get_db)):
+    modelo = MODELOS.get(tipo)
+    if not modelo:
+        raise HTTPException(status_code=400, detail="Tipo de maestro inválido")
+    return listar(db, modelo)
+
+@router.get("/{tipo}/{id}")
+def obtener_maestro(tipo: str, id: int, db: Session = Depends(get_db)):
+    modelo = MODELOS.get(tipo)
+    if not modelo:
+        raise HTTPException(status_code=400, detail="Tipo de maestro inválido")
+
+    registro = obtener(db, modelo, id)
+    if not registro:
+        raise HTTPException(status_code=404, detail="Registro no encontrado")
+
+    return registro
+
+@router.post("/{tipo}")
+def crear_maestro(tipo: str, data: MaestroCreate, db: Session = Depends(get_db)):
+    modelo = MODELOS.get(tipo)
+    if not modelo:
+        raise HTTPException(status_code=400, detail="Tipo de maestro inválido")
+
+    try:
+        return crear(db, modelo, data.nombre)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.put("/{tipo}/{id}")
+def editar_maestro(tipo: str, id: int, data: MaestroUpdate, db: Session = Depends(get_db)):
+    modelo = MODELOS.get(tipo)
+    if not modelo:
+        raise HTTPException(status_code=400, detail="Tipo de maestro inválido")
+
+    registro = editar(db, modelo, id, data.nombre)
+    if not registro:
+        raise HTTPException(status_code=404, detail="Registro no encontrado")
+
+    return registro
+
+@router.delete("/{tipo}/{id}")
+def eliminar_maestro(tipo: str, id: int, db: Session = Depends(get_db)):
+    modelo = MODELOS.get(tipo)
+    if not modelo:
+        raise HTTPException(status_code=400, detail="Tipo de maestro inválido")
+
+    ok = eliminar(db, modelo, id)
     if not ok:
-        raise HTTPException(404, "Departamento no encontrado")
-    return {"detail": "Departamento eliminado"}
+        raise HTTPException(status_code=404, detail="Registro no encontrado")
 
-# -------------------------
-# SECCIONES
-# -------------------------
-@router.get("/secciones")
-def get_secciones(db: Session = Depends(get_db)):
-    return listar_secciones(db)
-
-@router.post("/secciones")
-def post_seccion(data: SeccionCreate, db: Session = Depends(get_db)):
-    return crear_seccion(db, data)
-
-@router.put("/secciones/{id}")
-def put_seccion(id: int, data: SeccionCreate, db: Session = Depends(get_db)):
-    sec = editar_seccion(db, id, data)
-    if not sec:
-        raise HTTPException(404, "Sección no encontrada")
-    return sec
-
-@router.delete("/secciones/{id}")
-def delete_seccion(id: int, db: Session = Depends(get_db)):
-    ok = eliminar_seccion(db, id)
-    if not ok:
-        raise HTTPException(404, "Sección no encontrada")
-    return {"detail": "Sección eliminada"}
-
-# -------------------------
-# CARGOS
-# -------------------------
-@router.get("/cargos")
-def get_cargos(db: Session = Depends(get_db)):
-    return listar_cargos(db)
-
-@router.post("/cargos")
-def post_cargo(data: CargoCreate, db: Session = Depends(get_db)):
-    return crear_cargo(db, data)
-
-@router.put("/cargos/{id}")
-def put_cargo(id: int, data: CargoCreate, db: Session = Depends(get_db)):
-    cargo = editar_cargo(db, id, data)
-    if not cargo:
-        raise HTTPException(404, "Cargo no encontrado")
-    return cargo
-
-@router.delete("/cargos/{id}")
-def delete_cargo(id: int, db: Session = Depends(get_db)):
-    ok = eliminar_cargo(db, id)
-    if not ok:
-        raise HTTPException(404, "Cargo no encontrado")
-    return {"detail": "Cargo eliminado"}
+    return {"status": "ok", "message": "Registro eliminado"}

@@ -27,7 +27,6 @@ def obtener_empleado_por_usuario(db: Session, usuario: str):
     return db.query(Empleado).filter(Empleado.usuario == usuario).first()
 
 def crear_empleado(db: Session, data: EmpleadoCreate):
-
     if obtener_empleado_por_usuario(db, data.usuario):
         raise ValueError("El usuario ya existe")
 
@@ -72,3 +71,29 @@ def eliminar_empleado(db: Session, empleado_id: int):
     db.delete(empleado)
     db.commit()
     return True
+
+# -------------------------
+# NUEVO: actualizar módulos visibles
+# -------------------------
+def actualizar_modulos_visibles(db: Session, empleado_id: int, modulos: list):
+    empleado = obtener_empleado(db, empleado_id)
+    if not empleado:
+        return None
+
+    empleado.modulos_visibles_list = modulos
+    db.commit()
+    db.refresh(empleado)
+    return empleado
+
+# -------------------------
+# NUEVO: actualizar permisos por módulo
+# -------------------------
+def actualizar_permisos_modulo(db: Session, empleado_id: int, permisos: dict):
+    empleado = obtener_empleado(db, empleado_id)
+    if not empleado:
+        return None
+
+    empleado.permisos_modulo_dict = permisos
+    db.commit()
+    db.refresh(empleado)
+    return empleado

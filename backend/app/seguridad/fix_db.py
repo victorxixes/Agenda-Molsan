@@ -136,7 +136,17 @@ def reset_cargos():
 def reset_todo():
     db = SessionLocal()
     try:
-        # Departamentos
+        # ROLES
+        db.execute("DROP TABLE IF EXISTS roles CASCADE;")
+        db.execute("""
+            CREATE TABLE roles (
+                id SERIAL PRIMARY KEY,
+                nombre VARCHAR(150) UNIQUE NOT NULL,
+                descripcion VARCHAR(255)
+            );
+        """)
+
+        # DEPARTAMENTOS
         db.execute("DROP TABLE IF EXISTS departamentos CASCADE;")
         db.execute("""
             CREATE TABLE departamentos (
@@ -146,7 +156,7 @@ def reset_todo():
             );
         """)
 
-        # Secciones
+        # SECCIONES
         db.execute("DROP TABLE IF EXISTS secciones CASCADE;")
         db.execute("""
             CREATE TABLE secciones (
@@ -155,7 +165,7 @@ def reset_todo():
             );
         """)
 
-        # Cargos
+        # CARGOS
         db.execute("DROP TABLE IF EXISTS cargos CASCADE;")
         db.execute("""
             CREATE TABLE cargos (
@@ -164,7 +174,7 @@ def reset_todo():
             );
         """)
 
-        # Empleados
+        # EMPLEADOS
         db.execute("DROP TABLE IF EXISTS empleados CASCADE;")
         db.execute("""
             CREATE TABLE empleados (
@@ -190,7 +200,7 @@ def reset_todo():
         """)
 
         db.commit()
-        return {"detail": "Todas las tablas maestras y empleados han sido reseteadas correctamente."}
+        return {"detail": "Todas las tablas han sido reseteadas correctamente."}
 
     except Exception as e:
         db.rollback()

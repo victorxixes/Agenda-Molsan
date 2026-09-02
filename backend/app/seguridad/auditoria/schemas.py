@@ -6,9 +6,7 @@ class AuditoriaBase(BaseModel):
     modulo: str | None = None
     accion: str | None = None
     descripcion: str | None = None
-
-class AuditoriaCreate(AuditoriaBase):
-    pass
+    ip: str | None = None
 
 class AuditoriaOut(AuditoriaBase):
     id: int

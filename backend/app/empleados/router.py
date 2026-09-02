@@ -28,12 +28,21 @@ def get_db():
 # -------------------------
 # LOGIN
 # -------------------------
-@router.post("/login")
-def login(usuario: str, password: str, db: Session = Depends(get_db)):
-    resultado = login_empleado(db, usuario, password)
-    if not resultado:
-        raise HTTPException(status_code=401, detail="Usuario o contraseña incorrectos")
-    return resultado
+
+@router.post("/empleados/login")
+def login(data: LoginEmpleado, db: Session = Depends(get_db)):
+    empleado = login_empleado(db, data.usuario, data.password)
+
+    if empleado is None:
+        return {
+            "status": "error",
+            "message": "Credenciales incorrectas"
+        }
+
+    return {
+        "status": "ok",
+        "empleado": empleado
+    }
 
 # -------------------------
 # CRUD

@@ -72,6 +72,11 @@ from backend.app.Utilidades.router import router as utilidades_router
 from backend.app.intranet.documentos.models import Documento
 from backend.app.intranet.noticias.models import Noticia
 
+# IMPORTAR ROUTERS DE INTRANET (FALTABAN)
+from backend.app.intranet.documentos.router import router as documentos_router
+from backend.app.intranet.noticias.router import router as noticias_router
+
+
 # ---------------------------------------------------------
 # INCLUIR ROUTERS REST
 # ---------------------------------------------------------

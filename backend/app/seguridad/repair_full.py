@@ -97,7 +97,7 @@ def repair_full(db: Session = Depends(get_db)):
         init_admin()
         resumen["admin_recreado"] = True
     else:
-        rol_admin = db.query(Rol).filter(Rol.nombre == "Administrador").first()
+        rol_admin = db.query(Rol).filter(Rol.nombre == "admin").first()
         if rol_admin and admin.rol_id != rol_admin.id:
             admin.rol_id = rol_admin.id
             db.commit()

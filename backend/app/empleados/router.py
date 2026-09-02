@@ -21,7 +21,6 @@ def get_db():
     finally:
         db.close()
 
-
 @router.post("/login")
 def login(usuario: str, password: str, db: Session = Depends(get_db)):
     resultado = login_empleado(db, usuario, password)
@@ -29,11 +28,9 @@ def login(usuario: str, password: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=401, detail="Usuario o contraseña incorrectos")
     return resultado
 
-
 @router.get("/")
 def listar(db: Session = Depends(get_db)):
     return listar_empleados(db)
-
 
 @router.get("/{empleado_id}")
 def obtener(empleado_id: int, db: Session = Depends(get_db)):
@@ -42,7 +39,6 @@ def obtener(empleado_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Empleado no encontrado")
     return empleado
 
-
 @router.post("/")
 def crear(data: EmpleadoCreate, db: Session = Depends(get_db)):
     try:
@@ -50,14 +46,12 @@ def crear(data: EmpleadoCreate, db: Session = Depends(get_db)):
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-
 @router.put("/{empleado_id}")
 def editar(empleado_id: int, data: EmpleadoUpdate, db: Session = Depends(get_db)):
     empleado = editar_empleado(db, empleado_id, data)
     if not empleado:
         raise HTTPException(status_code=404, detail="Empleado no encontrado")
     return empleado
-
 
 @router.delete("/{empleado_id}")
 def eliminar(empleado_id: int, db: Session = Depends(get_db)):

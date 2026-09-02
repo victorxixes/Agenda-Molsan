@@ -136,7 +136,6 @@ app.include_router(inspect_table_router, prefix="/api")
 # Empleados / Maestros
 app.include_router(empleados_router, prefix="/api")
 app.include_router(maestros_router, prefix="/api")
-app.include_router(repair_router, prefix="/api")
 
 # Intranet
 app.include_router(noticias_router, prefix="/api")

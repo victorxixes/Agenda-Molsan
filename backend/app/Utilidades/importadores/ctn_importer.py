@@ -1,3 +1,58 @@
+import pandas as pd
+from io import BytesIO
+from sqlalchemy.orm import Session
+
+from backend.app.ctn.models import Notaria
+from backend.app.empleados.models import Empleado
+from backend.app.ctn.utils.normalizador_excel import normalizar_excel, normalizar_columnas
+
+
+def limpiar(valor):
+    if pd.isna(valor):
+        return ""
+    return str(valor).strip()
+
+
+def normalizar_vc(vc_raw: str):
+    vc = vc_raw.strip().upper()
+
+    if vc in ["SI", "SÍ", "VIDEO", "VC", "VIDEOCONFERENCIA"]:
+        return "SI"
+
+    if vc in ["NO", "PRESENCIAL"]:
+        return "NO"
+
+    return ""
+
+
+def buscar_apoderado(db: Session, nombre_raw: str, nombre_s_raw: str):
+    nombre = limpiar(nombre_raw)
+    nombre_s = limpiar(nombre_s_raw)
+
+    if not nombre and not nombre_s:
+        return None
+
+    emp = db.query(Empleado).filter(
+        (Empleado.nombre + " " + Empleado.apellidos).ilike(f"%{nombre}%")
+    ).first()
+    if emp:
+        return emp.id
+
+    emp = db.query(Empleado).filter(
+        (Empleado.nombre + " " + Empleado.apellidos).ilike(f"%{nombre_s}%")
+    ).first()
+    if emp:
+        return emp.id
+
+    emp = db.query(Empleado).filter(
+        Empleado.nombre.ilike(f"%{nombre}%")
+    ).first()
+    if emp:
+        return emp.id
+
+    return None
+
+
 def importar_excel_ctn(db: Session, file):
     try:
         csv_buffer, error = normalizar_excel(file)

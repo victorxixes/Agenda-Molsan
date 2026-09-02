@@ -67,6 +67,7 @@ from backend.app.maestros.router import router as maestros_router
 
 # Herramientas Swager
 from backend.app.herramientasswager.crear_tablas import router as herramientas_router
+from backend.app.herramientasswager.reset_intranet import router as reset_intranet_router
 
 # CTN
 from backend.app.ctn.router import router as ctn_router
@@ -93,4 +94,5 @@ app.include_router(utilidades_router, prefix="/api")
 app.include_router(seguridad_auditoria_router, prefix="/api")
 app.include_router(seguridad_logs_router, prefix="/api")
 app.include_router(documentos_router, prefix="/api")
+app.include_router(reset_intranet_router, prefix="/api")
 app.include_router(noticias_router, prefix="/api")

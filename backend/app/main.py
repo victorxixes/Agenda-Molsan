@@ -79,6 +79,7 @@ from backend.app.seguridad.router_eventos import router as seguridad_eventos_rou
 from backend.app.seguridad.router_auditoria import router as seguridad_auditoria_router
 from backend.app.seguridad.repair_router import router as repair_router
 from backend.app.seguridad.repair_full import router as repair_full_router
+from backend.app.seguridad.inspect_roles import router as inspect_roles_router
 
 # Auth
 from backend.app.auth.router import router as auth_router
@@ -126,6 +127,7 @@ app.include_router(seguridad_eventos_router, prefix="/api")
 app.include_router(seguridad_auditoria_router, prefix="/api")
 app.include_router(repair_router, prefix="/api")
 app.include_router(repair_full_router, prefix="/api")
+app.include_router(inspect_roles_router, prefix="/api")
 
 # Empleados / Maestros
 app.include_router(empleados_router, prefix="/api")

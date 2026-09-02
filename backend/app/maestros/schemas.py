@@ -1,52 +1,31 @@
 from pydantic import BaseModel
+from typing import Optional
 
-# ---------------------------------------------------------
-# DEPARTAMENTO
-# ---------------------------------------------------------
+class MaestroBase(BaseModel):
+    nombre: Optional[str] = None
 
-class DepartamentoBase(BaseModel):
+class MaestroCreate(BaseModel):
     nombre: str
-    descripcion: str | None = None   # ✔ existe en el modelo SQLAlchemy
 
-class DepartamentoCreate(DepartamentoBase):
+class MaestroUpdate(MaestroBase):
     pass
 
-class Departamento(DepartamentoBase):
+class Departamento(MaestroBase):
     id: int
-
     class Config:
         orm_mode = True
 
-
-# ---------------------------------------------------------
-# SECCION
-# ---------------------------------------------------------
-
-class SeccionBase(BaseModel):
-    nombre: str   # ✔ único campo real del modelo
-
-class SeccionCreate(SeccionBase):
-    pass
-
-class Seccion(SeccionBase):
+class Seccion(MaestroBase):
     id: int
-
     class Config:
         orm_mode = True
 
-
-# ---------------------------------------------------------
-# CARGO
-# ---------------------------------------------------------
-
-class CargoBase(BaseModel):
-    nombre: str   # ✔ único campo real del modelo
-
-class CargoCreate(CargoBase):
-    pass
-
-class Cargo(CargoBase):
+class Cargo(MaestroBase):
     id: int
+    class Config:
+        orm_mode = True
 
+class Rol(MaestroBase):
+    id: int
     class Config:
         orm_mode = True

@@ -6,6 +6,7 @@ class Empleado(Base):
 
     id = Column(Integer, primary_key=True, index=True)
 
+    # Datos básicos
     nombre = Column(String)
     apellidos = Column(String)
     dni = Column(String)
@@ -16,7 +17,11 @@ class Empleado(Base):
     usuario = Column(String)
     password = Column(String)
 
+    # Datos personales
     direccion = Column(String)
+    codigo_postal = Column(String)
+    poblacion = Column(String)
+    provincia = Column(String)
     fecha_nacimiento = Column(String)
     alergias = Column(String)
     persona_contacto = Column(String)
@@ -24,14 +29,17 @@ class Empleado(Base):
     observaciones = Column(String)
     foto = Column(String)
 
+    # Datos laborales
     departamento_id = Column(Integer)
     seccion_id = Column(Integer)
     cargo_id = Column(Integer)
     rol_id = Column(Integer)
 
+    # Estado
     fecha_alta = Column(String)
     fecha_baja = Column(String)
     activo = Column(Boolean, default=True)
 
+    # Seguridad interna
     modulos_visibles_list = Column(JSON)
     permisos_modulo_dict = Column(JSON)

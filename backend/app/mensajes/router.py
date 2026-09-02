@@ -17,3 +17,9 @@ def conversacion(usuario_id: int, otro_id: int, db: Session = Depends(get_db)):
 @router.put("/leido/{mensaje_id}")
 def leido(mensaje_id: int, db: Session = Depends(get_db)):
     return marcar_leido(db, mensaje_id)
+
+from backend.app.mensajes.ws_manager import manager
+
+@router.get("/conectados")
+def conectados():
+    return list(manager.conectados.keys())

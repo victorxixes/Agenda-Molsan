@@ -2,37 +2,43 @@ from pydantic import BaseModel
 from typing import Optional, List, Dict
 
 class EmpleadoBase(BaseModel):
-    nombre: Optional[str]
-    apellidos: Optional[str]
-    dni: Optional[str]
-    telefono: Optional[str]
-    email_personal: Optional[str]
-    email_empresa: Optional[str]
-    extension: Optional[str]
-    usuario: Optional[str]
-    password: Optional[str]
+    nombre: Optional[str] = None
+    apellidos: Optional[str] = None
+    dni: Optional[str] = None
+    telefono: Optional[str] = None
+    email_personal: Optional[str] = None
+    email_empresa: Optional[str] = None
+    extension: Optional[str] = None
+    usuario: Optional[str] = None
+    password: Optional[str] = None
 
-    direccion: Optional[str]
-    fecha_nacimiento: Optional[str]
-    alergias: Optional[str]
-    persona_contacto: Optional[str]
-    telefono_contacto: Optional[str]
-    observaciones: Optional[str]
-    foto: Optional[str]
+    direccion: Optional[str] = None
+    fecha_nacimiento: Optional[str] = None
+    alergias: Optional[str] = None
+    persona_contacto: Optional[str] = None
+    telefono_contacto: Optional[str] = None
+    observaciones: Optional[str] = None
+    foto: Optional[str] = None
 
-    departamento_id: Optional[int]
-    seccion_id: Optional[int]
-    cargo_id: Optional[int]
-    rol_id: Optional[int]
+    departamento_id: Optional[int] = None
+    seccion_id: Optional[int] = None
+    cargo_id: Optional[int] = None
+    rol_id: Optional[int] = None
 
-    fecha_alta: Optional[str]
-    fecha_baja: Optional[str]
-    activo: Optional[bool]
+    fecha_alta: Optional[str] = None
+    fecha_baja: Optional[str] = None
+    activo: Optional[bool] = True
 
     modulos_visibles_list: Optional[List[str]] = []
     permisos_modulo_dict: Optional[Dict] = {}
 
-class EmpleadoCreate(EmpleadoBase):
+class EmpleadoCreate(BaseModel):
+    nombre: str
+    dni: str
+    usuario: str
+    password: str
+
+class EmpleadoUpdate(EmpleadoBase):
     pass
 
 class Empleado(EmpleadoBase):

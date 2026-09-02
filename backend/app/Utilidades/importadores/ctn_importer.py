@@ -3,15 +3,32 @@ import pandas as pd
 from sqlalchemy.orm import Session
 from backend.app.ctn.models import Notaria
 
+def limpiar_valor(x):
+    if x is None:
+        return ""
+    x = str(x).strip()
+    if x.lower() in ["nan", "none", "null"]:
+        return ""
+    return x
+
 def importar_excel_ctn(db: Session, file):
 
-    # Leer contenido real del archivo
     contenido = file.file.read()
-    df = pd.read_excel(BytesIO(contenido), header=1, dtype=str)
 
+    try:
+        df = pd.read_excel(BytesIO(contenido), header=1, dtype=str)
+    except Exception as e:
+        return {
+            "message": "ERROR leyendo el Excel",
+            "error": str(e),
+            "total_importadas": 0
+        }
+
+    # LIMPIEZA GLOBAL
     df = df.fillna("")
-df = df.applymap(limpiar_valor)
+    df = df.applymap(limpiar_valor)
 
+    # NORMALIZACIONES
     if "Otros departamentos" in df.columns:
         df["Otros departamentos"] = df["Otros departamentos"].str.replace("\n", "; ")
 
@@ -19,8 +36,9 @@ df = df.applymap(limpiar_valor)
         df["Teléfono"] = df["Teléfono"].str.replace(".", "")
 
     if "Código" in df.columns:
-        df["Código"] = df["Código"].apply(lambda x: x.zfill(7))
+        df["Código"] = df["Código"].apply(lambda x: x.replace(".", "").replace(",", "").zfill(7))
 
+    # CONTADORES
     total_importadas = 0
     nuevas = 0
     actualizadas = 0
@@ -30,6 +48,7 @@ df = df.applymap(limpiar_valor)
 
     columnas_detectadas = list(df.columns)
 
+    # PROCESAR FILAS
     for _, fila in df.iterrows():
 
         if all(v == "" for v in fila.values):
@@ -37,25 +56,26 @@ df = df.applymap(limpiar_valor)
             continue
 
         try:
-            codigo = fila.get("Código", "")
-            nombre = fila.get("Nombre", "")
-            apellidos = fila.get("Apellidos", "")
-            nif = fila.get("NIF", "")
-            telefono = fila.get("Teléfono", "")
-            departamento_cancelaciones = fila.get("Departamento cancelaciones", "")
-            departamento_copias = fila.get("Departamento copias", "")
-            otros_departamentos = fila.get("Otros departamentos", "")
-            cp = fila.get("CP", "")
-            provincia = fila.get("Provincia", "")
-            municipio = fila.get("Municipio", "")
-            vc = fila.get("VC", "")
-            apoderado = fila.get("Apoderado", "")
-            apoderado_s = fila.get("Apoderado S", "")
-            observacion = fila.get("Observación", "")
+            codigo = limpiar_valor(fila.get("Código", ""))
+            nombre = limpiar_valor(fila.get("Nombre", ""))
 
-            if codigo == "" or nombre == "":
+            if not codigo or not nombre:
                 filas_erroneas += 1
                 continue
+
+            apellidos = limpiar_valor(fila.get("Apellidos", ""))
+            nif = limpiar_valor(fila.get("NIF", ""))
+            telefono = limpiar_valor(fila.get("Teléfono", ""))
+            departamento_cancelaciones = limpiar_valor(fila.get("Departamento cancelaciones", ""))
+            departamento_copias = limpiar_valor(fila.get("Departamento copias", ""))
+            otros_departamentos = limpiar_valor(fila.get("Otros departamentos", ""))
+            cp = limpiar_valor(fila.get("CP", ""))
+            provincia = limpiar_valor(fila.get("Provincia", ""))
+            municipio = limpiar_valor(fila.get("Municipio", ""))
+            vc = limpiar_valor(fila.get("VC", ""))
+            apoderado = limpiar_valor(fila.get("Apoderado", ""))
+            apoderado_s = limpiar_valor(fila.get("Apoderado S", ""))
+            observacion = limpiar_valor(fila.get("Observación", ""))
 
             existente = db.query(Notaria).filter(Notaria.codigo == codigo).first()
 
@@ -102,7 +122,7 @@ df = df.applymap(limpiar_valor)
 
         except Exception as e:
             filas_erroneas += 1
-            print(f"[CTN IMPORT ERROR] Código={codigo} Fila={fila} Error={e}")
+            print(f"[CTN IMPORT ERROR] Código={codigo} Error={e}")
             continue
 
     db.commit()
@@ -117,11 +137,3 @@ df = df.applymap(limpiar_valor)
         "filas_erroneas": filas_erroneas,
         "columnas_detectadas": columnas_detectadas
     }
-
-def limpiar_valor(x):
-    if x is None:
-        return ""
-    x = str(x).strip()
-    if x.lower() in ["nan", "none", "null"]:
-        return ""
-    return x

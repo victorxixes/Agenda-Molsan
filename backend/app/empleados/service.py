@@ -1,9 +1,9 @@
 from sqlalchemy.orm import Session
 import hashlib
 
-from app.empleados.models import Empleado
-from app.empleados.schemas import EmpleadoCreate, EmpleadoUpdate
-from app.auth.service import crear_token, serializar_empleado
+from backend.app.empleados.models import Empleado
+from backend.app.empleados.schemas import EmpleadoCreate, EmpleadoUpdate
+from backend.app.auth.service import crear_token, serializar_empleado
 
 
 def hash_password(password: str) -> str:

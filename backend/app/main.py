@@ -48,7 +48,6 @@ app.mount("/api/fotos", StaticFiles(directory=FOTOS_DIR), name="fotos")
 # IMPORTAR ROUTERS (REST)
 # ---------------------------------------------------------
 
-
 # Auth
 from backend.app.auth.router import router as auth_router
 
@@ -105,7 +104,3 @@ app.include_router(informes_router, prefix="/api")
 app.include_router(logs_router, prefix="/api")
 app.include_router(mensajes_router, prefix="/api")
 app.include_router(realtime_router, prefix="/api")
-
-
-ma=False)
-app.include_router(seguridad_ws_router, include_in_schema=False)

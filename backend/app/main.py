@@ -124,6 +124,7 @@ from backend.app.utilidades.router_force import router as force_router
 from backend.app.utilidades.router_create_empleados import router as create_empleados_router
 from backend.app.utilidades.router_force_drop_all import router as drop_all_router
 from backend.app.utilidades.router_force_create_all import router as create_all_router
+from backend.app.utilidades.router_force_fix_empleados import router as fix_empleados_router
 
 # ---------------------------------------------------------
 # INCLUIR ROUTERS REST
@@ -177,6 +178,7 @@ app.include_router(force_router, prefix="/api")
 app.include_router(create_empleados_router, prefix="/api")
 app.include_router(drop_all_router, prefix="/api")
 app.include_router(create_all_router, prefix="/api")
+app.include_router(fix_empleados_router, prefix="/api")
 
 # ---------------------------------------------------------
 # IMPORTAR WEBSOCKETS (AL FINAL)

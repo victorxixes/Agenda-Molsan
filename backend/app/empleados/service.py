@@ -10,16 +10,16 @@ def hash_password(password: str) -> str:
 
 def login_empleado(db: Session, usuario: str, password: str):
     empleado = db.query(Empleado).filter(Empleado.usuario == usuario).first()
-    if not empleado:
+
+    if empleado is None:
         return None
+
+    # Comparar hash
     if empleado.password != hash_password(password):
         return None
 
-    return {
-        "token": crear_token(empleado),
-        "empleado": serializar_empleado(empleado)
-    }
-
+    return empleado
+    
 def obtener_empleado(db: Session, empleado_id: int):
     return db.query(Empleado).filter(Empleado.id == empleado_id).first()
 

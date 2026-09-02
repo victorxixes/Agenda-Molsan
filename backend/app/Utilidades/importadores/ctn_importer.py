@@ -11,23 +11,61 @@ def limpiar(valor):
     return str(valor).strip()
 
 
+# Mapeo explícito de cabeceras del Excel → campos del modelo Notaria
+HEADER_MAP = {
+    "código": "codigo",
+    "codigo": "codigo",
+    "nombre": "nombre",
+    "apellidos": "apellidos",
+    "nif": "nif",
+    "teléfono": "telefono",
+    "telefono": "telefono",
+    "departamento cancelaciones": "departamento_cancelaciones",
+    "departamento copias": "departamento_copias",
+    "otros departamentos": "otros_departamentos",
+    "cp": "cp",
+    "provincia": "provincia",
+    "municipio": "municipio",
+    "vc": "vc",
+    "apoderado": "apoderado",
+    "apoderado s": "apoderado_s",
+    "observación": "observacion",
+    "observacion": "observacion",
+}
+
+
 def importar_excel_ctn(db: Session, file):
     try:
-        # Leer contenido del UploadFile
         contenido = file.file.read()
-
-        # Cargar Excel con openpyxl desde memoria
         wb = load_workbook(filename=BytesIO(contenido), data_only=True)
         ws = wb.active
 
-        # Fila 1 = título (Molsan Gestión y Tramitación - T.I.C.) → ignorar
         # Fila 2 = cabecera real
-        headers = [limpiar(c.value) for c in ws[2]]
+        raw_headers = [limpiar(c.value) for c in ws[2]]
 
-        # Fila 3 en adelante = datos
+        # Normalizar cabeceras (lower, sin espacios extra)
+        headers = [h.lower().strip() for h in raw_headers if h]
+
+        # Comprobar que al menos tenemos "Código"
+        if not any(h in ("código", "codigo") for h in headers):
+            return {
+                "message": "Error: no se ha encontrado columna 'Código' en la cabecera",
+                "total_importadas": 0,
+                "columnas_detectadas": raw_headers,
+            }
+
         filas = []
         for row in ws.iter_rows(min_row=3, values_only=True):
-            fila = {headers[i]: limpiar(row[i]) for i in range(len(headers))}
+            # Si la fila está completamente vacía, la marcamos como vacía luego
+            if all(c is None for c in row):
+                filas.append({"__fila_vacia__": True})
+                continue
+
+            fila = {}
+            for i, header in enumerate(headers):
+                # Protección ante filas con menos columnas que la cabecera
+                valor = row[i] if i < len(row) else None
+                fila[header] = limpiar(valor)
             filas.append(fila)
 
     except Exception as e:
@@ -47,37 +85,37 @@ def importar_excel_ctn(db: Session, file):
 
     for fila in filas:
         try:
-            codigo = limpiar(fila.get("Código")) or limpiar(fila.get("codigo"))
+            # Fila completamente vacía
+            if fila.get("__fila_vacia__"):
+                filas_vacias += 1
+                continue
+
+            # Obtener código con cabeceras normalizadas
+            codigo_raw = fila.get("código") or fila.get("codigo") or ""
+            codigo = limpiar(codigo_raw)
 
             if codigo == "":
                 filas_vacias += 1
                 continue
 
+            # Evitar duplicados dentro del propio Excel
             if codigo in codigos_vistos:
                 duplicados_ignorados += 1
                 continue
 
             codigos_vistos.add(codigo)
 
-            existente = db.query(Notaria).filter(Notaria.codigo == codigo).first()
+            # Construir nueva_data usando HEADER_MAP
+            nueva_data = {}
+            for header, value in fila.items():
+                if header in HEADER_MAP:
+                    campo_modelo = HEADER_MAP[header]
+                    nueva_data[campo_modelo] = limpiar(value)
 
-            nueva_data = {
-                "codigo": codigo,
-                "nombre": limpiar(fila.get("Nombre")),
-                "apellidos": limpiar(fila.get("Apellidos")),
-                "nif": limpiar(fila.get("NIF")),
-                "telefono": limpiar(fila.get("Teléfono")),
-                "departamento_cancelaciones": limpiar(fila.get("Departamento cancelaciones")),
-                "departamento_copias": limpiar(fila.get("Departamento copias")),
-                "otros_departamentos": limpiar(fila.get("Otros departamentos")),
-                "cp": limpiar(fila.get("CP")),
-                "provincia": limpiar(fila.get("Provincia")),
-                "municipio": limpiar(fila.get("Municipio")),
-                "vc": limpiar(fila.get("VC")),
-                "apoderado": limpiar(fila.get("Apoderado")),
-                "apoderado_s": limpiar(fila.get("Apoderado S")),
-                "observacion": limpiar(fila.get("Observación")),
-            }
+            # Asegurarnos de que al menos tenemos código
+            nueva_data["codigo"] = codigo
+
+            existente = db.query(Notaria).filter(Notaria.codigo == codigo).first()
 
             if existente:
                 for campo, valor in nueva_data.items():
@@ -90,8 +128,10 @@ def importar_excel_ctn(db: Session, file):
 
             total_importadas += 1
 
-        except Exception:
+        except Exception as e:
             filas_erroneas += 1
+            # Log de contexto para futuros errores
+            print(f"[CTN IMPORT ERROR] Código={codigo} Fila={fila} Error={e}")
             continue
 
     db.commit()
@@ -104,5 +144,5 @@ def importar_excel_ctn(db: Session, file):
         "duplicados_ignorados": duplicados_ignorados,
         "filas_vacias": filas_vacias,
         "filas_erroneas": filas_erroneas,
-        "columnas_detectadas": headers
+        "columnas_detectadas": raw_headers
     }

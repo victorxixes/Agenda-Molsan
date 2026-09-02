@@ -3,10 +3,9 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 import json
 
-from backend.app.database import get_db, SessionLocal
+from backend.app.database import get_db
 from backend.app.empleados.models import Empleado
 from backend.app.seguridad.models import Rol
-from backend.app.seguridad.init_roles import init_roles
 from backend.app.seguridad.init_admin import init_admin
 
 router = APIRouter(
@@ -16,14 +15,18 @@ router = APIRouter(
 
 def safe_list(v):
     if isinstance(v, str):
-        try: return json.loads(v)
-        except: return []
+        try:
+            return json.loads(v)
+        except:
+            return []
     return v or []
 
 def safe_dict(v):
     if isinstance(v, str):
-        try: return json.loads(v)
-        except: return {}
+        try:
+            return json.loads(v)
+        except:
+            return {}
     return v or {}
 
 @router.get("")
@@ -82,12 +85,9 @@ def repair_full(db: Session = Depends(get_db)):
     resumen["empleados_jsonb_reparados"] = reparados_jsonb
 
     # ---------------------------------------------------------
-    # 4. RECREAR ROLES BASE
+    # 4. NO RECREAR ROLES (ya están insertados)
     # ---------------------------------------------------------
-    before = db.query(Rol).count()
-    init_roles()
-    after = SessionLocal().query(Rol).count()
-    resumen["roles_creados"] = max(0, after - before)
+    resumen["roles_creados"] = 0
 
     # ---------------------------------------------------------
     # 5. RECREAR ADMIN SI FALTA O ESTÁ MAL

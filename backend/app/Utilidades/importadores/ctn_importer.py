@@ -1,25 +1,30 @@
+from io import BytesIO
 from openpyxl import load_workbook
 from sqlalchemy.orm import Session
+
 from backend.app.ctn.models import Notaria
+
 
 def limpiar(valor):
     if valor is None:
         return ""
     return str(valor).strip()
 
+
 def importar_excel_ctn(db: Session, file):
     try:
+        # Leer contenido del UploadFile
         contenido = file.file.read()
 
-        # Cargar Excel con openpyxl
+        # Cargar Excel con openpyxl desde memoria
         wb = load_workbook(filename=BytesIO(contenido), data_only=True)
         ws = wb.active
 
-        # Fila 1 = título → ignorar
+        # Fila 1 = título (Molsan Gestión y Tramitación - T.I.C.) → ignorar
         # Fila 2 = cabecera real
         headers = [limpiar(c.value) for c in ws[2]]
 
-        # Crear lista de diccionarios con filas 3+
+        # Fila 3 en adelante = datos
         filas = []
         for row in ws.iter_rows(min_row=3, values_only=True):
             fila = {headers[i]: limpiar(row[i]) for i in range(len(headers))}

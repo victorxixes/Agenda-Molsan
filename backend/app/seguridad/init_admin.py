@@ -2,7 +2,12 @@ from sqlalchemy.orm import Session
 import hashlib
 
 from backend.app.database import SessionLocal
-from backend.app.empleados.models import Empleado
+from backend.app.empleados.models import (
+    Empleado,
+    Departamento,
+    Seccion,
+    Cargo
+)
 from backend.app.seguridad.models import Rol
 
 
@@ -25,14 +30,14 @@ def init_admin():
 
     sec = db.query(Seccion).filter_by(nombre="General").first()
     if not sec:
-        sec = Seccion(nombre="General", descripcion="Sección General")
+        sec = Seccion(nombre="General")   # sin descripcion (no existe en el modelo)
         db.add(sec)
         db.commit()
         db.refresh(sec)
 
     car = db.query(Cargo).filter_by(nombre="Administrador").first()
     if not car:
-        car = Cargo(nombre="Administrador", descripcion="Cargo Administrador")
+        car = Cargo(nombre="Administrador")  # sin descripcion (no existe en el modelo)
         db.add(car)
         db.commit()
         db.refresh(car)

@@ -4,15 +4,52 @@ from sqlalchemy.dialects.postgresql import JSONB
 
 from backend.app.database import Base
 
+# ---------------------------------------------------------
+# MODELOS MAESTROS PRIMERO (OBLIGATORIO)
+# ---------------------------------------------------------
+
+class Departamento(Base):
+    __tablename__ = "departamentos"
+    __allow_unmapped__ = True
+
+    id = Column(Integer, primary_key=True, index=True)
+    nombre = Column(String(150), unique=True, nullable=False)
+    descripcion = Column(String(255), nullable=True)
+
+    empleados = relationship("Empleado", back_populates="departamento")
+
+
+class Seccion(Base):
+    __tablename__ = "secciones"
+    __allow_unmapped__ = True
+
+    id = Column(Integer, primary_key=True, index=True)
+    nombre = Column(String(150), unique=True, nullable=False)
+
+    empleados = relationship("Empleado", back_populates="seccion")
+
+
+class Cargo(Base):
+    __tablename__ = "cargos"
+    __allow_unmapped__ = True
+
+    id = Column(Integer, primary_key=True, index=True)
+    nombre = Column(String(150), unique=True, nullable=False)
+
+    empleados = relationship("Empleado", back_populates="cargo")
+
+
+# ---------------------------------------------------------
+# EMPLEADO (DEBE IR DESPUÉS)
+# ---------------------------------------------------------
+
 class Empleado(Base):
     __tablename__ = "empleados"
     __allow_unmapped__ = True
 
     id = Column(Integer, primary_key=True, index=True)
 
-    # -----------------------------
-    # DATOS PERSONALES (COMPLETOS)
-    # -----------------------------
+    # Datos personales
     nombre = Column(String(100), nullable=True)
     apellidos = Column(String(150), nullable=True)
     dni = Column(String(20), unique=True, index=True, nullable=True)
@@ -27,9 +64,7 @@ class Empleado(Base):
     telefono_contacto = Column(String(20), nullable=True)
     observaciones = Column(Text, nullable=True)
 
-    # -----------------------------
-    # RELACIONES LABORALES
-    # -----------------------------
+    # Relaciones laborales
     departamento_id = Column(Integer, ForeignKey("departamentos.id"), nullable=True)
     seccion_id = Column(Integer, ForeignKey("secciones.id"), nullable=True)
     cargo_id = Column(Integer, ForeignKey("cargos.id"), nullable=True)
@@ -38,9 +73,7 @@ class Empleado(Base):
     seccion = relationship("Seccion", back_populates="empleados")
     cargo = relationship("Cargo", back_populates="empleados")
 
-    # -----------------------------
-    # DATOS EMPRESA
-    # -----------------------------
+    # Datos empresa
     email_empresa = Column(String(150), nullable=True)
     extension = Column(String(20), nullable=True)
     fecha_alta = Column(String(20), nullable=True)
@@ -48,19 +81,15 @@ class Empleado(Base):
 
     activo = Column(Boolean, default=True)
 
-    # -----------------------------
-    # USUARIO INTERNO
-    # -----------------------------
+    # Usuario interno
     usuario = Column(String(100), unique=True, index=True, nullable=True)
     password = Column(String(255), nullable=True)
     foto = Column(String(255), nullable=True)
 
-    # -----------------------------
-    # SEGURIDAD (ADAPTADO)
-    # -----------------------------
+    # Seguridad
     rol_id = Column(Integer, ForeignKey("roles.id"), nullable=True)
     rol = relationship("Rol", back_populates="empleados")
 
-    # JSONB NUEVOS (LOS ÚNICOS VÁLIDOS)
+    # JSONB nuevos
     modulos_visibles_list = Column(JSONB, nullable=True)
     permisos_modulo_dict = Column(JSONB, nullable=True)

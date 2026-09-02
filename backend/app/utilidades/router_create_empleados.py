@@ -5,6 +5,6 @@ router = APIRouter(prefix="/force", tags=["Force"])
 
 @router.post("/create_empleados")
 def create_empleados():
-    # recrea TODAS las tablas según el modelo actual
-    Base.metadata.create_all(bind=engine)
-    return {"status": "ok", "message": "Tabla empleados recreada correctamente"}
+    Base.metadata.drop_all(bind=engine)   # 🔥 BORRA TODAS LAS TABLAS
+    Base.metadata.create_all(bind=engine) # 🔥 LAS RECREA TODAS
+    return {"status": "ok", "message": "Tablas recreadas correctamente"}

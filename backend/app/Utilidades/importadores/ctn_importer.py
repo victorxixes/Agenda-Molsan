@@ -3,6 +3,9 @@ import pandas as pd
 from sqlalchemy.orm import Session
 from backend.app.ctn.models import Notaria
 
+# -----------------------------
+# LIMPIEZA DE VALORES
+# -----------------------------
 def limpiar_valor(x):
     if x is None:
         return ""
@@ -11,10 +14,14 @@ def limpiar_valor(x):
         return ""
     return x
 
+# -----------------------------
+# IMPORTADOR CTN FINAL
+# -----------------------------
 def importar_excel_ctn(db: Session, file):
 
     contenido = file.file.read()
 
+    # Leer Excel con encabezados en fila 2 (header=1)
     try:
         df = pd.read_excel(BytesIO(contenido), header=1, dtype=str)
     except Exception as e:
@@ -24,11 +31,14 @@ def importar_excel_ctn(db: Session, file):
             "total_importadas": 0
         }
 
-    # LIMPIEZA GLOBAL
+    # Ignorar la fila 1 (título)
+    df = df.iloc[1:].reset_index(drop=True)
+
+    # Limpieza global
     df = df.fillna("")
     df = df.applymap(limpiar_valor)
 
-    # NORMALIZACIONES
+    # Normalizaciones
     if "Otros departamentos" in df.columns:
         df["Otros departamentos"] = df["Otros departamentos"].str.replace("\n", "; ")
 
@@ -36,9 +46,11 @@ def importar_excel_ctn(db: Session, file):
         df["Teléfono"] = df["Teléfono"].str.replace(".", "")
 
     if "Código" in df.columns:
-        df["Código"] = df["Código"].apply(lambda x: x.replace(".", "").replace(",", "").zfill(7))
+        df["Código"] = df["Código"].apply(
+            lambda x: limpiar_valor(x).replace(".", "").replace(",", "").zfill(7)
+        )
 
-    # CONTADORES
+    # Contadores
     total_importadas = 0
     nuevas = 0
     actualizadas = 0
@@ -48,9 +60,10 @@ def importar_excel_ctn(db: Session, file):
 
     columnas_detectadas = list(df.columns)
 
-    # PROCESAR FILAS
+    # Procesar filas
     for _, fila in df.iterrows():
 
+        # Fila completamente vacía
         if all(v == "" for v in fila.values):
             filas_vacias += 1
             continue
@@ -59,6 +72,7 @@ def importar_excel_ctn(db: Session, file):
             codigo = limpiar_valor(fila.get("Código", ""))
             nombre = limpiar_valor(fila.get("Nombre", ""))
 
+            # Validación mínima
             if not codigo or not nombre:
                 filas_erroneas += 1
                 continue
@@ -80,6 +94,7 @@ def importar_excel_ctn(db: Session, file):
             existente = db.query(Notaria).filter(Notaria.codigo == codigo).first()
 
             if existente:
+                # Actualizar
                 existente.nombre = nombre
                 existente.apellidos = apellidos
                 existente.nif = nif
@@ -98,6 +113,7 @@ def importar_excel_ctn(db: Session, file):
                 actualizadas += 1
 
             else:
+                # Insertar nueva
                 nuevo = Notaria(
                     codigo=codigo,
                     nombre=nombre,

@@ -11,6 +11,7 @@ from backend.app.database import Base, engine
 # ---------------------------------------------------------
 # IMPORTAR MODELOS ANTES DE CREATE_ALL
 # ---------------------------------------------------------
+from backend.app.empleados.models import Empleado
 from backend.app.seguridad.auditoria.models import Auditoria
 from backend.app.seguridad.logs.models import Log
 from backend.app.intranet.documentos.models import Documento
@@ -18,6 +19,7 @@ from backend.app.intranet.noticias.models import Noticia
 
 # Crear tablas
 Base.metadata.create_all(bind=engine)
+
 
 # ---------------------------------------------------------
 # APP

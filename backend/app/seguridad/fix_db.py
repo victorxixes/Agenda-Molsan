@@ -21,6 +21,33 @@ def fix_db():
     finally:
         db.close()
 
+        @router.get("/reset-permisos")
+def reset_permisos():
+    db = SessionLocal()
+    try:
+        db.execute("DROP TABLE IF EXISTS permisos CASCADE;")
+
+        db.execute("""
+            CREATE TABLE permisos (
+                id SERIAL PRIMARY KEY,
+                rol_id INTEGER NOT NULL,
+                modulo VARCHAR(150) NOT NULL,
+                puede_ver BOOLEAN DEFAULT TRUE,
+                puede_editar BOOLEAN DEFAULT FALSE,
+                puede_borrar BOOLEAN DEFAULT FALSE
+            );
+        """)
+
+        db.commit()
+        return {"detail": "Tabla 'permisos' eliminada y recreada correctamente."}
+
+    except Exception as e:
+        db.rollback()
+        return {"error": str(e)}
+
+    finally:
+        db.close()
+
 @router.get("/reset-empleados")
 def reset_empleados():
     db = SessionLocal()

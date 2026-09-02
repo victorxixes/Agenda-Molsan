@@ -1,15 +1,17 @@
 from datetime import datetime
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 
-from backend.app.auditoria.models import Auditoria
+from backend.app.seguridad.auditoria.models import Auditoria
 
 
-def registrar_auditoria(db: Session, usuario: str, modulo: str, accion: str, descripcion: str):
+def registrar_auditoria(db: Session, usuario: str, modulo: str, accion: str, descripcion: str, ip: str | None = None):
     registro = Auditoria(
         usuario=usuario,
         modulo=modulo,
         accion=accion,
         descripcion=descripcion,
+        ip=ip,
         fecha=datetime.utcnow()
     )
     db.add(registro)
@@ -19,20 +21,20 @@ def registrar_auditoria(db: Session, usuario: str, modulo: str, accion: str, des
 
 
 def obtener_auditoria(db: Session):
-    return db.query(Auditoria).order_by(Auditoria.fecha.desc()).all()
+    return db.query(Auditoria).order_by(Auditoria.fecha.desc()).limit(200).all()
 
 
 def obtener_metricas(db: Session):
     total = db.query(Auditoria).count()
 
     por_modulo = (
-        db.query(Auditoria.modulo, db.func.count(Auditoria.id))
+        db.query(Auditoria.modulo, func.count(Auditoria.id))
         .group_by(Auditoria.modulo)
         .all()
     )
 
     por_accion = (
-        db.query(Auditoria.accion, db.func.count(Auditoria.id))
+        db.query(Auditoria.accion, func.count(Auditoria.id))
         .group_by(Auditoria.accion)
         .all()
     )

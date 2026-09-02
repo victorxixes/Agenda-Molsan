@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from backend.app.ctn.models import Notaria
 from backend.app.Utilidades.importadores.normalizador_excel import normalizar_excel, normalizar_columnas
 
+
 def limpiar(valor):
     if pd.isna(valor):
         return ""
@@ -23,13 +24,29 @@ def importar_excel_ctn(db: Session, file):
 
         df = pd.read_csv(csv_buffer)
 
-        # --- IGNORAR FILA 1 (título) ---
-        # --- USAR FILA 2 COMO CABECERA REAL ---
-        df.columns = df.iloc[1]      # fila 2 = cabecera
-        df = df.iloc[2:]             # filas 3+ = datos
+        # --- DETECTAR FILA DONDE APARECE "Código" ---
+        fila_header = None
+        for i, row in df.iterrows():
+            if "Código" in row.values or "codigo" in row.values:
+                fila_header = i
+                break
+
+        if fila_header is None:
+            return {
+                "message": "No se encontró la cabecera de la tabla (no aparece 'Código')",
+                "columnas_detectadas": list(df.columns),
+                "total_importadas": 0
+            }
+
+        # Usar esa fila como cabecera real
+        df.columns = df.iloc[fila_header]
+        df = df.iloc[fila_header + 1:]
 
         # Normalizar nombres de columnas
         df = normalizar_columnas(df)
+
+        # Convertir todo a string para evitar NaN/inf
+        df = df.astype(str)
 
     except Exception as e:
         return {
@@ -50,19 +67,19 @@ def importar_excel_ctn(db: Session, file):
     total_importadas = 0
 
     for _, row in df.iterrows():
-        codigo = limpiar(row.get("codigo"))
-
-        if codigo == "":
-            filas_vacias += 1
-            continue
-
-        if codigo in codigos_vistos:
-            duplicados_ignorados += 1
-            continue
-
-        codigos_vistos.add(codigo)
-
         try:
+            codigo = limpiar(row.get("codigo"))
+
+            if codigo == "":
+                filas_vacias += 1
+                continue
+
+            if codigo in codigos_vistos:
+                duplicados_ignorados += 1
+                continue
+
+            codigos_vistos.add(codigo)
+
             existente = db.query(Notaria).filter(Notaria.codigo == codigo).first()
 
             nueva_data = {
@@ -99,6 +116,14 @@ def importar_excel_ctn(db: Session, file):
             continue
 
     db.commit()
+
+    # Convertir contadores a enteros seguros para JSON
+    total_importadas = int(total_importadas or 0)
+    nuevas = int(nuevas or 0)
+    actualizadas = int(actualizadas or 0)
+    duplicados_ignorados = int(duplicados_ignorados or 0)
+    filas_vacias = int(filas_vacias or 0)
+    filas_erroneas = int(filas_erroneas or 0)
 
     return {
         "message": "Importación CTN completada correctamente",

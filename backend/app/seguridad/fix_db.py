@@ -208,3 +208,28 @@ def reset_todo():
 
     finally:
         db.close()
+
+@router.get("/create-roles-base")
+def create_roles_base():
+    db = SessionLocal()
+    try:
+        # Crear roles base si no existen
+        db.execute("""
+            INSERT INTO roles (nombre, descripcion)
+            VALUES 
+                ('admin', 'Administrador del sistema'),
+                ('empleado', 'Empleado estándar'),
+                ('rrhh', 'Recursos Humanos'),
+                ('direccion', 'Dirección')
+            ON CONFLICT (nombre) DO NOTHING;
+        """)
+
+        db.commit()
+        return {"detail": "Roles base creados correctamente."}
+
+    except Exception as e:
+        db.rollback()
+        return {"error": str(e)}
+
+    finally:
+        db.close()

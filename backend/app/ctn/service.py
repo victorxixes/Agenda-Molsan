@@ -1,63 +1,29 @@
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from backend.app.ctn.models import Notaria
-from backend.app.ctn.schemas import NotariaCreate, NotariaUpdate
+from backend.app.database import get_db
+from backend.app.ctn.service import listar_notarias, obtener_notaria
+from backend.app.agenda.models import Cita
 
+router = APIRouter(prefix="/ctn", tags=["CTN"])
 
-# ---------------------------------------------------------
-# LISTAR NOTARIAS
-# ---------------------------------------------------------
-def listar_notarias(db: Session):
-    return db.query(Notaria).all()
+@router.get("/notarias")
+def listar(db: Session = Depends(get_db)):
+    return listar_notarias(db)
 
+@router.get("/notarias/{notaria_id}")
+def obtener(notaria_id: int, db: Session = Depends(get_db)):
+    return obtener_notaria(db, notaria_id)
 
-# ---------------------------------------------------------
-# OBTENER NOTARIA
-# ---------------------------------------------------------
-def obtener_notaria(db: Session, notaria_id: int):
-    return db.query(Notaria).filter(Notaria.id == notaria_id).first()
+@router.get("/notarias/{notaria_id}/firmas")
+def contar_firmas(notaria_id: int, db: Session = Depends(get_db)):
+    total = db.query(Cita).filter(Cita.notario_id == notaria_id).count()
+    vc = db.query(Cita).filter(Cita.notario_id == notaria_id, Cita.tipo_cita == "VC").count()
+    presencial = db.query(Cita).filter(Cita.notario_id == notaria_id, Cita.tipo_cita == "P").count()
 
-
-# ---------------------------------------------------------
-# CREAR NOTARIA
-# ---------------------------------------------------------
-def crear_notaria(db: Session, data: NotariaCreate):
-    notaria = Notaria(**data.dict())
-    db.add(notaria)
-    db.commit()
-    db.refresh(notaria)
-    return notaria
-
-
-# ---------------------------------------------------------
-# ACTUALIZAR NOTARIA (SEGURO)
-# ---------------------------------------------------------
-def actualizar_notaria(db: Session, notaria_id: int, data: NotariaUpdate):
-    notaria = obtener_notaria(db, notaria_id)
-    if not notaria:
-        return None
-
-    # Solo actualizar campos enviados
-    update_data = data.dict(exclude_unset=True)
-
-    # Filtrar solo atributos válidos del modelo
-    for campo, valor in update_data.items():
-        if hasattr(Notaria, campo):
-            setattr(notaria, campo, valor)
-
-    db.commit()
-    db.refresh(notaria)
-    return notaria
-
-
-# ---------------------------------------------------------
-# ELIMINAR NOTARIA
-# ---------------------------------------------------------
-def eliminar_notaria(db: Session, notaria_id: int):
-    notaria = obtener_notaria(db, notaria_id)
-    if not notaria:
-        return False
-
-    db.delete(notaria)
-    db.commit()
-    return True
+    return {
+        "notaria_id": notaria_id,
+        "total_firmas": total,
+        "total_vc": vc,
+        "total_presencial": presencial
+    }

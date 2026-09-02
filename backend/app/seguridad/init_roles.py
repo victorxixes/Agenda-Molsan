@@ -94,16 +94,13 @@ def init_roles():
         existe = db.query(Rol).filter(Rol.nombre == rol_data["nombre"]).first()
 
         if not existe:
-            nuevo = Rol(
-                nombre=rol_data["nombre"],
-                descripcion=rol_data["descripcion"],
-                modulos_visibles_list=mv,
-                permisos_modulo_dict=pm,
-
-                # Compatibilidad ERP antiguo
-                modulos_visibles=mv,
-                permisos_modulo=pm,
+               nuevo = Rol(
+               nombre=rol_data["nombre"],
+               descripcion=rol_data["descripcion"],
+               modulos_visibles_list=mv,
+               permisos_modulo_dict=pm
             )
+
             db.add(nuevo)
 
     db.commit()

@@ -192,6 +192,19 @@ def reset_todo():
             );
         """)
 
+        # PERMISOS
+db.execute("DROP TABLE IF EXISTS permisos CASCADE;")
+db.execute("""
+    CREATE TABLE permisos (
+        id SERIAL PRIMARY KEY,
+        rol_id INTEGER NOT NULL,
+        modulo VARCHAR(150) NOT NULL,
+        puede_ver BOOLEAN DEFAULT TRUE,
+        puede_editar BOOLEAN DEFAULT FALSE,
+        puede_borrar BOOLEAN DEFAULT FALSE
+    );
+""")
+
         # CARGOS
         db.execute("DROP TABLE IF EXISTS cargos CASCADE;")
         db.execute("""

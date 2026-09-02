@@ -5,10 +5,8 @@ from backend.app.empleados.models import Empleado
 from backend.app.empleados.schemas import EmpleadoCreate, EmpleadoUpdate
 from backend.app.auth.service import crear_token, serializar_empleado
 
-
 def hash_password(password: str) -> str:
     return hashlib.sha256(password.encode()).hexdigest()
-
 
 def login_empleado(db: Session, usuario: str, password: str):
     empleado = db.query(Empleado).filter(Empleado.usuario == usuario).first()
@@ -22,14 +20,11 @@ def login_empleado(db: Session, usuario: str, password: str):
         "empleado": serializar_empleado(empleado)
     }
 
-
 def obtener_empleado(db: Session, empleado_id: int):
     return db.query(Empleado).filter(Empleado.id == empleado_id).first()
 
-
 def obtener_empleado_por_usuario(db: Session, usuario: str):
     return db.query(Empleado).filter(Empleado.usuario == usuario).first()
-
 
 def crear_empleado(db: Session, data: EmpleadoCreate):
 
@@ -51,10 +46,8 @@ def crear_empleado(db: Session, data: EmpleadoCreate):
     db.refresh(empleado)
     return empleado
 
-
 def listar_empleados(db: Session):
     return db.query(Empleado).order_by(Empleado.id.asc()).all()
-
 
 def editar_empleado(db: Session, empleado_id: int, data: EmpleadoUpdate):
     empleado = obtener_empleado(db, empleado_id)
@@ -71,7 +64,6 @@ def editar_empleado(db: Session, empleado_id: int, data: EmpleadoUpdate):
     db.refresh(empleado)
     return empleado
 
-
 def eliminar_empleado(db: Session, empleado_id: int):
     empleado = obtener_empleado(db, empleado_id)
     if not empleado:
@@ -80,4 +72,3 @@ def eliminar_empleado(db: Session, empleado_id: int):
     db.delete(empleado)
     db.commit()
     return True
-

@@ -57,6 +57,9 @@ from backend.app.empleados.router import router as empleados_router
 # Maestros 
 from backend.app.maestros.router import router as maestros_router
 
+# Herramientas Swager
+from backend.app.herramientasswager.crear_tablas import router as herramientas_router
+
 # ---------------------------------------------------------
 # INCLUIR ROUTERS REST
 # ---------------------------------------------------------
@@ -64,3 +67,4 @@ from backend.app.maestros.router import router as maestros_router
 app.include_router(auth_router, prefix="/api")
 app.include_router(empleados_router, prefix="/api")
 app.include_router(maestros_router, prefix="/api")
+app.include_router(herramientas_router, prefix="/api")

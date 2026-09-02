@@ -1,9 +1,10 @@
 # intranet_ws.py
-# Versión ampliada y cerrada para mantener compatibilidad sin activar WebSockets
+# Versión cerrada y compatible para evitar errores de import
+# No gestiona WebSockets reales, pero mantiene las funciones necesarias.
 
 from typing import Dict, Any
 
-# Diccionario de conexiones (vacío, pero estructurado)
+# Diccionario de conexiones (vacío)
 intranet_connections: Dict[int, Any] = {}
 
 async def intranet_connect(usuario_id: int, websocket):
@@ -11,7 +12,7 @@ async def intranet_connect(usuario_id: int, websocket):
     Función preparada para futuro uso.
     Actualmente no se usa, pero mantiene compatibilidad.
     """
-    # No aceptamos conexiones porque el módulo está cerrado
+    # Módulo cerrado: no aceptamos conexiones
     pass
 
 async def intranet_disconnect(usuario_id: int):
@@ -23,7 +24,7 @@ async def intranet_disconnect(usuario_id: int):
 
 async def intranet_broadcast(evento: dict):
     """
-    Función llamada desde otros módulos (documentos, noticias, etc.)
+    Función llamada desde otros módulos (documentos, noticias, dashboard).
     Actualmente no envía nada, pero evita errores de import.
     """
     # Módulo cerrado: no enviamos nada

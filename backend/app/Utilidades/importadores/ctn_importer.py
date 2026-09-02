@@ -10,7 +10,7 @@ def importar_excel_ctn(db: Session, file):
     df = pd.read_excel(BytesIO(contenido), header=1, dtype=str)
 
     df = df.fillna("")
-    df = df.applymap(lambda x: str(x).strip())
+    df = df.astype(str).apply(lambda col: col.str.strip())
 
     if "Otros departamentos" in df.columns:
         df["Otros departamentos"] = df["Otros departamentos"].str.replace("\n", "; ")

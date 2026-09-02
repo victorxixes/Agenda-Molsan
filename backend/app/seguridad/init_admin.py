@@ -3,7 +3,6 @@ import hashlib
 
 from backend.app.database import SessionLocal
 from backend.app.empleados.models import Empleado
-from backend.app.maestros.models import Departamento, Seccion, Cargo
 from backend.app.seguridad.models import Rol
 
 

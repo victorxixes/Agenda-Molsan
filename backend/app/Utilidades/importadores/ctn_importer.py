@@ -1,34 +1,26 @@
+from io import BytesIO
 import pandas as pd
 from sqlalchemy.orm import Session
 from backend.app.ctn.models import Notaria
 
-# ---------------------------------------------------------
-# IMPORTAR CTN (NOTARIOS)
-# ---------------------------------------------------------
-def importar_ctn(db: Session, file):
+def importar_excel_ctn(db: Session, file):
 
-    # 1) Leer Excel saltando la primera fila (título)
-    df = pd.read_excel(file, header=1, dtype=str)
+    # Leer contenido real del archivo
+    contenido = file.file.read()
+    df = pd.read_excel(BytesIO(contenido), header=1, dtype=str)
 
-    # 2) Normalizar NaN → ""
     df = df.fillna("")
-
-    # 3) Strip global
     df = df.applymap(lambda x: str(x).strip())
 
-    # 4) Limpiar saltos de línea en departamentos
     if "Otros departamentos" in df.columns:
         df["Otros departamentos"] = df["Otros departamentos"].str.replace("\n", "; ")
 
-    # 5) Limpiar teléfonos (quitar puntos)
     if "Teléfono" in df.columns:
         df["Teléfono"] = df["Teléfono"].str.replace(".", "")
 
-    # 6) Asegurar códigos con ceros a la izquierda
     if "Código" in df.columns:
         df["Código"] = df["Código"].apply(lambda x: x.zfill(7))
 
-    # Estadísticas
     total_importadas = 0
     nuevas = 0
     actualizadas = 0
@@ -38,10 +30,8 @@ def importar_ctn(db: Session, file):
 
     columnas_detectadas = list(df.columns)
 
-    # 7) Recorrer filas
     for _, fila in df.iterrows():
 
-        # Detectar fila vacía real
         if all(v == "" for v in fila.values):
             filas_vacias += 1
             continue
@@ -63,16 +53,13 @@ def importar_ctn(db: Session, file):
             apoderado_s = fila.get("Apoderado S", "")
             observacion = fila.get("Observación", "")
 
-            # Validación mínima: código + nombre
             if codigo == "" or nombre == "":
                 filas_erroneas += 1
                 continue
 
-            # Buscar si ya existe
             existente = db.query(Notaria).filter(Notaria.codigo == codigo).first()
 
             if existente:
-                # Actualizar
                 existente.nombre = nombre
                 existente.apellidos = apellidos
                 existente.nif = nif
@@ -91,7 +78,6 @@ def importar_ctn(db: Session, file):
                 actualizadas += 1
 
             else:
-                # Crear nuevo
                 nuevo = Notaria(
                     codigo=codigo,
                     nombre=nombre,
@@ -114,8 +100,9 @@ def importar_ctn(db: Session, file):
 
             total_importadas += 1
 
-        except Exception:
+        except Exception as e:
             filas_erroneas += 1
+            print(f"[CTN IMPORT ERROR] Código={codigo} Fila={fila} Error={e}")
             continue
 
     db.commit()

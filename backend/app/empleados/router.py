@@ -12,14 +12,8 @@ from app.empleados.service import (
     login_empleado
 )
 
-router = APIRouter(
-    prefix="/empleados",
-    tags=["Empleados"]
-)
+router = APIRouter(prefix="/empleados", tags=["Empleados"])
 
-# ------------------------------
-# DB SESSION
-# ------------------------------
 def get_db():
     db = SessionLocal()
     try:
@@ -28,9 +22,6 @@ def get_db():
         db.close()
 
 
-# ------------------------------
-# LOGIN
-# ------------------------------
 @router.post("/login")
 def login(usuario: str, password: str, db: Session = Depends(get_db)):
     resultado = login_empleado(db, usuario, password)
@@ -39,17 +30,11 @@ def login(usuario: str, password: str, db: Session = Depends(get_db)):
     return resultado
 
 
-# ------------------------------
-# LISTAR EMPLEADOS
-# ------------------------------
 @router.get("/")
 def listar(db: Session = Depends(get_db)):
     return listar_empleados(db)
 
 
-# ------------------------------
-# OBTENER EMPLEADO POR ID
-# ------------------------------
 @router.get("/{empleado_id}")
 def obtener(empleado_id: int, db: Session = Depends(get_db)):
     empleado = obtener_empleado(db, empleado_id)
@@ -58,9 +43,6 @@ def obtener(empleado_id: int, db: Session = Depends(get_db)):
     return empleado
 
 
-# ------------------------------
-# CREAR EMPLEADO
-# ------------------------------
 @router.post("/")
 def crear(data: EmpleadoCreate, db: Session = Depends(get_db)):
     try:
@@ -69,9 +51,6 @@ def crear(data: EmpleadoCreate, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail=str(e))
 
 
-# ------------------------------
-# EDITAR EMPLEADO
-# ------------------------------
 @router.put("/{empleado_id}")
 def editar(empleado_id: int, data: EmpleadoUpdate, db: Session = Depends(get_db)):
     empleado = editar_empleado(db, empleado_id, data)
@@ -80,9 +59,6 @@ def editar(empleado_id: int, data: EmpleadoUpdate, db: Session = Depends(get_db)
     return empleado
 
 
-# ------------------------------
-# ELIMINAR EMPLEADO
-# ------------------------------
 @router.delete("/{empleado_id}")
 def eliminar(empleado_id: int, db: Session = Depends(get_db)):
     ok = eliminar_empleado(db, empleado_id)

@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from app.database import SessionLocal
-from app.empleados.schemas import EmpleadoCreate, EmpleadoUpdate
-from app.empleados.service import (
+from backend.app.database import SessionLocal
+from backend.app.empleados.schemas import EmpleadoCreate, EmpleadoUpdate
+from backend.app.empleados.service import (
     listar_empleados,
     crear_empleado,
     editar_empleado,

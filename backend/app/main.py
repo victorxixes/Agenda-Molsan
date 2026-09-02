@@ -8,7 +8,9 @@ import os
 # ---------------------------------------------------------
 from backend.app.database import Base, engine
 
+# ---------------------------------------------------------
 # IMPORTAR MODELOS ANTES DE CREATE_ALL
+# ---------------------------------------------------------
 from backend.app.seguridad.auditoria.models import Auditoria
 from backend.app.seguridad.logs.models import Log
 from backend.app.intranet.documentos.models import Documento
@@ -70,14 +72,13 @@ from backend.app.herramientasswager.crear_tablas import router as herramientas_r
 from backend.app.ctn.router import router as ctn_router
 from backend.app.Utilidades.router import router as utilidades_router
 
-# INTRANET
-from backend.app.intranet.documentos.models import Documento
-from backend.app.intranet.noticias.models import Noticia
+# Seguridad
+from backend.app.seguridad.auditoria.router import router as seguridad_auditoria_router
+from backend.app.seguridad.logs.router import router as seguridad_logs_router
 
-# IMPORTAR ROUTERS DE INTRANET (FALTABAN)
+# INTRANET ROUTERS
 from backend.app.intranet.documentos.router import router as documentos_router
 from backend.app.intranet.noticias.router import router as noticias_router
-
 
 # ---------------------------------------------------------
 # INCLUIR ROUTERS REST

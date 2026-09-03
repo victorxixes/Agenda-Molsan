@@ -4,7 +4,7 @@ from backend.app.database import Base
 
 
 class Cita(Base):
-    __tablename__ = "citas"
+    __tablename__ = "agenda_citas"
 
     id = Column(Integer, primary_key=True, index=True)
 

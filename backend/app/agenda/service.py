@@ -5,6 +5,7 @@ from calendar import monthrange
 from backend.app.agenda.models import Cita
 from backend.app.ctn.models import Notaria
 from backend.app.empleados.models import Empleado
+from backend.app.agenda.schemas import CitaResponse
 
 
 # ---------------------------------------------------------
@@ -25,34 +26,33 @@ def cita_con_relaciones(db: Session, cita: Cita):
         else None
     )
 
-    # 🔥 Apoderado REAL de la cita (empleado)
+    # Apoderado visible
     if apoderado_obj:
         apoderado_s = f"{apoderado_obj.nombre} {apoderado_obj.apellidos}"
     else:
-        apoderado_s = cita.apoderado_s  # fallback
+        apoderado_s = cita.apoderado_s
 
-    # 🔥 Observación REAL de la cita (no del CTN)
-    observacion = cita.observacion
+    return CitaResponse(
+        id=cita.id,
+        fecha=cita.fecha,
+        hora_inicio=cita.hora_inicio,
+        hora_fin=cita.hora_fin,
+        tipo_cita=cita.tipo_cita,
 
-    return {
-        "id": cita.id,
-        "fecha": cita.fecha,
-        "hora_inicio": cita.hora_inicio,
-        "hora_fin": cita.hora_fin,
-        "tipo_cita": cita.tipo_cita,
+        vc=cita.vc,
+        tipo_firma=tipo_firma,
 
-        "vc": cita.vc,
-        "tipo_firma": tipo_firma,
+        notario_id=cita.notario_id,
+        notario=notario,
 
-        "notario_id": cita.notario_id,
-        "notario": notario,
+        apoderado_id=cita.apoderado_id,
+        apoderado=apoderado_obj,
+        apoderado_s=apoderado_s,
 
-        "apoderado_id": cita.apoderado_id,
-        "apoderado": apoderado_obj,
-        "apoderado_s": apoderado_s,
+        observacion=cita.observacion,
+        estado=None  # opcional
+    )
 
-        "observacion": observacion,
-    }
 
 # ---------------------------------------------------------
 # OBTENER CITA POR ID
@@ -119,7 +119,7 @@ def listar_citas_mes(db: Session, year: int, month: int):
 def crear_cita(db: Session, data):
     cita = Cita(**data.dict())
 
-    # 🔥 Rellenar apoderado_s automáticamente
+    # Rellenar apoderado_s automáticamente
     if cita.apoderado_id:
         apo = db.query(Empleado).filter(Empleado.id == cita.apoderado_id).first()
         if apo:
@@ -129,6 +129,7 @@ def crear_cita(db: Session, data):
     db.commit()
     db.refresh(cita)
     return cita_con_relaciones(db, cita)
+
 
 # ---------------------------------------------------------
 # EDITAR CITA
@@ -174,5 +175,3 @@ def mover_cita(db: Session, cita_id: int, nueva_fecha: date, nueva_hora_inicio: 
     db.commit()
     db.refresh(cita)
     return cita_con_relaciones(db, cita)
-
-

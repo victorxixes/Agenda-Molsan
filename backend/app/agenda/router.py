@@ -66,11 +66,12 @@ def create_table_agenda_citas(db: Session = Depends(get_db)):
             apoderado_s VARCHAR,
 
             notario_id INTEGER REFERENCES ctn_notarios(id),
-            apoderado_id INTEGER REFERENCES empleados_v2(id)
+            apoderado_id INTEGER REFERENCES empleados(id)
         );
     """)
     db.commit()
     return {"status": "agenda_citas creada correctamente"}
+
 
 
 # ---------------------------------------------------------

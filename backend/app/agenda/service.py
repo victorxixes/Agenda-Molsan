@@ -33,26 +33,20 @@ def cita_con_relaciones(db: Session, cita: Cita):
         apoderado_s = cita.apoderado_s
 
     return CitaResponse(
-        id=cita.id,
+          id=cita.id,
         fecha=cita.fecha,
         hora_inicio=cita.hora_inicio,
         hora_fin=cita.hora_fin,
         tipo_cita=cita.tipo_cita,
-
         vc=cita.vc,
         tipo_firma=tipo_firma,
-
         notario_id=cita.notario_id,
         notario=notario,
-
         apoderado_id=cita.apoderado_id,
         apoderado=apoderado_obj,
         apoderado_s=apoderado_s,
-
         observacion=cita.observacion,
-        estado=None  # opcional
     )
-
 
 # ---------------------------------------------------------
 # OBTENER CITA POR ID

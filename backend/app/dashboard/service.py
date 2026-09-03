@@ -1,132 +1,93 @@
-from datetime import date, timedelta
 from sqlalchemy.orm import Session
-from sqlalchemy import func
-
+from datetime import date
 from backend.app.agenda.models import Cita
 from backend.app.empleados.models import Empleado
-from backend.app.mensajes.models import Mensaje
-from backend.app.logs.models import Log
-
-try:
-    from backend.app.ctn.models import Notaria as Notario, Zona, Firma
-    CTN_ENABLED = True
-except Exception:
-    CTN_ENABLED = False
+from backend.app.ctn.models import Notaria
+from backend.app.agenda.geocode import calcular_km_cita
 
 
-def resumen_agenda(db: Session, empleado_id: int):
-    empleado = db.query(Empleado).filter(Empleado.id == empleado_id).first()
-
+def obtener_dashboard(db: Session):
     hoy = date.today()
-    inicio_semana = hoy - timedelta(days=hoy.weekday())
-    fin_semana = inicio_semana + timedelta(days=6)
 
-    filtro = None
-    if hasattr(empleado, "rol") and empleado.rol == "apoderado":
-        filtro = (Cita.apoderado_id == empleado_id)
-
-    q_hoy = db.query(Cita).filter(Cita.fecha == hoy)
-    if filtro:
-        q_hoy = q_hoy.filter(filtro)
-    citas_hoy = q_hoy.count()
-
-    q_semana = db.query(Cita).filter(
-        Cita.fecha >= inicio_semana,
-        Cita.fecha <= fin_semana
-    )
-    if filtro:
-        q_semana = q_semana.filter(filtro)
-    citas_semana = q_semana.count()
-
-    firmas_vc_hoy = q_hoy.filter(Cita.vc == "SI").count()
-    firmas_p_hoy = q_hoy.filter(Cita.vc == "NO").count()
-
-    firmas_vc_semana = q_semana.filter(Cita.vc == "SI").count()
-    firmas_p_semana = q_semana.filter(Cita.vc == "NO").count()
-
-    año_actual = hoy.year
-    firmas_por_mes = {}
-
-    for mes in range(1, 13):
-        inicio_mes = date(año_actual, mes, 1)
-        fin_mes = date(año_actual, mes, 31)
-
-        q_mes = db.query(Cita).filter(
-            Cita.fecha >= inicio_mes,
-            Cita.fecha <= fin_mes
-        )
-        if filtro:
-            q_mes = q_mes.filter(filtro)
-
-        firmas_por_mes[mes] = {
-            "vc": q_mes.filter(Cita.vc == "SI").count(),
-            "p": q_mes.filter(Cita.vc == "NO").count()
-        }
-
-    firmas_por_mes_array = [
-        {"mes": mes, "vc": valores["vc"], "p": valores["p"]}
-        for mes, valores in firmas_por_mes.items()
-    ]
-
-    total_empleados = db.query(Empleado).count()
-    empleados_activos = db.query(Empleado).filter(Empleado.activo == True).count()
-
-    mensajes_hoy = db.query(Mensaje).filter(func.date(Mensaje.fecha) == hoy).count()
-    mensajes_no_leidos = db.query(Mensaje).filter(
-        Mensaje.destinatario_id == empleado_id,
-        Mensaje.leido == False
+    # -----------------------------
+    # AGENDA — Citas del día
+    # -----------------------------
+    presencial_hoy = db.query(Cita).filter(
+        Cita.fecha == hoy,
+        Cita.vc == "NO"
     ).count()
 
-    actividad_hoy = db.query(Log).filter(func.date(Log.fecha) == hoy).count()
-    actividad_semana = db.query(Log).filter(
-        Log.fecha >= inicio_semana,
-        Log.fecha <= fin_semana
+    vc_hoy = db.query(Cita).filter(
+        Cita.fecha == hoy,
+        Cita.vc == "SI"
     ).count()
 
-    if CTN_ENABLED:
-        total_notarios = db.query(Notario).count()
-        total_zonas = db.query(Zona).count()
-        total_firmas_ctn = db.query(Firma).count()
-    else:
-        total_notarios = 0
-        total_zonas = 0
-        total_firmas_ctn = 0
+    # Próximas citas (solo futuras)
+    proximas_raw = db.query(Cita).filter(
+        Cita.fecha > hoy
+    ).order_by(Cita.fecha.asc(), Cita.hora_inicio.asc()).limit(10).all()
+
+    proximas = []
+    for c in proximas_raw:
+        proximas.append({
+            "fecha": str(c.fecha),
+            "notario": c.notario.nombre if c.notario else None,
+            "apoderado": c.apoderado_s,
+            "tipo_firma": "VC" if c.vc == "SI" else "Presencial",
+            "hora_inicio": str(c.hora_inicio),
+            "hora_fin": str(c.hora_fin)
+        })
+
+    # -----------------------------
+    # CTN — Resumen de firmas
+    # -----------------------------
+    presencial_total = db.query(Cita).filter(Cita.vc == "NO").count()
+    vc_total = db.query(Cita).filter(Cita.vc == "SI").count()
+
+    # -----------------------------
+    # APODERADOS — Ranking
+    # -----------------------------
+    empleados = db.query(Empleado).filter(Empleado.rol == "apoderado").all()
+
+    ranking = []
+    km_total = 0
+
+    for apo in empleados:
+        firmas = db.query(Cita).filter(Cita.apoderado_id == apo.id).count()
+        firmas_vc = db.query(Cita).filter(Cita.apoderado_id == apo.id, Cita.vc == "SI").count()
+        firmas_pr = db.query(Cita).filter(Cita.apoderado_id == apo.id, Cita.vc == "NO").count()
+
+        # Kilómetros recorridos
+        citas_apo = db.query(Cita).filter(Cita.apoderado_id == apo.id).all()
+        km_apo = sum(calcular_km_cita(c) for c in citas_apo)
+        km_total += km_apo
+
+        ranking.append({
+            "apoderado_id": apo.id,
+            "nombre": f"{apo.nombre} {apo.apellidos}",
+            "firmas_total": firmas,
+            "firmas_presencial": firmas_pr,
+            "firmas_vc": firmas_vc,
+            "km_recorridos": km_apo
+        })
+
+    # Ordenar ranking por firmas
+    ranking = sorted(ranking, key=lambda x: x["firmas_total"], reverse=True)
 
     return {
-        "rol": getattr(empleado, "rol", None),
-
         "agenda": {
-            "citas_hoy": citas_hoy,
-            "citas_semana": citas_semana,
-            "firmas_hoy": {
-                "vc": firmas_vc_hoy,
-                "p": firmas_p_hoy
-            },
-            "firmas_semana": {
-                "vc": firmas_vc_semana,
-                "p": firmas_p_semana
-            },
-            "firmas_por_mes": firmas_por_mes_array
+            "presencial_hoy": presencial_hoy,
+            "vc_hoy": vc_hoy,
+            "proximas": proximas
         },
-
-        "empleados": {
-            "total": total_empleados,
-            "activos": empleados_activos
-        },
-
-        "mensajes": {
-            "hoy": mensajes_hoy,
-            "no_leidos": mensajes_no_leidos
-        },
-
-        "actividad": {
-            "hoy": actividad_hoy,
-            "semana": actividad_semana
-        },
-
         "ctn": {
-            "notarios": total_notarios,
-            "zonas": total_zonas,
-            "firmas": total_firmas_ctn
+            "presencial_total": presencial_total,
+            "vc_total": vc_total
+        },
+        "apoderados": {
+            "ranking": ranking,
+            "presencial": presencial_total,
+            "vc": vc_total,
+            "km_recorridos": km_total
         }
     }

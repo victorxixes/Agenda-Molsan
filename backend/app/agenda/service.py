@@ -52,7 +52,6 @@ def cita_con_relaciones(db: Session, cita: Cita):
         "apoderado_s": apoderado_s,
 
         "observacion": observacion,
-        "estado": cita.estado,
     }
 
 # ---------------------------------------------------------

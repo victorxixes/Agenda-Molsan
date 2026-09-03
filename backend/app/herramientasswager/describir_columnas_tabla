@@ -1,0 +1,12 @@
+@router.get("/db/describe/{nombre}")
+def describir_tabla(nombre: str, db: Session = Depends(get_db)):
+    nombre = nombre.replace(";", "").replace("--", "")
+
+    result = db.execute(f"""
+        SELECT column_name, data_type
+        FROM information_schema.columns
+        WHERE table_name = '{nombre}'
+        ORDER BY ordinal_position;
+    """)
+    columnas = [{"columna": row[0], "tipo": row[1]} for row in result]
+    return {"tabla": nombre, "columnas": columnas}

@@ -65,6 +65,8 @@ app.mount("/api/fotos", StaticFiles(directory=FOTOS_DIR), name="fotos")
 # IMPORTAR ROUTERS (REST)
 # ---------------------------------------------------------
 
+from backend.app.mensajes.router_ws import router as mensajes_ws_router
+
 from backend.app.auth.router import router as auth_router
 from backend.app.empleados.router import router as empleados_router
 from backend.app.maestros.router import router as maestros_router

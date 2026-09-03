@@ -1,0 +1,10 @@
+@router.get("/db/tables")
+def listar_tablas(db: Session = Depends(get_db)):
+    result = db.execute("""
+        SELECT table_name
+        FROM information_schema.tables
+        WHERE table_schema = 'public'
+        ORDER BY table_name;
+    """)
+    tablas = [row[0] for row in result]
+    return {"tablas": tablas}

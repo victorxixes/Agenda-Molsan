@@ -3,11 +3,14 @@ from sqlalchemy.orm import Session
 
 from backend.app.database import get_db
 from backend.app.ctn.service import listar_notarias
-from backend.app.agenda.geocode import geocode_cp, distancia_molsan
+from backend.app.agenda.geocode import geocode_cp, distancia_molsan, ruta_molsan
 
 router = APIRouter(prefix="/agenda", tags=["Agenda"])
 
 
+# =========================================================
+# LISTAR NOTARIOS (con distancia Molsan → Notaría)
+# =========================================================
 @router.get("/notarios")
 def obtener_notarios(db: Session = Depends(get_db)):
     notarias = listar_notarias(db)
@@ -18,11 +21,9 @@ def obtener_notarios(db: Session = Depends(get_db)):
         # Geolocalización real
         geo = geocode_cp(n.cp, n.municipio, n.provincia)
 
-        # Coordenadas reales (float) o None
         lat = geo["lat"] if geo else None
         lng = geo["lng"] if geo else None
 
-        # Distancia desde Molsan → Notaría
         distancia_km = distancia_molsan(lat, lng) if geo else None
 
         resultado.append({
@@ -52,7 +53,7 @@ def obtener_notarios(db: Session = Depends(get_db)):
             # Dirección generada automáticamente
             "direccion": geo["direccion_real"] if geo else f"{n.municipio}, {n.provincia}",
 
-            # Coordenadas reales para el mapa
+            # Coordenadas reales
             "lat": lat,
             "lng": lng,
 
@@ -61,3 +62,28 @@ def obtener_notarios(db: Session = Depends(get_db)):
         })
 
     return resultado
+
+
+# =========================================================
+# ⭐ NUEVO: RUTA COMPLETA Molsan → Notaría A → ... → Notaría N → Molsan
+# =========================================================
+@router.get("/notarios/ruta")
+def obtener_ruta_notarios(db: Session = Depends(get_db)):
+    notarias = listar_notarias(db)
+
+    lista_geo = []
+
+    for n in notarias:
+        geo = geocode_cp(n.cp, n.municipio, n.provincia)
+
+        if geo:
+            lista_geo.append({
+                "nombre": n.nombre,
+                "lat": geo["lat"],
+                "lng": geo["lng"]
+            })
+
+    # Cálculo de ruta completa
+    ruta = ruta_molsan(lista_geo)
+
+    return ruta

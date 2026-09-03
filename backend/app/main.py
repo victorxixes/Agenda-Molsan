@@ -91,6 +91,7 @@ from backend.app.mensajes.router_ws import router as mensajes_ws_router
 # ---------------------------------------------------------
 
 app.include_router(mensajes_ws_router)
+app.include_router(router_ws_docs)
 
 app.include_router(auth_router, prefix="/api")
 app.include_router(empleados_router, prefix="/api")

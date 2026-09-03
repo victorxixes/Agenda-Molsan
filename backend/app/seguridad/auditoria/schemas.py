@@ -1,16 +1,18 @@
 from pydantic import BaseModel
 from datetime import datetime
+from typing import Optional
 
 class AuditoriaBase(BaseModel):
-    usuario: str | None = None
-    modulo: str | None = None
-    accion: str | None = None
-    descripcion: str | None = None
-    ip: str | None = None
+    usuario: Optional[str] = None
+    modulo: Optional[str] = None
+    accion: Optional[str] = None
+    descripcion: Optional[str] = None
+    ip: Optional[str] = None
 
 class AuditoriaOut(AuditoriaBase):
     id: int
     fecha: datetime
 
-    class Config:
-        orm_mode = True
+    model_config = {
+        "from_attributes": True
+    }

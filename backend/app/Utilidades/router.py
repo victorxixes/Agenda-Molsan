@@ -1,18 +1,19 @@
 from fastapi import APIRouter, UploadFile, File, Depends
-from backend.app.Utilidades.importadores.ctn_importer import leer_ctn_excel
+from sqlalchemy.orm import Session
 
-router = APIRouter(
-    prefix="/utilidades",
-    tags=["Utilidades"]
-)
+from backend.app.database import get_db
+from backend.app.Utilidades.importadores.ctn_importer import importar_ctn_desde_excel
+
+router = APIRouter(prefix="/utilidades", tags=["Utilidades"])
 
 @router.post("/ctn/importar")
-async def importar_ctn_excel(
+async def importar_ctn(
     fichero: UploadFile = File(...),
+    db: Session = Depends(get_db),
 ):
     """
-    Importa el Excel de CTN y devuelve los datos tal cual
-    sin guardar en BD, sin transformar nada.
+    Importa el Excel de CTN y rellena la tabla ctn_notarios
+    tal y como está el fichero, sin transformar nada.
     """
-    datos = leer_ctn_excel(fichero)
-    return {"filas": datos}
+    total = importar_ctn_desde_excel(db, fichero)
+    return {"importados": total}

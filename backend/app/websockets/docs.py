@@ -1,21 +1,30 @@
+from fastapi import APIRouter
+
+router_ws_docs = APIRouter(tags=["WebSockets"])
+
+@router_ws_docs.get("/ws/mensajes/{empleado_id}")
+def ws_doc(empleado_id: int):
+    """
+    Documentación de la ruta WebSocket:
+    /ws/mensajes/{empleado_id}
+
+    Esta ruta NO es HTTP. Solo aparece en Swagger para documentación.
+    """
+    return {"websocket": f"/ws/mensajes/{empleado_id}"}
+
 websocket_docs = [
     {
         "name": "WebSockets",
         "description": """
-### Rutas WebSocket disponibles
+### 📡 WebSockets disponibles
 
-#### 📡 /ws/mensajes/{empleado_id}
+#### 🔌 /ws/mensajes/{empleado_id}
 
 Conecta un empleado al sistema de mensajería en tiempo real.
 
-**Parámetros:**
-- `empleado_id` (int): ID del empleado que se conecta.
-
-**Ejemplo de conexión desde navegador:**
+**Ejemplo de conexión:**
 ```js
 let ws = new WebSocket("wss://agenda-intranet-b.onrender.com/ws/mensajes/1");
-
 ws.onopen = () => console.log("WS conectado");
 ws.onmessage = (e) => console.log("Mensaje:", e.data);
-ws.onerror = (e) => console.log("Error:", e);
-ws.onclose = () => console.log("WS cerrado");
+

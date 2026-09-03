@@ -1,5 +1,6 @@
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from backend.app.mensajes.ws_manager import manager
+from backend.app.database import get_db
 
 router = APIRouter()
 
@@ -17,8 +18,8 @@ async def mensajes_ws(websocket: WebSocket, empleado_id: int):
 
     try:
         while True:
+            # Recibir evento del WebSocket
             data = await websocket.receive_json()
-
             tipo = data.get("tipo")
 
             # ---------------------------------------------------------
@@ -33,7 +34,7 @@ async def mensajes_ws(websocket: WebSocket, empleado_id: int):
                 })
 
             # ---------------------------------------------------------
-            # 2) ENVÍO DE MENSAJE
+            # 2) ENVÍO DE MENSAJE DE TEXTO
             # ---------------------------------------------------------
             elif tipo == "mensaje":
                 remitente_id = empleado_id
@@ -48,6 +49,26 @@ async def mensajes_ws(websocket: WebSocket, empleado_id: int):
                     "tipo": "nuevo_mensaje",
                     "de": remitente_id,
                     "contenido": contenido
+                })
+
+            # ---------------------------------------------------------
+            # 3) ENVÍO DE ARCHIVO (PDF, Word, imagen…)
+            # ---------------------------------------------------------
+            elif tipo == "archivo":
+                remitente_id = empleado_id
+                destinatario_id = data.get("destinatario_id")
+                archivo_url = data.get("archivo_url")
+
+                mensaje = await manager.enviar_archivo_ws(
+                    remitente_id,
+                    destinatario_id,
+                    archivo_url
+                )
+
+                await manager.send_to_user(destinatario_id, {
+                    "tipo": "nuevo_archivo",
+                    "de": remitente_id,
+                    "archivo_url": archivo_url
                 })
 
     except WebSocketDisconnect:

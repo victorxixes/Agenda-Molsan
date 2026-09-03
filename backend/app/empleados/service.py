@@ -45,8 +45,24 @@ def crear_empleado(db: Session, data: EmpleadoCreate):
     db.refresh(empleado)
     return empleado
 
-def listar_empleados(db: Session):
-    return db.query(Empleado).order_by(Empleado.id.asc()).all()
+def listar_empleados(db: Session, q: str | None = None, activo: bool | None = None):
+    query = db.query(Empleado)
+
+    # Filtro por texto (nombre, usuario, DNI)
+    if q:
+        q_like = f"%{q}%"
+        query = query.filter(
+            (Empleado.nombre.ilike(q_like)) |
+            (Empleado.usuario.ilike(q_like)) |
+            (Empleado.dni.ilike(q_like))
+        )
+
+    # Filtro por activo/inactivo
+    if activo is not None:
+        query = query.filter(Empleado.activo == activo)
+
+    return query.order_by(Empleado.id.asc()).all()
+
 
 def editar_empleado(db: Session, empleado_id: int, data: EmpleadoUpdate):
     empleado = obtener_empleado(db, empleado_id)

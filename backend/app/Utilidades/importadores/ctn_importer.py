@@ -1,12 +1,11 @@
-from typing import Dict, List
+from typing import Dict
 from openpyxl import load_workbook
-from fastapi import UploadFile
 from sqlalchemy.orm import Session
+from fastapi import UploadFile
 
 from backend.app.ctn.models import Notaria
 
-# Mapeo entre cabeceras del Excel y campos del modelo
-HEADER_TO_FIELD: Dict[str, str] = {
+HEADER_MAP = {
     "Código": "codigo",
     "Nombre": "nombre",
     "Apellidos": "apellidos",
@@ -24,30 +23,26 @@ HEADER_TO_FIELD: Dict[str, str] = {
     "Observación": "observacion",
 }
 
-def importar_ctn_desde_excel(db: Session, file: UploadFile) -> int:
+def importar_ctn_desde_excel(db: Session, fichero: UploadFile) -> int:
     """
-    Lee el Excel de CTN y rellena la tabla ctn_notarios
-    tal y como está el fichero, sin transformar nada.
+    Importa el Excel CTN tal cual:
     - Ignora la primera fila (título)
     - Usa la segunda fila como cabeceras
-    - Inserta desde la tercera fila en adelante
+    - Inserta cada fila tal cual en la BD
+    - No borra nada
+    - No transforma nada
     """
 
-    contents = file.file.read()
-    wb = load_workbook(filename=None, data=contents)
+    contenido = fichero.file.read()
+    wb = load_workbook(filename=None, data=contenido)
     ws = wb.active
 
     filas = list(ws.iter_rows(values_only=True))
     if len(filas) < 3:
         return 0
 
-    # Fila 1: título (ignorar)
-    # Fila 2: cabeceras
     headers = filas[1]
     data_rows = filas[2:]
-
-    # Opcional: limpiar tabla antes de importar
-    db.query(Notaria).delete()
 
     insertados = 0
 
@@ -55,21 +50,15 @@ def importar_ctn_desde_excel(db: Session, file: UploadFile) -> int:
         if all(cell is None for cell in row):
             continue
 
-        notaria_data: Dict[str, str] = {}
+        datos: Dict[str, str] = {}
 
         for idx, header in enumerate(headers):
-            if header is None:
-                continue
-            if header not in HEADER_TO_FIELD:
-                continue
+            if header in HEADER_MAP:
+                campo = HEADER_MAP[header]
+                valor = row[idx] if idx < len(row) else None
+                datos[campo] = None if valor is None else str(valor)
 
-            field_name = HEADER_TO_FIELD[header]
-            valor = row[idx] if idx < len(row) else None
-
-            # Tal cual: todo a string si viene algo, None si está vacío
-            notaria_data[field_name] = None if valor is None else str(valor)
-
-        notaria = Notaria(**notaria_data)
+        notaria = Notaria(**datos)
         db.add(notaria)
         insertados += 1
 

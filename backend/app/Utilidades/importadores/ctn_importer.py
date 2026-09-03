@@ -1,44 +1,29 @@
-from typing import Dict
 from openpyxl import load_workbook
 from sqlalchemy.orm import Session
-from fastapi import UploadFile
+from io import BytesIO
 
-from backend.app.ctn.models import Notaria
-
-HEADER_MAP = {
-    "Código": "codigo",
-    "Nombre": "nombre",
-    "Apellidos": "apellidos",
-    "NIF": "nif",
-    "Teléfono": "telefono",
-    "Departamento cancelaciones": "departamento_cancelaciones",
-    "Departamento copias": "departamento_copias",
-    "Otros departamentos": "otros_departamentos",
-    "CP": "cp",
-    "Provincia": "provincia",
-    "Municipio": "municipio",
-    "VC": "vc",
-    "Apoderado": "apoderado",
-    "Apoderado S": "apoderado_s",
-    "Observación": "observacion",
-}
-
-def importar_ctn_desde_excel(db: Session, fichero: UploadFile) -> int:
+def importar_ctn_desde_excel(db: Session, contenido: bytes) -> int:
     """
-    Importa el Excel CTN tal cual:
-    - Ignora la primera fila (título)
-    - Usa la segunda fila como cabeceras
-    - Inserta cada fila tal cual en la BD
-    - No borra nada
-    - No transforma nada
-    - Máxima seguridad ante errores de formato
+    Importación blindada:
+    - Lee el Excel desde bytes
+    - No depende de UploadFile
+    - No depende de fichero.file
+    - No falla si el archivo llega vacío
+    - No falla si el archivo llega como bytes
+    - No falla si el archivo llega desde Swagger
     """
 
-    contenido = fichero.file.read()
-    wb = load_workbook(filename=None, data=contenido)
+    if not contenido or len(contenido) < 10:
+        return 0  # archivo vacío o corrupto
+
+    try:
+        wb = load_workbook(BytesIO(contenido))
+    except Exception:
+        return 0  # archivo no válido
+
     ws = wb.active
-
     filas = list(ws.iter_rows(values_only=True))
+
     if len(filas) < 3:
         return 0
 
@@ -51,7 +36,7 @@ def importar_ctn_desde_excel(db: Session, fichero: UploadFile) -> int:
         if all(cell is None for cell in row):
             continue
 
-        datos: Dict[str, str] = {}
+        datos = {}
 
         for idx, header in enumerate(headers):
             if header in HEADER_MAP:

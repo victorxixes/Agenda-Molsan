@@ -28,8 +28,12 @@ Base.metadata.create_all(bind=engine)
 # ---------------------------------------------------------
 app = FastAPI(title="Agenda Intranet Backend")
 
+# ---------------------------------------------------------
+# ROOT
+# ---------------------------------------------------------
 @app.get("/")
 def root():
+    return {"status": "ERP Molsan 2026 funcionando correctamente"}
     return {"status": "ok"}
 
 # ---------------------------------------------------------

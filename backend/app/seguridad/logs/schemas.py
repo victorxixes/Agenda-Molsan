@@ -1,14 +1,16 @@
 from pydantic import BaseModel
 from datetime import datetime
+from typing import Optional
 
 class LogBase(BaseModel):
     evento: str
-    detalle: str | None = None
-    ip: str | None = None
+    detalle: Optional[str] = None
+    ip: Optional[str] = None
 
 class LogOut(LogBase):
     id: int
     fecha: datetime
 
-    class Config:
-        orm_mode = True
+    model_config = {
+        "from_attributes": True
+    }

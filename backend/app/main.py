@@ -18,6 +18,7 @@ from backend.app.agenda.router import router as agenda_router
 from backend.app.intranet.documentos.models import Documento
 from backend.app.intranet.noticias.models import Noticia
 from backend.app.ctn.models import Notaria 
+from backend.app.agenda.models import Cita
 
 # Crear tablas
 Base.metadata.create_all(bind=engine)
@@ -64,35 +65,19 @@ app.mount("/api/fotos", StaticFiles(directory=FOTOS_DIR), name="fotos")
 # IMPORTAR ROUTERS (REST)
 # ---------------------------------------------------------
 
-# Auth (login)
 from backend.app.auth.router import router as auth_router
-
-# Empleados (CRUD completo)
 from backend.app.empleados.router import router as empleados_router
-
-# Maestros 
 from backend.app.maestros.router import router as maestros_router
-
-# Herramientas Swager
-from backend.app.herramientasswager.crear_tablas import router as herramientas_router
-from backend.app.herramientasswager.reset_intranet import router as reset_intranet_router
-
-# CTN
+from backend.app.herramientasswager.crear_tablas import router as herramientas_router   # ⭐ FALTABA
+from backend.app.herramientasswager.reset_intranet import router as reset_intranet_router   # ⭐ FALTABA
+from backend.app.herramientasswager.debug_router import router as debug_router
 from backend.app.ctn.router import router as ctn_router
 from backend.app.Utilidades.router import router as utilidades_router
-
-# Seguridad
 from backend.app.seguridad.auditoria.router import router as seguridad_auditoria_router
 from backend.app.seguridad.logs.router import router as seguridad_logs_router
-
-# INTRANET ROUTERS
 from backend.app.intranet.documentos.router import router as documentos_router
 from backend.app.intranet.noticias.router import router as noticias_router
-
-# MENSAJES
-from backend.app.mensajes.router_ws import router as mensajes_ws_router
-from backend.app.WebSockets.docs import router_ws_docs
-
+from backend.app.agenda.router import router as agenda_router
 # ---------------------------------------------------------
 # INCLUIR ROUTERS REST
 # ---------------------------------------------------------
@@ -105,7 +90,7 @@ app.include_router(empleados_router, prefix="/api")
 app.include_router(maestros_router, prefix="/api")
 app.include_router(herramientas_router, prefix="/api")
 app.include_router(ctn_router, prefix="/api")
-app.include_router(utilidades_router, prefix="/api")
+app.include_router(debug_router)
 app.include_router(seguridad_auditoria_router, prefix="/api")
 app.include_router(seguridad_logs_router, prefix="/api")
 app.include_router(documentos_router, prefix="/api")

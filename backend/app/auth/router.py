@@ -5,28 +5,44 @@ from backend.app.database import get_db
 from backend.app.auth.schemas import LoginRequest
 from backend.app.empleados.service import login_empleado
 from backend.app.auth.service import crear_token, serializar_empleado
+from backend.app.seguridad.auditoria.service import registrar_auditoria
+from backend.app.seguridad.logs.service import registrar_log
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
 # ---------------------------------------------------------
-# LOGIN EMPLEADOS (USANDO EL SERVICIO REAL)
+# LOGIN EMPLEADOS (UNIFICADO + AUDITORÍA + LOGS)
 # ---------------------------------------------------------
 @router.post("/login")
 def login(data: LoginRequest, db: Session = Depends(get_db)):
     resultado = login_empleado(db, data.usuario, data.password)
 
     if not resultado:
+        registrar_log(db, "login_error", f"Credenciales incorrectas para {data.usuario}")
         raise HTTPException(status_code=401, detail="Credenciales incorrectas")
 
+    empleado = resultado["empleado"]
+    token = resultado["token"]
+
+    # Auditoría
+    registrar_auditoria(
+        db,
+        usuario=data.usuario,
+        modulo="auth",
+        accion="login",
+        descripcion="Inicio de sesión",
+        ip=None
+    )
+
     return {
-        "token": resultado["token"],
-        "empleado": resultado["empleado"]
+        "token": token,
+        "empleado": empleado
     }
 
 
 # ---------------------------------------------------------
-# LOGIN ADMIN
+# LOGIN ADMIN (UNIFICADO + AUDITORÍA + LOGS)
 # ---------------------------------------------------------
 import hashlib
 
@@ -40,41 +56,26 @@ def options_login():
 
 
 @router.post("/admin/login")
-def login_admin(data: LoginRequest):
+def login_admin(data: LoginRequest, db: Session = Depends(get_db)):
     if data.usuario != "admin":
+        registrar_log(db, "login_error", f"Intento de login admin con usuario {data.usuario}")
         raise HTTPException(status_code=400, detail="Usuario no encontrado")
 
     if hash_password(data.password) != hash_password("admin"):
+        registrar_log(db, "login_error", "Contraseña incorrecta en login admin")
         raise HTTPException(status_code=400, detail="Contraseña incorrecta")
 
-    foto = "default-avatar.png"
-
-    return {
+    empleado = {
         "empleado_id": 1,
         "nombre": "Administrador",
-        "foto": foto,
-
+        "foto": "default-avatar.png",
         "rol_id": 0,
         "rol_nombre": "admin",
-
         "modulos_visibles": [
-            "dashboard",
-            "agenda",
-            "empleados",
-            "informes",
-            "intranet",
-            "auditoria",
-            "seguridad",
-            "utilidades",
-            "logs",
-            "ctn",
-            "maestros",
-            "mensajes",
-            "realtime",
-            "notarios",
-            "documentos"
+            "dashboard", "agenda", "empleados", "informes", "intranet",
+            "auditoria", "seguridad", "utilidades", "logs", "ctn",
+            "maestros", "mensajes", "realtime", "notarios", "documentos"
         ],
-
         "permisos_modulo": {
             "dashboard": ["ver", "crear", "editar", "eliminar"],
             "agenda": ["ver", "crear", "editar", "eliminar"],
@@ -91,7 +92,23 @@ def login_admin(data: LoginRequest):
             "realtime": ["ver"],
             "notarios": ["ver", "crear", "editar"],
             "documentos": ["ver", "crear", "editar"]
-        },
+        }
+    }
 
-        "token": "admin-token"
+    # Token unificado
+    token = crear_token(type("Admin", (), {"id": 1, "usuario": "admin", "rol": None}))
+
+    # Auditoría
+    registrar_auditoria(
+        db,
+        usuario="admin",
+        modulo="auth",
+        accion="login",
+        descripcion="Inicio de sesión admin",
+        ip=None
+    )
+
+    return {
+        "token": token,
+        "empleado": empleado
     }

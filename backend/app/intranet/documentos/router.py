@@ -26,8 +26,8 @@ router = APIRouter(
 # LISTAR DOCUMENTOS
 # ---------------------------------------------------------
 @router.get("/")
-def listar(db: Session = Depends(get_db)):
-    return listar_documentos(db)
+def listar(search: str | None = None, db: Session = Depends(get_db)):
+    return listar_documentos(db, search)
 
 # ---------------------------------------------------------
 # OBTENER DOCUMENTO

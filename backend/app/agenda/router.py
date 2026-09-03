@@ -72,8 +72,6 @@ def create_table_agenda_citas(db: Session = Depends(get_db)):
     db.commit()
     return {"status": "agenda_citas creada correctamente"}
 
-
-
 # ---------------------------------------------------------
 # DESCRIBE TABLE
 # ---------------------------------------------------------

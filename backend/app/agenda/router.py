@@ -14,7 +14,6 @@ from backend.app.agenda.service import (
     editar_cita,
     eliminar_cita,
     mover_cita,
-    cambiar_estado_cita,
     obtener_cita
 )
 
@@ -62,7 +61,6 @@ def create_table_agenda_citas(db: Session = Depends(get_db)):
             vc VARCHAR,
             observacion VARCHAR,
             apoderado_s VARCHAR,
-            estado VARCHAR DEFAULT 'Pendiente',
 
             notario_id INTEGER REFERENCES ctn_notarios(id),
             apoderado_id INTEGER REFERENCES empleados_v2(id)
@@ -95,17 +93,57 @@ def alter_table_agenda_citas(db: Session = Depends(get_db)):
     db.execute("ALTER TABLE agenda_citas ADD COLUMN IF NOT EXISTS vc VARCHAR;")
     db.execute("ALTER TABLE agenda_citas ADD COLUMN IF NOT EXISTS observacion VARCHAR;")
     db.execute("ALTER TABLE agenda_citas ADD COLUMN IF NOT EXISTS apoderado_s VARCHAR;")
-    db.execute("ALTER TABLE agenda_citas ADD COLUMN IF NOT EXISTS estado VARCHAR DEFAULT 'Pendiente';")
     db.commit()
     return {"status": "agenda_citas actualizada"}
 
 
 # ---------------------------------------------------------
-# SANEAR (ELIMINADO: YA NO SE USA)
+# BUSCADOR
 # ---------------------------------------------------------
-def _sanear(c):
-    # 🔥 Ya no se usa porque service.py devuelve dict completo y correcto
-    return c
+@router.get("/search", response_model=list[CitaResponse])
+def buscar_citas(
+    query: str | None = None,
+    notario_id: int | None = None,
+    apoderado_id: int | None = None,
+    tipo_cita: str | None = None,
+    fecha: str | None = None,
+    desde: str | None = None,
+    hasta: str | None = None,
+    db: Session = Depends(get_db)
+):
+    q = db.query(Cita)
+
+    if query:
+        query_lower = f"%{query.lower()}%"
+        q = q.filter(
+            (Cita.tipo_cita.ilike(query_lower)) |
+            (Cita.observacion.ilike(query_lower)) |
+            (Cita.apoderado_s.ilike(query_lower))
+        )
+
+    if notario_id:
+        q = q.filter(Cita.notario_id == notario_id)
+
+    if apoderado_id:
+        q = q.filter(Cita.apoderado_id == apoderado_id)
+
+    if tipo_cita:
+        q = q.filter(Cita.tipo_cita.ilike(f"%{tipo_cita}%"))
+
+    if fecha:
+        fecha_dt = date.fromisoformat(fecha)
+        q = q.filter(Cita.fecha == fecha_dt)
+
+    if desde:
+        desde_dt = date.fromisoformat(desde)
+        q = q.filter(Cita.fecha >= desde_dt)
+
+    if hasta:
+        hasta_dt = date.fromisoformat(hasta)
+        q = q.filter(Cita.fecha <= hasta_dt)
+
+    citas = q.order_by(Cita.fecha.asc(), Cita.hora_inicio.asc()).all()
+    return [cita_con_relaciones(db, c) for c in citas]
 
 
 # ---------------------------------------------------------
@@ -144,8 +182,7 @@ def citas_mes(year: int, month: int, db: Session = Depends(get_db)):
 # ---------------------------------------------------------
 @router.post("/", response_model=CitaResponse)
 def create_cita(cita: CitaCreate, db: Session = Depends(get_db)):
-    nueva = crear_cita(db, cita)
-    return nueva
+    return crear_cita(db, cita)
 
 
 # ---------------------------------------------------------
@@ -184,8 +221,3 @@ def mover(id: int, nueva_fecha: str, nueva_hora_inicio: str, nueva_hora_fin: str
         raise HTTPException(status_code=404, detail="Cita no encontrada")
 
     return movida
-
-    cambiada = cambiar_estado_cita(db, id, nuevo_estado)
-    if not cambiada:
-        raise HTTPException(status_code=404, detail="Cita no encontrada")
-    return cambiada

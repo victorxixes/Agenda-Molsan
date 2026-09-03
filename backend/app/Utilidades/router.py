@@ -5,12 +5,12 @@ from backend.app.Utilidades.importadores.ctn_importer import importar_ctn_desde_
 router = APIRouter(prefix="/utilidades", tags=["Utilidades"])
 
 @router.post("/ctn/importar")
-def importar_ctn(fichero: UploadFile = File(...)):
-    # Obtener la sesión manualmente (máxima compatibilidad con Swagger + Render)
+async def importar_ctn(fichero: UploadFile = File(...)):
+    contenido = await fichero.read()  # lectura segura en async
     db = next(get_db())
-
-    total = importar_ctn_desde_excel(db, fichero)
+    total = importar_ctn_desde_excel(db, contenido)
     return {"importados": total}
+
 
 
 

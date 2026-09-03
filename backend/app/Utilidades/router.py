@@ -11,9 +11,5 @@ async def importar_ctn(
     fichero: UploadFile = File(...),
     db: Session = Depends(get_db),
 ):
-    """
-    Importa el Excel de CTN y rellena la tabla ctn_notarios
-    tal y como está el fichero, sin transformar nada.
-    """
     total = importar_ctn_desde_excel(db, fichero)
     return {"importados": total}

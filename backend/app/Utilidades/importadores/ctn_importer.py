@@ -2,7 +2,7 @@ from openpyxl import load_workbook
 from sqlalchemy.orm import Session
 from io import BytesIO
 
-from app.ctn.models import Notaria   # ← FALTABA ESTO
+from backend.app.ctn.models import Notaria   # ← ESTA ES LA RUTA CORRECTA
 
 HEADER_MAP = {
     "Código": "codigo",

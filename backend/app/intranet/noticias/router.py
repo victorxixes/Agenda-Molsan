@@ -29,8 +29,8 @@ class NoticiaPayload(BaseModel):
 # LISTAR NOTICIAS
 # ---------------------------------------------------------
 @router.get("/")
-def listar(db: Session = Depends(get_db)):
-    return listar_noticias(db)
+def listar(search: str | None = None, db: Session = Depends(get_db)):
+    return listar_noticias(db, search)
 
 # ---------------------------------------------------------
 # CREAR NOTICIA

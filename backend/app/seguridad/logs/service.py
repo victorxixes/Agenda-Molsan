@@ -2,6 +2,9 @@ from sqlalchemy.orm import Session
 from backend.app.seguridad.logs.models import Log
 from datetime import datetime
 
+# ---------------------------------------------------------
+# REGISTRAR LOG
+# ---------------------------------------------------------
 def registrar_log(db: Session, evento: str, detalle: str | None = None, ip: str | None = None):
     registro = Log(
         evento=evento,
@@ -12,8 +15,12 @@ def registrar_log(db: Session, evento: str, detalle: str | None = None, ip: str 
     db.add(registro)
     db.commit()
     db.refresh(registro)
-    return registro
+    return registro.as_dict()
 
 
+# ---------------------------------------------------------
+# OBTENER LOGS
+# ---------------------------------------------------------
 def obtener_logs(db: Session):
-    return db.query(Log).order_by(Log.fecha.desc()).limit(200).all()
+    registros = db.query(Log).order_by(Log.fecha.desc()).limit(200).all()
+    return [r.as_dict() for r in registros]

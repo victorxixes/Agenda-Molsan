@@ -46,9 +46,3 @@ class Empleado(Base):
     modulos_visibles_list = Column(JSONB, default=list)
     permisos_modulo_dict = Column(JSONB, default=dict)
 
-    # ⭐ Relación con Agenda (apoderado)
-    citas = relationship(
-        "Cita",
-        back_populates="apoderado",
-        lazy="selectin"
-    )

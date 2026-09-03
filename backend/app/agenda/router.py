@@ -224,3 +224,15 @@ def mover(id: int, nueva_fecha: str, nueva_hora_inicio: str, nueva_hora_fin: str
         raise HTTPException(status_code=404, detail="Cita no encontrada")
 
     return movida
+
+# ---------------------------------------------------------
+# MIS CITAS
+# ---------------------------------------------------------
+@router.get("/mis-citas", response_model=list[CitaResponse])
+def mis_citas(
+    db: Session = Depends(get_db),
+    empleado = Depends(get_current_user)
+):
+    empleado_id = empleado.id
+    return db.query(Cita).filter(Cita.apoderado_id == empleado_id).all()
+

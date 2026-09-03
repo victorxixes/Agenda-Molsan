@@ -31,6 +31,7 @@ def importar_ctn_desde_excel(db: Session, fichero: UploadFile) -> int:
     - Inserta cada fila tal cual en la BD
     - No borra nada
     - No transforma nada
+    - Máxima seguridad ante errores de formato
     """
 
     contenido = fichero.file.read()

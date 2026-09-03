@@ -10,12 +10,13 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 # ---------------------------------------------------------
 # LISTAR DOCUMENTOS
 # ---------------------------------------------------------
-def listar_documentos(db: Session):
-    return (
-        db.query(Documento)
-        .order_by(Documento.fecha_publicacion.desc())
-        .all()
-    )
+def listar_documentos(db: Session, search: str | None = None):
+    query = db.query(Documento)
+
+    if search:
+        query = query.filter(Documento.titulo.ilike(f"%{search}%"))
+
+    return query.order_by(Documento.fecha_publicacion.desc()).all()
 
 # ---------------------------------------------------------
 # OBTENER DOCUMENTO

@@ -4,7 +4,12 @@ import shutil
 import os
 
 from backend.app.database import SessionLocal
-from backend.app.empleados.schemas import EmpleadoCreate, EmpleadoUpdate, LoginEmpleado
+from backend.app.empleados.schemas import (
+    Empleado,
+    EmpleadoCreate,
+    EmpleadoUpdate,
+    LoginEmpleado
+)
 from backend.app.empleados.service import (
     listar_empleados,
     crear_empleado,
@@ -25,10 +30,11 @@ def get_db():
     finally:
         db.close()
 
+
 # -------------------------
 # BUSCADOR
 # -------------------------
-@router.get("/search")
+@router.get("/search", response_model=list[Empleado])
 def buscar(
     q: str | None = None,
     activo: bool | None = None,
@@ -36,10 +42,10 @@ def buscar(
 ):
     return listar_empleados(db, q=q, activo=activo)
 
+
 # -------------------------
 # LOGIN
 # -------------------------
-
 @router.post("/empleados/login")
 def login(data: LoginEmpleado, db: Session = Depends(get_db)):
     empleado = login_empleado(db, data.usuario, data.password)
@@ -50,38 +56,44 @@ def login(data: LoginEmpleado, db: Session = Depends(get_db)):
             "message": "Credenciales incorrectas"
         }
 
+    # ⚠️ IMPORTANTE: NO devolver ORM completo
     return {
         "status": "ok",
-        "empleado": empleado
+        "empleado": Empleado.from_orm(empleado)
     }
+
 
 # -------------------------
 # CRUD
 # -------------------------
-@router.get("/")
+@router.get("/", response_model=list[Empleado])
 def listar(db: Session = Depends(get_db)):
     return listar_empleados(db)
 
-@router.get("/{empleado_id}")
+
+@router.get("/{empleado_id}", response_model=Empleado)
 def obtener(empleado_id: int, db: Session = Depends(get_db)):
     empleado = obtener_empleado(db, empleado_id)
     if not empleado:
         raise HTTPException(status_code=404, detail="Empleado no encontrado")
     return empleado
 
-@router.post("/")
+
+@router.post("/", response_model=Empleado)
 def crear(data: EmpleadoCreate, db: Session = Depends(get_db)):
     try:
         return crear_empleado(db, data)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.put("/{empleado_id}")
+
+@router.put("/{empleado_id}", response_model=Empleado)
 def editar(empleado_id: int, data: EmpleadoUpdate, db: Session = Depends(get_db)):
     empleado = editar_empleado(db, empleado_id, data)
     if not empleado:
         raise HTTPException(status_code=404, detail="Empleado no encontrado")
     return empleado
+
 
 @router.delete("/{empleado_id}")
 def eliminar(empleado_id: int, db: Session = Depends(get_db)):
@@ -89,6 +101,7 @@ def eliminar(empleado_id: int, db: Session = Depends(get_db)):
     if not ok:
         raise HTTPException(status_code=404, detail="Empleado no encontrado")
     return {"status": "ok", "message": "Empleado eliminado"}
+
 
 # -------------------------
 # SUBIR FOTO
@@ -117,10 +130,11 @@ def subir_foto(empleado_id: int, archivo: UploadFile = File(...), db: Session = 
 
     return {"status": "ok", "foto_url": url_publica}
 
+
 # -------------------------
 # ACTUALIZAR MÓDULOS VISIBLES
 # -------------------------
-@router.put("/{empleado_id}/modulos")
+@router.put("/{empleado_id}/modulos", response_model=Empleado)
 def actualizar_modulos(empleado_id: int, data: dict, db: Session = Depends(get_db)):
     if "modulos_visibles_list" not in data:
         raise HTTPException(status_code=400, detail="Falta modulos_visibles_list")
@@ -131,10 +145,11 @@ def actualizar_modulos(empleado_id: int, data: dict, db: Session = Depends(get_d
 
     return empleado
 
+
 # -------------------------
 # ACTUALIZAR PERMISOS POR MÓDULO
 # -------------------------
-@router.put("/{empleado_id}/permisos")
+@router.put("/{empleado_id}/permisos", response_model=Empleado)
 def actualizar_permisos(empleado_id: int, data: dict, db: Session = Depends(get_db)):
     if "permisos_modulo_dict" not in data:
         raise HTTPException(status_code=400, detail="Falta permisos_modulo_dict")

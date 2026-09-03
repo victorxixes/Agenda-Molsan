@@ -4,10 +4,14 @@ from sqlalchemy import or_
 
 from backend.app.database import get_db
 from backend.app.ctn.models import Notaria
+from backend.app.ctn.service import obtener_notaria
 from backend.app.agenda.models import Cita
 
 router = APIRouter(prefix="/ctn", tags=["CTN"])
 
+# ---------------------------------------------------------
+# LISTAR CON FILTROS + BÚSQUEDA + PAGINACIÓN
+# ---------------------------------------------------------
 @router.get("/notarias")
 def listar(
     db: Session = Depends(get_db),
@@ -15,13 +19,12 @@ def listar(
     municipio: str | None = None,
     vc: str | None = None,
     apoderado: str | None = None,
-    q: str | None = None,        # búsqueda general
+    q: str | None = None,
     page: int = 1,
     page_size: int = 50
 ):
     query = db.query(Notaria)
 
-    # Filtros
     if provincia:
         query = query.filter(Notaria.provincia.ilike(f"%{provincia}%"))
 
@@ -34,7 +37,6 @@ def listar(
     if apoderado:
         query = query.filter(Notaria.apoderado.ilike(f"%{apoderado}%"))
 
-    # Búsqueda general
     if q:
         query = query.filter(
             or_(
@@ -60,4 +62,27 @@ def listar(
         "page": page,
         "page_size": page_size,
         "items": items
+    }
+
+# ---------------------------------------------------------
+# OBTENER NOTARIA POR ID
+# ---------------------------------------------------------
+@router.get("/notarias/{notaria_id}")
+def obtener(notaria_id: int, db: Session = Depends(get_db)):
+    return obtener_notaria(db, notaria_id)
+
+# ---------------------------------------------------------
+# FIRMAS POR NOTARIA
+# ---------------------------------------------------------
+@router.get("/notarias/{notaria_id}/firmas")
+def contar_firmas(notaria_id: int, db: Session = Depends(get_db)):
+    total = db.query(Cita).filter(Cita.notario_id == notaria_id).count()
+    vc = db.query(Cita).filter(Cita.notario_id == notaria_id, Cita.tipo_cita == "VC").count()
+    presencial = db.query(Cita).filter(Cita.notario_id == notaria_id, Cita.tipo_cita == "P").count()
+
+    return {
+        "notaria_id": notaria_id,
+        "total_firmas": total,
+        "total_vc": vc,
+        "total_presencial": presencial
     }

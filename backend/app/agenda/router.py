@@ -17,6 +17,9 @@ from backend.app.agenda.service import (
     obtener_cita
 )
 
+from backend.app.auth.dependencies import get_current_user
+from backend.app.auth.permissions import require_permission
+
 router = APIRouter(prefix="/agenda", tags=["Agenda"])
 
 

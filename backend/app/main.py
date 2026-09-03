@@ -85,6 +85,7 @@ from backend.app.intranet.noticias.router import router as noticias_router
 
 # MENSAJES
 from backend.app.mensajes.router_ws import router as mensajes_ws_router
+from backend.app.WebSockets.docs import router_ws_docs
 
 # ---------------------------------------------------------
 # INCLUIR ROUTERS REST

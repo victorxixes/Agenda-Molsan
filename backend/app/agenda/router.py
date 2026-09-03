@@ -185,12 +185,6 @@ def mover(id: int, nueva_fecha: str, nueva_hora_inicio: str, nueva_hora_fin: str
 
     return movida
 
-
-# ---------------------------------------------------------
-# CAMBIAR ESTADO
-# ---------------------------------------------------------
-@router.put("/estado/{id}", response_model=CitaResponse)
-def cambiar_estado(id: int, nuevo_estado: str, db: Session = Depends(get_db)):
     cambiada = cambiar_estado_cita(db, id, nuevo_estado)
     if not cambiada:
         raise HTTPException(status_code=404, detail="Cita no encontrada")

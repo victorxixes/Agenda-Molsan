@@ -29,8 +29,11 @@ class Notaria(Base):
 
     observacion = Column(String, nullable=True)
 
-    # Campo que usabas para importar apoderados
     apoderado_id = Column(Integer, nullable=True)
 
-    # Relación antigua con Cita del CTN (si existía)
-    # citas = relationship("Cita", back_populates="notario")
+    # ⭐ Relación real con Agenda
+    citas = relationship(
+        "Cita",
+        back_populates="notario",
+        lazy="selectin"
+    )

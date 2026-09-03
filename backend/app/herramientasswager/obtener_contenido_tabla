@@ -1,0 +1,8 @@
+@router.get("/db/table/{nombre}")
+def contenido_tabla(nombre: str, db: Session = Depends(get_db)):
+    # Seguridad básica: evitar SQL injection
+    nombre = nombre.replace(";", "").replace("--", "")
+
+    result = db.execute(f"SELECT * FROM {nombre};")
+    filas = [dict(row) for row in result]
+    return {"tabla": nombre, "filas": filas}

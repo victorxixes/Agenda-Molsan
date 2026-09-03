@@ -1,10 +1,13 @@
 FROM python:3.11
 
+# Carpeta de trabajo dentro del contenedor
 WORKDIR /app
 
-COPY backend/app /app/backend/app
-COPY backend/requirements.txt /app/backend/requirements.txt
+# Copiar TODO el backend (no solo backend/app)
+COPY backend /app/backend
 
+# Instalar dependencias
 RUN pip install --no-cache-dir -r /app/backend/requirements.txt
 
-CMD ["uvicorn", "backend.app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Ejecutar FastAPI con uvicorn
+CMD ["python", "-m", "uvicorn", "backend.app.main:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -177,16 +177,3 @@ def mover_cita(db: Session, cita_id: int, nueva_fecha: date, nueva_hora_inicio: 
     return cita_con_relaciones(db, cita)
 
 
-# ---------------------------------------------------------
-# CAMBIAR ESTADO
-# ---------------------------------------------------------
-def cambiar_estado_cita(db: Session, cita_id: int, nuevo_estado: str):
-    cita = db.query(Cita).filter(Cita.id == cita_id).first()
-    if not cita:
-        return None
-
-    cita.estado = nuevo_estado
-
-    db.commit()
-    db.refresh(cita)
-    return cita_con_relaciones(db, cita)

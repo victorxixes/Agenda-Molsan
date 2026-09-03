@@ -6,12 +6,13 @@ from backend.app.intranet.noticias.models import Noticia
 # ---------------------------------------------------------
 # LISTAR NOTICIAS
 # ---------------------------------------------------------
-def listar_noticias(db: Session):
-    return (
-        db.query(Noticia)
-        .order_by(Noticia.fecha_publicacion.desc())
-        .all()
-    )
+def listar_noticias(db: Session, search: str | None = None):
+    query = db.query(Noticia)
+
+    if search:
+        query = query.filter(Noticia.titulo.ilike(f"%{search}%"))
+
+    return query.order_by(Noticia.fecha_publicacion.desc()).all()
 
 # ---------------------------------------------------------
 # OBTENER NOTICIA

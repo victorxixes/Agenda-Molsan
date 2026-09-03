@@ -11,7 +11,6 @@ class Notaria(Base):
 
     id = Column(Integer, primary_key=True, index=True)
 
-    # Ajusta estos campos a tu modelo real
     codigo = Column(String, nullable=True)
     nombre = Column(String, nullable=True)
     apellidos = Column(String, nullable=True)
@@ -27,37 +26,15 @@ class Notaria(Base):
     municipio = Column(String, nullable=True)
 
     vc = Column(String, nullable=True)
-    apoderado_id = Column(Integer, ForeignKey("empleados_v2.id"), nullable=True)
+
+    apoderado_id = Column(Integer, nullable=True)
     apoderado_s = Column(String, nullable=True)
     observacion = Column(String, nullable=True)
 
-    # Relación inversa con Cita
+    # ⭐ Relación inversa con Cita
     citas = relationship(
         "Cita",
         back_populates="notario",
-        lazy="selectin"
-    )
-
-
-# ---------------------------------------------------------
-# EMPLEADO (empleados_v2)
-# ---------------------------------------------------------
-class Empleado(Base):
-    __tablename__ = "empleados_v2"
-
-    id = Column(Integer, primary_key=True, index=True)
-
-    # Ajusta estos campos a tu modelo real
-    nombre = Column(String, nullable=True)
-    apellidos = Column(String, nullable=True)
-    nif = Column(String, nullable=True)
-    telefono = Column(String, nullable=True)
-    departamento = Column(String, nullable=True)
-
-    # Relación inversa con Cita (apoderado)
-    citas = relationship(
-        "Cita",
-        back_populates="apoderado",
         lazy="selectin"
     )
 
@@ -79,10 +56,11 @@ class Cita(Base):
     observacion = Column(String, nullable=True)
     apoderado_s = Column(String, nullable=True)
 
+    # ⭐ Relaciones reales
     notario_id = Column(Integer, ForeignKey("ctn_notarios.id"), nullable=True)
-    apoderado_id = Column(Integer, ForeignKey("empleados_v2.id"), nullable=True)
+    apoderado_id = Column(Integer, ForeignKey("empleados.id"), nullable=True)
 
-    # Relaciones ORM explícitas
+    # ⭐ ORM
     notario = relationship(
         "Notaria",
         back_populates="citas",

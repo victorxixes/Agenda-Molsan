@@ -9,9 +9,9 @@ from backend.app.agenda.geocode import calcular_km_cita
 def obtener_dashboard(db: Session):
     hoy = date.today()
 
-    # -----------------------------
-    # AGENDA — Citas del día
-    # -----------------------------
+    # -----------------------------------------
+    # AGENDA — Citas del día (Presencial / VC)
+    # -----------------------------------------
     presencial_hoy = db.query(Cita).filter(
         Cita.fecha == hoy,
         Cita.vc == "NO"
@@ -22,7 +22,9 @@ def obtener_dashboard(db: Session):
         Cita.vc == "SI"
     ).count()
 
-    # Próximas citas (solo futuras)
+    # -----------------------------------------
+    # AGENDA — Próximas citas (lista estilo tablet)
+    # -----------------------------------------
     proximas_raw = db.query(Cita).filter(
         Cita.fecha > hoy
     ).order_by(Cita.fecha.asc(), Cita.hora_inicio.asc()).limit(10).all()
@@ -38,26 +40,25 @@ def obtener_dashboard(db: Session):
             "hora_fin": str(c.hora_fin)
         })
 
-    # -----------------------------
-    # CTN — Resumen de firmas
-    # -----------------------------
+    # -----------------------------------------
+    # CTN — Resumen (pero usando Agenda)
+    # -----------------------------------------
     presencial_total = db.query(Cita).filter(Cita.vc == "NO").count()
     vc_total = db.query(Cita).filter(Cita.vc == "SI").count()
 
-    # -----------------------------
-    # APODERADOS — Ranking
-    # -----------------------------
+    # -----------------------------------------
+    # APODERADOS — Ranking desde Agenda
+    # -----------------------------------------
     empleados = db.query(Empleado).filter(Empleado.rol == "apoderado").all()
 
     ranking = []
     km_total = 0
 
     for apo in empleados:
-        firmas = db.query(Cita).filter(Cita.apoderado_id == apo.id).count()
-        firmas_vc = db.query(Cita).filter(Cita.apoderado_id == apo.id, Cita.vc == "SI").count()
+        firmas_total = db.query(Cita).filter(Cita.apoderado_id == apo.id).count()
         firmas_pr = db.query(Cita).filter(Cita.apoderado_id == apo.id, Cita.vc == "NO").count()
+        firmas_vc = db.query(Cita).filter(Cita.apoderado_id == apo.id, Cita.vc == "SI").count()
 
-        # Kilómetros recorridos
         citas_apo = db.query(Cita).filter(Cita.apoderado_id == apo.id).all()
         km_apo = sum(calcular_km_cita(c) for c in citas_apo)
         km_total += km_apo
@@ -65,13 +66,12 @@ def obtener_dashboard(db: Session):
         ranking.append({
             "apoderado_id": apo.id,
             "nombre": f"{apo.nombre} {apo.apellidos}",
-            "firmas_total": firmas,
+            "firmas_total": firmas_total,
             "firmas_presencial": firmas_pr,
             "firmas_vc": firmas_vc,
             "km_recorridos": km_apo
         })
 
-    # Ordenar ranking por firmas
     ranking = sorted(ranking, key=lambda x: x["firmas_total"], reverse=True)
 
     return {

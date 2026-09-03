@@ -90,6 +90,8 @@ from backend.app.mensajes.router_ws import router as mensajes_ws_router
 # INCLUIR ROUTERS REST
 # ---------------------------------------------------------
 
+app.include_router(mensajes_ws_router)
+
 app.include_router(auth_router, prefix="/api")
 app.include_router(empleados_router, prefix="/api")
 app.include_router(maestros_router, prefix="/api")
@@ -101,4 +103,4 @@ app.include_router(seguridad_logs_router, prefix="/api")
 app.include_router(documentos_router, prefix="/api")
 app.include_router(reset_intranet_router, prefix="/api")
 app.include_router(noticias_router, prefix="/api")
-app.include_router(mensajes_ws_router)
+

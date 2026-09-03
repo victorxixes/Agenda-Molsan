@@ -69,6 +69,12 @@ def listar(
 # ---------------------------------------------------------
 @router.get("/notarias/{notaria_id}")
 def obtener(notaria_id: int, db: Session = Depends(get_db)):
+    try:
+        # Swagger sometimes sends strings, spaces, or weird chars
+        notaria_id = int(str(notaria_id).strip())
+    except:
+        return None
+
     return obtener_notaria(db, notaria_id)
 
 # ---------------------------------------------------------

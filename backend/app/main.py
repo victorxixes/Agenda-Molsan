@@ -14,6 +14,7 @@ from backend.app.database import Base, engine
 from backend.app.empleados.models import Empleado
 from backend.app.seguridad.auditoria.models import Auditoria
 from backend.app.seguridad.logs.models import Log
+from backend.app.agenda.router import router as agenda_router
 from backend.app.intranet.documentos.models import Documento
 from backend.app.intranet.noticias.models import Noticia
 from backend.app.ctn.models import Notaria 
@@ -106,4 +107,5 @@ app.include_router(seguridad_logs_router, prefix="/api")
 app.include_router(documentos_router, prefix="/api")
 app.include_router(reset_intranet_router, prefix="/api")
 app.include_router(noticias_router, prefix="/api")
+app.include_router(agenda_router, prefix="/api")
 

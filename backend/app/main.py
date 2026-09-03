@@ -68,6 +68,7 @@ app.mount("/api/fotos", StaticFiles(directory=FOTOS_DIR), name="fotos")
 from backend.app.mensajes.router_ws import router as mensajes_ws_router
 
 from backend.app.auth.router import router as auth_router
+from backend.app.dashboard.router import router as dashboard_router
 from backend.app.empleados.router import router as empleados_router
 from backend.app.maestros.router import router as maestros_router
 from backend.app.herramientasswager.crear_tablas import router as herramientas_router   # ⭐ FALTABA
@@ -102,4 +103,6 @@ app.include_router(documentos_router, prefix="/api")
 app.include_router(reset_intranet_router, prefix="/api")
 app.include_router(noticias_router, prefix="/api")
 app.include_router(agenda_router, prefix="/api")
+app.include_router(dashboard_router, prefix="/api")
+
 

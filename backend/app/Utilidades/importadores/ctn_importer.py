@@ -2,6 +2,26 @@ from openpyxl import load_workbook
 from sqlalchemy.orm import Session
 from io import BytesIO
 
+from app.ctn.models import Notaria   # ← FALTABA ESTO
+
+HEADER_MAP = {
+    "Código": "codigo",
+    "Nombre": "nombre",
+    "Apellidos": "apellidos",
+    "NIF": "nif",
+    "Teléfono": "telefono",
+    "Departamento cancelaciones": "departamento_cancelaciones",
+    "Departamento copias": "departamento_copias",
+    "Otros departamentos": "otros_departamentos",
+    "CP": "cp",
+    "Provincia": "provincia",
+    "Municipio": "municipio",
+    "VC": "vc",
+    "Apoderado": "apoderado",
+    "Apoderado S": "apoderado_s",
+    "Observación": "observacion",
+}
+
 def importar_ctn_desde_excel(db: Session, contenido: bytes) -> int:
     wb = load_workbook(BytesIO(contenido))
     ws = wb.active
@@ -35,10 +55,9 @@ def importar_ctn_desde_excel(db: Session, contenido: bytes) -> int:
                 valor = row[idx] if idx < len(row) else None
                 datos[campo] = None if valor is None else str(valor)
 
-        notaria = Notaria(**datos)
+        notaria = Notaria(**datos)  # ← ahora sí funciona
         db.add(notaria)
         insertados += 1
 
     db.commit()
     return insertados
-

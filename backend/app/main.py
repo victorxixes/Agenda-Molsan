@@ -80,6 +80,8 @@ from backend.app.seguridad.logs.router import router as seguridad_logs_router
 from backend.app.intranet.documentos.router import router as documentos_router
 from backend.app.intranet.noticias.router import router as noticias_router
 from backend.app.agenda.router import router as agenda_router
+from backend.app.WebSockets.docs import router_ws_docs
+
 
 # ---------------------------------------------------------
 # INCLUIR ROUTERS REST

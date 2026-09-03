@@ -26,6 +26,17 @@ def get_db():
         db.close()
 
 # -------------------------
+# BUSCADOR
+# -------------------------
+@router.get("/search")
+def buscar(
+    q: str | None = None,
+    activo: bool | None = None,
+    db: Session = Depends(get_db)
+):
+    return listar_empleados(db, q=q, activo=activo)
+
+# -------------------------
 # LOGIN
 # -------------------------
 

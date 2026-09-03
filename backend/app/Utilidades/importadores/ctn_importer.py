@@ -1,155 +1,47 @@
-from io import BytesIO
-import pandas as pd
-from sqlalchemy.orm import Session
-from backend.app.ctn.models import Notaria
+from typing import List, Dict
+from openpyxl import load_workbook
+from fastapi import UploadFile
 
-# -----------------------------
-# LIMPIEZA DE VALORES
-# -----------------------------
-def limpiar_valor(x):
-    if x is None:
-        return ""
-    x = str(x).strip()
-    if x.lower() in ["nan", "none", "null"]:
-        return ""
-    return x
+def leer_ctn_excel(file: UploadFile) -> List[Dict[str, str]]:
+    """
+    Lee el Excel de CTN y devuelve una lista de dicts
+    con las columnas tal y como están en el fichero.
+    - Ignora la primera fila (título)
+    - Usa la segunda fila como cabeceras
+    - Devuelve cada fila de datos como dict
+    """
 
-# -----------------------------
-# IMPORTADOR CTN FINAL
-# -----------------------------
-def importar_excel_ctn(db: Session, file):
+    # Cargar el libro desde el UploadFile
+    contents = file.file.read()
+    wb = load_workbook(filename=None, data=contents)
+    ws = wb.active
 
-    contenido = file.file.read()
+    filas = list(ws.iter_rows(values_only=True))
 
-    # Leer Excel con encabezados en fila 2 (header=1)
-    try:
-        df = pd.read_excel(BytesIO(contenido), header=1, dtype=str)
-    except Exception as e:
-        return {
-            "message": "ERROR leyendo el Excel",
-            "error": str(e),
-            "total_importadas": 0
-        }
+    if len(filas) < 3:
+        return []
 
-    # Ignorar la fila 1 (título)
-    df = df.iloc[1:].reset_index(drop=True)
+    # Fila 1: título (ignorar)
+    # Fila 2: cabeceras
+    headers = filas[1]
 
-    # Limpieza global
-    df = df.fillna("")
-    df = df.applymap(limpiar_valor)
+    # Fila 3+: datos
+    data_rows = filas[2:]
 
-    # Normalizaciones
-    if "Otros departamentos" in df.columns:
-        df["Otros departamentos"] = df["Otros departamentos"].str.replace("\n", "; ")
+    resultados: List[Dict[str, str]] = []
 
-    if "Teléfono" in df.columns:
-        df["Teléfono"] = df["Teléfono"].str.replace(".", "")
-
-    if "Código" in df.columns:
-        df["Código"] = df["Código"].apply(
-            lambda x: limpiar_valor(x).replace(".", "").replace(",", "").zfill(7)
-        )
-
-    # Contadores
-    total_importadas = 0
-    nuevas = 0
-    actualizadas = 0
-    duplicados_ignorados = 0
-    filas_vacias = 0
-    filas_erroneas = 0
-
-    columnas_detectadas = list(df.columns)
-
-    # Procesar filas
-    for _, fila in df.iterrows():
-
-        # Fila completamente vacía
-        if all(v == "" for v in fila.values):
-            filas_vacias += 1
+    for row in data_rows:
+        if all(cell is None for cell in row):
+            # Fila completamente vacía → ignorar
             continue
 
-        try:
-            codigo = limpiar_valor(fila.get("Código", ""))
-            nombre = limpiar_valor(fila.get("Nombre", ""))
-
-            # Validación mínima
-            if not codigo or not nombre:
-                filas_erroneas += 1
+        item: Dict[str, str] = {}
+        for idx, header in enumerate(headers):
+            if header is None:
                 continue
+            valor = row[idx] if idx < len(row) else None
+            # Convertimos todo a string tal cual, sin transformar
+            item[str(header)] = "" if valor is None else str(valor)
+        resultados.append(item)
 
-            apellidos = limpiar_valor(fila.get("Apellidos", ""))
-            nif = limpiar_valor(fila.get("NIF", ""))
-            telefono = limpiar_valor(fila.get("Teléfono", ""))
-            departamento_cancelaciones = limpiar_valor(fila.get("Departamento cancelaciones", ""))
-            departamento_copias = limpiar_valor(fila.get("Departamento copias", ""))
-            otros_departamentos = limpiar_valor(fila.get("Otros departamentos", ""))
-            cp = limpiar_valor(fila.get("CP", ""))
-            provincia = limpiar_valor(fila.get("Provincia", ""))
-            municipio = limpiar_valor(fila.get("Municipio", ""))
-            vc = limpiar_valor(fila.get("VC", ""))
-            apoderado = limpiar_valor(fila.get("Apoderado", ""))
-            apoderado_s = limpiar_valor(fila.get("Apoderado S", ""))
-            observacion = limpiar_valor(fila.get("Observación", ""))
-
-            existente = db.query(Notaria).filter(Notaria.codigo == codigo).first()
-
-            if existente:
-                # Actualizar
-                existente.nombre = nombre
-                existente.apellidos = apellidos
-                existente.nif = nif
-                existente.telefono = telefono
-                existente.departamento_cancelaciones = departamento_cancelaciones
-                existente.departamento_copias = departamento_copias
-                existente.otros_departamentos = otros_departamentos
-                existente.cp = cp
-                existente.provincia = provincia
-                existente.municipio = municipio
-                existente.vc = vc
-                existente.apoderado = apoderado
-                existente.apoderado_s = apoderado_s
-                existente.observacion = observacion
-
-                actualizadas += 1
-
-            else:
-                # Insertar nueva
-                nuevo = Notaria(
-                    codigo=codigo,
-                    nombre=nombre,
-                    apellidos=apellidos,
-                    nif=nif,
-                    telefono=telefono,
-                    departamento_cancelaciones=departamento_cancelaciones,
-                    departamento_copias=departamento_copias,
-                    otros_departamentos=otros_departamentos,
-                    cp=cp,
-                    provincia=provincia,
-                    municipio=municipio,
-                    vc=vc,
-                    apoderado=apoderado,
-                    apoderado_s=apoderado_s,
-                    observacion=observacion
-                )
-                db.add(nuevo)
-                nuevas += 1
-
-            total_importadas += 1
-
-        except Exception as e:
-            filas_erroneas += 1
-            print(f"[CTN IMPORT ERROR] Código={codigo} Error={e}")
-            continue
-
-    db.commit()
-
-    return {
-        "message": "Importación CTN completada correctamente",
-        "total_importadas": total_importadas,
-        "nuevas": nuevas,
-        "actualizadas": actualizadas,
-        "duplicados_ignorados": duplicados_ignorados,
-        "filas_vacias": filas_vacias,
-        "filas_erroneas": filas_erroneas,
-        "columnas_detectadas": columnas_detectadas
-    }
+    return resultados

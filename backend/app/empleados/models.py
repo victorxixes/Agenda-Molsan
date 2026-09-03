@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Boolean
+from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import JSONB
 from backend.app.database import Base
 
@@ -41,6 +42,13 @@ class Empleado(Base):
     fecha_baja = Column(String)
     activo = Column(Boolean, default=True)
 
-    # Seguridad interna (🔥 PostgreSQL JSONB)
+    # Seguridad interna
     modulos_visibles_list = Column(JSONB, default=list)
     permisos_modulo_dict = Column(JSONB, default=dict)
+
+    # ⭐ Relación con Agenda (apoderado)
+    citas = relationship(
+        "Cita",
+        back_populates="apoderado",
+        lazy="selectin"
+    )

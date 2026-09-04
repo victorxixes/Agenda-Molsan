@@ -86,6 +86,7 @@ from backend.app.WebSockets.docs import router_ws_docs
 from backend.app.seguridad.roles.roles_router import router as roles_router
 from backend.app.seguridad.permisos.permisos_router import router as permisos_router
 from backend.app.seguridad.permisos.asignar_router import router as asignar_router
+from backend.app.seguridad.permisos.repair_create_permisos_raw import router as permisos_repair_router
 
 # ---------------------------------------------------------
 # INCLUIR ROUTERS REST
@@ -110,5 +111,5 @@ app.include_router(dashboard_router, prefix="/api")
 app.include_router(roles_router, prefix="/api")
 app.include_router(permisos_router, prefix="/api")
 app.include_router(asignar_router, prefix="/api")
-
+app.include_router(permisos_repair_router, prefix="/api")
 

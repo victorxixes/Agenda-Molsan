@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from backend.app.database import get_db
-from backend.app.seguridad.roles.models import Rol
 
 router = APIRouter(
     prefix="/seguridad/roles",

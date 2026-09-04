@@ -5,4 +5,6 @@
 <Route path="/herramientas/importar-ctn" element={<ImportarCTN />} />
 <Route path="/herramientas/utilidades" element={<Utilidades />} />
 <Route path="/seguridad" element={<Seguridad />} />
+<Route path="/panel/empleados" element={<EmpleadosModulo2026 />} />
+
 

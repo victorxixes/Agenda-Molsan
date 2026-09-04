@@ -7,8 +7,6 @@ export default function Herramientas() {
 
       <div className="grid grid-cols-3 gap-6">
         <Card titulo="Importar CTN" link="/herramientas/importar-ctn" />
-        <Card titulo="Importar Apoderados" link="/herramientas/importar-apoderados" />
-        <Card titulo="Utilidades del sistema" link="/herramientas/utilidades" />
       </div>
     </div>
   );

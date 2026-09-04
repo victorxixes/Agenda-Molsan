@@ -20,16 +20,18 @@ def crear_roles_base(db: Session = Depends(get_db)):
     creados = []
 
     for r in ROLES_BASE:
-        existe = db.query(Rol).filter(Rol.id == r["id"]).first()
+        # Comprobar si existe
+        existe = db.execute(
+            "SELECT id FROM roles WHERE id = :id",
+            {"id": r["id"]}
+        ).fetchone()
+
         if not existe:
-            nuevo = Rol(
-                id=r["id"],
-                nombre=r["nombre"],
-                descripcion=r["descripcion"],
-                permisos_modulo_dict={},
-                modulos_visibles_list=[]
-            )
-            db.add(nuevo)
+            # Insertar rol
+            db.execute("""
+                INSERT INTO roles (id, nombre, descripcion, permisos_modulo_dict, modulos_visibles_list)
+                VALUES (:id, :nombre, :descripcion, '{}'::jsonb, '[]'::jsonb)
+            """, r)
             creados.append(r["nombre"])
 
     db.commit()

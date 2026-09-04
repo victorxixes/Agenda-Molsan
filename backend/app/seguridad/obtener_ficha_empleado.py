@@ -3,12 +3,12 @@ from sqlalchemy.orm import Session
 from backend.app.database import get_db
 
 router = APIRouter(
-    prefix="/empleados",
-    tags=["Empleados - Seguridad Completa"]
+    prefix="/seguridad",
+    tags=["Seguridad - Ficha Completa Empleado"]
 )
 
-@router.get("/{empleado_id}/seguridad-completa")
-def seguridad_completa(empleado_id: int, db: Session = Depends(get_db)):
+@router.get("/empleado/{empleado_id}/ficha-completa")
+def obtener_ficha_completa(empleado_id: int, db: Session = Depends(get_db)):
 
     # Obtener datos del empleado
     empleado = db.execute("""
@@ -21,14 +21,14 @@ def seguridad_completa(empleado_id: int, db: Session = Depends(get_db)):
     if not empleado:
         raise HTTPException(status_code=404, detail="Empleado no encontrado")
 
-    # Obtener rol
+    # Obtener rol completo
     rol = db.execute("""
-        SELECT id, nombre
+        SELECT id, nombre, descripcion
         FROM roles
         WHERE id = :id
     """, {"id": empleado.rol_id}).fetchone()
 
-    # Construir respuesta
+    # Construir respuesta final
     return {
         "empleado": {
             "id": empleado.id,
@@ -37,7 +37,11 @@ def seguridad_completa(empleado_id: int, db: Session = Depends(get_db)):
             "email": empleado.email,
             "activo": empleado.activo,
             "foto": empleado.foto,
-            "rol": rol.nombre if rol else None
+            "rol": {
+                "id": rol.id if rol else None,
+                "nombre": rol.nombre if rol else None,
+                "descripcion": rol.descripcion if rol else None
+            }
         },
         "modulos_visibles": empleado.modulos_visibles_list,
         "permisos_modulo": empleado.permisos_modulo_dict

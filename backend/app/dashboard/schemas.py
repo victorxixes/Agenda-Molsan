@@ -2,6 +2,9 @@ from pydantic import BaseModel
 from typing import List, Optional
 
 
+# =========================================================
+# AGENDA — Próximas citas
+# =========================================================
 class CitaProxima(BaseModel):
     fecha: str
     notario: Optional[str]
@@ -11,6 +14,9 @@ class CitaProxima(BaseModel):
     hora_fin: str
 
 
+# =========================================================
+# RUTAS — Tramos y ruta completa
+# =========================================================
 class TramoRuta(BaseModel):
     desde: str
     hasta: str
@@ -22,6 +28,9 @@ class RutaCompleta(BaseModel):
     tramos: List[TramoRuta]
 
 
+# =========================================================
+# APODERADOS — Ranking
+# =========================================================
 class ApoderadoRanking(BaseModel):
     apoderado_id: int
     nombre: str
@@ -31,22 +40,34 @@ class ApoderadoRanking(BaseModel):
     ruta_completa: Optional[RutaCompleta]
 
 
+# =========================================================
+# AGENDA — Resumen del día
+# =========================================================
 class DashboardAgenda(BaseModel):
     presencial_hoy: int
     vc_hoy: int
     proximas: List[CitaProxima]
 
 
+# =========================================================
+# CTN — Resumen
+# =========================================================
 class DashboardCTN(BaseModel):
     presencial_total: int
     vc_total: int
 
 
+# =========================================================
+# APODERADOS — Resumen
+# =========================================================
 class DashboardApoderados(BaseModel):
     ranking: List[ApoderadoRanking]
     km_total: float
 
 
+# =========================================================
+# DASHBOARD — Respuesta completa
+# =========================================================
 class DashboardResponse(BaseModel):
     agenda: DashboardAgenda
     ctn: DashboardCTN

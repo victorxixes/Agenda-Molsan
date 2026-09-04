@@ -1,0 +1,17 @@
+:root {
+  /* Colores corporativos */
+  --sj-azul: #1F3A5F;
+  --sj-azul-claro: #6A7A8C;
+  --sj-gris-azulado: #E5EAF0;
+  --sj-blanco: #ffffff;
+
+  /* Tipografía */
+  --sj-font: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+
+  /* Bordes y sombras */
+  --sj-radius: 14px;
+  --sj-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+
+  /* Espaciado */
+  --sj-gap: 24px;
+}

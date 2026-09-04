@@ -10,9 +10,8 @@ router = APIRouter(
 @router.get("/empleado/{empleado_id}/ficha-completa")
 def obtener_ficha_completa(empleado_id: int, db: Session = Depends(get_db)):
 
-    # Obtener datos del empleado
     empleado = db.execute("""
-        SELECT id, nombre, apellido, email, activo, foto, rol_id,
+        SELECT id, nombre, apellidos, email, activo, foto, rol_id,
                modulos_visibles_list, permisos_modulo_dict
         FROM empleados
         WHERE id = :id
@@ -21,27 +20,29 @@ def obtener_ficha_completa(empleado_id: int, db: Session = Depends(get_db)):
     if not empleado:
         raise HTTPException(status_code=404, detail="Empleado no encontrado")
 
-    # Obtener rol completo
     rol = db.execute("""
-        SELECT id, nombre, descripcion
+        SELECT id, nombre
         FROM roles
         WHERE id = :id
     """, {"id": empleado.rol_id}).fetchone()
 
-    # Construir respuesta final
+    rol_dict = None
+    if rol:
+        rol_dict = {
+            "id": rol.id,
+            "nombre": rol.nombre
+        }
+
     return {
         "empleado": {
             "id": empleado.id,
             "nombre": empleado.nombre,
-            "apellido": empleado.apellido,
+            "apellidos": empleado.apellidos,
             "email": empleado.email,
             "activo": empleado.activo,
             "foto": empleado.foto,
-            "rol": {
-                "id": rol.id if rol else None,
-                "nombre": rol.nombre if rol else None,                
-            }
+            "rol": rol_dict
         },
-        "modulos_visibles": empleado.modulos_visibles_list,
-        "permisos_modulo": empleado.permisos_modulo_dict
+        "modulos_visibles": empleado.modulos_visibles_list or [],
+        "permisos_modulo": empleado.permisos_modulo_dict or {}
     }

@@ -27,6 +27,8 @@ class RutaCompleta(BaseModel):
     distancia_total_km: float
     tramos: List[TramoRuta]
 
+    class Config:
+        extra = "allow"
 
 # =========================================================
 # APODERADOS — Ranking

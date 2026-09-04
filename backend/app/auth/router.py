@@ -11,7 +11,7 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
 # ---------------------------------------------------------
-# LOGIN EMPLEADOS (UNIFICADO + AUDITORÍA + LOGS)
+# LOGIN UNIFICADO (ADMIN + EMPLEADOS)
 # ---------------------------------------------------------
 @router.post("/login")
 def login(data: LoginRequest, db: Session = Depends(get_db)):

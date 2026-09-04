@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import JSONB
 from backend.app.database import Base
@@ -35,7 +35,10 @@ class Empleado(Base):
     departamento_id = Column(Integer)
     seccion_id = Column(Integer)
     cargo_id = Column(Integer)
-    rol_id = Column(Integer)
+
+    # ⭐ IMPORTANTE: relación con roles
+    rol_id = Column(Integer, ForeignKey("roles.id"))
+    rol = relationship("Rol", back_populates="empleados")
 
     # Estado
     fecha_alta = Column(String)
@@ -46,10 +49,9 @@ class Empleado(Base):
     modulos_visibles_list = Column(JSONB, default=list)
     permisos_modulo_dict = Column(JSONB, default=dict)
 
-    # ⭐ Relación con Agenda
+    # Relación con Agenda
     citas = relationship(
         "Cita",
         back_populates="apoderado",
         lazy="selectin"
     )
-

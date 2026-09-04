@@ -5,13 +5,19 @@ from backend.app.empleados.models import Empleado
 from backend.app.empleados.schemas import EmpleadoCreate, EmpleadoUpdate
 from backend.app.auth.service import crear_token, serializar_empleado
 
+
 def hash_password(password: str) -> str:
     return hashlib.sha256(password.encode()).hexdigest()
+
 
 def login_empleado(db: Session, usuario: str, password: str):
     empleado = db.query(Empleado).filter(Empleado.usuario == usuario).first()
 
     if empleado is None:
+        return None
+
+    # Comprobar si está activo
+    if hasattr(empleado, "activo") and empleado.activo is False:
         return None
 
     # Comparar hash
@@ -28,12 +34,15 @@ def login_empleado(db: Session, usuario: str, password: str):
         "empleado": empleado_serializado,
         "token": token
     }
-    
+
+
 def obtener_empleado(db: Session, empleado_id: int):
     return db.query(Empleado).filter(Empleado.id == empleado_id).first()
 
+
 def obtener_empleado_por_usuario(db: Session, usuario: str):
     return db.query(Empleado).filter(Empleado.usuario == usuario).first()
+
 
 def crear_empleado(db: Session, data: EmpleadoCreate):
     if obtener_empleado_por_usuario(db, data.usuario):
@@ -53,6 +62,7 @@ def crear_empleado(db: Session, data: EmpleadoCreate):
     db.commit()
     db.refresh(empleado)
     return empleado
+
 
 def listar_empleados(db: Session, q: str | None = None, activo: bool | None = None):
     query = db.query(Empleado)
@@ -88,6 +98,7 @@ def editar_empleado(db: Session, empleado_id: int, data: EmpleadoUpdate):
     db.refresh(empleado)
     return empleado
 
+
 def eliminar_empleado(db: Session, empleado_id: int):
     empleado = obtener_empleado(db, empleado_id)
     if not empleado:
@@ -96,6 +107,7 @@ def eliminar_empleado(db: Session, empleado_id: int):
     db.delete(empleado)
     db.commit()
     return True
+
 
 # -------------------------
 # NUEVO: actualizar módulos visibles
@@ -110,6 +122,7 @@ def actualizar_modulos_visibles(db: Session, empleado_id: int, modulos: list):
     db.refresh(empleado)
     return empleado
 
+
 # -------------------------
 # NUEVO: actualizar permisos por módulo
 # -------------------------
@@ -122,3 +135,39 @@ def actualizar_permisos_modulo(db: Session, empleado_id: int, permisos: dict):
     db.commit()
     db.refresh(empleado)
     return empleado
+
+
+# -------------------------
+# OPCIONAL: crear admin por defecto en la BD
+# -------------------------
+def crear_admin_por_defecto(db: Session):
+    """
+    Llamar manualmente (por ejemplo, desde un script de inicialización)
+    para garantizar que exista el usuario 'admin' en la tabla empleados.
+    """
+    if obtener_empleado_por_usuario(db, "admin"):
+        return
+
+    admin = Empleado(
+        nombre="Administrador",
+        apellidos="",
+        dni="",
+        usuario="admin",
+        password=hash_password("admin"),
+        activo=True,
+        foto="default-avatar.png",
+        rol_id=0,
+        modulos_visibles_list=[
+            "dashboard", "agenda", "empleados", "informes", "intranet",
+            "auditoria", "seguridad", "utilidades", "logs", "ctn",
+            "maestros", "mensajes", "realtime", "notarios", "documentos"
+        ],
+        permisos_modulo_dict={
+            "*": ["ver", "crear", "editar", "eliminar"]
+        }
+    )
+
+    db.add(admin)
+    db.commit()
+    db.refresh(admin)
+    return admin

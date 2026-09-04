@@ -39,8 +39,7 @@ def obtener_ficha_completa(empleado_id: int, db: Session = Depends(get_db)):
             "foto": empleado.foto,
             "rol": {
                 "id": rol.id if rol else None,
-                "nombre": rol.nombre if rol else None,
-                "descripcion": rol.descripcion if rol else None
+                "nombre": rol.nombre if rol else None,                
             }
         },
         "modulos_visibles": empleado.modulos_visibles_list,

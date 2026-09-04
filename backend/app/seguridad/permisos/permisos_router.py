@@ -29,17 +29,21 @@ def crear_permisos_base(db: Session = Depends(get_db)):
     creados = []
 
     for p in PERMISOS_BASE:
-        existe = db.query(Permiso).filter(
-            Permiso.modulo == p["modulo"],
-            Permiso.permiso == p["permiso"]
-        ).first()
+        # Comprobar si existe
+        existe = db.execute(
+            """
+            SELECT id FROM permisos
+            WHERE modulo = :modulo AND permiso = :permiso
+            """,
+            p
+        ).fetchone()
 
         if not existe:
-            nuevo = Permiso(
-                modulo=p["modulo"],
-                permiso=p["permiso"]
-            )
-            db.add(nuevo)
+            # Insertar permiso
+            db.execute("""
+                INSERT INTO permisos (modulo, permiso)
+                VALUES (:modulo, :permiso)
+            """, p)
             creados.append(f"{p['modulo']}:{p['permiso']}")
 
     db.commit()

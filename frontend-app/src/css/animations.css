@@ -2,7 +2,77 @@
   animation: fadeIn 0.3s ease-in-out;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
+/* ================================
+   ERP SJ‑2026 — Animaciones premium
+   ================================ */
+
+/* Elevación suave */
+.hover-elevate {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.hover-elevate:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.10);
+}
+
+/* Zoom elegante */
+.hover-zoom {
+  transition: transform 0.2s ease;
+}
+.hover-zoom:hover {
+  transform: scale(1.02);
+}
+
+/* Sombra dinámica azul corporativa */
+.hover-shadow-blue {
+  transition: box-shadow 0.25s ease;
+}
+.hover-shadow-blue:hover {
+  box-shadow: 0 6px 20px rgba(31, 58, 95, 0.25);
+}
+
+/* Iluminación suave */
+.hover-glow {
+  transition: box-shadow 0.25s ease;
+}
+.hover-glow:hover {
+  box-shadow: 0 0 12px rgba(31, 58, 95, 0.35);
+}
+
+/* Flotación premium estilo Apple */
+.hover-float {
+  transition: transform 0.3s ease;
+}
+.hover-float:hover {
+  transform: translateY(-6px) scale(1.02);
+}
+
+/* Deslizamiento suave */
+.hover-slide {
+  transition: transform 0.2s ease;
+}
+.hover-slide:hover {
+  transform: translateX(4px);
+}
+
+/* Respiración (muy sutil) */
+.breathe {
+  animation: breatheAnim 3s ease-in-out infinite;
+}
+@keyframes breatheAnim {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.015); }
+  100% { transform: scale(1); }
+}
+
+/* Vibración mínima para acciones críticas */
+.hover-wiggle:hover {
+  animation: wiggle 0.3s ease;
+}
+@keyframes wiggle {
+  0% { transform: rotate(0deg); }
+  25% { transform: rotate(1deg); }
+  50% { transform: rotate(-1deg); }
+  75% { transform: rotate(1deg); }
+  100% { transform: rotate(0deg); }
 }

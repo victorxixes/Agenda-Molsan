@@ -1,62 +1,119 @@
 import { useState } from "react";
-import axios from "../api/axios";
+import { useAuthStore } from "@/store/authStore";
+import { useNavigate } from "react-router-dom";
 
 export default function LoginPage() {
+  const navigate = useNavigate();
+  const login = useAuthStore((s) => s.login);
+
   const [usuario, setUsuario] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [mostrarPass, setMostrarPass] = useState(false);
+  const [error, setError] = useState(null);
 
-  const login = async () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError(null);
+
     try {
-      const res = await axios.post("/auth/login", {
-        usuario,
-        password,
-      });
-
-      if (res.data.status === "ok") {
-        localStorage.setItem("empleado", JSON.stringify(res.data.empleado));
-        window.location.href = "/panel/empleados";
-      } else {
-        setError("Credenciales incorrectas");
-      }
+      await login(usuario, password);
+      navigate("/");
     } catch {
-      setError("Error de conexión con el servidor");
+      setError("Credenciales incorrectas o error de servidor");
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white">
-      <div className="border border-gray-200 rounded-xl shadow-sm p-8 w-96">
-        <h1 className="text-2xl font-bold text-[#1F3A5F] mb-6">
-          Iniciar sesión
-        </h1>
+    <div
+      className="
+        min-h-screen flex items-center justify-center px-4
+        bg-gradient-to-br from-[#1F3A5F] via-[#2F4A6F] to-[#6A7A8C]
+        animate-fadeIn
+      "
+    >
+      <form
+        onSubmit={handleSubmit}
+        className="
+          bg-white/10 backdrop-blur-xl p-8 rounded-2xl shadow-2xl w-full max-w-sm
+          border border-[#1F3A5F]/40 animate-slideUp
+        "
+      >
+        {/* LOGO */}
+        <div className="flex justify-center mb-4">
+          <img
+            src="/img/logo.jpg"
+            alt="Logo empresa"
+            className="h-20 w-auto rounded-xl shadow-md"
+          />
+        </div>
 
+        {/* TÍTULO */}
+        <h2 className="text-2xl font-semibold text-center mb-6 text-white">
+          Bienvenido a la Agenda Molsan
+        </h2>
+
+        {/* ERROR */}
         {error && (
-          <div className="mb-4 text-red-600 text-sm">{error}</div>
+          <p className="text-red-300 text-sm mb-3 text-center">{error}</p>
         )}
 
-        <input
-          className="border border-gray-300 rounded-lg p-2 w-full mb-3"
-          placeholder="Usuario"
-          value={usuario}
-          onChange={(e) => setUsuario(e.target.value)}
-        />
+        {/* USUARIO */}
+        <div className="mb-4">
+          <label className="block text-sm mb-1 text-white/80">Usuario</label>
+          <input
+            type="text"
+            className="
+              w-full px-3 py-2 rounded bg-white/20 text-white
+              focus:outline-none focus:ring-2 focus:ring-[#6A7A8C]
+            "
+            value={usuario}
+            onChange={(e) => setUsuario(e.target.value)}
+            autoFocus
+          />
+        </div>
 
-        <input
-          type="password"
-          className="border border-gray-300 rounded-lg p-2 w-full mb-4"
-          placeholder="Contraseña"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+        {/* CONTRASEÑA + OJO */}
+        <div className="mb-6">
+          <label className="block text-sm mb-1 text-white/80">Contraseña</label>
 
+          <div className="relative">
+            <input
+              type={mostrarPass ? "text" : "password"}
+              className="
+                w-full px-3 py-2 rounded bg-white/20 text-white pr-10
+                focus:outline-none focus:ring-2 focus:ring-[#6A7A8C]
+              "
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+
+            {/* ICONO OJO */}
+            <span
+              className="
+                absolute right-3 top-2.5 cursor-pointer text-white/70
+                hover:text-white transition
+              "
+              onClick={() => setMostrarPass(!mostrarPass)}
+            >
+              {mostrarPass ? "🙈" : "👁️"}
+            </span>
+          </div>
+        </div>
+
+        {/* BOTÓN */}
         <button
-          onClick={login}
-          className="w-full px-4 py-2 bg-[#1F3A5F] text-white rounded-lg hover:bg-[#6A7A8C] transition"
+          type="submit"
+          className="
+            w-full py-2 rounded text-white font-semibold
+            bg-[#1F3A5F] hover:bg-[#2F4A6F]
+            shadow-[0_0_10px_rgba(31,58,95,0.6)]
+            hover:shadow-[0_0_15px_rgba(31,58,95,0.9)]
+            transition-all
+          "
         >
           Entrar
         </button>
-      </div>
+      </form>
     </div>
   );
 }

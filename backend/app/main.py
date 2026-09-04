@@ -35,8 +35,7 @@ app = FastAPI(title="Agenda Intranet Backend")
 @app.get("/")
 def root():
     return {"status": "ERP Molsan 2026 funcionando correctamente"}
-    return {"status": "ok"}
-
+  
 # ---------------------------------------------------------
 # CORS
 # ---------------------------------------------------------

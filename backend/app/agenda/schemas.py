@@ -10,9 +10,14 @@ class CitaBase(BaseModel):
     hora_inicio: time
     hora_fin: time
     tipo_cita: str
+
+    # ✔ Ahora permite None
     notario_id: Optional[int] = None
     vc: Optional[str] = None
-    apoderado_id: int
+
+    # ✔ Ahora permite None (antes causaba 422)
+    apoderado_id: Optional[int] = None
+
     observacion: Optional[str] = None
 
     @validator("tipo_cita")
@@ -24,9 +29,8 @@ class CitaBase(BaseModel):
 
     @validator("notario_id")
     def validar_notario_si_firma(cls, v, values):
-        if "tipo_cita" in values and values["tipo_cita"] == "Firma notarial":
-            if v is None:
-                raise ValueError("notario_id es obligatorio para tipo_cita = Firma notarial")
+        if values.get("tipo_cita") == "Firma notarial" and v is None:
+            raise ValueError("notario_id es obligatorio para tipo_cita = Firma notarial")
         return v
 
 

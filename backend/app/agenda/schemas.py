@@ -89,7 +89,7 @@ class NotarioResponse(BaseModel):
 class ApoderadoResponse(BaseModel):
     id: int
     nombre: str
-    apellidos: str
+    apellidos: Optional[str] = None
 
     class Config:
         orm_mode = True

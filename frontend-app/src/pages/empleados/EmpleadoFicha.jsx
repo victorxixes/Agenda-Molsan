@@ -23,10 +23,9 @@ export default function EmpleadoFicha({ empleadoId }) {
   if (!empleadoId) return <div>Selecciona un empleado.</div>;
   if (!data) return <div>Cargando ficha...</div>;
 
-  const { empleado, rol } = {
-    empleado: data.empleado,
-    rol: data.empleado.rol,
-  };
+const empleado = data?.empleado ?? {};
+const rol = empleado?.rol ?? {};
+
 
   const handleFoto = async (e) => {
     const file = e.target.files[0];

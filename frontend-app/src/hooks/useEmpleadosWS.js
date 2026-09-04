@@ -1,23 +1,24 @@
 import { useEffect } from "react";
-import { useEmpleadosStore } from "../store/empleadosStore";
 
-export const useEmpleadosWS = (usuarioId) => {
-  const cargarEmpleados = useEmpleadosStore((s) => s.cargarEmpleados);
-
+export function useEmpleadosWS(onEvento) {
   useEffect(() => {
-    const ws = new WebSocket(
-      `${import.meta.env.VITE_WS}/ws/empleados`
-    );
+    const ws = new WebSocket("wss://TU_BACKEND/ws/empleados");
 
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-
-      if (data.tipo === "ws_conectado") return;
-
-      // Si llega un evento de empleados → refrescamos
-      cargarEmpleados();
+    ws.onmessage = (ev) => {
+      try {
+        const data = JSON.parse(ev.data);
+        if (onEvento) onEvento(data);
+      } catch {
+        // ignorar
+      }
     };
 
-    return () => ws.close();
-  }, [usuarioId]);
-};
+    ws.onopen = () => {
+      ws.send(JSON.stringify({ tipo: "ping" }));
+    };
+
+    return () => {
+      ws.close();
+    };
+  }, [onEvento]);
+}

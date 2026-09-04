@@ -6,12 +6,10 @@ from backend.app.database import get_db
 from backend.app.ctn.models import Notaria
 from backend.app.ctn.service import obtener_notaria
 from backend.app.agenda.models import Cita
+from backend.app.ctn.schemas import NotariaResponse
 
 router = APIRouter(prefix="/ctn", tags=["CTN"])
 
-# ---------------------------------------------------------
-# LISTAR CON FILTROS + BÚSQUEDA + PAGINACIÓN
-# ---------------------------------------------------------
 @router.get("/notarias")
 def listar(
     db: Session = Depends(get_db),
@@ -25,7 +23,6 @@ def listar(
 ):
     query = db.query(Notaria)
 
-    # FILTROS NORMALES
     if provincia:
         provincia_clean = provincia.strip()
         query = query.filter(func.unaccent(Notaria.provincia).ilike(func.unaccent(f"%{provincia_clean}%")))
@@ -38,16 +35,10 @@ def listar(
         vc_clean = vc.strip()
         query = query.filter(func.unaccent(Notaria.vc).ilike(func.unaccent(f"%{vc_clean}%")))
 
-    # FILTRO POR APODERADO (CORREGIDO)
     if apoderado:
         apoderado_clean = apoderado.strip()
-        query = query.filter(
-            func.unaccent(Notaria.apoderado).ilike(
-                func.unaccent(f"%{apoderado_clean}%")
-            )
-        )
+        query = query.filter(func.unaccent(Notaria.apoderado).ilike(func.unaccent(f"%{apoderado_clean}%")))
 
-    # BÚSQUEDA GLOBAL q
     if q:
         q_clean = q.strip()
         query = query.filter(
@@ -69,11 +60,12 @@ def listar(
         .all()
     )
 
+    # ⭐ FIX: evitar recursión
     return {
         "total": total,
         "page": page,
         "page_size": page_size,
-        "items": items
+        "items": [NotariaResponse.model_validate(n) for n in items]
     }
 
 # ---------------------------------------------------------

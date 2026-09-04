@@ -65,7 +65,7 @@ def listar(
         "total": total,
         "page": page,
         "page_size": page_size,
-        "items": [NotariaResponse.model_validate(n) for n in items]
+        "items": [NotariaResponse.from_orm(n) for n in items]
     }
 
 # ---------------------------------------------------------

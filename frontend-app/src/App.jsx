@@ -4,4 +4,5 @@
 <Route path="/herramientas" element={<Herramientas />} />
 <Route path="/herramientas/importar-ctn" element={<ImportarCTN />} />
 <Route path="/herramientas/utilidades" element={<Utilidades />} />
+<Route path="/seguridad" element={<Seguridad />} />
 

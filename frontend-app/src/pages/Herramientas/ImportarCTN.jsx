@@ -1,18 +1,13 @@
 import { useState } from "react";
-import axios from "../../api/axios";
+import { useHerramientas } from "../../hooks/useHerramientas";
 
 export default function ImportarCTN() {
   const [file, setFile] = useState(null);
-  const [log, setLog] = useState("");
+  const { importarCTN, resultado, loading } = useHerramientas();
 
-  const subir = async () => {
+  const subir = () => {
     if (!file) return;
-
-    const form = new FormData();
-    form.append("fichero", file);
-
-    const res = await axios.post("/ctn/importar", form);
-    setLog(JSON.stringify(res.data, null, 2));
+    importarCTN(file);
   };
 
   return (
@@ -28,12 +23,15 @@ export default function ImportarCTN() {
       <button
         className="bg-blue-600 text-white px-4 py-2 rounded"
         onClick={subir}
+        disabled={loading}
       >
-        Importar
+        {loading ? "Importando…" : "Importar"}
       </button>
 
-      {log && (
-        <pre className="border p-4 bg-gray-100 rounded">{log}</pre>
+      {resultado && (
+        <pre className="border p-4 bg-gray-100 rounded text-sm">
+          {JSON.stringify(resultado, null, 2)}
+        </pre>
       )}
     </div>
   );

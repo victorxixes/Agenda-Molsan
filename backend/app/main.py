@@ -83,9 +83,8 @@ from backend.app.intranet.noticias.router import router as noticias_router
 from backend.app.agenda.router import router as agenda_router
 from backend.app.WebSockets.docs import router_ws_docs
 
-from backend.app.seguridad.roles_router import router as roles_router
-from backend.app.seguridad.permisos_router import router as permisos_router
-
+from backend.app.seguridad.roles.roles_router import router as roles_router
+from backend.app.seguridad.permisos.permisos_router import router as permisos_router
 
 # ---------------------------------------------------------
 # INCLUIR ROUTERS REST

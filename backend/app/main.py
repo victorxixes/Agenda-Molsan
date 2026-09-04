@@ -82,6 +82,7 @@ from backend.app.intranet.documentos.router import router as documentos_router
 from backend.app.intranet.noticias.router import router as noticias_router
 from backend.app.agenda.router import router as agenda_router
 from backend.app.WebSockets.docs import router_ws_docs
+from backend.app.websockets.agenda_ws import router as agenda_ws_router
 
 from backend.app.seguridad.roles.roles_router import router as roles_router
 from backend.app.seguridad.permisos.permisos_router import router as permisos_router
@@ -96,6 +97,7 @@ from backend.app.seguridad.admin_router import router as admin_router
 
 app.include_router(mensajes_ws_router)
 app.include_router(router_ws_docs)
+app.include_router(agenda_ws_router)
 
 app.include_router(auth_router, prefix="/api")
 app.include_router(empleados_router, prefix="/api")

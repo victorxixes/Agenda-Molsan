@@ -9,7 +9,7 @@ class CitaProxima(BaseModel):
     fecha: str
     notario: Optional[str]
     apoderado: Optional[str]
-    tipo_firma: Optional[str]
+    tipo_firma: str          # ✔ siempre existe en tu service
     hora_inicio: str
     hora_fin: str
 

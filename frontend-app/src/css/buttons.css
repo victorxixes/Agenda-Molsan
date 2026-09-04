@@ -1,0 +1,29 @@
+.btn-sj {
+  padding: 12px 20px;
+  border-radius: var(--sj-radius);
+  background-color: var(--sj-azul);
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.2s;
+}
+
+.btn-sj:hover {
+  background-color: var(--sj-azul-claro);
+}
+
+.btn-sj-outline {
+  padding: 12px 20px;
+  border-radius: var(--sj-radius);
+  background-color: transparent;
+  border: 2px solid var(--sj-azul);
+  color: var(--sj-azul);
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.2s;
+}
+
+.btn-sj-outline:hover {
+  background-color: var(--sj-gris-azulado);
+}

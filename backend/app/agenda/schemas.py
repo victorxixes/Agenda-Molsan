@@ -9,26 +9,29 @@ class CitaBase(BaseModel):
     fecha: date
     hora_inicio: time
     hora_fin: time
+
+    # ✔ Ahora permite cualquier tipo de cita (no rompe Dashboard)
     tipo_cita: str
 
-    # ✔ Ahora permite None
+    # ✔ Permite None
     notario_id: Optional[int] = None
     vc: Optional[str] = None
 
-    # ✔ Ahora permite None (antes causaba 422)
+    # ✔ Permite None
     apoderado_id: Optional[int] = None
 
     observacion: Optional[str] = None
 
     @validator("tipo_cita")
     def validar_tipo_cita(cls, v):
-        tipos_validos = ["Firma notarial", "Reunión", "Otros"]
-        if v not in tipos_validos:
-            raise ValueError("tipo_cita debe ser: Firma notarial, Reunión u Otros")
+        # ✔ Ya no limita a 3 valores
+        if not v or not isinstance(v, str):
+            raise ValueError("tipo_cita debe ser un texto válido")
         return v
 
     @validator("notario_id")
     def validar_notario_si_firma(cls, v, values):
+        # ✔ Solo obliga notario si tipo_cita es EXACTAMENTE "Firma notarial"
         if values.get("tipo_cita") == "Firma notarial" and v is None:
             raise ValueError("notario_id es obligatorio para tipo_cita = Firma notarial")
         return v
@@ -76,7 +79,10 @@ class CitaUpdate(BaseModel):
 class NotarioResponse(BaseModel):
     id: int
     nombre: str
-    apellidos: str
+
+    # ✔ Ahora permite None (evita error 500 si apellidos es NULL)
+    apellidos: Optional[str] = None
+
     direccion: Optional[str] = None
     vc: Optional[str] = None
     observacion: Optional[str] = None
@@ -89,6 +95,8 @@ class NotarioResponse(BaseModel):
 class ApoderadoResponse(BaseModel):
     id: int
     nombre: str
+
+    # ✔ Permite None (evita error 500)
     apellidos: Optional[str] = None
 
     class Config:

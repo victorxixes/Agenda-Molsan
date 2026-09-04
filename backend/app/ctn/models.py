@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, Text, ForeignKey, Index
 from sqlalchemy.orm import relationship
 from backend.app.database import Base
 
@@ -8,32 +8,49 @@ class Notaria(Base):
 
     id = Column(Integer, primary_key=True, index=True)
 
-    codigo = Column(String, nullable=True)
-    nombre = Column(String, nullable=True)
-    apellidos = Column(String, nullable=True)
-    nif = Column(String, nullable=True)
-    telefono = Column(String, nullable=True)
+    # Datos básicos
+    codigo = Column(String(50), nullable=True, index=True)
+    nombre = Column(String(150), nullable=True, index=True)
+    apellidos = Column(String(150), nullable=True, index=True)
+    nif = Column(String(50), nullable=True, index=True)
+    telefono = Column(String(50), nullable=True)
 
-    departamento_cancelaciones = Column(String, nullable=True)
-    departamento_copias = Column(String, nullable=True)
-    otros_departamentos = Column(String, nullable=True)
+    # Departamentos internos
+    departamento_cancelaciones = Column(String(150), nullable=True)
+    departamento_copias = Column(String(150), nullable=True)
+    otros_departamentos = Column(String(150), nullable=True)
 
-    cp = Column(String, nullable=True)
-    provincia = Column(String, nullable=True)
-    municipio = Column(String, nullable=True)
+    # Dirección
+    cp = Column(String(10), nullable=True)
+    provincia = Column(String(100), nullable=True, index=True)
+    municipio = Column(String(100), nullable=True, index=True)
 
-    vc = Column(String, nullable=True)
+    # VC (valor catastral o código interno)
+    vc = Column(String(50), nullable=True, index=True)
 
-    apoderado = Column(String, nullable=True)
-    apoderado_s = Column(String, nullable=True)
+    # Apoderados
+    apoderado = Column(String(150), nullable=True, index=True)
+    apoderado_s = Column(String(150), nullable=True)
 
-    observacion = Column(String, nullable=True)
+    # Observaciones
+    observacion = Column(Text, nullable=True)
 
-    apoderado_id = Column(Integer, nullable=True)
+    # Relación opcional con tabla de apoderados (si existe)
+    apoderado_id = Column(Integer, ForeignKey("apoderados.id"), nullable=True)
 
-    # ⭐ Relación real con Agenda
+    # Relación con Agenda
     citas = relationship(
         "Cita",
         back_populates="notario",
         lazy="selectin"
     )
+
+# Índices adicionales para acelerar búsquedas
+Index("idx_notaria_nombre", Notaria.nombre)
+Index("idx_notaria_apellidos", Notaria.apellidos)
+Index("idx_notaria_apoderado", Notaria.apoderado)
+Index("idx_notaria_provincia", Notaria.provincia)
+Index("idx_notaria_municipio", Notaria.municipio)
+Index("idx_notaria_vc", Notaria.vc)
+Index("idx_notaria_codigo", Notaria.codigo)
+Index("idx_notaria_nif", Notaria.nif)

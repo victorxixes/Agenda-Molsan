@@ -1,84 +1,32 @@
-from fastapi import APIRouter, WebSocket
-from backend.app.realtime.manager import ConnectionManager
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query
+from .manager import realtime_manager
+from .schemas import RealtimeEvent
 
-router = APIRouter(prefix="/ws", tags=["Realtime"])
-manager = ConnectionManager()
+router = APIRouter(prefix="/ws/realtime", tags=["Realtime"])
 
-# ---------------------------------------------------------
-# CHAT
-# ---------------------------------------------------------
-@router.websocket("/chat/{usuario_id}")
-async def chat_ws(websocket: WebSocket, usuario_id: int):
-    await manager.subscribe_user(usuario_id, websocket)
 
-    try:
-        while True:
-            data = await websocket.receive_json()
-            await manager.send_to_user(data["destinatario_id"], data)
-    except:
-        await manager.unsubscribe_user(usuario_id, websocket)
-
-# ---------------------------------------------------------
-# NOTIFICACIONES
-# ---------------------------------------------------------
-@router.websocket("/notificaciones/{usuario_id}")
-async def notificaciones_ws(websocket: WebSocket, usuario_id: int):
-    await manager.subscribe_user(usuario_id, websocket)
+@router.websocket("/")
+async def realtime_ws(
+    websocket: WebSocket,
+    usuario_id: int | None = Query(default=None),
+    rol: str | None = Query(default=None),
+    modulo: str | None = Query(default=None),
+    grupo: str | None = Query(default=None),
+):
+    await realtime_manager.connect(
+        websocket,
+        usuario_id=usuario_id,
+        rol=rol,
+        modulo=modulo,
+        grupo=grupo,
+    )
 
     try:
         while True:
+            # Si en el futuro quieres que el cliente envíe eventos:
+            # raw = await websocket.receive_json()
+            # event = RealtimeEvent(**raw)
+            # (procesar si hace falta)
             await websocket.receive_text()
-    except:
-        await manager.unsubscribe_user(usuario_id, websocket)
-
-# ---------------------------------------------------------
-# AGENDA
-# ---------------------------------------------------------
-@router.websocket("/agenda")
-async def agenda_ws(websocket: WebSocket):
-    await manager.subscribe(websocket, "agenda")
-
-    try:
-        while True:
-            await websocket.receive_text()
-    except:
-        await manager.unsubscribe(websocket, "agenda")
-
-# ---------------------------------------------------------
-# DASHBOARD
-# ---------------------------------------------------------
-@router.websocket("/dashboard")
-async def dashboard_ws(websocket: WebSocket):
-    await manager.subscribe(websocket, "dashboard")
-
-    try:
-        while True:
-            await websocket.receive_text()
-    except:
-        await manager.unsubscribe(websocket, "dashboard")
-
-# ---------------------------------------------------------
-# SEGURIDAD
-# ---------------------------------------------------------
-@router.websocket("/seguridad")
-async def seguridad_ws(websocket: WebSocket):
-    await manager.subscribe(websocket, "seguridad")
-
-    try:
-        while True:
-            await websocket.receive_text()
-    except:
-        await manager.unsubscribe(websocket, "seguridad")
-
-# ---------------------------------------------------------
-# LOGS
-# ---------------------------------------------------------
-@router.websocket("/logs")
-async def logs_ws(websocket: WebSocket):
-    await manager.subscribe(websocket, "logs")
-
-    try:
-        while True:
-            await websocket.receive_text()
-    except:
-        await manager.unsubscribe(websocket, "logs")
+    except WebSocketDisconnect:
+        realtime_manager.disconnect(websocket)

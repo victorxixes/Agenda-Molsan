@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from backend.app.database import get_db
-from backend.app.seguridad.models import Permiso
+from backend.app.seguridad.permisos.models import Permiso
 
 router = APIRouter(
     prefix="/seguridad/permisos",
@@ -25,7 +25,6 @@ PERMISOS_BASE = [
     {"modulo": "intranet", "permiso": "eliminar"},
 ]
 
-
 @router.post("/crear-base")
 def crear_permisos_base(db: Session = Depends(get_db)):
     creados = []
@@ -46,7 +45,4 @@ def crear_permisos_base(db: Session = Depends(get_db)):
 
     db.commit()
 
-    return {
-        "estado": "OK",
-        "permisos_creados": creados
-    }
+    return {"estado": "OK", "permisos_creados": creados}

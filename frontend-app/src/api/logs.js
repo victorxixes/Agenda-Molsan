@@ -1,4 +1,5 @@
 import axios from "./axios";
 
-export const listarLogs = (params = {}) =>
-  axios.get("/logs", { params });
+export const getLogs = () => axios.get("/seguridad/logs/");
+export const registrarLog = (payload) =>
+  axios.post("/seguridad/logs/", payload);

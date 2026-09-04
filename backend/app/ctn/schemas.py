@@ -22,7 +22,6 @@ class NotariaBase(BaseModel):
 
     observacion: str | None = None
 
-    # ⭐ Campo faltante
     apoderado_id: int | None = None
 
 
@@ -36,6 +35,5 @@ class NotariaUpdate(NotariaBase):
 class NotariaResponse(NotariaBase):
     id: int
 
-    model_config = {
-        "from_attributes": True
-    }
+    class Config:
+        orm_mode = True

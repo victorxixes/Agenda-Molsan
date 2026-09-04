@@ -18,7 +18,16 @@ def login_empleado(db: Session, usuario: str, password: str):
     if empleado.password != hash_password(password):
         return None
 
-    return empleado
+    # Crear token JWT
+    token = crear_token(empleado)
+
+    # Serializar empleado (estructura completa para el ERP)
+    empleado_serializado = serializar_empleado(empleado)
+
+    return {
+        "empleado": empleado_serializado,
+        "token": token
+    }
     
 def obtener_empleado(db: Session, empleado_id: int):
     return db.query(Empleado).filter(Empleado.id == empleado_id).first()

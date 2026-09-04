@@ -1,0 +1,7 @@
+.card-sj {
+  background: var(--sj-blanco);
+  border: 1px solid var(--sj-gris-azulado);
+  border-radius: var(--sj-radius);
+  padding: 28px;
+  box-shadow: var(--sj-shadow);
+}

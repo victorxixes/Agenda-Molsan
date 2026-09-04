@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from backend.app.database import get_db
-from backend.app.seguridad.models import Rol
+from backend.app.seguridad.roles.models import Rol
 
 router = APIRouter(
     prefix="/seguridad/roles",
@@ -15,7 +15,6 @@ ROLES_BASE = [
     {"id": 4, "nombre": "direccion", "descripcion": "Dirección"},
     {"id": 5, "nombre": "apoderado", "descripcion": "Apoderado"},
 ]
-
 
 @router.post("/crear-base")
 def crear_roles_base(db: Session = Depends(get_db)):
@@ -36,7 +35,4 @@ def crear_roles_base(db: Session = Depends(get_db)):
 
     db.commit()
 
-    return {
-        "estado": "OK",
-        "roles_creados": creados
-    }
+    return {"estado": "OK", "roles_creados": creados}

@@ -10,7 +10,7 @@ export const useNotificacionesWS = () => {
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
 
-      // Documentos
+      // DOCUMENTOS
       if (data.tipo === "nuevo_documento") {
         addNotificacion({
           tipo: "documento",
@@ -27,7 +27,7 @@ export const useNotificacionesWS = () => {
         });
       }
 
-      // Noticias
+      // NOTICIAS
       if (data.tipo === "nueva_noticia") {
         addNotificacion({
           tipo: "noticia",
@@ -44,7 +44,8 @@ export const useNotificacionesWS = () => {
         });
       }
 
-      // Aquí podrás añadir más tipos: agenda, mensajes, dashboard, etc.
+      // FUTURO: Agenda, Mensajes, Seguridad, Dashboard…
+      // Solo añade aquí más tipos cuando los actives.
     };
 
     return () => ws.close();

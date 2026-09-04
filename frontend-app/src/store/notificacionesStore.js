@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-export const useNotificacionesStore = create((set, get) => ({
+export const useNotificacionesStore = create((set) => ({
   notificaciones: [],
 
   addNotificacion: (notif) =>
@@ -19,4 +19,3 @@ export const useNotificacionesStore = create((set, get) => ({
 
   clearNotificaciones: () => set({ notificaciones: [] }),
 }));
-

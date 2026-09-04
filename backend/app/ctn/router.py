@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from sqlalchemy import or_
+from sqlalchemy import or_, func
 
 from backend.app.database import get_db
 from backend.app.ctn.models import Notaria
@@ -25,25 +25,37 @@ def listar(
 ):
     query = db.query(Notaria)
 
+    # FILTROS NORMALES
     if provincia:
-        query = query.filter(Notaria.provincia.ilike(f"%{provincia}%"))
+        provincia_clean = provincia.strip()
+        query = query.filter(func.unaccent(Notaria.provincia).ilike(func.unaccent(f"%{provincia_clean}%")))
 
     if municipio:
-        query = query.filter(Notaria.municipio.ilike(f"%{municipio}%"))
+        municipio_clean = municipio.strip()
+        query = query.filter(func.unaccent(Notaria.municipio).ilike(func.unaccent(f"%{municipio_clean}%")))
 
     if vc:
-        query = query.filter(Notaria.vc.ilike(f"%{vc}%"))
+        vc_clean = vc.strip()
+        query = query.filter(func.unaccent(Notaria.vc).ilike(func.unaccent(f"%{vc_clean}%")))
 
+    # FILTRO POR APODERADO (CORREGIDO)
     if apoderado:
-        query = query.filter(Notaria.apoderado.ilike(f"%{apoderado}%"))
+        apoderado_clean = apoderado.strip()
+        query = query.filter(
+            func.unaccent(Notaria.apoderado).ilike(
+                func.unaccent(f"%{apoderado_clean}%")
+            )
+        )
 
+    # BÚSQUEDA GLOBAL q
     if q:
+        q_clean = q.strip()
         query = query.filter(
             or_(
-                Notaria.nombre.ilike(f"%{q}%"),
-                Notaria.apellidos.ilike(f"%{q}%"),
-                Notaria.codigo.ilike(f"%{q}%"),
-                Notaria.nif.ilike(f"%{q}%"),
+                func.unaccent(Notaria.nombre).ilike(func.unaccent(f"%{q_clean}%")),
+                func.unaccent(Notaria.apellidos).ilike(func.unaccent(f"%{q_clean}%")),
+                func.unaccent(Notaria.codigo).ilike(func.unaccent(f"%{q_clean}%")),
+                func.unaccent(Notaria.nif).ilike(func.unaccent(f"%{q_clean}%")),
             )
         )
 
@@ -70,7 +82,6 @@ def listar(
 @router.get("/notarias/{notaria_id}")
 def obtener(notaria_id: int, db: Session = Depends(get_db)):
     try:
-        # Swagger sometimes sends strings, spaces, or weird chars
         notaria_id = int(str(notaria_id).strip())
     except:
         return None

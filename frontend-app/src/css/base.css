@@ -1,0 +1,12 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--sj-blanco);
+  color: var(--sj-azul);
+  font-family: var(--sj-font);
+  line-height: 1.5;
+}

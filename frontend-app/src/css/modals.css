@@ -1,0 +1,7 @@
+.modal-sj {
+  background: var(--sj-blanco);
+  border-radius: var(--sj-radius);
+  padding: 32px;
+  box-shadow: var(--sj-shadow);
+  width: 450px;
+}

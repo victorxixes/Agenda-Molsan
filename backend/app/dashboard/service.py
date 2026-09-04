@@ -3,14 +3,14 @@ from datetime import date
 from backend.app.agenda.models import Cita
 from backend.app.empleados.models import Empleado
 from backend.app.ctn.models import Notaria
-from backend.app.agenda.geocode import distancia_molsan, distancia_km, ruta_molsan
+from backend.app.agenda.geocode import distancia_molsan, ruta_molsan
 
 
 def obtener_dashboard(db: Session):
     hoy = date.today()
 
     # -----------------------------------------
-    # AGENDA — Citas del día (Presencial / VC)
+    # AGENDA — Citas del día
     # -----------------------------------------
     presencial_hoy = db.query(Cita).filter(
         Cita.fecha == hoy,
@@ -31,9 +31,15 @@ def obtener_dashboard(db: Session):
 
     proximas = []
     for c in proximas_raw:
+
+        # Notario seguro
+        notario_nombre = None
+        if c.notario and hasattr(c.notario, "nombre"):
+            notario_nombre = c.notario.nombre
+
         proximas.append({
             "fecha": str(c.fecha),
-            "notario": c.notario.nombre if c.notario else None,
+            "notario": notario_nombre,
             "apoderado": c.apoderado_s,
             "tipo_firma": "VC" if c.vc == "SI" else "Presencial",
             "hora_inicio": str(c.hora_inicio),
@@ -41,7 +47,7 @@ def obtener_dashboard(db: Session):
         })
 
     # -----------------------------------------
-    # CTN — Resumen (desde Agenda)
+    # CTN — Resumen
     # -----------------------------------------
     presencial_total = db.query(Cita).filter(Cita.vc == "NO").count()
     vc_total = db.query(Cita).filter(Cita.vc == "SI").count()
@@ -55,7 +61,6 @@ def obtener_dashboard(db: Session):
     km_total = 0
 
     for apo in empleados:
-        # Solo citas PRESENCIALES
         citas_presenciales = db.query(Cita).filter(
             Cita.apoderado_id == apo.id,
             Cita.vc == "NO"
@@ -63,27 +68,43 @@ def obtener_dashboard(db: Session):
 
         firmas_total = len(citas_presenciales)
 
-        # KM por cita
         km_por_cita = []
         notarias_ruta = []
 
         for cita in citas_presenciales:
-            if cita.notario and cita.notario.lat and cita.notario.lng:
-                km = distancia_molsan(cita.notario.lat, cita.notario.lng)
-                km_por_cita.append(round(km, 2))
 
-                notarias_ruta.append({
-                    "nombre": cita.notario.nombre,
-                    "lat": cita.notario.lat,
-                    "lng": cita.notario.lng
-                })
+            # Coordenadas seguras
+            lat = getattr(cita.notario, "lat", None) if cita.notario else None
+            lng = getattr(cita.notario, "lng", None) if cita.notario else None
 
-        # KM totales del apoderado
+            if lat is not None and lng is not None:
+                try:
+                    km = float(distancia_molsan(float(lat), float(lng)))
+                    km_por_cita.append(round(km, 2))
+
+                    notarias_ruta.append({
+                        "nombre": cita.notario.nombre,
+                        "lat": float(lat),
+                        "lng": float(lng)
+                    })
+                except Exception:
+                    # Si distancia falla, ignoramos esa notaría
+                    continue
+
         km_apo = sum(km_por_cita)
         km_total += km_apo
 
-        # Ruta completa Molsan → Notaría(s) → Molsan
-        ruta = ruta_molsan(notarias_ruta) if notarias_ruta else None
+        # Ruta segura
+        ruta = None
+        if notarias_ruta:
+            try:
+                raw_ruta = ruta_molsan(notarias_ruta)
+                ruta = {
+                    "distancia_total_km": float(raw_ruta.get("distancia_total_km", 0)),
+                    "tramos": raw_ruta.get("tramos", [])
+                }
+            except Exception:
+                ruta = None
 
         ranking.append({
             "apoderado_id": apo.id,
@@ -94,7 +115,6 @@ def obtener_dashboard(db: Session):
             "ruta_completa": ruta
         })
 
-    # Ordenar ranking por firmas presenciales
     ranking = sorted(ranking, key=lambda x: x["firmas_presencial"], reverse=True)
 
     return {

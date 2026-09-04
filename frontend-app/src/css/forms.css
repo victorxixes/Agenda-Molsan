@@ -1,0 +1,21 @@
+.input-sj {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--sj-gris-azulado);
+  border-radius: var(--sj-radius);
+  margin-bottom: 16px;
+  transition: 0.2s;
+}
+
+.input-sj:focus {
+  border-color: var(--sj-azul);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(31, 58, 95, 0.2);
+}
+
+.label-sj {
+  font-weight: 600;
+  margin-bottom: 6px;
+  display: block;
+  color: var(--sj-azul);
+}

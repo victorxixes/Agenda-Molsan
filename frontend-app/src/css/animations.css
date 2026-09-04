@@ -76,3 +76,65 @@
   75% { transform: rotate(1deg); }
   100% { transform: rotate(0deg); }
 }
+
+/* ============================================
+   ERP SJ‑2026 — Activación automática global
+   ============================================ */
+
+/* Todas las cards */
+.card-sj {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.card-sj:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.10);
+}
+
+/* Todos los botones */
+.btn-sj {
+  transition: transform 0.2s ease;
+}
+.btn-sj:hover {
+  transform: scale(1.02);
+}
+
+/* Todas las tablas */
+.table-sj {
+  transition: box-shadow 0.25s ease;
+}
+.table-sj:hover {
+  box-shadow: 0 6px 20px rgba(31, 58, 95, 0.25);
+}
+
+/* Todas las pestañas */
+.tab-sj {
+  transition: transform 0.2s ease;
+}
+.tab-sj:hover {
+  transform: translateX(4px);
+}
+
+/* Todos los inputs */
+.input-sj {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.input-sj:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Todos los modales */
+.modal-sj {
+  transition: box-shadow 0.25s ease;
+}
+.modal-sj:hover {
+  box-shadow: 0 0 12px rgba(31, 58, 95, 0.35);
+}
+
+/* Todos los grids */
+.grid-sj > * {
+  transition: transform 0.2s ease;
+}
+.grid-sj > *:hover {
+  transform: translateY(-4px);
+}

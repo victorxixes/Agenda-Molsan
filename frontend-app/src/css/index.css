@@ -5,14 +5,14 @@
 @import "./variables.css";
 @import "./base.css";
 @import "./layout.css";
-
 @import "./buttons.css";
 @import "./cards.css";
 @import "./tables.css";
 @import "./forms.css";
+@import "./tabs.css";
 @import "./modals.css";
-
 @import "./animations.css";
+
 
 /* Tipografía global */
 :root {

@@ -89,6 +89,7 @@ from backend.app.seguridad.permisos.asignar_router import router as asignar_rout
 from backend.app.seguridad.permisos.repair_create_permisos_raw import router as permisos_repair_router
 from backend.app.seguridad.obtener_ficha_empleado import router as ficha_empleado_router
 from backend.app.seguridad.admin_router import router as admin_router
+from backend.app.realtime.router import router as realtime_router
 
 # ---------------------------------------------------------
 # INCLUIR ROUTERS REST
@@ -97,6 +98,7 @@ from backend.app.seguridad.admin_router import router as admin_router
 app.include_router(mensajes_ws_router)
 app.include_router(router_ws_docs)
 app.include_router(agenda_ws_router)
+app.include_router(realtime_router)
 
 app.include_router(auth_router, prefix="/api")
 app.include_router(empleados_router, prefix="/api")

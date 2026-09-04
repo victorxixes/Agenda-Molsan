@@ -2,6 +2,9 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from datetime import date
 
+from backend.app.dashboard.service import obtener_dashboard
+from backend.app.dashboard.schemas import DashboardResponse
+
 from backend.app.database import get_db
 from backend.app.agenda.service import (
     listar_citas_dia,
@@ -11,6 +14,10 @@ from backend.app.agenda.service import (
 
 router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
 
+@router.get("/extendido", response_model=DashboardResponse)
+def dashboard_extendido(db: Session = Depends(get_db)):
+    return obtener_dashboard(db)
+    
 @router.get("/")
 def dashboard(db: Session = Depends(get_db)):
     hoy = date.today()

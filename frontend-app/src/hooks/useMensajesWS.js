@@ -1,7 +1,9 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useMensajesStore } from "../store/mensajesStore";
 
 export const useMensajesWS = (empleadoId, otroId) => {
+  const wsRef = useRef(null);
+
   const cargarConversacion = useMensajesStore((s) => s.cargarConversacion);
   const setConectados = useMensajesStore((s) => s.setConectados);
   const setTyping = useMensajesStore((s) => s.setTyping);
@@ -14,6 +16,8 @@ export const useMensajesWS = (empleadoId, otroId) => {
       `${import.meta.env.VITE_WS_URL}/ws/mensajes/${empleadoId}`
     );
 
+    wsRef.current = ws;
+
     ws.onopen = () => {
       console.log("[WS-MSG] conectado");
     };
@@ -25,31 +29,24 @@ export const useMensajesWS = (empleadoId, otroId) => {
     ws.onmessage = (event) => {
       let data;
 
-      // Tolerancia total a frames vacíos o corruptos
       try {
         data = JSON.parse(event.data);
       } catch {
         return;
       }
 
-      // ---------------------------------------------------------
       // ONLINE / OFFLINE
-      // ---------------------------------------------------------
       if (data.tipo === "online" || data.tipo === "offline") {
         setConectados(data.user_id);
       }
 
-      // ---------------------------------------------------------
       // TYPING
-      // ---------------------------------------------------------
       if (data.tipo === "typing") {
         setTyping(data.from);
         setTimeout(() => clearTyping(data.from), 1500);
       }
 
-      // ---------------------------------------------------------
       // MENSAJE / ARCHIVO
-      // ---------------------------------------------------------
       if (
         data.tipo === "mensaje" ||
         data.tipo === "archivo" ||
@@ -66,4 +63,6 @@ export const useMensajesWS = (empleadoId, otroId) => {
 
     return () => ws.close();
   }, [empleadoId, otroId]);
+
+  return wsRef; // ← DEVOLVEMOS EL WEBSOCKET
 };

@@ -1,5 +1,8 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 
+/* LAYOUT */
+import Layout from "./layout/Layout";
+
 /* LOGIN */
 import LoginPage from "./pages/LoginPage";
 
@@ -7,7 +10,7 @@ import LoginPage from "./pages/LoginPage";
 import Ctn from "./pages/ctn/Ctn.jsx";
 import CtnDetallePage from "./pages/ctn/CtnDetallePage.jsx";
 
-/* LOGS (módulo general, no seguridad) */
+/* LOGS (módulo general) */
 import Logs from "./pages/logs/Logs.jsx";
 
 /* HERRAMIENTAS */
@@ -33,30 +36,33 @@ export default function App() {
       <Route path="/login" element={<LoginPage />} />
 
       {/* REDIRECCIÓN INICIAL */}
-      <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route path="/" element={<Navigate to="/panel/empleados" replace />} />
 
-      {/* CTN */}
-      <Route path="/ctn" element={<Ctn />} />
-      <Route path="/ctn/:id" element={<CtnDetallePage />} />
+      {/* RUTAS CON LAYOUT */}
+      <Route element={<Layout />}>
+        {/* EMPLEADOS */}
+        <Route path="/panel/empleados" element={<EmpleadosModulo2026 />} />
 
-      {/* LOGS (módulo general) */}
-      <Route path="/logs" element={<Logs />} />
+        {/* CTN */}
+        <Route path="/ctn" element={<Ctn />} />
+        <Route path="/ctn/:id" element={<CtnDetallePage />} />
 
-      {/* HERRAMIENTAS */}
-      <Route path="/herramientas" element={<Herramientas />} />
-      <Route path="/herramientas/importar-ctn" element={<ImportarCTN />} />
-      <Route path="/herramientas/utilidades" element={<Utilidades />} />
+        {/* LOGS */}
+        <Route path="/logs" element={<Logs />} />
 
-      {/* SEGURIDAD */}
-      <Route path="/seguridad" element={<Seguridad />} />
-      <Route path="/seguridad/usuarios" element={<SeguridadUsuarios />} />
-      <Route path="/seguridad/ficha/:id" element={<SeguridadFicha />} />
-      <Route path="/seguridad/auditoria" element={<SeguridadAuditoria />} />
-      <Route path="/seguridad/logs" element={<SeguridadLogs />} />
-      <Route path="/seguridad/roles/editor" element={<SeguridadRolEditor />} />
+        {/* HERRAMIENTAS */}
+        <Route path="/herramientas" element={<Herramientas />} />
+        <Route path="/herramientas/importar-ctn" element={<ImportarCTN />} />
+        <Route path="/herramientas/utilidades" element={<Utilidades />} />
 
-      {/* EMPLEADOS */}
-      <Route path="/panel/empleados" element={<EmpleadosModulo2026 />} />
+        {/* SEGURIDAD */}
+        <Route path="/seguridad" element={<Seguridad />} />
+        <Route path="/seguridad/usuarios" element={<SeguridadUsuarios />} />
+        <Route path="/seguridad/ficha/:id" element={<SeguridadFicha />} />
+        <Route path="/seguridad/auditoria" element={<SeguridadAuditoria />} />
+        <Route path="/seguridad/logs" element={<SeguridadLogs />} />
+        <Route path="/seguridad/roles/editor" element={<SeguridadRolEditor />} />
+      </Route>
     </Routes>
   );
 }

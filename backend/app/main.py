@@ -88,6 +88,7 @@ from backend.app.seguridad.permisos.asignar_router import router as asignar_rout
 from backend.app.seguridad.permisos.repair_create_permisos_raw import router as permisos_repair_router
 from backend.app.seguridad.obtener_ficha_empleado import router as ficha_empleado_router
 from backend.app.seguridad.admin_router import router as admin_router
+from backend.app.seguridad.roles.asignar_rol_router import router as asignar_rol_router
 
 from backend.app.intranet.documentos.router import router as documentos_router
 from backend.app.intranet.noticias.router import router as noticias_router
@@ -113,6 +114,7 @@ app.include_router(maestros_router, prefix="/api")
 app.include_router(herramientas_router, prefix="/api")
 app.include_router(ctn_router, prefix="/api")
 app.include_router(debug_router)
+app.include_router(asignar_rol_router, prefix="/api")
 
 app.include_router(seguridad_auditoria_router, prefix="/api")
 app.include_router(seguridad_logs_router, prefix="/api")

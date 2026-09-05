@@ -82,11 +82,11 @@ from backend.app.intranet.noticias.router import router as noticias_router
 from backend.app.agenda.router import router as agenda_router
 
 # 📨 WEBSOCKETS
-from backend.app.WebSockets.empleados_ws import router as empleados_ws_router
-from backend.app.WebSockets.intranet_ws import router as intranet_ws_router
-from backend.app.WebSockets.notificaciones_ws import router as notificaciones_ws_router
-from backend.app.WebSockets.agenda_ws import router as agenda_ws_router
-from backend.app.WebSockets.docs import router_ws_docs
+from backend.app.websockets.empleados_ws import router as empleados_ws_router
+from backend.app.websockets.intranet_ws import router as intranet_ws_router
+from backend.app.websockets.notificaciones_ws import router as notificaciones_ws_router
+from backend.app.websockets.agenda_ws import router as agenda_ws_router
+from backend.app.websockets.docs import router_ws_docs
 from backend.app.mensajes.router_ws import router as mensajes_ws_router
 from backend.app.realtime.router import router as realtime_router
 

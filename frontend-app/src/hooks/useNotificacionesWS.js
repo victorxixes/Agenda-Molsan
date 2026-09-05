@@ -5,7 +5,7 @@ export const useNotificacionesWS = () => {
   const addNotificacion = useNotificacionesStore((s) => s.addNotificacion);
 
   useEffect(() => {
-    const ws = new WebSocket(`${import.meta.env.VITE_WS}/ws/intranet`);
+const ws = new WebSocket(`${import.meta.env.VITE_WS_URL}/ws/intranet`);
 
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);

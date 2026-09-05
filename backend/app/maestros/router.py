@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from backend.app.database import SessionLocal
 from backend.app.maestros.schemas import MaestroCreate, MaestroUpdate
-from backend.app.maestros.models import Departamento, Seccion, Cargo, Rol
+from backend.app.maestros.models import Departamento, Seccion, Cargo
 from backend.app.maestros.service import listar, obtener, crear, editar, eliminar
 
 router = APIRouter(prefix="/maestros", tags=["Maestros"])

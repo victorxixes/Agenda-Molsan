@@ -14,6 +14,14 @@ export const useMensajesWS = (empleadoId, otroId) => {
       `${import.meta.env.VITE_WS_URL}/ws/mensajes/${empleadoId}`
     );
 
+    ws.onopen = () => {
+      console.log("[WS-MSG] conectado");
+    };
+
+    ws.onerror = () => {
+      console.log("[WS-MSG] error en la conexión");
+    };
+
     ws.onmessage = (event) => {
       let data;
 
@@ -24,18 +32,24 @@ export const useMensajesWS = (empleadoId, otroId) => {
         return;
       }
 
+      // ---------------------------------------------------------
       // ONLINE / OFFLINE
+      // ---------------------------------------------------------
       if (data.tipo === "online" || data.tipo === "offline") {
         setConectados(data.user_id);
       }
 
+      // ---------------------------------------------------------
       // TYPING
+      // ---------------------------------------------------------
       if (data.tipo === "typing") {
         setTyping(data.from);
         setTimeout(() => clearTyping(data.from), 1500);
       }
 
-      // MENSAJE O ARCHIVO
+      // ---------------------------------------------------------
+      // MENSAJE / ARCHIVO
+      // ---------------------------------------------------------
       if (
         data.tipo === "mensaje" ||
         data.tipo === "archivo" ||

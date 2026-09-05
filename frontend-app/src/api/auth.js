@@ -1,7 +1,8 @@
 import axios from "./axios";
 
 export const login = (usuario, password) =>
-  axios.post("/empleados/empleados/login", {
+  axios.post("/auth/login", {
     usuario,
     password,
   });
+

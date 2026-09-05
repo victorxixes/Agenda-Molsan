@@ -47,7 +47,7 @@ export const useSeguridadStore = create((set, get) => ({
   // ---------------------------------------------------------
   asignarRol: async (empleadoId, rolId) => {
     await axios.post(`${API}/seguridad/asignar/empleado/${empleadoId}/rol/${rolId}`);
-    await get().cargarTodo();
+    await get().cargarFicha(empleadoId);
   },
 
   // ---------------------------------------------------------

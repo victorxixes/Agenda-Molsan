@@ -14,7 +14,12 @@ export const useAuthStore = create((set) => ({
         password
       });
 
-      if (res.data.status === "ok") {
+      // Validación REAL
+      if (
+        res.data.status === "ok" &&
+        res.data.empleado &&
+        res.data.token
+      ) {
         set({
           empleado: res.data.empleado,
           token: res.data.token

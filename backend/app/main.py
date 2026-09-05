@@ -96,6 +96,7 @@ from backend.app.herramientasswager.reset_intranet import router as reset_intran
 from backend.app.herramientasswager.debug_router import router as debug_router
 from backend.app.herramientasswager.borrar_roles import router as borrar_roles_router
 from backend.app.herramientasswager.borrar_tablas import router as borrar_tablas_router
+from backend.app.herramientasswager.asignar_bloqueo_router import router as asignar_bloqueo_router
 
 # 🏢 CTN
 from backend.app.ctn.router import router as ctn_router
@@ -146,6 +147,7 @@ app.include_router(reset_intranet_router, prefix="/api")
 app.include_router(debug_router)
 app.include_router(borrar_roles_router)
 app.include_router(borrar_tablas_router)
+app.include_router(asignar_bloqueo_router, prefix="/api")
 
 # 🏢 CTN
 app.include_router(ctn_router, prefix="/api")

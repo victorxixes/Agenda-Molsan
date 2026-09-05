@@ -11,17 +11,16 @@ from backend.app.database import Base, engine
 # ---------------------------------------------------------
 # IMPORTAR MODELOS ANTES DE CREATE_ALL
 # ---------------------------------------------------------
-# Seguridad
-from backend.app.seguridad.roles.models import Rol          # ⭐ IMPORTANTE
+
+from backend.app.seguridad.roles.models import Rol
 from backend.app.empleados.models import Empleado
 from backend.app.seguridad.auditoria.models import Auditoria
 from backend.app.seguridad.logs.models import Log
-
-# Agenda / Intranet / CTN
 from backend.app.agenda.models import Cita
 from backend.app.intranet.documentos.models import Documento
 from backend.app.intranet.noticias.models import Noticia
 from backend.app.ctn.models import Notaria
+
 
 # Crear tablas
 Base.metadata.create_all(bind=engine)

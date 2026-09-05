@@ -73,6 +73,7 @@ from backend.app.maestros.router import router as maestros_router
 from backend.app.herramientasswager.crear_tablas import router as herramientas_router   # ⭐ FALTABA
 from backend.app.herramientasswager.reset_intranet import router as reset_intranet_router   # ⭐ FALTABA
 from backend.app.herramientasswager.debug_router import router as debug_router
+from backend.app.herramientasswager.borrar_roles import router as borrar_roles_router
 from backend.app.ctn.router import router as ctn_router
 from backend.app.Utilidades.router import router as utilidades_router
 from backend.app.seguridad.auditoria.router import router as seguridad_auditoria_router
@@ -111,6 +112,7 @@ app.include_router(seguridad_auditoria_router, prefix="/api")
 app.include_router(seguridad_logs_router, prefix="/api")
 app.include_router(documentos_router, prefix="/api")
 app.include_router(reset_intranet_router, prefix="/api")
+app.include_router(borrar_roles_router)
 app.include_router(noticias_router, prefix="/api")
 app.include_router(agenda_router, prefix="/api")
 app.include_router(dashboard_router, prefix="/api")

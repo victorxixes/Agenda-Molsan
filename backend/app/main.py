@@ -70,6 +70,7 @@ from backend.app.auth.router import router as auth_router
 from backend.app.dashboard.router import router as dashboard_router
 from backend.app.empleados.router import router as empleados_router
 from backend.app.maestros.router import router as maestros_router
+from backend.app.seguridad.asignar.asignar_password_router import router as asignar_password_router
 
 from backend.app.herramientasswager.crear_tablas import router as herramientas_router
 from backend.app.herramientasswager.reset_intranet import router as reset_intranet_router
@@ -115,6 +116,8 @@ app.include_router(herramientas_router, prefix="/api")
 app.include_router(ctn_router, prefix="/api")
 app.include_router(debug_router)
 app.include_router(asignar_rol_router, prefix="/api")
+POST /api/seguridad/asignar/empleado/1/password
+
 
 app.include_router(seguridad_auditoria_router, prefix="/api")
 app.include_router(seguridad_logs_router, prefix="/api")

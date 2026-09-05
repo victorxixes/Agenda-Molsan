@@ -5,20 +5,20 @@ export default function SeguridadRoles() {
 
   return (
     <div className="border p-4 rounded bg-white shadow">
-      <h2 className="text-xl font-semibold mb-2">Roles</h2>
+      <h2 className="text-xl font-semibold mb-3">Roles del sistema</h2>
 
-      <table className="w-full border">
+      <table className="w-full border rounded">
         <thead>
-          <tr className="bg-gray-100">
-            <th>ID</th>
-            <th>Nombre</th>
+          <tr className="bg-gray-100 text-left">
+            <th className="p-2">ID</th>
+            <th className="p-2">Nombre</th>
           </tr>
         </thead>
         <tbody>
           {roles.map((r) => (
             <tr key={r.id} className="border-b">
-              <td>{r.id}</td>
-              <td>{r.nombre}</td>
+              <td className="p-2">{r.id}</td>
+              <td className="p-2">{r.nombre}</td>
             </tr>
           ))}
         </tbody>

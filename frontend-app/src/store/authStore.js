@@ -10,8 +10,8 @@ export const useAuthStore = create((set) => ({
   iniciarSesion: async (usuario, password) => {
     try {
       const res = await axios.post(`${API}/auth/login`, {
-        usuario: usuario,
-        password: password
+        usuario,
+        password
       });
 
       if (res.data.status === "ok") {
@@ -20,7 +20,6 @@ export const useAuthStore = create((set) => ({
           token: res.data.token
         });
 
-        // Guardar token en localStorage
         localStorage.setItem("token", res.data.token);
         localStorage.setItem("empleado", JSON.stringify(res.data.empleado));
 

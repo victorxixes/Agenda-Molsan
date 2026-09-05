@@ -1,5 +1,9 @@
+import { useAuthStore } from "../store/authStore";
+
 export function puedeVerModulo(modulo) {
-  const usuario = JSON.parse(localStorage.getItem("usuario"));
-  if (!usuario || !usuario.permisos) return false;
-  return usuario.permisos.includes(modulo);
+  const empleado = useAuthStore.getState().empleado;
+  if (!empleado) return false;
+
+  const modulos = empleado.modulos_visibles || [];
+  return modulos.includes(modulo);
 }

@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { login } from "../api/auth";
+import { API_BASE } from "../api/config";
 
 export const useAuthStore = create((set) => ({
   empleado: null,
@@ -9,15 +10,21 @@ export const useAuthStore = create((set) => ({
     try {
       const res = await login(usuario, password);
 
-      // VALIDACIÓN REAL SEGÚN TU BACKEND
       if (res.data.token && res.data.empleado) {
+        const empleado = {
+          ...res.data.empleado,
+          foto: res.data.empleado.foto
+            ? `${API_BASE}${res.data.empleado.foto}`
+            : null,
+        };
+
         set({
-          empleado: res.data.empleado,
+          empleado,
           token: res.data.token,
         });
 
         localStorage.setItem("token", res.data.token);
-        localStorage.setItem("empleado", JSON.stringify(res.data.empleado));
+        localStorage.setItem("empleado", JSON.stringify(empleado));
 
         return true;
       }

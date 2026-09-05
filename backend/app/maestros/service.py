@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from backend.app.maestros.models import Departamento, Seccion, Cargo, Rol
+from backend.app.maestros.models import Departamento, Seccion, Cargo
 
 # ---------------------------
 # GENERIC CRUD

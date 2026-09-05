@@ -83,7 +83,6 @@ from backend.app.agenda.router import router as agenda_router
 
 # 📨 WEBSOCKETS
 from backend.app.websockets.empleados_ws import router as empleados_ws_router
-from backend.app.websockets.notificaciones_ws import router as notificaciones_ws_router
 from backend.app.websockets.agenda_ws import router as agenda_ws_router
 from backend.app.websockets.docs import router_ws_docs
 from backend.app.mensajes.router_ws import router as mensajes_ws_router
@@ -136,7 +135,6 @@ app.include_router(agenda_router, prefix="/api")
 
 # 📨 WebSockets (TODOS CORRECTOS)
 app.include_router(empleados_ws_router)
-app.include_router(notificaciones_ws_router)
 app.include_router(agenda_ws_router)
 app.include_router(mensajes_ws_router)
 app.include_router(router_ws_docs)

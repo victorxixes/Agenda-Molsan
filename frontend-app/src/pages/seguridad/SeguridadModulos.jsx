@@ -7,7 +7,6 @@ export default function SeguridadModulos() {
     const nuevo = modulos.map((m) =>
       m.nombre === mod.nombre ? { ...m, visible: !m.visible } : m
     );
-
     guardarModulos(nuevo);
   };
 

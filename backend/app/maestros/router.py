@@ -23,7 +23,6 @@ MODELOS = {
     "departamentos": Departamento,
     "secciones": Seccion,
     "cargos": Cargo,
-    "roles": Rol
 }
 
 # ---------------------------

@@ -1,20 +1,13 @@
 import { NavLink } from "react-router-dom";
 import { puedeVerModulo } from "../utils/permisos";
-import {
-  HomeIcon,
-  CalendarIcon,
-  UserGroupIcon,
-  DocumentIcon,
-  GlobeAltIcon,
-  ChatBubbleLeftRightIcon,
-  WrenchScrewdriverIcon,
-  ShieldCheckIcon,
-  ClipboardDocumentListIcon,
-  Cog6ToothIcon,
-} from "@heroicons/react/24/outline";
+
+// Icono placeholder temporal
+const PlaceholderIcon = () => (
+  <div className="w-5 h-5 bg-gray-300 rounded" />
+);
 
 export default function Sidebar() {
-  const item = (to, label, Icon) => (
+  const item = (to, label) => (
     <NavLink
       to={to}
       className={({ isActive }) =>
@@ -22,7 +15,7 @@ export default function Sidebar() {
         ${isActive ? "bg-blue-600 text-white shadow" : "text-gray-700 hover:bg-gray-100"}`
       }
     >
-      <Icon className="w-5 h-5" />
+      <PlaceholderIcon />
       <span>{label}</span>
     </NavLink>
   );
@@ -33,30 +26,30 @@ export default function Sidebar() {
 
       <nav className="space-y-2">
 
-        {item("/dashboard", "Dashboard", HomeIcon)}
+        {item("/dashboard", "Dashboard")}
 
-        {puedeVerModulo("agenda") && item("/agenda", "Agenda", CalendarIcon)}
-        {puedeVerModulo("mis-visitas") && item("/agenda/mis-visitas", "Mis visitas", CalendarIcon)}
+        {puedeVerModulo("agenda") && item("/agenda", "Agenda")}
+        {puedeVerModulo("mis-visitas") && item("/agenda/mis-visitas", "Mis visitas")}
 
-        {puedeVerModulo("empleados") && item("/panel/empleados", "Empleados", UserGroupIcon)}
+        {puedeVerModulo("empleados") && item("/panel/empleados", "Empleados")}
 
-        {puedeVerModulo("ctn") && item("/ctn", "CTN", GlobeAltIcon)}
+        {puedeVerModulo("ctn") && item("/ctn", "CTN")}
 
-        {puedeVerModulo("intranet") && item("/intranet", "Intranet", GlobeAltIcon)}
-        {puedeVerModulo("documentos") && item("/intranet/documentos", "Documentos", DocumentIcon)}
-        {puedeVerModulo("noticias") && item("/intranet/noticias", "Noticias", DocumentIcon)}
+        {puedeVerModulo("intranet") && item("/intranet", "Intranet")}
+        {puedeVerModulo("documentos") && item("/intranet/documentos", "Documentos")}
+        {puedeVerModulo("noticias") && item("/intranet/noticias", "Noticias")}
 
-        {puedeVerModulo("mensajes") && item("/mensajes", "Mensajes", ChatBubbleLeftRightIcon)}
+        {puedeVerModulo("mensajes") && item("/mensajes", "Mensajes")}
 
-        {puedeVerModulo("herramientas") && item("/herramientas", "Herramientas", WrenchScrewdriverIcon)}
+        {puedeVerModulo("herramientas") && item("/herramientas", "Herramientas")}
 
-        {puedeVerModulo("logs") && item("/logs", "Logs", ClipboardDocumentListIcon)}
+        {puedeVerModulo("logs") && item("/logs", "Logs")}
 
-        {puedeVerModulo("seguridad") && item("/seguridad", "Seguridad", ShieldCheckIcon)}
+        {puedeVerModulo("seguridad") && item("/seguridad", "Seguridad")}
 
-        {puedeVerModulo("utilidades") && item("/utilidades", "Utilidades", Cog6ToothIcon)}
+        {puedeVerModulo("utilidades") && item("/utilidades", "Utilidades")}
         {puedeVerModulo("inicializacion") &&
-          item("/utilidades/inicializacion", "Inicialización", Cog6ToothIcon)}
+          item("/utilidades/inicializacion", "Inicialización")}
       </nav>
     </aside>
   );

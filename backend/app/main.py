@@ -90,6 +90,7 @@ from backend.app.seguridad.permisos.repair_create_permisos_raw import router as 
 from backend.app.seguridad.obtener_ficha_empleado import router as ficha_empleado_router
 from backend.app.seguridad.admin_router import router as admin_router
 from backend.app.realtime.router import router as realtime_router
+from backend.app.herramientasswager.borrar_tablas import router as borrar_tablas_router
 
 # ---------------------------------------------------------
 # INCLUIR ROUTERS REST
@@ -119,3 +120,4 @@ app.include_router(asignar_router, prefix="/api")
 app.include_router(permisos_repair_router, prefix="/api")
 app.include_router(ficha_empleado_router, prefix="/api")
 app.include_router(admin_router, prefix="/api")
+app.include_router(borrar_tablas_router)

@@ -15,9 +15,8 @@ export default function Mensajes({ usuarioId }) {
     enviarMensajeREST,
   } = useMensajesStore();
 
+  const wsRef = useMensajesWS(usuarioId, otroId);
   const chatRef = useRef(null);
-
-  useMensajesWS(usuarioId, otroId);
 
   // Cargar conversación al seleccionar usuario
   useEffect(() => {
@@ -31,6 +30,31 @@ export default function Mensajes({ usuarioId }) {
       behavior: "smooth",
     });
   }, [mensajes]);
+
+  // -----------------------------
+  // Enviar mensaje por WebSocket
+  // -----------------------------
+  const enviarMensajeWS = () => {
+    wsRef.current?.send(
+      JSON.stringify({
+        tipo: "mensaje",
+        destinatario_id: otroId,
+        contenido: texto,
+      })
+    );
+  };
+
+  // -----------------------------
+  // Enviar typing por WebSocket
+  // -----------------------------
+  const enviarTypingWS = () => {
+    wsRef.current?.send(
+      JSON.stringify({
+        tipo: "typing",
+        destinatario_id: otroId,
+      })
+    );
+  };
 
   return (
     <div className="p-6 grid grid-cols-3 gap-4">
@@ -80,6 +104,10 @@ export default function Mensajes({ usuarioId }) {
                 e.preventDefault();
                 if (!texto.trim()) return;
 
+                // Enviar por WebSocket (realtime)
+                enviarMensajeWS();
+
+                // Enviar por REST (persistencia)
                 await enviarMensajeREST({
                   remitente_id: usuarioId,
                   destinatario_id: otroId,
@@ -91,7 +119,10 @@ export default function Mensajes({ usuarioId }) {
             >
               <input
                 value={texto}
-                onChange={(e) => setTexto(e.target.value)}
+                onChange={(e) => {
+                  setTexto(e.target.value);
+                  enviarTypingWS(); // typing realtime
+                }}
                 className="border p-2 w-full"
                 placeholder="Escribe un mensaje…"
               />

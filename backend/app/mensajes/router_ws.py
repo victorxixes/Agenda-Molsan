@@ -1,6 +1,5 @@
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from backend.app.mensajes.ws_manager import manager
-from backend.app.database import get_db
 
 router = APIRouter()
 
@@ -18,64 +17,75 @@ async def mensajes_ws(websocket: WebSocket, empleado_id: int):
 
     try:
         while True:
-            # Recibir evento del WebSocket
-            data = await websocket.receive_json()
-            tipo = data.get("tipo")
+            try:
+                # Recibir texto (más tolerante que JSON)
+                msg = await websocket.receive_text()
 
-            # ---------------------------------------------------------
-            # 1) USUARIO ESCRIBIENDO
-            # ---------------------------------------------------------
-            if tipo == "typing":
-                destinatario_id = data.get("destinatario_id")
+                # Si el frontend envía "ping"
+                if msg == "ping":
+                    continue
 
-                await manager.send_to_user(destinatario_id, {
-                    "tipo": "typing",
-                    "from": empleado_id
-                })
+                # Intentar parsear JSON
+                try:
+                    data = json.loads(msg)
+                except:
+                    continue
 
-            # ---------------------------------------------------------
-            # 2) ENVÍO DE MENSAJE DE TEXTO
-            # ---------------------------------------------------------
-            elif tipo == "mensaje":
-                remitente_id = empleado_id
-                destinatario_id = data.get("destinatario_id")
-                contenido = data.get("contenido")
+                tipo = data.get("tipo")
 
-                # Guardar + enviar mensaje
-                await manager.enviar_mensaje_ws(remitente_id, destinatario_id, contenido)
+                # ---------------------------------------------------------
+                # 1) USUARIO ESCRIBIENDO
+                # ---------------------------------------------------------
+                if tipo == "typing":
+                    destinatario_id = data.get("destinatario_id")
 
-                # Notificación realtime
-                await manager.send_to_user(destinatario_id, {
-                    "tipo": "nuevo_mensaje",
-                    "de": remitente_id,
-                    "contenido": contenido
-                })
+                    await manager.send_to_user(destinatario_id, {
+                        "tipo": "typing",
+                        "from": empleado_id
+                    })
 
-            # ---------------------------------------------------------
-            # 3) ENVÍO DE ARCHIVO (PDF, Word, imagen…)
-            # ---------------------------------------------------------
-            elif tipo == "archivo":
-                remitente_id = empleado_id
-                destinatario_id = data.get("destinatario_id")
-                archivo_url = data.get("archivo_url")
+                # ---------------------------------------------------------
+                # 2) ENVÍO DE MENSAJE DE TEXTO
+                # ---------------------------------------------------------
+                elif tipo == "mensaje":
+                    remitente_id = empleado_id
+                    destinatario_id = data.get("destinatario_id")
+                    contenido = data.get("contenido")
 
-                mensaje = await manager.enviar_archivo_ws(
-                    remitente_id,
-                    destinatario_id,
-                    archivo_url
-                )
+                    await manager.enviar_mensaje_ws(remitente_id, destinatario_id, contenido)
 
-                await manager.send_to_user(destinatario_id, {
-                    "tipo": "nuevo_archivo",
-                    "de": remitente_id,
-                    "archivo_url": archivo_url
-                })
+                    await manager.send_to_user(destinatario_id, {
+                        "tipo": "nuevo_mensaje",
+                        "de": remitente_id,
+                        "contenido": contenido
+                    })
 
-    except WebSocketDisconnect:
+                # ---------------------------------------------------------
+                # 3) ENVÍO DE ARCHIVO
+                # ---------------------------------------------------------
+                elif tipo == "archivo":
+                    remitente_id = empleado_id
+                    destinatario_id = data.get("destinatario_id")
+                    archivo_url = data.get("archivo_url")
+
+                    await manager.enviar_archivo_ws(remitente_id, destinatario_id, archivo_url)
+
+                    await manager.send_to_user(destinatario_id, {
+                        "tipo": "nuevo_archivo",
+                        "de": remitente_id,
+                        "archivo_url": archivo_url
+                    })
+
+            except WebSocketDisconnect:
+                break
+
+            except Exception:
+                continue
+
+    finally:
         print(f"[WS-MSG] Desconectado: {empleado_id}")
         manager.disconnect(empleado_id)
 
-        # Notificar desconexión
         await manager.broadcast({
             "tipo": "offline",
             "user_id": empleado_id

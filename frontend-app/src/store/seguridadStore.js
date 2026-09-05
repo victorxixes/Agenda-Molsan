@@ -1,41 +1,90 @@
 import { create } from "zustand";
-import * as api from "../api/seguridad";
+import axios from "axios";
 
-export const useSeguridadStore = create((set) => ({
+const API = "https://agenda-intranet-b.onrender.com/api";
+
+export const useSeguridadStore = create((set, get) => ({
   roles: [],
-  permisos: {},
-  modulos: [],
-  permisosModulo: {},
+  permisos: [],
+  empleados: [],
+  ficha: null,
+  auditoria: [],
+  logs: [],
   loading: false,
 
+  // ---------------------------------------------------------
+  // CARGA INICIAL
+  // ---------------------------------------------------------
   cargarTodo: async () => {
     set({ loading: true });
 
-    const [roles, permisos, modulos, permisosModulo] = await Promise.all([
-      api.listarRoles(),
-      api.listarPermisos(),
-      api.listarModulos(),
-      api.listarPermisosModulo(),
+    const [roles, empleados, auditoria, logs] = await Promise.all([
+      axios.get(`${API}/seguridad/roles`),
+      axios.get(`${API}/empleados`),
+      axios.get(`${API}/seguridad/auditoria`),
+      axios.get(`${API}/seguridad/logs`)
     ]);
 
     set({
       roles: roles.data,
-      permisos: permisos.data,
-      modulos: modulos.data,
-      permisosModulo: permisosModulo.data,
-      loading: false,
+      empleados: empleados.data,
+      auditoria: auditoria.data,
+      logs: logs.data,
+      loading: false
     });
   },
 
-  guardarPermisos: async (data) => {
-    await api.actualizarPermisos(data);
+  // ---------------------------------------------------------
+  // FICHA EMPLEADO
+  // ---------------------------------------------------------
+  cargarFicha: async (id) => {
+    const res = await axios.get(`${API}/seguridad/ficha/${id}`);
+    set({ ficha: res.data });
   },
 
-  guardarModulos: async (data) => {
-    await api.actualizarModulos(data);
+  // ---------------------------------------------------------
+  // ASIGNAR ROL
+  // ---------------------------------------------------------
+  asignarRol: async (empleadoId, rolId) => {
+    await axios.post(`${API}/seguridad/asignar/empleado/${empleadoId}/rol/${rolId}`);
+    await get().cargarTodo();
   },
 
-  guardarPermisosModulo: async (data) => {
-    await api.actualizarPermisosModulo(data);
+  // ---------------------------------------------------------
+  // ASIGNAR PERMISOS
+  // ---------------------------------------------------------
+  asignarPermisos: async (empleadoId, permisos) => {
+    await axios.post(`${API}/seguridad/asignar/empleado/${empleadoId}/permisos`, permisos);
+    await get().cargarFicha(empleadoId);
   },
+
+  // ---------------------------------------------------------
+  // ASIGNAR MÓDULOS
+  // ---------------------------------------------------------
+  asignarModulos: async (empleadoId, modulos) => {
+    await axios.post(`${API}/seguridad/asignar/empleado/${empleadoId}/modulos`, modulos);
+    await get().cargarFicha(empleadoId);
+  },
+
+  // ---------------------------------------------------------
+  // RESET PASSWORD
+  // ---------------------------------------------------------
+  resetPassword: async (empleadoId, nuevaPassword) => {
+    await axios.post(`${API}/seguridad/asignar/empleado/${empleadoId}/password`, {
+      nueva_password: nuevaPassword
+    });
+  },
+
+  // ---------------------------------------------------------
+  // BLOQUEAR / DESBLOQUEAR
+  // ---------------------------------------------------------
+  bloquear: async (empleadoId) => {
+    await axios.post(`${API}/seguridad/asignar/empleado/${empleadoId}/bloquear`);
+    await get().cargarTodo();
+  },
+
+  desbloquear: async (empleadoId) => {
+    await axios.post(`${API}/seguridad/asignar/empleado/${empleadoId}/desbloquear`);
+    await get().cargarTodo();
+  }
 }));

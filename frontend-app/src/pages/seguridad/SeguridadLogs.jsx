@@ -10,7 +10,7 @@ export default function SeguridadLogs() {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Logs de seguridad</h1>
+      <h1 className="text-2xl font-bold mb-4">Logs del sistema</h1>
 
       <table className="w-full border rounded bg-white">
         <thead>

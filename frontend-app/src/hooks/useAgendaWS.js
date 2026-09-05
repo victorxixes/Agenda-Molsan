@@ -5,9 +5,8 @@ export const useAgendaWS = (usuarioId) => {
   const refrescarVista = useAgendaStore((s) => s.refrescarVista);
 
   useEffect(() => {
-    const ws = new WebSocket(
-      `${import.meta.env.VITE_WS}/ws/agenda`
-    );
+  const ws = new WebSocket(`${import.meta.env.VITE_WS_URL}/ws/agenda`);
+
 
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);

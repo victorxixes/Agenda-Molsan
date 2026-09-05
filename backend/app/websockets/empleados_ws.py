@@ -1,10 +1,10 @@
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from typing import Set
+import asyncio
 
 router = APIRouter(prefix="/ws", tags=["empleados_ws"])
 
 conexiones_empleados: Set[WebSocket] = set()
-
 
 async def broadcast_empleados(evento: dict):
     conexiones_muertas = []
@@ -28,21 +28,23 @@ async def empleados_ws(websocket: WebSocket):
 
     try:
         while True:
+            # Intentar recibir sin bloquear
             try:
-                # Recibir texto (más tolerante que JSON)
-                msg = await websocket.receive_text()
+                msg = await asyncio.wait_for(websocket.receive_text(), timeout=5)
 
-                # Si el frontend envía "ping"
                 if msg == "ping":
+                    await websocket.send_text("pong")
                     continue
+
+            except asyncio.TimeoutError:
+                # No llegó nada → mantener conexión viva
+                continue
 
             except WebSocketDisconnect:
                 break
 
             except Exception:
-                # Ignorar mensajes corruptos o vacíos
                 continue
 
     finally:
         conexiones_empleados.discard(websocket)
-

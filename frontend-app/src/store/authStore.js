@@ -3,6 +3,16 @@ import { login } from "../api/auth";
 import { obtenerFichaCompleta } from "../api/empleados";
 import { API_BASE } from "../api/config";
 
+// Función para extraer el ID del JWT
+function extraerIdDeToken(token) {
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return payload.id; // tu JWT contiene "id"
+  } catch {
+    return null;
+  }
+}
+
 export const useAuthStore = create((set) => ({
   empleado: null,
   token: null,
@@ -12,20 +22,26 @@ export const useAuthStore = create((set) => ({
       const res = await login(usuario, password);
       console.log("LOGIN RES:", res.data);
 
-      // Validación mínima
       if (!res.data || !res.data.token) {
         console.error("Login sin token");
         return false;
       }
 
-      if (!res.data.empleado || !res.data.empleado.id) {
-        console.error("Login sin empleado.id:", res.data);
+      // Intentar obtener el ID desde el empleado
+      let empleadoId = res.data.empleado?.id;
+
+      // Si no existe, obtenerlo desde el JWT
+      if (!empleadoId) {
+        empleadoId = extraerIdDeToken(res.data.token);
+        console.log("ID extraído del JWT:", empleadoId);
+      }
+
+      if (!empleadoId) {
+        console.error("No se pudo obtener empleado.id");
         return false;
       }
 
-      const empleadoId = res.data.empleado.id;
-
-      // Cargar ficha completa del empleado
+      // Cargar ficha completa
       const ficha = await obtenerFichaCompleta(empleadoId);
       console.log("FICHA COMPLETA:", ficha.data);
 

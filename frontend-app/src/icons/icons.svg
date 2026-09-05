@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+
+  <symbol id="home" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+      d="M3 12l9-9 9 9M4 10v10h6V14h4v6h6V10" />
+  </symbol>
+
+  <symbol id="calendar" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7H3v12a2 2 0 002 2z" />
+  </symbol>
+
+  <symbol id="user-group" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+      d="M17 20v-2a4 4 0 00-3-3.87M7 20v-2a4 4 0 013-3.87M12 7a4 4 0 110-8 4 4 0 010 8z" />
+  </symbol>
+
+  <symbol id="document" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+      d="M7 2h8l5 5v13a2 2 0 01-2 2H7a2 2 0 01-2-2V4a2 2 0 012-2z" />
+  </symbol>
+
+  <symbol id="globe" viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+      d="M2 12h20M12 2c4 4 4 16 0 20M12 2c-4 4-4 16 0 20" />
+  </symbol>
+
+  <symbol id="chat" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+      d="M8 10h8M8 14h5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </symbol>
+
+  <symbol id="tools" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+      d="M14 2l4 4-3 3-4-4M3 21l6-6M3 14l7 7" />
+  </symbol>
+
+  <symbol id="shield" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+      d="M12 2l7 4v6c0 5-3 9-7 10-4-1-7-5-7-10V6l7-4z" />
+  </symbol>
+
+  <symbol id="clipboard" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+      d="M9 2h6v4H9V2zM5 6h14v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6z" />
+  </symbol>
+
+  <symbol id="cog" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+      d="M12 8a4 4 0 100 8 4 4 0 000-8zm8 4l-2 1 1 2-2 2-2-1-1 2h-4l-1-2-2 1-2-2 1-2-2-1v-4l2-1-1-2 2-2 2 1 1-2h4l1 2 2-1 2 2-1 2 2 1v4z" />
+  </symbol>
+
+</svg>

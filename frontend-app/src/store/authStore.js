@@ -9,11 +9,8 @@ export const useAuthStore = create((set) => ({
     try {
       const res = await login(usuario, password);
 
-      if (
-        res.data.status === "ok" &&
-        res.data.empleado &&
-        res.data.token
-      ) {
+      // VALIDACIÓN REAL SEGÚN TU BACKEND
+      if (res.data.token && res.data.empleado) {
         set({
           empleado: res.data.empleado,
           token: res.data.token,

@@ -8,9 +8,7 @@ import os
 # ---------------------------------------------------------
 from backend.app.database import Base, engine
 
-# ---------------------------------------------------------
 # IMPORTAR MODELOS ANTES DE CREATE_ALL
-# ---------------------------------------------------------
 from backend.app.seguridad.roles.models import Rol
 from backend.app.empleados.models import Empleado
 from backend.app.seguridad.auditoria.models import Auditoria
@@ -20,7 +18,6 @@ from backend.app.intranet.documentos.models import Documento
 from backend.app.intranet.noticias.models import Noticia
 from backend.app.ctn.models import Notaria
 
-# Crear tablas
 Base.metadata.create_all(bind=engine)
 
 # ---------------------------------------------------------
@@ -51,13 +48,13 @@ app.add_middleware(
 )
 
 # ---------------------------------------------------------
-# STATIC FILES (FOTOS)
+# STATIC FILES
 # ---------------------------------------------------------
 FOTOS_DIR = os.path.join(os.path.dirname(__file__), "fotos")
 app.mount("/api/fotos", StaticFiles(directory=FOTOS_DIR), name="fotos")
 
 # ---------------------------------------------------------
-# IMPORTAR ROUTERS (AGRUPADOS POR CATEGORÍAS)
+# IMPORTAR ROUTERS
 # ---------------------------------------------------------
 
 # 🔐 AUTENTICACIÓN Y SEGURIDAD
@@ -83,11 +80,14 @@ from backend.app.intranet.noticias.router import router as noticias_router
 
 # 📅 AGENDA
 from backend.app.agenda.router import router as agenda_router
-from backend.app.websockets.agenda_ws import router as agenda_ws_router
 
-# 📨 MENSAJES / WEBSOCKETS
-from backend.app.mensajes.router_ws import router as mensajes_ws_router
+# 📨 WEBSOCKETS
+from backend.app.WebSockets.empleados_ws import router as empleados_ws_router
+from backend.app.WebSockets.intranet_ws import router as intranet_ws_router
+from backend.app.WebSockets.notificaciones_ws import router as notificaciones_ws_router
+from backend.app.WebSockets.agenda_ws import router as agenda_ws_router
 from backend.app.WebSockets.docs import router_ws_docs
+from backend.app.mensajes.router_ws import router as mensajes_ws_router
 from backend.app.realtime.router import router as realtime_router
 
 # 🛠️ HERRAMIENTAS SWAGGER
@@ -108,7 +108,7 @@ from backend.app.dashboard.router import router as dashboard_router
 from backend.app.Utilidades.router import router as utilidades_router
 
 # ---------------------------------------------------------
-# INCLUIR ROUTERS (ORDENADOS EN SWAGGER)
+# INCLUIR ROUTERS (ORDENADOS)
 # ---------------------------------------------------------
 
 # 🔐 Seguridad
@@ -134,12 +134,15 @@ app.include_router(noticias_router, prefix="/api")
 
 # 📅 Agenda
 app.include_router(agenda_router, prefix="/api")
-app.include_router(agenda_ws_router)
-app.include_router(realtime_router)
 
-# 📨 WebSockets
+# 📨 WebSockets (TODOS CORRECTOS)
+app.include_router(empleados_ws_router)
+app.include_router(intranet_ws_router)
+app.include_router(notificaciones_ws_router)
+app.include_router(agenda_ws_router)
 app.include_router(mensajes_ws_router)
 app.include_router(router_ws_docs)
+app.include_router(realtime_router)
 
 # 🛠️ Herramientas Swagger
 app.include_router(herramientas_router, prefix="/api")

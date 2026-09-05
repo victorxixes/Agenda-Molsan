@@ -64,7 +64,7 @@ app.mount("/api/fotos", StaticFiles(directory=FOTOS_DIR), name="fotos")
 from backend.app.auth.router import router as auth_router
 from backend.app.seguridad.roles.roles_router import router as roles_router
 from backend.app.seguridad.roles.asignar_rol_router import router as asignar_rol_router
-from backend.app.seguridad.asignar.asignar_password_router import router as asignar_password_router
+from backend.app.seguridad.asignar_password_router import router as asignar_password_router
 from backend.app.seguridad.permisos.permisos_router import router as permisos_router
 from backend.app.seguridad.permisos.asignar_router import router as asignar_router
 from backend.app.seguridad.permisos.repair_create_permisos_raw import router as permisos_repair_router

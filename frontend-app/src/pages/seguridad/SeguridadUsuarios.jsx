@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { useSeguridad } from "../../hooks/useSeguridad";
 
 export default function SeguridadUsuarios() {
   const {
     empleados,
+    roles,
     cargarTodo,
     bloquear,
     desbloquear,
@@ -69,23 +71,32 @@ export default function SeguridadUsuarios() {
               </td>
               <td className="p-2">{e.rol_id}</td>
               <td className="p-2 space-x-2">
+                <Link
+                  to={`/seguridad/ficha/${e.id}`}
+                  className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded"
+                >
+                  Ficha
+                </Link>
+
                 <button
                   className="px-2 py-1 text-xs bg-red-100 text-red-700 rounded"
                   onClick={() => onBloquear(e.id)}
                 >
                   Bloquear
                 </button>
+
                 <button
                   className="px-2 py-1 text-xs bg-green-100 text-green-700 rounded"
                   onClick={() => onDesbloquear(e.id)}
                 >
                   Desbloquear
                 </button>
+
                 <button
-                  className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded"
+                  className="px-2 py-1 text-xs bg-purple-100 text-purple-700 rounded"
                   onClick={() => setEmpleadoSeleccionado(e)}
                 >
-                  Password / Rol
+                  Seguridad
                 </button>
               </td>
             </tr>
@@ -96,10 +107,10 @@ export default function SeguridadUsuarios() {
       {empleadoSeleccionado && (
         <div className="mt-4 border rounded bg-white p-4">
           <h2 className="text-lg font-semibold mb-2">
-            Seguridad de {empleadoSeleccionado.nombre} ({empleadoSeleccionado.usuario})
+            Seguridad de {empleadoSeleccionado.nombre}
           </h2>
 
-          <div className="flex flex-col md:flex-row gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium mb-1">
                 Nueva contraseña
@@ -120,14 +131,21 @@ export default function SeguridadUsuarios() {
 
             <div>
               <label className="block text-sm font-medium mb-1">
-                Nuevo rol (ID)
+                Nuevo rol
               </label>
-              <input
-                type="number"
+              <select
                 className="border rounded px-2 py-1 w-full"
                 value={rolNuevo}
                 onChange={(e) => setRolNuevo(e.target.value)}
-              />
+              >
+                <option value="">Seleccionar rol…</option>
+                {roles.map((r) => (
+                  <option key={r.id} value={r.id}>
+                    {r.nombre}
+                  </option>
+                ))}
+              </select>
+
               <button
                 className="mt-2 px-3 py-1 bg-purple-600 text-white rounded text-sm"
                 onClick={() => onAsignarRol(empleadoSeleccionado.id)}

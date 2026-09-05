@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from backend.app.database import get_db
 from backend.app.empleados.models import Empleado
-from backend.app.seguridad.utils import hash_password   # ⭐ tu función de hash
+from backend.app.empleados.service import hash_password
 
 router = APIRouter(
     prefix="/seguridad/asignar",

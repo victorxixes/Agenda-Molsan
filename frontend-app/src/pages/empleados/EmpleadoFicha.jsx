@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { API_BASE } from "../../api/config";
 import {
   obtenerFichaCompleta,
   actualizarModulosVisibles,
@@ -63,11 +64,11 @@ const rol = empleado?.rol ?? {};
 
         <div className="mt-4 flex items-center gap-4">
           {empleado.foto && (
-            <img
-              src={empleado.foto}
-              alt="Foto empleado"
-              className="w-24 h-24 rounded object-cover border"
-            />
+<img
+  src={`${API_BASE}${empleado.foto}`}
+  alt="Foto empleado"
+  className="w-24 h-24 rounded object-cover border"
+/>
           )}
           <label className="text-sm">
             Subir nueva foto:

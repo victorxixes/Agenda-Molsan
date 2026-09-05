@@ -8,9 +8,10 @@ export const useMensajesWS = (empleadoId, otroId) => {
   const clearTyping = useMensajesStore((s) => s.clearTyping);
 
   useEffect(() => {
-    const ws = new WebSocket(
-      `${import.meta.env.VITE_WS}/ws/mensajes/${empleadoId}`
-    );
+const ws = new WebSocket(
+  `${import.meta.env.VITE_WS_URL}/ws/mensajes/${empleadoId}`
+);
+
 
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);

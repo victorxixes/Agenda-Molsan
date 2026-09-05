@@ -12,6 +12,8 @@ export const useAuthStore = create((set) => ({
       const res = await login(usuario, password);
 
       if (res.data.token && res.data.empleado) {
+
+        // Cargar ficha completa del empleado
         const ficha = await obtenerFichaCompleta(res.data.empleado.id);
 
         const empleado = {

@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { login } from "../api/auth";
+import { obtenerFichaCompleta } from "../api/empleados";
 import { API_BASE } from "../api/config";
 
 export const useAuthStore = create((set) => ({
@@ -11,11 +12,15 @@ export const useAuthStore = create((set) => ({
       const res = await login(usuario, password);
 
       if (res.data.token && res.data.empleado) {
+        const ficha = await obtenerFichaCompleta(res.data.empleado.id);
+
         const empleado = {
-          ...res.data.empleado,
-          foto: res.data.empleado.foto
-            ? `${API_BASE}${res.data.empleado.foto}`
+          ...ficha.data.empleado,
+          foto: ficha.data.empleado.foto
+            ? `${API_BASE}${ficha.data.empleado.foto}`
             : null,
+          modulos_visibles: ficha.data.modulos_visibles || [],
+          permisos_modulo: ficha.data.permisos_modulo || {},
         };
 
         set({

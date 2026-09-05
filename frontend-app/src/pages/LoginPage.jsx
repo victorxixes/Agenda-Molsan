@@ -4,7 +4,9 @@ import { useNavigate } from "react-router-dom";
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const login = useAuthStore((s) => s.login);
+
+  // ÚNICA función correcta del store
+  const iniciarSesion = useAuthStore((s) => s.iniciarSesion);
 
   const [usuario, setUsuario] = useState("");
   const [password, setPassword] = useState("");
@@ -15,11 +17,12 @@ export default function LoginPage() {
     e.preventDefault();
     setError(null);
 
-    try {
-      await login(usuario, password);
-      navigate("/");
-    } catch {
-      setError("Credenciales incorrectas o error de servidor");
+    const ok = await iniciarSesion(usuario, password);
+
+    if (ok) {
+      navigate("/panel/empleados");
+    } else {
+      setError("Credenciales incorrectas");
     }
   };
 

@@ -6,6 +6,6 @@ app = FastAPI()
 
 @app.post("/drop-roles")
 def drop_roles(db: Session = Depends(get_db)):
-    db.execute("DROP TABLE IF EXISTS roles;")
+    db.execute("DROP TABLE IF EXISTS roles CASCADE;")
     db.commit()
     return {"estado": "OK", "tabla_borrada": "roles"}

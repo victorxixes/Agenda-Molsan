@@ -13,7 +13,7 @@ import LoginPage from "./pages/LoginPage";
 import Ctn from "./pages/ctn/Ctn.jsx";
 import CtnDetallePage from "./pages/ctn/CtnDetallePage.jsx";
 
-/* LOGS (módulo general) */
+/* LOGS */
 import Logs from "./pages/logs/Logs.jsx";
 
 /* HERRAMIENTAS */
@@ -38,12 +38,11 @@ export default function App() {
       {/* LOGIN */}
       <Route path="/login" element={<LoginPage />} />
 
-      {/* REDIRECCIÓN INICIAL */}
+      {/* REDIRECCIÓN INICIAL CORRECTA */}
       <Route path="/" element={<Navigate to="/login" replace />} />
 
-      {/* RUTAS CON LAYOUT + PROTECCIÓN */}
+      {/* RUTAS PROTEGIDAS */}
       <Route element={<Layout />}>
-        {/* EMPLEADOS */}
         <Route
           path="/panel/empleados"
           element={
@@ -53,7 +52,6 @@ export default function App() {
           }
         />
 
-        {/* CTN */}
         <Route
           path="/ctn"
           element={
@@ -62,6 +60,7 @@ export default function App() {
             </RequireAuth>
           }
         />
+
         <Route
           path="/ctn/:id"
           element={
@@ -71,7 +70,6 @@ export default function App() {
           }
         />
 
-        {/* LOGS */}
         <Route
           path="/logs"
           element={
@@ -81,7 +79,6 @@ export default function App() {
           }
         />
 
-        {/* HERRAMIENTAS */}
         <Route
           path="/herramientas"
           element={
@@ -90,6 +87,7 @@ export default function App() {
             </RequireAuth>
           }
         />
+
         <Route
           path="/herramientas/importar-ctn"
           element={
@@ -98,6 +96,7 @@ export default function App() {
             </RequireAuth>
           }
         />
+
         <Route
           path="/herramientas/utilidades"
           element={
@@ -107,7 +106,6 @@ export default function App() {
           }
         />
 
-        {/* SEGURIDAD */}
         <Route
           path="/seguridad"
           element={
@@ -116,6 +114,7 @@ export default function App() {
             </RequireAuth>
           }
         />
+
         <Route
           path="/seguridad/usuarios"
           element={
@@ -124,6 +123,7 @@ export default function App() {
             </RequireAuth>
           }
         />
+
         <Route
           path="/seguridad/ficha/:id"
           element={
@@ -132,6 +132,7 @@ export default function App() {
             </RequireAuth>
           }
         />
+
         <Route
           path="/seguridad/auditoria"
           element={
@@ -140,6 +141,7 @@ export default function App() {
             </RequireAuth>
           }
         />
+
         <Route
           path="/seguridad/logs"
           element={
@@ -148,6 +150,7 @@ export default function App() {
             </RequireAuth>
           }
         />
+
         <Route
           path="/seguridad/roles/editor"
           element={

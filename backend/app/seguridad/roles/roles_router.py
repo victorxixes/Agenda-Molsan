@@ -14,11 +14,11 @@ router = APIRouter(
 # CREAR ROLES BASE (TU ENDPOINT)
 # ---------------------------------------------------------
 ROLES_BASE = [
-    {"id": 1, "nombre": "admin"},
-    {"id": 2, "nombre": "empleado"},
-    {"id": 3, "nombre": "rrhh"},
-    {"id": 4, "nombre": "direccion"},
-    {"id": 5, "nombre": "apoderado"},
+    {"id": 1, "nombre": "admin", "descripcion": "Administrador del sistema"},
+    {"id": 2, "nombre": "empleado", "descripcion": "Empleado estándar"},
+    {"id": 3, "nombre": "rrhh", "descripcion": "Recursos Humanos"},
+    {"id": 4, "nombre": "direccion", "descripcion": "Dirección"},
+    {"id": 5, "nombre": "apoderado", "descripcion": "Apoderado"},
 ]
 
 @router.post("/crear-base")
@@ -33,9 +33,9 @@ def crear_roles_base(db: Session = Depends(get_db)):
 
         if not existe:
             db.execute("""
-                INSERT INTO roles (id, nombre)
-                VALUES (:id, :nombre)
-            """, r)
+    INSERT INTO roles (id, nombre, descripcion)
+    VALUES (:id, :nombre, :descripcion)
+""", r)
             creados.append(r["nombre"])
 
     db.commit()

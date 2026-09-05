@@ -2,7 +2,7 @@ import { useEffect } from "react";
 
 export function useEmpleadosWS(onEvento) {
   useEffect(() => {
-    const ws = new WebSocket("wss://TU_BACKEND/ws/empleados");
+const ws = new WebSocket(`${import.meta.env.VITE_WS_URL}/ws/empleados`);
 
     ws.onmessage = (ev) => {
       try {

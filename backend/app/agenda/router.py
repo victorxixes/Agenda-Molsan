@@ -14,7 +14,7 @@ from backend.app.agenda.service import (
     eliminar_cita,
     mover_cita,
     obtener_cita,
-    cita_con_relaciones
+    cita_con_relaciones,
 )
 
 router = APIRouter(prefix="/agenda", tags=["Agenda"])
@@ -29,15 +29,14 @@ def buscar_citas(
     fecha: str | None = None,
     desde: str | None = None,
     hasta: str | None = None,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     q = db.query(Cita)
 
     if query:
         q = q.filter(
-            (Cita.tipo_cita.ilike(f"%{query}%")) |
-            (Cita.observacion.ilike(f"%{query}%")) |
-            (Cita.apoderado_s.ilike(f"%{query}%"))
+            (Cita.tipo_cita.ilike(f"%{query}%"))
+            | (Cita.observaciones.ilike(f"%{query}%"))
         )
 
     if notario_id:
@@ -112,7 +111,7 @@ def mover(id: int, nueva_fecha: str, nueva_hora_inicio: str, nueva_hora_fin: str
         id,
         date.fromisoformat(nueva_fecha),
         time.fromisoformat(nueva_hora_inicio),
-        time.fromisoformat(nueva_hora_fin)
+        time.fromisoformat(nueva_hora_fin),
     )
     if not movida:
         raise HTTPException(404, "Cita no encontrada")

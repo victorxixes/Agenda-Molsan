@@ -19,8 +19,6 @@ class Cita(Base):
     apoderado_id = Column(Integer, ForeignKey("empleados.id"), nullable=True)
     observaciones = Column(String, nullable=True)
 
-    estado = Column(String, nullable=True, default="Pendiente")
-
     notario = relationship(
         "Notaria",
         back_populates="citas",

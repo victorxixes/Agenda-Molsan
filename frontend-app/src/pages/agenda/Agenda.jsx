@@ -1,12 +1,17 @@
 import { useEffect, useState } from "react";
 import { useAgenda } from "../../hooks/useAgenda";
 import { useAgendaWS } from "../../hooks/useAgendaWS";
-import { crearCita, actualizarCita, eliminarCita } from "../../api/agenda";
 
 import VistaDia from "./VistaDia";
 import VistaSemana from "./VistaSemana";
 import VistaMes from "./VistaMes";
 import ModalNuevaCita from "./ModalNuevaCita";
+
+import {
+  crearCita,
+  editarCita,
+  eliminarCita,
+} from "../../api/agenda";
 
 export default function Agenda() {
   const {
@@ -19,7 +24,7 @@ export default function Agenda() {
   } = useAgenda();
 
   const [mostrarModal, setMostrarModal] = useState(false);
-  const [modalModo, setModalModo] = useState("crear"); // "crear" | "editar"
+  const [modalModo, setModalModo] = useState("crear"); // crear | editar
   const [fechaSeleccionada, setFechaSeleccionada] = useState(null);
   const [citaSeleccionada, setCitaSeleccionada] = useState(null);
 
@@ -56,8 +61,9 @@ export default function Agenda() {
     if (modalModo === "crear") {
       await crearCita(payload);
     } else {
-      await actualizarCita(citaSeleccionada.id, payload);
+      await editarCita(citaSeleccionada.id, payload);
     }
+
     setMostrarModal(false);
     recargarVista(payload.fecha);
   };
@@ -71,7 +77,8 @@ export default function Agenda() {
 
   return (
     <div className="p-6">
-      {/* botones vista */}
+      <h1 className="text-2xl font-bold mb-4">Agenda</h1>
+
       <div className="flex gap-2 mb-4">
         <button onClick={() => cargarDia(fechaActual)}>Día</button>
         <button onClick={() => cargarSemana(fechaActual)}>Semana</button>
@@ -87,20 +94,24 @@ export default function Agenda() {
         </button>
       </div>
 
-      {/* vistas */}
       <div>
         {vista === "dia" && (
           <VistaDia citas={citas} onCitaClick={abrirEditar} />
         )}
+
         {vista === "semana" && (
           <VistaSemana citas={citas} onCitaClick={abrirEditar} />
         )}
+
         {vista === "mes" && (
-          <VistaMes citas={citas} onDiaClick={abrirCrear} onCitaClick={abrirEditar} />
+          <VistaMes
+            citas={citas}
+            onDiaClick={abrirCrear}
+            onCitaClick={abrirEditar}
+          />
         )}
       </div>
 
-      {/* modal */}
       {mostrarModal && (
         <ModalNuevaCita
           fecha={fechaSeleccionada}

@@ -17,7 +17,6 @@ def fix_table():
                 notario_id INTEGER,
                 tipo_firma VARCHAR,
                 apoderado_id INTEGER,
-                observaciones VARCHAR,
-                estado VARCHAR DEFAULT 'Pendiente'
+                observaciones VARCHAR,                
             );
         """))

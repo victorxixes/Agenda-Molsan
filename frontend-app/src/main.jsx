@@ -4,8 +4,14 @@ import App from "./App.jsx";
 import { BrowserRouter } from "react-router-dom";
 import "./css/index.css";
 
+import { useAuthStore } from "./store/authStore";
+
+// 🔥 Hidración inicial del estado de autenticación
+useAuthStore.getState().init();
+
 ReactDOM.createRoot(document.getElementById("root")).render(
   <BrowserRouter>
     <App />
   </BrowserRouter>
 );
+

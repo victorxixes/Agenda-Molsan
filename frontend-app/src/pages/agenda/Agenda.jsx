@@ -1,3 +1,8 @@
+import VistaDia from "./VistaDia";
+import VistaSemana from "./VistaSemana";
+import VistaMes from "./VistaMes";
+
+
 import { useEffect } from "react";
 import { useAgenda } from "../../hooks/useAgenda";
 import { useAgendaWS } from "../../hooks/useAgendaWS";

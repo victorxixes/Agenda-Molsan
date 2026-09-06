@@ -1,5 +1,3 @@
-import VistaDia from "./VistaDia";
-import VistaSemana from "./VistaSemana";
 import VistaMes from "./VistaMes";
 
 

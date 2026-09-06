@@ -1,4 +1,4 @@
-export default function VistaSemana({ citas }) {
+export default function VistaSemana({ citas, onCitaClick }) {
   const diasSemana = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 
   const citasPorDia = {};
@@ -25,7 +25,8 @@ export default function VistaSemana({ citas }) {
             {citasDia.map((cita) => (
               <div
                 key={cita.id}
-                className="text-xs mb-2 p-1 border rounded bg-gray-50"
+                onClick={() => onCitaClick(cita)}
+                className="text-xs mb-2 p-1 border rounded bg-gray-50 cursor-pointer hover:bg-blue-50"
               >
                 <strong>{cita.hora_inicio}</strong> — {cita.tipo_cita}
               </div>

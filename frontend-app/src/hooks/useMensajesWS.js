@@ -11,6 +11,7 @@ export const useMensajesWS = (empleadoId, otroId) => {
 
   useEffect(() => {
     if (!empleadoId) return;
+    if (wsRef.current) return; // evita doble conexión
 
     const ws = new WebSocket(
       `${import.meta.env.VITE_WS_URL}/ws/mensajes/${empleadoId}`
@@ -18,35 +19,27 @@ export const useMensajesWS = (empleadoId, otroId) => {
 
     wsRef.current = ws;
 
-    ws.onopen = () => {
-      console.log("[WS-MSG] conectado");
-    };
-
-    ws.onerror = () => {
-      console.log("[WS-MSG] error en la conexión");
-    };
-
     ws.onmessage = (event) => {
-      let data;
+      if (!event.data) return;
 
+      let data;
       try {
         data = JSON.parse(event.data);
       } catch {
         return;
       }
 
-      // ONLINE / OFFLINE
+      if (!data || !data.tipo) return;
+
       if (data.tipo === "online" || data.tipo === "offline") {
         setConectados(data.user_id);
       }
 
-      // TYPING
       if (data.tipo === "typing") {
         setTyping(data.from);
         setTimeout(() => clearTyping(data.from), 1500);
       }
 
-      // MENSAJE / ARCHIVO
       if (
         data.tipo === "mensaje" ||
         data.tipo === "archivo" ||
@@ -57,12 +50,11 @@ export const useMensajesWS = (empleadoId, otroId) => {
       }
     };
 
-    ws.onclose = () => {
-      console.log("[WS-MSG] desconectado");
+    return () => {
+      wsRef.current?.close();
+      wsRef.current = null;
     };
-
-    return () => ws.close();
   }, [empleadoId, otroId]);
 
-  return wsRef; // ← DEVOLVEMOS EL WEBSOCKET
+  return wsRef;
 };

@@ -116,3 +116,12 @@ def mover(id: int, nueva_fecha: str, nueva_hora_inicio: str, nueva_hora_fin: str
     if not movida:
         raise HTTPException(404, "Cita no encontrada")
     return movida
+
+from backend.app.agenda.fix_table import fix_table
+
+from backend.app.agenda.fix_table import fix_table
+
+@router.post("/fix-table")
+def ejecutar_fix_table():
+    fix_table()
+    return {"status": "ok", "message": "agenda_citas recreada correctamente"}

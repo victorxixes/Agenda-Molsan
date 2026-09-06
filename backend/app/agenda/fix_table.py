@@ -3,10 +3,17 @@ from backend.app.database import engine
 
 def fix_table():
     with engine.begin() as conn:
+
+        # Eliminar tablas antiguas
         conn.execute(text("""
             DROP TABLE IF EXISTS agenda_citas CASCADE;
         """))
 
+        conn.execute(text("""
+            DROP TABLE IF EXISTS citas CASCADE;
+        """))
+
+        # Crear tabla nueva correcta
         conn.execute(text("""
             CREATE TABLE agenda_citas (
                 id SERIAL PRIMARY KEY,
@@ -17,6 +24,7 @@ def fix_table():
                 notario_id INTEGER,
                 tipo_firma VARCHAR,
                 apoderado_id INTEGER,
-                observaciones VARCHAR,                
+                observaciones VARCHAR,
+                estado VARCHAR DEFAULT 'Pendiente'
             );
         """))

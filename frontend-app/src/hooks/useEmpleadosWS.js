@@ -1,15 +1,26 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 export function useEmpleadosWS(onEvento) {
+  const wsRef = useRef(null);
+
   useEffect(() => {
-const ws = new WebSocket(`${import.meta.env.VITE_WS_URL}/ws/empleados`);
+    if (wsRef.current) return; // evita doble conexión en StrictMode
+
+    const ws = new WebSocket(`${import.meta.env.VITE_WS_URL}/ws/empleados`);
+    wsRef.current = ws;
 
     ws.onmessage = (ev) => {
+      if (!ev.data) return;
+
+      let data;
       try {
-        const data = JSON.parse(ev.data);
-        if (onEvento) onEvento(data);
+        data = JSON.parse(ev.data);
       } catch {
-        // ignorar
+        return;
+      }
+
+      if (data && data.tipo && onEvento) {
+        onEvento(data);
       }
     };
 
@@ -18,7 +29,8 @@ const ws = new WebSocket(`${import.meta.env.VITE_WS_URL}/ws/empleados`);
     };
 
     return () => {
-      ws.close();
+      wsRef.current?.close();
+      wsRef.current = null;
     };
-  }, [onEvento]);
+  }, []);
 }

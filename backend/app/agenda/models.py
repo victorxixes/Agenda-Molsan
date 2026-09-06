@@ -13,23 +13,22 @@ class Cita(Base):
     hora_fin = Column(Time, nullable=False)
     tipo_cita = Column(String, nullable=False)
 
-    vc = Column(String, nullable=True)
-    observacion = Column(String, nullable=True)
-    apoderado_s = Column(String, nullable=True)
-
-    # Relaciones reales
     notario_id = Column(Integer, ForeignKey("ctn_notarios.id"), nullable=True)
-    apoderado_id = Column(Integer, ForeignKey("empleados.id"), nullable=True)
+    tipo_firma = Column(String, nullable=True)
 
-    # ORM
+    apoderado_id = Column(Integer, ForeignKey("empleados.id"), nullable=True)
+    observaciones = Column(String, nullable=True)
+
+    estado = Column(String, nullable=True, default="Pendiente")
+
     notario = relationship(
         "Notaria",
         back_populates="citas",
-        lazy="joined"
+        lazy="joined",
     )
 
     apoderado = relationship(
         "Empleado",
         back_populates="citas",
-        lazy="joined"
+        lazy="joined",
     )

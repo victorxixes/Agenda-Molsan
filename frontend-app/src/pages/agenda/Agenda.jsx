@@ -1,10 +1,12 @@
-import VistaMes from "./VistaMes";
-import VistaMes from "./ModalNuevaCita";
-
-
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAgenda } from "../../hooks/useAgenda";
 import { useAgendaWS } from "../../hooks/useAgendaWS";
+
+import VistaDia from "./VistaDia";
+import VistaSemana from "./VistaSemana";
+import VistaMes from "./VistaMes";
+
+import ModalNuevaCita from "./ModalNuevaCita";
 
 export default function Agenda() {
   const {
@@ -16,11 +18,24 @@ export default function Agenda() {
     fechaActual,
   } = useAgenda();
 
+  const [mostrarModal, setMostrarModal] = useState(false);
+  const [fechaSeleccionada, setFechaSeleccionada] = useState(null);
+
   useAgendaWS(1); // usuario actual
 
   useEffect(() => {
     cargarDia(new Date().toISOString().slice(0, 10));
   }, []);
+
+  const abrirModal = (fecha) => {
+    setFechaSeleccionada(fecha);
+    setMostrarModal(true);
+  };
+
+  const guardarCita = (payload) => {
+    console.log("Guardar cita:", payload);
+    setMostrarModal(false);
+  };
 
   return (
     <div className="p-6">
@@ -44,9 +59,21 @@ export default function Agenda() {
       <div>
         {vista === "dia" && <VistaDia citas={citas} />}
         {vista === "semana" && <VistaSemana citas={citas} />}
-        {vista === "mes" && <VistaMes citas={citas} />}
+        {vista === "mes" && (
+          <VistaMes
+            citas={citas}
+            onDiaClick={abrirModal}
+          />
+        )}
       </div>
+
+      {mostrarModal && (
+        <ModalNuevaCita
+          fecha={fechaSeleccionada}
+          onClose={() => setMostrarModal(false)}
+          onGuardar={guardarCita}
+        />
+      )}
     </div>
   );
 }
-

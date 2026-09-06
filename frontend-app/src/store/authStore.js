@@ -3,11 +3,10 @@ import { login } from "../api/auth";
 import { obtenerFichaCompleta } from "../api/empleados";
 import { API_BASE } from "../api/config";
 
-// Función para extraer el ID del JWT
 function extraerIdDeToken(token) {
   try {
     const payload = JSON.parse(atob(token.split(".")[1]));
-    return payload.id; // tu JWT contiene "id"
+    return payload.id;
   } catch {
     return null;
   }
@@ -16,34 +15,41 @@ function extraerIdDeToken(token) {
 export const useAuthStore = create((set) => ({
   empleado: null,
   token: null,
+  loading: true,        // ← CLAVE
+  authReady: false,     // ← CLAVE
+
+  // 🔥 HIDRACIÓN INICIAL
+  init: () => {
+    const token = localStorage.getItem("token");
+    const empleado = localStorage.getItem("empleado");
+
+    if (token && empleado) {
+      set({
+        token,
+        empleado: JSON.parse(empleado),
+        loading: false,
+        authReady: true,
+      });
+    } else {
+      set({
+        token: null,
+        empleado: null,
+        loading: false,
+        authReady: true,
+      });
+    }
+  },
 
   iniciarSesion: async (usuario, password) => {
     try {
       const res = await login(usuario, password);
-      console.log("LOGIN RES:", res.data);
+      if (!res.data?.token) return false;
 
-      if (!res.data || !res.data.token) {
-        console.error("Login sin token");
-        return false;
-      }
+      let empleadoId = res.data.empleado?.id || extraerIdDeToken(res.data.token);
 
-      // Intentar obtener el ID desde el empleado
-      let empleadoId = res.data.empleado?.id;
+      if (!empleadoId) return false;
 
-      // Si no existe, obtenerlo desde el JWT
-      if (!empleadoId) {
-        empleadoId = extraerIdDeToken(res.data.token);
-        console.log("ID extraído del JWT:", empleadoId);
-      }
-
-      if (!empleadoId) {
-        console.error("No se pudo obtener empleado.id");
-        return false;
-      }
-
-      // Cargar ficha completa
       const ficha = await obtenerFichaCompleta(empleadoId);
-      console.log("FICHA COMPLETA:", ficha.data);
 
       const empleado = {
         ...ficha.data.empleado,
@@ -57,6 +63,8 @@ export const useAuthStore = create((set) => ({
       set({
         empleado,
         token: res.data.token,
+        loading: false,
+        authReady: true,
       });
 
       localStorage.setItem("token", res.data.token);

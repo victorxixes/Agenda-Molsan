@@ -2,64 +2,38 @@ from pydantic import BaseModel, validator
 from datetime import date, time
 from typing import Optional
 
-# =========================================================
-# BASE (solo columnas reales de la tabla)
-# =========================================================
+
 class CitaBase(BaseModel):
     fecha: date
     hora_inicio: time
     hora_fin: time
 
-    # ✔ Ahora permite cualquier tipo de cita (no rompe Dashboard)
     tipo_cita: str
 
-    # ✔ Permite None
     notario_id: Optional[int] = None
-    vc: Optional[str] = None
+    tipo_firma: Optional[str] = None
 
-    # ✔ Permite None
     apoderado_id: Optional[int] = None
-
-    observacion: Optional[str] = None
+    observaciones: Optional[str] = None
+    estado: Optional[str] = "Pendiente"
 
     @validator("tipo_cita")
     def validar_tipo_cita(cls, v):
-        # ✔ Ya no limita a 3 valores
         if not v or not isinstance(v, str):
             raise ValueError("tipo_cita debe ser un texto válido")
         return v
 
     @validator("notario_id")
     def validar_notario_si_firma(cls, v, values):
-        # ✔ Solo obliga notario si tipo_cita es EXACTAMENTE "Firma notarial"
         if values.get("tipo_cita") == "Firma notarial" and v is None:
             raise ValueError("notario_id es obligatorio para tipo_cita = Firma notarial")
         return v
 
 
-# =========================================================
-# CREATE
-# =========================================================
 class CitaCreate(CitaBase):
-
-    @validator("notario_id")
-    def validar_notario(cls, v, values):
-        tipo = (values.get("tipo_cita") or "").lower()
-        if tipo.startswith("firma") and v is None:
-            raise ValueError("El campo notario_id es obligatorio para citas de firma")
-        return v
-
-    @validator("vc")
-    def validar_vc(cls, v, values):
-        tipo = (values.get("tipo_cita") or "").lower()
-        if tipo.startswith("firma") and not v:
-            raise ValueError("El campo vc es obligatorio para citas de firma")
-        return v
+    pass
 
 
-# =========================================================
-# UPDATE
-# =========================================================
 class CitaUpdate(BaseModel):
     fecha: Optional[date] = None
     hora_inicio: Optional[time] = None
@@ -67,26 +41,21 @@ class CitaUpdate(BaseModel):
 
     tipo_cita: Optional[str] = None
     notario_id: Optional[int] = None
-    vc: Optional[str] = None
+    tipo_firma: Optional[str] = None
 
     apoderado_id: Optional[int] = None
-    observacion: Optional[str] = None
+    observaciones: Optional[str] = None
+    estado: Optional[str] = None
 
 
-# =========================================================
-# RESPONSE (incluye relaciones completas)
-# =========================================================
 class NotarioResponse(BaseModel):
     id: int
     nombre: str
-
-    # ✔ Ahora permite None (evita error 500 si apellidos es NULL)
     apellidos: Optional[str] = None
-
-    direccion: Optional[str] = None
     vc: Optional[str] = None
-    observacion: Optional[str] = None
     apoderado_id: Optional[int] = None
+    apoderado_s: Optional[str] = None
+    observacion: Optional[str] = None
 
     class Config:
         orm_mode = True
@@ -95,8 +64,6 @@ class NotarioResponse(BaseModel):
 class ApoderadoResponse(BaseModel):
     id: int
     nombre: str
-
-    # ✔ Permite None (evita error 500)
     apellidos: Optional[str] = None
 
     class Config:
@@ -108,9 +75,6 @@ class CitaResponse(CitaBase):
 
     notario: Optional[NotarioResponse] = None
     apoderado: Optional[ApoderadoResponse] = None
-
-    apoderado_s: Optional[str] = None
-    estado: Optional[str] = None
 
     class Config:
         orm_mode = True

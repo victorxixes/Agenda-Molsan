@@ -1,4 +1,5 @@
 import VistaMes from "./VistaMes";
+import VistaMes from "./ModalNuevaCita";
 
 
 import { useEffect } from "react";

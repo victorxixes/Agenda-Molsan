@@ -4,13 +4,12 @@ import { useAuthStore } from "../../store/authStore";
 export default function RequireAuth({ children }) {
   const token = useAuthStore((s) => s.token);
   const loading = useAuthStore((s) => s.loading);
+  const authReady = useAuthStore((s) => s.authReady);
 
-  // 1) Mientras carga → no redirigir
-  if (loading) {
-    return null; // o spinner si quieres
+  if (!authReady || loading) {
+    return null; // o spinner
   }
 
-  // 2) Cuando ya sabemos si hay token → decidir
   if (!token) {
     return <Navigate to="/login" replace />;
   }

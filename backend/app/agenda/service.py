@@ -8,49 +8,29 @@ from backend.app.empleados.models import Empleado
 from backend.app.agenda.schemas import CitaResponse
 
 
-# ---------------------------------------------------------
-# CONVERTIR CITA → OBJETO COMPLETO PARA EL FRONTEND
-# ---------------------------------------------------------
 def cita_con_relaciones(db: Session, cita: Cita):
     if not cita:
         return None
 
-    # Relaciones ORM
     notario = cita.notario
     apoderado_obj = cita.apoderado
 
-    # Tipo firma calculado desde VC
-    tipo_firma = (
-        "Videoconferencia" if cita.vc == "SI"
-        else "Presencial" if cita.vc == "NO"
-        else None
-    )
-
-    # Apoderado visible
-    if apoderado_obj:
-        apoderado_s = f"{apoderado_obj.nombre} {apoderado_obj.apellidos}"
-    else:
-        apoderado_s = cita.apoderado_s
-
     return CitaResponse(
-          id=cita.id,
+        id=cita.id,
         fecha=cita.fecha,
         hora_inicio=cita.hora_inicio,
         hora_fin=cita.hora_fin,
         tipo_cita=cita.tipo_cita,
-        vc=cita.vc,
-        tipo_firma=tipo_firma,
         notario_id=cita.notario_id,
-        notario=notario,
+        tipo_firma=cita.tipo_firma,
         apoderado_id=cita.apoderado_id,
+        observaciones=cita.observaciones,
+        estado=cita.estado,
+        notario=notario,
         apoderado=apoderado_obj,
-        apoderado_s=apoderado_s,
-        observacion=cita.observacion,
     )
 
-# ---------------------------------------------------------
-# OBTENER CITA POR ID
-# ---------------------------------------------------------
+
 def obtener_cita(db: Session, cita_id: int):
     cita = db.query(Cita).filter(Cita.id == cita_id).first()
     if not cita:
@@ -58,9 +38,6 @@ def obtener_cita(db: Session, cita_id: int):
     return cita_con_relaciones(db, cita)
 
 
-# ---------------------------------------------------------
-# LISTAR CITAS POR DÍA
-# ---------------------------------------------------------
 def listar_citas_dia(db: Session, fecha: date):
     citas = (
         db.query(Cita)
@@ -71,9 +48,6 @@ def listar_citas_dia(db: Session, fecha: date):
     return [cita_con_relaciones(db, c) for c in citas]
 
 
-# ---------------------------------------------------------
-# LISTAR CITAS POR SEMANA
-# ---------------------------------------------------------
 def listar_citas_semana(db: Session, fecha: date):
     inicio_semana = fecha
     fin_semana = fecha + timedelta(days=6)
@@ -88,9 +62,6 @@ def listar_citas_semana(db: Session, fecha: date):
     return [cita_con_relaciones(db, c) for c in citas]
 
 
-# ---------------------------------------------------------
-# LISTAR CITAS POR MES
-# ---------------------------------------------------------
 def listar_citas_mes(db: Session, year: int, month: int):
     last_day = monthrange(year, month)[1]
 
@@ -107,17 +78,31 @@ def listar_citas_mes(db: Session, year: int, month: int):
     return [cita_con_relaciones(db, c) for c in citas]
 
 
-# ---------------------------------------------------------
-# CREAR CITA
-# ---------------------------------------------------------
+def _rellenar_desde_notario(db: Session, cita: Cita):
+    if not cita.notario_id:
+        return
+
+    notaria = db.query(Notaria).filter(Notaria.id == cita.notario_id).first()
+    if not notaria:
+        return
+
+    # Tipo de firma desde vc (si la usas como tal)
+    if not cita.tipo_firma and notaria.vc:
+        cita.tipo_firma = notaria.vc
+
+    # Apoderado desde notario
+    if not cita.apoderado_id and notaria.apoderado_id:
+        cita.apoderado_id = notaria.apoderado_id
+
+    # Observaciones desde notario
+    if not cita.observaciones and notaria.observacion:
+        cita.observaciones = notaria.observacion
+
+
 def crear_cita(db: Session, data):
     cita = Cita(**data.dict())
 
-    # Rellenar apoderado_s automáticamente
-    if cita.apoderado_id:
-        apo = db.query(Empleado).filter(Empleado.id == cita.apoderado_id).first()
-        if apo:
-            cita.apoderado_s = f"{apo.nombre} {apo.apellidos}"
+    _rellenar_desde_notario(db, cita)
 
     db.add(cita)
     db.commit()
@@ -125,9 +110,6 @@ def crear_cita(db: Session, data):
     return cita_con_relaciones(db, cita)
 
 
-# ---------------------------------------------------------
-# EDITAR CITA
-# ---------------------------------------------------------
 def editar_cita(db: Session, cita_id: int, data):
     cita = db.query(Cita).filter(Cita.id == cita_id).first()
     if not cita:
@@ -136,14 +118,13 @@ def editar_cita(db: Session, cita_id: int, data):
     for key, value in data.dict(exclude_unset=True).items():
         setattr(cita, key, value)
 
+    _rellenar_desde_notario(db, cita)
+
     db.commit()
     db.refresh(cita)
     return cita_con_relaciones(db, cita)
 
 
-# ---------------------------------------------------------
-# ELIMINAR CITA
-# ---------------------------------------------------------
 def eliminar_cita(db: Session, cita_id: int):
     cita = db.query(Cita).filter(Cita.id == cita_id).first()
     if not cita:
@@ -154,9 +135,6 @@ def eliminar_cita(db: Session, cita_id: int):
     return True
 
 
-# ---------------------------------------------------------
-# MOVER CITA (drag & drop)
-# ---------------------------------------------------------
 def mover_cita(db: Session, cita_id: int, nueva_fecha: date, nueva_hora_inicio: time, nueva_hora_fin: time):
     cita = db.query(Cita).filter(Cita.id == cita_id).first()
     if not cita:

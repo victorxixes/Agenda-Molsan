@@ -38,7 +38,7 @@ export const useSeguridadStore = create((set, get) => ({
   // FICHA EMPLEADO
   // ---------------------------------------------------------
   cargarFicha: async (id) => {
-    const res = await axios.get(`${API}/seguridad/ficha/${id}`);
+    const res = axios.get(`${API}/seguridad/empleado/${id}/ficha-completa`);
     set({ ficha: res.data });
   },
 

@@ -1,3 +1,5 @@
+import React from "react";
+
 const DIAS = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 const HORAS = Array.from({ length: 12 }, (_, i) => `${9 + i}:00`);
 
@@ -13,10 +15,12 @@ function colorPorTipo(tipo) {
 }
 
 export default function VistaSemana({
-  citas = [],            // ⭐ SIEMPRE array
+  citas = [],
   onCitaClick,
   onCrearCita,
 }) {
+  const citasSeguras = Array.isArray(citas) ? citas : [];
+
   return (
     <div className="grid grid-cols-[80px,repeat(7,1fr)] gap-1 text-xs">
       <div />
@@ -29,9 +33,7 @@ export default function VistaSemana({
 
       {HORAS.map((h) => (
         <React.Fragment key={h}>
-          <div
-            className="h-16 flex items-start justify-end pr-2 text-gray-500"
-          >
+          <div className="h-16 flex items-start justify-end pr-2 text-gray-500">
             {h}
           </div>
 
@@ -43,7 +45,7 @@ export default function VistaSemana({
                 onCrearCita(new Date().toISOString().slice(0, 10))
               }
             >
-              {(citas || [])        // ⭐ blindaje extra
+              {citasSeguras
                 .filter((c) => {
                   const fecha = new Date(c.fecha);
                   return fecha.getDay() === ((idx + 1) % 7);

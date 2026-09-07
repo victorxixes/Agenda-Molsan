@@ -1,13 +1,18 @@
 import { useSeguridad } from "../../hooks/useSeguridad";
 
 export default function SeguridadModulos() {
-  const { modulos, guardarModulos } = useSeguridad();
+  const { ficha, asignarModulos } = useSeguridad();
+
+  // Los módulos vienen de la ficha del empleado
+  const modulos = ficha?.modulos || [];
 
   const cambiar = (mod) => {
     const nuevo = modulos.map((m) =>
       m.nombre === mod.nombre ? { ...m, visible: !m.visible } : m
     );
-    guardarModulos(nuevo);
+
+    // Guardar en backend
+    asignarModulos(ficha.id, nuevo);
   };
 
   return (

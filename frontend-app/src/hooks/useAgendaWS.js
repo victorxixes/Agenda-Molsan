@@ -6,7 +6,11 @@ export const useAgendaWS = (usuarioId) => {
   const wsRef = useRef(null);
 
   useEffect(() => {
-    if (wsRef.current) return; // evita doble conexión en StrictMode
+if (wsRef.current) {
+  try {
+    wsRef.current.close();
+  } catch {}
+}
 
     const ws = new WebSocket(`${import.meta.env.VITE_WS_URL}/ws/agenda`);
     wsRef.current = ws;

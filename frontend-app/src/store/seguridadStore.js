@@ -18,18 +18,20 @@ export const useSeguridadStore = create((set, get) => ({
   cargarTodo: async () => {
     set({ loading: true });
 
-    const [roles, empleados, auditoria, logs] = await Promise.all([
+    const [roles, permisos, empleados, auditoria, logs] = await Promise.all([
       axios.get(`${API}/seguridad/roles`),
+      axios.get(`${API}/seguridad/permisos`),
       axios.get(`${API}/empleados`),
       axios.get(`${API}/seguridad/auditoria`),
       axios.get(`${API}/seguridad/logs`)
     ]);
 
     set({
-      roles: roles.data,
-      empleados: empleados.data,
-      auditoria: auditoria.data,
-      logs: logs.data,
+      roles: roles.data || [],
+      permisos: permisos.data || [],
+      empleados: empleados.data || [],
+      auditoria: auditoria.data || [],
+      logs: logs.data || [],
       loading: false
     });
   },
@@ -38,8 +40,8 @@ export const useSeguridadStore = create((set, get) => ({
   // FICHA EMPLEADO
   // ---------------------------------------------------------
   cargarFicha: async (id) => {
-    const res = axios.get(`${API}/seguridad/empleado/${id}/ficha-completa`);
-    set({ ficha: res.data });
+    const res = await axios.get(`${API}/seguridad/empleado/${id}/ficha-completa`);
+    set({ ficha: res.data || {} });
   },
 
   // ---------------------------------------------------------

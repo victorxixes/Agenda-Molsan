@@ -1,7 +1,26 @@
+.modal-overlay-sj {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(2px);
+  animation: fadeIn 0.25s ease-out;
+}
+
 .modal-sj {
   background: var(--sj-blanco);
   border-radius: var(--sj-radius);
   padding: 32px;
   box-shadow: var(--sj-shadow);
   width: 450px;
+  animation: fadeIn 0.25s ease-out;
+}
+
+.modal-sj-header {
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.modal-sj-footer {
+  margin-top: 24px;
+  text-align: right;
 }

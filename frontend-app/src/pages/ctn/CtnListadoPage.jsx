@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useCtn } from "../../hooks/useCtn";
-import { Link } from "react-router-dom";
+import ModalCtnDetalle from "../../components/ctn/ModalCtnDetalle";
 
 export default function CtnListadoPage() {
   const { items, total, page, page_size, cargarNotarias, loading } = useCtn();
@@ -13,11 +13,19 @@ export default function CtnListadoPage() {
     q: "",
   });
 
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selected, setSelected] = useState(null);
+
   useEffect(() => {
     cargarNotarias();
   }, []);
 
   const aplicarFiltros = () => cargarNotarias(filtros);
+
+  const abrirDetalle = (notaria) => {
+    setSelected(notaria);
+    setModalOpen(true);
+  };
 
   return (
     <div className="space-y-4">
@@ -86,12 +94,12 @@ export default function CtnListadoPage() {
                 <td>{n.provincia}</td>
                 <td>{n.municipio}</td>
                 <td>
-                  <Link
-                    to={`/ctn/${n.id}`}
+                  <button
+                    onClick={() => abrirDetalle(n)}
                     className="text-blue-600 underline"
                   >
                     Ver detalle
-                  </Link>
+                  </button>
                 </td>
               </tr>
             ))}
@@ -103,6 +111,13 @@ export default function CtnListadoPage() {
       <p className="text-sm text-gray-600">
         Página {page} — {items.length} de {total}
       </p>
+
+      {/* MODAL */}
+      <ModalCtnDetalle
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        notaria={selected}
+      />
     </div>
   );
 }

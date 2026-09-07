@@ -3,13 +3,21 @@ import * as api from "../api/agenda";
 
 export const useAgendaStore = create((set, get) => ({
   citas: [],
-  vista: "dia", // dia | semana | mes
+  vista: "mes",   // ⭐ Vista por defecto: MES
   fechaActual: new Date().toISOString().slice(0, 10),
 
-  cargarDia: async (fecha) => {
-    const res = await api.getCitasDia(fecha);
-    set({ citas: res.data, vista: "dia", fechaActual: fecha });
+  cargarMes: async (year, month) => {
+    const res = await api.getCitasMes(year, month);
+    set({ citas: res.data || [], vista: "mes", fechaActual: `${year}-${month}-01` });
   },
+
+  refrescarVista: async () => {
+    const { fechaActual } = get();
+    const d = new Date(fechaActual);
+    return get().cargarMes(d.getFullYear(), d.getMonth() + 1);
+  },
+}));
+
 
   cargarSemana: async (fecha) => {
     const res = await api.getCitasSemana(fecha);

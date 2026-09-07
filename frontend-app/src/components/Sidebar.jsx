@@ -109,7 +109,7 @@ export default function Sidebar() {
         {puedeVerModulo("herramientas") && item("/herramientas", "Herramientas", "tools")}
         {puedeVerModulo("logs") && item("/logs", "Logs", "clipboard")}
         {puedeVerModulo("seguridad") && item("/seguridad", "Seguridad", "shield")}
-        {puedeVerModulo("utilidades") && item("/utilidades", "Utilidades", "cog")}
+        {puedeVerModulo("utilidades") && item("/herramientas/utilidades", "Utilidades", "cog")}
         {puedeVerModulo("inicializacion") &&
           item("/utilidades/inicializacion", "Inicialización", "refresh")}
       </nav>

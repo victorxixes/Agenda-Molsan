@@ -217,37 +217,66 @@ export default function SeguridadFicha() {
         </ul>
       </div>
 
-      {/* AUDITORÍA DEL USUARIO */}
+      {/* AUDITORÍA DEL SISTEMA */}
       <div className="border p-4 rounded bg-white shadow">
-        <h2 className="text-xl font-semibold mb-3">Auditoría del usuario</h2>
+        <h2 className="text-xl font-semibold mb-3">Auditoría del sistema</h2>
 
-        <ul className="space-y-2 text-sm">
-          {auditoria
-            .filter((a) => a.usuario === empleado.usuario)
-            .slice(0, 10)
-            .map((a) => (
-              <li key={a.id} className="border-b pb-1">
-                <strong>{a.fecha}</strong> — {a.accion} ({a.modulo})
-                <div className="text-gray-600">{a.descripcion}</div>
-              </li>
-            ))}
-        </ul>
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b bg-gray-100">
+              <th className="p-2">Fecha</th>
+              <th className="p-2">Usuario</th>
+              <th className="p-2">Módulo</th>
+              <th className="p-2">Acción</th>
+              <th className="p-2">Descripción</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {auditoria
+              .filter((a) => a.usuario === empleado.usuario)
+              .slice(0, 20)
+              .map((a) => (
+                <tr key={a.id} className="border-b">
+                  <td className="p-2">{a.fecha}</td>
+                  <td className="p-2">{a.usuario}</td>
+                  <td className="p-2">{a.modulo}</td>
+                  <td className="p-2">{a.accion}</td>
+                  <td className="p-2">{a.descripcion}</td>
+                </tr>
+              ))}
+          </tbody>
+        </table>
       </div>
 
       {/* LOGS DEL USUARIO */}
       <div className="border p-4 rounded bg-white shadow">
         <h2 className="text-xl font-semibold mb-3">Logs del usuario</h2>
 
-        <ul className="space-y-2 text-sm">
-          {logs
-            .filter((l) => l.usuario === empleado.usuario)
-            .slice(0, 10)
-            .map((l) => (
-              <li key={l.id} className="border-b pb-1">
-                <strong>{l.fecha}</strong> — {l.tipo}: {l.mensaje}
-              </li>
-            ))}
-        </ul>
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b bg-gray-100">
+              <th className="p-2">Fecha</th>
+              <th className="p-2">Evento</th>
+              <th className="p-2">Detalle</th>
+              <th className="p-2">IP</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {logs
+              .filter((l) => l.usuario === empleado.usuario)
+              .slice(0, 20)
+              .map((l) => (
+                <tr key={l.id} className="border-b">
+                  <td className="p-2">{l.fecha}</td>
+                  <td className="p-2">{l.evento}</td>
+                  <td className="p-2">{l.detalle || "-"}</td>
+                  <td className="p-2">{l.ip || "-"}</td>
+                </tr>
+              ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );

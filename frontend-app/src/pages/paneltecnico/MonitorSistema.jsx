@@ -1,6 +1,6 @@
 import MonitorRealtime from "./MonitorRealtime";
 import { useEffect, useState } from "react";
-import { listarTablas, describirTabla, obtenerContenidoTabla } from "../../api/monitorBd";
+import { listarTablas, describirTabla, obtenerContenidoTabla } from "../../api/monitorRealtime";
 
 export default function MonitorSistema({ baseUrl }) {
   const [tablas, setTablas] = useState([]);

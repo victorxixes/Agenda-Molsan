@@ -70,11 +70,23 @@ class ApoderadoResponse(BaseModel):
         orm_mode = True
 
 
-class CitaResponse(CitaBase):
+class CitaResponse(BaseModel):
     id: int
+    fecha: date
+    hora_inicio: time
+    hora_fin: time
+    tipo_cita: str
+    tipo_firma: str | None
+    observaciones: str | None
 
-    notario: Optional[NotarioResponse] = None
-    apoderado: Optional[ApoderadoResponse] = None
+    notario_id: int | None
+    notario_nombre: str | None
+    notario: Empleado | None
+
+    apoderado_id: int | None
+    apoderado_nombre: str | None
+    apoderado: Empleado | None
 
     class Config:
         orm_mode = True
+

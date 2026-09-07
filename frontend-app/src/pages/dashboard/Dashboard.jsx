@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useDashboardExtendido } from "../../hooks/useDashboardExtendido";
+import { useDashboard } from "../../hooks/useDashboard";
 
 export default function Dashboard() {
   const {

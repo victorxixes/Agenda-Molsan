@@ -24,11 +24,12 @@ export default function Agenda() {
   }, []);
 
   const abrirCrear = (fecha) => {
-    setModalModo("crear");
-    setFechaSeleccionada(fecha);
-    setCitaSeleccionada(null);
-    setMostrarModal(true);
-  };
+  if (!fecha) return; // ⭐ Blindaje
+  setModalModo("crear");
+  setFechaSeleccionada(fecha);
+  setCitaSeleccionada(null);
+  setMostrarModal(true);
+};
 
   const abrirEditar = (cita) => {
     setModalModo("editar");

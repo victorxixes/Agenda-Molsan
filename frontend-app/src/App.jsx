@@ -1,7 +1,9 @@
 import { Routes, Route, Navigate } from "react-router-dom";
+import { useEffect } from "react";
 
 /* AUTH */
 import RequireAuth from "./components/auth/RequireAuth";
+import { useAuthStore } from "./store/authStore";
 
 /* LAYOUT */
 import Layout from "./layout/Layout";
@@ -35,12 +37,6 @@ import Intranet from "./pages/intranet/Intranet.jsx";
 
 /* MENSAJES */
 import Mensajes from "./pages/mensajes/Mensajes.jsx";
-import { useAuthStore } from "./store/authStore";
-
-function MensajesWrapper() {
-  const empleado = useAuthStore((s) => s.empleado);
-  return <Mensajes usuarioId={empleado?.id} />;
-}
 
 /* HERRAMIENTAS */
 import Herramientas from "./pages/herramientas/Herramientas.jsx";
@@ -64,14 +60,25 @@ import LogsAvanzados from "./pages/paneltecnico/LogsAvanzados.jsx";
 import Seguridad from "./pages/seguridad/Seguridad.jsx";
 import SeguridadUsuarios from "./pages/seguridad/SeguridadUsuarios.jsx";
 import SeguridadRoles from "./pages/seguridad/SeguridadRoles.jsx";
-import SeguridadModulos from "./pages/seguridad/SeguridadModulos.jsx";  // ✔ FIX
+import SeguridadModulos from "./pages/seguridad/SeguridadModulos.jsx";
 import SeguridadPermisos from "./pages/seguridad/SeguridadPermisos.jsx";
 import SeguridadFicha from "./pages/seguridad/SeguridadFicha.jsx";
 import SeguridadAuditoria from "./pages/seguridad/SeguridadAuditoria.jsx";
 import SeguridadLogs from "./pages/seguridad/SeguridadLogs.jsx";
 import SeguridadRolEditor from "./pages/seguridad/SeguridadRolEditor.jsx";
 
+function MensajesWrapper() {
+  const empleado = useAuthStore((s) => s.empleado);
+  return <Mensajes usuarioId={empleado?.id} />;
+}
+
 export default function App() {
+  const init = useAuthStore((s) => s.init);
+
+  useEffect(() => {
+    init();
+  }, []);
+
   return (
     <Routes>
       {/* LOGIN */}

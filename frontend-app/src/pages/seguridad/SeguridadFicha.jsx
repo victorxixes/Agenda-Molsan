@@ -25,15 +25,36 @@ export default function SeguridadFicha() {
   const [showModulos, setShowModulos] = useState(false);
   const [showPermisos, setShowPermisos] = useState(false);
 
+  // Filtros
+  const [filtroFecha, setFiltroFecha] = useState("");
+  const [filtroModulo, setFiltroModulo] = useState("");
+
+  // Ordenación
+  const [orden, setOrden] = useState({ campo: "fecha", asc: false });
+
+  const ordenar = (campo) => {
+    setOrden((prev) => ({
+      campo,
+      asc: prev.campo === campo ? !prev.asc : true
+    }));
+  };
+
+  // Iconos por tipo de acción
+  const iconosAccion = {
+    login: "🔐",
+    logout: "🚪",
+    update: "✏️",
+    delete: "🗑️",
+    error: "⚠️",
+    acceso: "📥",
+    default: "📄"
+  };
+
   // Paginación auditoría
   const [paginaAuditoria, setPaginaAuditoria] = useState(0);
-  const auditoriaFiltrada = auditoria.filter(a => a.usuario === ficha?.empleado?.usuario);
-  const auditoriaPaginada = auditoriaFiltrada.slice(paginaAuditoria * 10, paginaAuditoria * 10 + 10);
 
   // Paginación logs
   const [paginaLogs, setPaginaLogs] = useState(0);
-  const logsFiltrados = logs.filter(l => l.usuario === ficha?.empleado?.usuario);
-  const logsPaginados = logsFiltrados.slice(paginaLogs * 10, paginaLogs * 10 + 10);
 
   useEffect(() => {
     cargarFicha(id);
@@ -77,6 +98,47 @@ export default function SeguridadFicha() {
 
     asignarPermisos(empleado.id, nuevo);
   };
+
+  // ---------------------------
+  // AUDITORÍA — FILTROS + ORDEN + PAGINACIÓN
+  // ---------------------------
+
+  const auditoriaFiltrada = auditoria.filter(
+    (a) => a.usuario === empleado.usuario
+  );
+
+  const auditoriaOrdenada = [...auditoriaFiltrada].sort((a, b) => {
+    const campo = orden.campo;
+    const asc = orden.asc ? 1 : -1;
+
+    if (a[campo] < b[campo]) return -1 * asc;
+    if (a[campo] > b[campo]) return 1 * asc;
+    return 0;
+  });
+
+  const auditoriaFiltradaFinal = auditoriaOrdenada.filter((a) => {
+    const coincideFecha = filtroFecha ? a.fecha.startsWith(filtroFecha) : true;
+    const coincideModulo = filtroModulo
+      ? a.modulo.toLowerCase().includes(filtroModulo)
+      : true;
+    return coincideFecha && coincideModulo;
+  });
+
+  const auditoriaPaginada = auditoriaFiltradaFinal.slice(
+    paginaAuditoria * 10,
+    paginaAuditoria * 10 + 10
+  );
+
+  // ---------------------------
+  // LOGS — PAGINACIÓN
+  // ---------------------------
+
+  const logsFiltrados = logs.filter((l) => l.usuario === empleado.usuario);
+
+  const logsPaginados = logsFiltrados.slice(
+    paginaLogs * 10,
+    paginaLogs * 10 + 10
+  );
 
   return (
     <div className="p-6 space-y-6">
@@ -245,17 +307,49 @@ export default function SeguridadFicha() {
         )}
       </div>
 
-      {/* AUDITORÍA DEL SISTEMA (PAGINADA) */}
+      {/* AUDITORÍA DEL SISTEMA */}
       <div className="border p-4 rounded bg-white shadow">
         <h2 className="text-xl font-semibold mb-3">Auditoría del sistema</h2>
+
+        {/* Filtros */}
+        <div className="flex gap-4 mb-3">
+          <div>
+            <label className="text-sm">Filtrar por fecha</label>
+            <input
+              type="date"
+              className="border rounded px-2 py-1"
+              value={filtroFecha}
+              onChange={(e) => setFiltroFecha(e.target.value)}
+            />
+          </div>
+
+          <div>
+            <label className="text-sm">Buscar módulo</label>
+            <input
+              type="text"
+              className="border rounded px-2 py-1"
+              placeholder="agenda, intranet, mensajes..."
+              value={filtroModulo}
+              onChange={(e) => setFiltroModulo(e.target.value.toLowerCase())}
+            />
+          </div>
+        </div>
 
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b bg-gray-100">
-              <th className="p-2">Fecha</th>
-              <th className="p-2">Usuario</th>
-              <th className="p-2">Módulo</th>
-              <th className="p-2">Acción</th>
+              <th className="p-2 cursor-pointer" onClick={() => ordenar("fecha")}>
+                Fecha {orden.campo === "fecha" ? (orden.asc ? "▲" : "▼") : ""}
+              </th>
+              <th className="p-2 cursor-pointer" onClick={() => ordenar("usuario")}>
+                Usuario {orden.campo === "usuario" ? (orden.asc ? "▲" : "▼") : ""}
+              </th>
+              <th className="p-2 cursor-pointer" onClick={() => ordenar("modulo")}>
+                Módulo {orden.campo === "modulo" ? (orden.asc ? "▲" : "▼") : ""}
+              </th>
+              <th className="p-2 cursor-pointer" onClick={() => ordenar("accion")}>
+                Acción {orden.campo === "accion" ? (orden.asc ? "▲" : "▼") : ""}
+              </th>
               <th className="p-2">Descripción</th>
             </tr>
           </thead>
@@ -266,7 +360,9 @@ export default function SeguridadFicha() {
                 <td className="p-2">{a.fecha}</td>
                 <td className="p-2">{a.usuario}</td>
                 <td className="p-2">{a.modulo}</td>
-                <td className="p-2">{a.accion}</td>
+                <td className="p-2">
+                  {iconosAccion[a.accion] || iconosAccion.default} {a.accion}
+                </td>
                 <td className="p-2">{a.descripcion}</td>
               </tr>
             ))}
@@ -284,7 +380,7 @@ export default function SeguridadFicha() {
           </button>
 
           <button
-            disabled={(paginaAuditoria + 1) * 10 >= auditoriaFiltrada.length}
+            disabled={(paginaAuditoria + 1) * 10 >= auditoriaFiltradaFinal.length}
             onClick={() => setPaginaAuditoria(paginaAuditoria + 1)}
             className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
           >
@@ -293,7 +389,7 @@ export default function SeguridadFicha() {
         </div>
       </div>
 
-      {/* LOGS DEL USUARIO (PAGINADOS) */}
+      {/* LOGS DEL USUARIO */}
       <div className="border p-4 rounded bg-white shadow">
         <h2 className="text-xl font-semibold mb-3">Logs del usuario</h2>
 

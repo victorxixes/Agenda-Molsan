@@ -3,8 +3,8 @@ import { useDashboardExtendido } from "../../hooks/useDashboardExtendido";
 
 export default function Dashboard() {
   const {
-    data = null,
-    loading = true,
+    data,
+    loading,
     cargarDashboard,
   } = useDashboardExtendido();
 

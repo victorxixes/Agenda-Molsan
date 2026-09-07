@@ -1,8 +1,7 @@
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from typing import List
 
-# SIN prefix, definimos la ruta completa en el decorator
-router = APIRouter(tags=["Agenda WebSocket"])
+router = APIRouter(prefix="/ws", tags=["Agenda WebSocket"])
 
 
 class AgendaWebSocketManager:
@@ -28,13 +27,12 @@ class AgendaWebSocketManager:
 manager = AgendaWebSocketManager()
 
 
-@router.websocket("/ws/agenda")
+@router.websocket("/agenda")
 async def agenda_ws(websocket: WebSocket):
     await manager.connect(websocket)
 
     try:
         while True:
-            # Mantener conexión abierta; si no esperas mensajes, usa receive_text()
             await websocket.receive_text()
     except WebSocketDisconnect:
         manager.disconnect(websocket)

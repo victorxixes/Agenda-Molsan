@@ -474,23 +474,27 @@ export default function SeguridadFicha() {
           </tbody>
         </table>
 
-      {/* PAGINACIÓN */}
-<div className="flex items-center gap-3 mt-4">
-  <button
-    disabled={paginaAud === 0}
-    onClick={() => setPaginaAud(paginaAud - 1)}
-    className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
-  >
-    ← Anterior
-  </button>
+     {/* PAGINACIÓN */}
+        <div className="flex items-center gap-3 mt-4">
+          <button
+            disabled={paginaLog === 0}
+            onClick={() => setPaginaLog(paginaLog - 1)}
+            className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
+          >
+            ← Anterior
+          </button>
 
-  <span className="text-sm text-gray-600">Página {paginaAud + 1}</span>
+          <span className="text-sm text-gray-600">Página {paginaLog + 1}</span>
 
-  <button
-    disabled={(paginaAud + 1) * pageSizeAud >= auditoriaOrdenada.length}
-    onClick={() => setPaginaAud(paginaAud + 1)}
-    className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
-  >
-    Siguiente →
-  </button>
-</div>
+          <button
+            disabled={(paginaLog + 1) * pageSizeLog >= logsOrdenados.length}
+            onClick={() => setPaginaLog(paginaLog + 1)}
+            className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
+          >
+            Siguiente →
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -6,14 +6,36 @@ export const useAgendaWS = (usuarioId) => {
   const wsRef = useRef(null);
 
   useEffect(() => {
-if (wsRef.current) {
-  try {
-    wsRef.current.close();
-  } catch {}
-}
+    // Cerrar cualquier conexión previa
+    if (wsRef.current) {
+      try {
+        wsRef.current.close();
+      } catch {}
+      wsRef.current = null;
+    }
 
-    const ws = new WebSocket(`${import.meta.env.VITE_WS_URL}/ws/agenda`);
+    let ws;
+    try {
+      ws = new WebSocket(`${import.meta.env.VITE_WS_URL}/ws/agenda`);
+    } catch {
+      // Si falla la creación del WS, no rompemos nada
+      return;
+    }
+
     wsRef.current = ws;
+
+    ws.onopen = () => {
+      // Opcional: podrías enviar algo con usuarioId en el futuro
+      // ws.send(JSON.stringify({ tipo: "init", usuarioId }));
+    };
+
+    ws.onerror = () => {
+      // No hacemos nada, solo evitamos que burbujee
+    };
+
+    ws.onclose = () => {
+      wsRef.current = null;
+    };
 
     ws.onmessage = (event) => {
       if (!event.data) return;
@@ -27,14 +49,17 @@ if (wsRef.current) {
 
       if (!data || !data.tipo) return;
 
+      // Ignoramos mensajes de handshake
       if (data.tipo !== "ws_conectado") {
-        refrescarVista();
+        refrescarVista?.();
       }
     };
 
     return () => {
-      wsRef.current?.close();
+      try {
+        wsRef.current?.close();
+      } catch {}
       wsRef.current = null;
     };
-  }, []);
+  }, [usuarioId]);
 };

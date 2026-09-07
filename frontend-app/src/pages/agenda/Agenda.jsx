@@ -5,6 +5,7 @@ import { useAgendaWS } from "../../hooks/useAgendaWS";
 import VistaDia from "./VistaDia";
 import VistaSemana from "./VistaSemana";
 import VistaMes from "./VistaMes";
+
 import ModalNuevaCita from "../../components/agenda/ModalNuevaCita.jsx";
 
 import {
@@ -24,7 +25,7 @@ export default function Agenda() {
   } = useAgenda();
 
   const [mostrarModal, setMostrarModal] = useState(false);
-  const [modalModo, setModalModo] = useState("crear"); // crear | editar
+  const [modalModo, setModalModo] = useState("crear");
   const [fechaSeleccionada, setFechaSeleccionada] = useState(null);
   const [citaSeleccionada, setCitaSeleccionada] = useState(null);
 
@@ -76,25 +77,28 @@ export default function Agenda() {
   };
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Agenda</h1>
+    <div className="container-sj space-y-6">
 
-      <div className="flex gap-2 mb-4">
-        <button onClick={() => cargarDia(fechaActual)}>Día</button>
-        <button onClick={() => cargarSemana(fechaActual)}>Semana</button>
-        <button
-          onClick={() =>
-            cargarMes(
-              new Date(fechaActual).getFullYear(),
-              new Date(fechaActual).getMonth() + 1
-            )
-          }
-        >
+      {/* Título */}
+      <div className="seg-card">
+        <h1 className="seg-title">Agenda</h1>
+        <p className="seg-desc">Gestión de citas y calendario corporativo SJ‑2026.</p>
+      </div>
+
+      {/* Navegación estilo Google Calendar */}
+      <div className="seg-card flex items-center gap-3">
+        <button className="sj-btn" onClick={() => cargarDia(fechaActual)}>Día</button>
+        <button className="sj-btn" onClick={() => cargarSemana(fechaActual)}>Semana</button>
+        <button className="sj-btn" onClick={() => cargarMes(
+          new Date(fechaActual).getFullYear(),
+          new Date(fechaActual).getMonth() + 1
+        )}>
           Mes
         </button>
       </div>
 
-      <div>
+      {/* Vista */}
+      <div className="seg-card">
         {vista === "dia" && (
           <VistaDia citas={citas} onCitaClick={abrirEditar} />
         )}
@@ -112,6 +116,7 @@ export default function Agenda() {
         )}
       </div>
 
+      {/* Modal */}
       {mostrarModal && (
         <ModalNuevaCita
           fecha={fechaSeleccionada}

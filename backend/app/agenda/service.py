@@ -9,11 +9,35 @@ from backend.app.agenda.schemas import CitaResponse
 
 
 def cita_con_relaciones(db: Session, cita: Cita):
-    if not cita:
-        return None
+    # Obtener notario
+    notario = None
+    if cita.notario_id:
+        notario = db.query(Empleado).filter(Empleado.id == cita.notario_id).first()
 
-    notario = cita.notario
-    apoderado_obj = cita.apoderado
+    # Obtener apoderado
+    apoderado = None
+    if cita.apoderado_id:
+        apoderado = db.query(Empleado).filter(Empleado.id == cita.apoderado_id).first()
+
+    return {
+        "id": cita.id,
+        "fecha": cita.fecha,
+        "hora_inicio": cita.hora_inicio,
+        "hora_fin": cita.hora_fin,
+        "tipo_cita": cita.tipo_cita,
+        "tipo_firma": cita.tipo_firma,
+        "observaciones": cita.observaciones,
+
+        # Relaciones
+        "notario_id": cita.notario_id,
+        "notario_nombre": f"{notario.nombre} {notario.apellidos}" if notario else None,
+        "notario": notario,
+
+        "apoderado_id": cita.apoderado_id,
+        "apoderado_nombre": f"{apoderado.nombre} {apoderado.apellidos}" if apoderado else None,
+        "apoderado": apoderado,
+    }
+
 
     return CitaResponse(
         id=cita.id,

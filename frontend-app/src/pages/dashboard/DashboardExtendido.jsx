@@ -1,49 +1,39 @@
 import { useEffect } from "react";
 import { useDashboardExtendido } from "../../hooks/useDashboardExtendido";
 
-export default function DashboardExtendido() {
-  const { data, loading, cargarDashboardExtendido } = useDashboardExtendido();
+export default function Dashboard() {
+  const {
+    data = null,
+    loading = true,
+    cargarDashboard,
+  } = useDashboardExtendido();
 
   useEffect(() => {
-    cargarDashboardExtendido();
+    cargarDashboard();
   }, []);
 
   if (loading || !data) {
-    return <p className="p-6">Cargando dashboard extendido…</p>;
+    return <p className="p-6">Cargando dashboard…</p>;
   }
-
-  const { agenda, ctn, apoderados } = data;
 
   return (
     <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold">Dashboard extendido</h1>
+      <h1 className="text-2xl font-bold">Dashboard</h1>
 
-      {/* Agenda hoy */}
-      <div className="grid grid-cols-3 gap-4">
-        <KPI titulo="Presencial hoy" valor={agenda.presencial_hoy} />
-        <KPI titulo="VC hoy" valor={agenda.vc_hoy} />
-        <KPI titulo="Total km apoderados" valor={apoderados.km_total} />
+      {/* KPIs */}
+      <div className="grid grid-cols-4 gap-4">
+        <KPI titulo="Citas hoy" valor={data.hoy} />
+        <KPI titulo="Citas semana" valor={data.semana} />
+        <KPI titulo="Citas mes" valor={data.mes} />
+        <KPI titulo="Firmas mes" valor={data.firmas_mes} />
+        <KPI titulo="VC mes" valor={data.vc_mes} />
+        <KPI titulo="Presenciales mes" valor={data.presenciales_mes} />
       </div>
-
-      {/* CTN resumen */}
-      <section>
-        <h2 className="text-xl font-semibold mb-2">CTN — Resumen</h2>
-        <div className="grid grid-cols-2 gap-4">
-          <KPI titulo="Presencial total" valor={ctn.presencial_total} />
-          <KPI titulo="VC total" valor={ctn.vc_total} />
-        </div>
-      </section>
 
       {/* Próximas citas */}
       <section>
-        <h2 className="text-xl font-semibold mb-2">Próximas citas</h2>
-        <ProximasCitas citas={agenda.proximas} />
-      </section>
-
-      {/* Ranking apoderados */}
-      <section>
-        <h2 className="text-xl font-semibold mb-2">Ranking apoderados</h2>
-        <RankingApoderados ranking={apoderados.ranking} />
+        <h2 className="text-xl font-semibold mb-2">Próximas citas (hoy)</h2>
+        <ProximasCitas citas={data.proximas || []} />
       </section>
     </div>
   );
@@ -58,8 +48,8 @@ function KPI({ titulo, valor }) {
   );
 }
 
-function ProximasCitas({ citas }) {
-  if (!citas.length) return <p>No hay próximas citas.</p>;
+function ProximasCitas({ citas = [] }) {
+  if (!citas.length) return <p>No hay citas próximas.</p>;
 
   return (
     <ul className="space-y-2">
@@ -81,30 +71,5 @@ function ProximasCitas({ citas }) {
         </li>
       ))}
     </ul>
-  );
-}
-
-function RankingApoderados({ ranking }) {
-  if (!ranking.length) return <p>No hay datos de apoderados.</p>;
-
-  return (
-    <table className="w-full border">
-      <thead>
-        <tr className="bg-gray-100">
-          <th>Apoderado</th>
-          <th>Firmas presencial</th>
-          <th>KM total</th>
-        </tr>
-      </thead>
-      <tbody>
-        {ranking.map((r) => (
-          <tr key={r.apoderado_id} className="border-b">
-            <td>{r.nombre}</td>
-            <td>{r.firmas_presencial}</td>
-            <td>{r.km_total.toFixed(2)}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
   );
 }

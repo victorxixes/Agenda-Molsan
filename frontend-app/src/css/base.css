@@ -1,12 +1,88 @@
+/* ================================
+   ERP SJ‑2026 — Base global
+   ================================ */
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
+/* Suavizado de fuentes */
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+}
+
+/* Estilo global del body */
 body {
   background-color: var(--sj-blanco);
   color: var(--sj-azul);
   font-family: var(--sj-font);
-  line-height: 1.5;
+  line-height: 1.55;
+}
+
+/* Selección de texto corporativa */
+::selection {
+  background: var(--sj-azul);
+  color: white;
+}
+
+/* Scroll corporativo */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--sj-gris-azulado);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-track {
+  background: #f5f7fa;
+}
+
+/* Enlaces */
+a {
+  color: var(--sj-azul);
+  text-decoration: none;
+  transition: 0.2s;
+}
+a:hover {
+  color: var(--sj-azul-claro);
+}
+
+/* Botones base */
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/* Inputs base */
+input,
+textarea,
+select {
+  font-family: inherit;
+  color: var(--sj-azul);
+}
+
+/* Tablas base */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+/* Código y pre */
+code,
+pre {
+  font-family: "Fira Code", monospace;
+  background: #f5f7fa;
+  padding: 4px 6px;
+  border-radius: 6px;
+}
+
+/* HR corporativo */
+hr {
+  border: none;
+  border-top: 1px solid var(--sj-gris-azulado);
+  margin: 20px 0;
 }

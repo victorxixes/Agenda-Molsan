@@ -54,7 +54,6 @@ export default function ModalNuevaCita({
       apoderado_id: apoderadoId || null,
       observaciones,
     };
-
     onGuardar(payload);
   };
 
@@ -62,29 +61,57 @@ export default function ModalNuevaCita({
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl p-6">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold">
-            {modo === "crear" ? "Nueva cita" : "Editar cita"}
-          </h2>
-          <button onClick={onClose}>✕</button>
+          <div>
+            <h2 className="text-xl font-bold">
+              {modo === "crear" ? "Nueva cita" : "Editar cita"}
+            </h2>
+            <p className="text-sm text-gray-500">
+              {fecha}
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-800"
+          >
+            ✕
+          </button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-3">
-            <label>Hora inicio</label>
-            <input type="time" value={horaInicio} onChange={(e) => setHoraInicio(e.target.value)} />
+            <label className="text-sm font-medium">Hora inicio</label>
+            <input
+              type="time"
+              className="sj-input"
+              value={horaInicio}
+              onChange={(e) => setHoraInicio(e.target.value)}
+            />
 
-            <label>Hora fin</label>
-            <input type="time" value={horaFin} onChange={(e) => setHoraFin(e.target.value)} />
+            <label className="text-sm font-medium">Hora fin</label>
+            <input
+              type="time"
+              className="sj-input"
+              value={horaFin}
+              onChange={(e) => setHoraFin(e.target.value)}
+            />
 
-            <label>Tipo de cita</label>
-            <select value={tipoCita} onChange={(e) => setTipoCita(e.target.value)}>
+            <label className="text-sm font-medium">Tipo de cita</label>
+            <select
+              className="sj-input"
+              value={tipoCita}
+              onChange={(e) => setTipoCita(e.target.value)}
+            >
               {TIPOS_CITA.map((t) => (
                 <option key={t}>{t}</option>
               ))}
             </select>
 
-            <label>Apoderado</label>
-            <select value={apoderadoId} onChange={(e) => setApoderadoId(e.target.value)}>
+            <label className="text-sm font-medium">Apoderado</label>
+            <select
+              className="sj-input"
+              value={apoderadoId}
+              onChange={(e) => setApoderadoId(e.target.value)}
+            >
               <option value="">Sin apoderado</option>
               {apoderados.map((a) => (
                 <option key={a.id} value={a.id}>
@@ -95,39 +122,53 @@ export default function ModalNuevaCita({
           </div>
 
           <div className="space-y-3">
-            <label>Notario</label>
+            <label className="text-sm font-medium">Notario</label>
             <input
               type="text"
+              className="sj-input"
               value={notarioBusqueda}
               onChange={(e) => setNotarioBusqueda(e.target.value)}
               placeholder="Buscar notario..."
             />
 
-            {notarios
-              .filter((n) =>
-                `${n.nombre} ${n.apellidos}`.toLowerCase().includes(notarioBusqueda.toLowerCase())
-              )
-              .map((n) => (
-                <div
-                  key={n.id}
-                  onClick={() => {
-                    setNotarioSeleccionado(n);
-                    setTipoFirma(n.vc || "");
-                    setObservaciones(n.observacion || "");
-                    setApoderadoId(n.apoderado_id || "");
-                  }}
-                  className="cursor-pointer p-2 border rounded hover:bg-blue-50"
-                >
-                  {n.nombre} {n.apellidos}
-                </div>
-              ))}
+            <div className="max-h-32 overflow-y-auto border rounded">
+              {notarios
+                .filter((n) =>
+                  `${n.nombre} ${n.apellidos}`
+                    .toLowerCase()
+                    .includes(notarioBusqueda.toLowerCase())
+                )
+                .map((n) => (
+                  <div
+                    key={n.id}
+                    onClick={() => {
+                      setNotarioSeleccionado(n);
+                      setTipoFirma(n.vc || "");
+                      setObservaciones(n.observacion || "");
+                      setApoderadoId(n.apoderado_id || "");
+                    }}
+                    className={`cursor-pointer p-2 border-b text-sm hover:bg-blue-50 ${
+                      notarioSeleccionado?.id === n.id
+                        ? "bg-blue-100"
+                        : ""
+                    }`}
+                  >
+                    {n.nombre} {n.apellidos}
+                  </div>
+                ))}
+            </div>
 
-            <label>Tipo firma</label>
-            <input value={tipoFirma} onChange={(e) => setTipoFirma(e.target.value)} />
+            <label className="text-sm font-medium">Tipo firma</label>
+            <input
+              className="sj-input"
+              value={tipoFirma}
+              onChange={(e) => setTipoFirma(e.target.value)}
+            />
 
-            <label>Observaciones</label>
+            <label className="text-sm font-medium">Observaciones</label>
             <textarea
               rows={4}
+              className="sj-input"
               value={observaciones}
               onChange={(e) => setObservaciones(e.target.value)}
             />
@@ -136,16 +177,25 @@ export default function ModalNuevaCita({
 
         <div className="mt-6 flex justify-end gap-3">
           {modo === "editar" && onDelete && (
-            <button onClick={onDelete} className="bg-red-600 text-white px-4 py-2 rounded">
+            <button
+              onClick={onDelete}
+              className="bg-red-600 text-white px-4 py-2 rounded"
+            >
               Eliminar
             </button>
           )}
 
-          <button onClick={onClose} className="px-4 py-2 border rounded">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 border rounded"
+          >
             Cancelar
           </button>
 
-          <button onClick={handleGuardar} className="px-4 py-2 bg-blue-600 text-white rounded">
+          <button
+            onClick={handleGuardar}
+            className="px-4 py-2 bg-blue-600 text-white rounded"
+          >
             {modo === "crear" ? "Guardar cita" : "Guardar cambios"}
           </button>
         </div>

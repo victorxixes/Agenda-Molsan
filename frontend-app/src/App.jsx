@@ -35,6 +35,15 @@ import Intranet from "./pages/intranet/Intranet.jsx";
 
 /* MENSAJES */
 import Mensajes from "./pages/mensajes/Mensajes.jsx";
+import { useAuthStore } from "./store/authStore";
+
+function MensajesWrapper() {
+  const empleado = useAuthStore((s) => s.empleado);
+  return <Mensajes usuarioId={empleado?.id} />;
+}
+
+<Route path="mensajes" element={<MensajesWrapper />} />
+
 
 /* HERRAMIENTAS */
 import Herramientas from "./pages/herramientas/Herramientas.jsx";

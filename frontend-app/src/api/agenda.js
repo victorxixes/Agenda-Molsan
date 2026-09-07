@@ -1,5 +1,6 @@
 import axios from "./axios";
 
+/* CITAS */
 export const getCitasDia = (fecha) =>
   axios.get(`/agenda/dia/${fecha}`);
 
@@ -31,9 +32,12 @@ export const moverCita = (id, nueva_fecha, nueva_hora_inicio, nueva_hora_fin) =>
     nueva_hora_fin,
   });
 
+/* NOTARIOS — CORREGIDO */
 export const obtenerNotarios = () =>
-  axios.get("/agenda/notarios");
+  axios.get("/ctn/notarias");   // ✔ Ruta real del backend
 
-export const obtenerRutaNotarios = () =>
-  axios.get("/agenda/notarios/ruta");
-
+/* Eliminado: esta ruta NO existe en backend */
+export const obtenerRutaNotarios = () => {
+  console.warn("⚠ obtenerRutaNotarios: endpoint no existe en backend");
+  return Promise.resolve({ data: [] });
+};

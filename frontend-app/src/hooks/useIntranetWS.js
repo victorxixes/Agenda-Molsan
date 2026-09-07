@@ -8,7 +8,11 @@ export const useIntranetWS = () => {
   const wsRef = useRef(null);
 
   useEffect(() => {
-    if (wsRef.current) return; // evita doble conexión
+if (wsRef.current) {
+  try {
+    wsRef.current.close();
+  } catch {}
+}
 
     const ws = new WebSocket(`${import.meta.env.VITE_WS_URL}/ws/intranet`);
     wsRef.current = ws;

@@ -41,6 +41,8 @@ import Mensajes from "./pages/mensajes/Mensajes.jsx";
 import Herramientas from "./pages/herramientas/Herramientas.jsx";
 import ImportarCTN from "./pages/herramientas/ImportarCTN.jsx";
 import Utilidades from "./pages/herramientas/Utilidades.jsx";
+import CrearNoticia from "./pages/herramientas/CrearNoticia.jsx";
+import SubirDocumento from "./pages/herramientas/SubirDocumento.jsx";
 
 
 /* LOGS */

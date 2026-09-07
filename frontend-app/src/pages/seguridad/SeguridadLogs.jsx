@@ -16,16 +16,19 @@ export default function SeguridadLogs() {
         <thead>
           <tr className="bg-gray-100 text-left">
             <th className="p-2">Fecha</th>
-            <th className="p-2">Tipo</th>
-            <th className="p-2">Mensaje</th>
+            <th className="p-2">Evento</th>
+            <th className="p-2">Detalle</th>
+            <th className="p-2">IP</th>
           </tr>
         </thead>
+
         <tbody>
           {(logs || []).map((l) => (
             <tr key={l.id} className="border-b">
               <td className="p-2">{l.fecha}</td>
-              <td className="p-2">{l.tipo}</td>
-              <td className="p-2">{l.mensaje}</td>
+              <td className="p-2">{l.evento}</td>
+              <td className="p-2">{l.detalle || "-"}</td>
+              <td className="p-2">{l.ip || "-"}</td>
             </tr>
           ))}
         </tbody>

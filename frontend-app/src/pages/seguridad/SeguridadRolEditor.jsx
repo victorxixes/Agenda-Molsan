@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import { useSeguridad } from "../../hooks/useSeguridad";
 
 export default function SeguridadRolEditor() {
-  const { roles, cargarTodo } = useSeguridad();
+  const { roles = [], cargarTodo } = useSeguridad();
 
-  const [modo, setModo] = useState("lista"); // lista | crear | editar
+  const [modo, setModo] = useState("lista");
   const [rolEditando, setRolEditando] = useState(null);
   const [nombreRol, setNombreRol] = useState("");
 
@@ -70,7 +70,6 @@ export default function SeguridadRolEditor() {
     <div className="p-6 space-y-6">
       <h1 className="text-2xl font-bold mb-4">Editor de Roles</h1>
 
-      {/* LISTA DE ROLES */}
       {modo === "lista" && (
         <div className="border p-4 rounded bg-white shadow">
           <div className="flex justify-between items-center mb-3">
@@ -92,7 +91,7 @@ export default function SeguridadRolEditor() {
               </tr>
             </thead>
             <tbody>
-              {roles.map((r) => (
+              {(roles || []).map((r) => (
                 <tr key={r.id} className="border-b">
                   <td className="p-2">{r.id}</td>
                   <td className="p-2">{r.nombre}</td>
@@ -117,7 +116,6 @@ export default function SeguridadRolEditor() {
         </div>
       )}
 
-      {/* FORMULARIO CREAR / EDITAR */}
       {(modo === "crear" || modo === "editar") && (
         <div className="border p-4 rounded bg-white shadow">
           <h2 className="text-xl font-semibold mb-3">

@@ -17,7 +17,7 @@ class AgendaWebSocketManager:
             self.active_connections.remove(websocket)
 
     async def broadcast(self, message: dict):
-        for connection in self.active_connections:
+        for connection in list(self.active_connections):
             try:
                 await connection.send_json(message)
             except Exception:
@@ -33,6 +33,7 @@ async def agenda_ws(websocket: WebSocket):
 
     try:
         while True:
+            # Mantener la conexión viva; ignoramos el contenido
             await websocket.receive_text()
     except WebSocketDisconnect:
         manager.disconnect(websocket)

@@ -24,9 +24,6 @@ export default function SeguridadFicha() {
 
   const empleado = ficha.empleado || {};
 
-  const modulosVisibles = empleado.modulos_visibles_list || [];
-  const permisosModulo = empleado.permisos_modulo_dict || {};
-
   const onResetPassword = async () => {
     if (!nuevaPassword) return;
     await resetPassword(empleado.id, nuevaPassword);
@@ -72,7 +69,7 @@ export default function SeguridadFicha() {
                 <span className="text-red-600 font-semibold">No</span>
               )}
             </div>
-            <div><strong>Rol:</strong> {empleado.rol_nombre || "-"}</div>
+            <div><strong>Rol:</strong> {empleado.rol?.nombre || "-"}</div>
           </div>
         </div>
 
@@ -143,7 +140,7 @@ export default function SeguridadFicha() {
         <h2 className="text-xl font-semibold mb-3">Módulos visibles</h2>
 
         <ul className="space-y-2">
-          {modulosVisibles.map((m) => (
+          {ficha.modulos_visibles.map((m) => (
             <li key={m} className="flex items-center justify-between">
               <span className="font-medium">{m}</span>
             </li>
@@ -156,11 +153,11 @@ export default function SeguridadFicha() {
         <h2 className="text-xl font-semibold mb-3">Permisos por módulo</h2>
 
         <ul className="space-y-2">
-          {Object.entries(permisosModulo).map(([modulo, perms]) => (
+          {Object.entries(ficha.permisos_modulo).map(([modulo, perms]) => (
             <li key={modulo} className="border-b pb-2">
               <strong>{modulo}</strong>
               <div className="flex gap-2 mt-1">
-                {(perms || []).map((p) => (
+                {perms.map((p) => (
                   <span
                     key={p}
                     className="px-2 py-1 bg-gray-100 rounded text-sm border"

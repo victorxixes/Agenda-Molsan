@@ -1,15 +1,6 @@
-/* ================================
-   ERP SJ‑2026 — Sistema de estilos
-   ================================ */
-
-/* Variables corporativas */
 @import "./variables.css";
-
-/* Base y layout */
 @import "./base.css";
 @import "./layout.css";
-
-/* Componentes premium */
 @import "./buttons.css";
 @import "./cards.css";
 @import "./tables.css";
@@ -18,17 +9,9 @@
 @import "./modals.css";
 @import "./animations.css";
 
-/* ================================
-   Tailwind
-   ================================ */
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* ================================
-   Clases personalizadas del ERP
-   ================================ */
 
 .seg-card {
   @apply bg-white shadow hover:shadow-lg transition rounded-xl p-4 border border-gray-200 cursor-pointer;
@@ -42,14 +25,6 @@
   @apply text-sm text-gray-600;
 }
 
-/* Tipografía global */
-:root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  color: var(--color-sj-azul);
-  background-color: var(--color-sj-blanco);
-}
-
-/* Root ocupa toda la pantalla */
 #root {
   min-height: 100vh;
 }

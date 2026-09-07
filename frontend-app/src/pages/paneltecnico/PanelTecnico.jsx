@@ -1,8 +1,13 @@
-import { useAuth } from "../../context/AuthContext";
+import { useAuthStore } from "../../store/authStore";
 import EmpleadosModulo2026 from "../empleados/EmpleadosModulo2026";
+import MonitorSistema from "./MonitorSistema";
+import AuditoriaAvanzada from "./AuditoriaAvanzada";
+import LogsAvanzados from "./LogsAvanzados";
+import { puedeVerModulo } from "../../utils/permisos";
+
 
 export default function PanelTecnico() {
-  const { puedeVerModulo } = useAuth();
+  const usuario = useAuthStore((s) => s.user);
 
   return (
     <div className="p-6 space-y-6">
@@ -15,7 +20,7 @@ export default function PanelTecnico() {
       {puedeVerModulo("empleados") && (
         <section className="border p-4 rounded bg-white shadow">
           <h2 className="text-xl font-semibold mb-3">Empleados 2026</h2>
-          <EmpleadosModulo2026 />
+          <EmpleadosModulo2026 usuario={usuario} />
         </section>
       )}
     </div>

@@ -62,7 +62,11 @@ export default function VistaMes({ citas = [], onDiaClick, onCitaClick }) {
             }
 
             const fechaStr = day.toISOString().slice(0, 10);
-            const citasDia = citasSeguras.filter((c) => c.fecha === fechaStr);
+
+            // ⭐ Blindaje total
+            const citasDia = Array.isArray(citasSeguras)
+              ? citasSeguras.filter((c) => c.fecha === fechaStr)
+              : [];
 
             return (
               <div

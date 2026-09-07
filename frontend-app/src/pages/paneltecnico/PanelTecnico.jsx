@@ -1,5 +1,5 @@
 import { useAuth } from "../../context/AuthContext";
-import EmpleadosModulo2026 from "../Empleados/EmpleadosModulo2026";
+import EmpleadosModulo2026 from "../empleados/EmpleadosModulo2026";
 
 export default function PanelTecnico() {
   const { puedeVerModulo } = useAuth();

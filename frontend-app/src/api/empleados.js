@@ -38,3 +38,9 @@ export const actualizarPermisosModulo = (id, permisos_modulo_dict) =>
 // Ficha completa
 export const obtenerFichaCompleta = (id) =>
   axios.get(`/seguridad/empleado/${id}/ficha-completa`);
+
+// ⭐ APODERADOS (filtrados desde empleados)
+export const listarApoderados = async () => {
+  const res = await listarEmpleados();
+  return res.data.filter((e) => e.apoderado === true);
+};

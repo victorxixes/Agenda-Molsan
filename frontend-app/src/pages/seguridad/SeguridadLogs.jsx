@@ -4,17 +4,12 @@ import { useSeguridad } from "../../hooks/useSeguridad";
 export default function SeguridadLogs() {
   const { logs = [], cargarTodo } = useSeguridad();
 
-  // Paginación
   const [pagina, setPagina] = useState(0);
   const pageSize = 20;
 
-  // Búsqueda general
   const [busqueda, setBusqueda] = useState("");
-
-  // Filtro por fecha
   const [filtroFecha, setFiltroFecha] = useState("");
 
-  // Ordenación
   const [orden, setOrden] = useState({ campo: "fecha", asc: false });
 
   const ordenar = (campo) => {
@@ -24,7 +19,6 @@ export default function SeguridadLogs() {
     }));
   };
 
-  // Iconos por tipo de evento
   const iconosEvento = {
     login: "🔐",
     login_error: "⚠️",
@@ -38,9 +32,6 @@ export default function SeguridadLogs() {
     cargarTodo();
   }, []);
 
-  // ---------------------------
-  // FILTRO DE BÚSQUEDA + FECHA
-  // ---------------------------
   const logsFiltrados = logs.filter((l) => {
     const texto = busqueda.toLowerCase();
     const coincideBusqueda =
@@ -48,16 +39,11 @@ export default function SeguridadLogs() {
       l.detalle?.toLowerCase().includes(texto) ||
       l.fecha?.toLowerCase().includes(texto);
 
-    const coincideFecha = filtroFecha
-      ? l.fecha.startsWith(filtroFecha)
-      : true;
+    const coincideFecha = filtroFecha ? l.fecha.startsWith(filtroFecha) : true;
 
     return coincideBusqueda && coincideFecha;
   });
 
-  // ---------------------------
-  // ORDENACIÓN
-  // ---------------------------
   const logsOrdenados = [...logsFiltrados].sort((a, b) => {
     const campo = orden.campo;
     const asc = orden.asc ? 1 : -1;
@@ -67,17 +53,48 @@ export default function SeguridadLogs() {
     return 0;
   });
 
-  // ---------------------------
-  // PAGINACIÓN
-  // ---------------------------
   const logsPaginados = logsOrdenados.slice(
     pagina * pageSize,
     pagina * pageSize + pageSize
   );
 
+  // DESCARGA EXCEL
+  const descargarExcel = () => {
+    const encabezados = ["ID", "Evento", "Detalle", "Fecha", "IP"];
+    const filas = logsOrdenados.map((l) => [
+      l.id,
+      l.evento,
+      l.detalle,
+      l.fecha,
+      l.ip || "-"
+    ]);
+
+    const contenido = [encabezados, ...filas]
+      .map((fila) => fila.join("\t"))
+      .join("\n");
+
+    const blob = new Blob([contenido], { type: "application/vnd.ms-excel" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "logs_sistema.xls";
+    a.click();
+
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="p-6 space-y-6">
       <h1 className="text-2xl font-bold mb-4">Logs del sistema</h1>
+
+      {/* BOTÓN EXCEL */}
+      <button
+        onClick={descargarExcel}
+        className="px-3 py-2 bg-green-600 text-white rounded mb-4"
+      >
+        Descargar Excel
+      </button>
 
       {/* FILTROS */}
       <div className="flex flex-col md:flex-row gap-4 mb-4">
@@ -107,27 +124,15 @@ export default function SeguridadLogs() {
       <table className="w-full border rounded bg-white text-sm">
         <thead>
           <tr className="bg-gray-100 text-left">
-            <th
-              className="p-2 cursor-pointer"
-              onClick={() => ordenar("fecha")}
-            >
+            <th className="p-2 cursor-pointer" onClick={() => ordenar("fecha")}>
               Fecha {orden.campo === "fecha" ? (orden.asc ? "▲" : "▼") : ""}
             </th>
-
-            <th
-              className="p-2 cursor-pointer"
-              onClick={() => ordenar("evento")}
-            >
+            <th className="p-2 cursor-pointer" onClick={() => ordenar("evento")}>
               Evento {orden.campo === "evento" ? (orden.asc ? "▲" : "▼") : ""}
             </th>
-
-            <th
-              className="p-2 cursor-pointer"
-              onClick={() => ordenar("detalle")}
-            >
+            <th className="p-2 cursor-pointer" onClick={() => ordenar("detalle")}>
               Detalle {orden.campo === "detalle" ? (orden.asc ? "▲" : "▼") : ""}
             </th>
-
             <th className="p-2">IP</th>
           </tr>
         </thead>
@@ -136,13 +141,10 @@ export default function SeguridadLogs() {
           {logsPaginados.map((l) => (
             <tr key={l.id} className="border-b">
               <td className="p-2">{l.fecha}</td>
-
               <td className="p-2">
                 {iconosEvento[l.evento] || iconosEvento.default} {l.evento}
               </td>
-
               <td className="p-2">{l.detalle || "-"}</td>
-
               <td className="p-2">{l.ip || "-"}</td>
             </tr>
           ))}
@@ -159,9 +161,7 @@ export default function SeguridadLogs() {
           ← Anterior
         </button>
 
-        <span className="text-sm text-gray-600">
-          Página {pagina + 1}
-        </span>
+        <span className="text-sm text-gray-600">Página {pagina + 1}</span>
 
         <button
           disabled={(pagina + 1) * pageSize >= logsOrdenados.length}

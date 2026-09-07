@@ -1,4 +1,3 @@
-// frontend-app/src/main.jsx
 import React, { useEffect } from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";

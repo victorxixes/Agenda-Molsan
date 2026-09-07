@@ -25,16 +25,22 @@ export default function Agenda() {
   const [fechaSeleccionada, setFechaSeleccionada] = useState(null);
   const [citaSeleccionada, setCitaSeleccionada] = useState(null);
 
+  // En el futuro: pasar el id del empleado logueado
   useAgendaWS(1);
 
   useEffect(() => {
-    cargarDia(new Date().toISOString().slice(0, 10));
-  }, []);
+    const hoy = new Date().toISOString().slice(0, 10);
+    cargarDia(hoy);
+  }, [cargarDia]);
 
   const recargarVista = (fecha) => {
-    if (vista === "dia") cargarDia(fecha);
-    if (vista === "semana") cargarSemana(fecha);
-    if (vista === "mes") {
+    if (!fecha) return;
+
+    if (vista === "dia") {
+      cargarDia(fecha);
+    } else if (vista === "semana") {
+      cargarSemana(fecha);
+    } else if (vista === "mes") {
       const f = new Date(fecha);
       cargarMes(f.getFullYear(), f.getMonth() + 1);
     }
@@ -48,6 +54,7 @@ export default function Agenda() {
   };
 
   const abrirEditar = (cita) => {
+    if (!cita) return;
     setModalModo("editar");
     setFechaSeleccionada(cita.fecha);
     setCitaSeleccionada(cita);
@@ -55,21 +62,27 @@ export default function Agenda() {
   };
 
   const guardarCita = async (payload) => {
+    if (!payload?.fecha) return;
+
     if (modalModo === "crear") {
       await crearCita(payload);
-    } else {
+    } else if (citaSeleccionada?.id) {
       await editarCita(citaSeleccionada.id, payload);
     }
+
     setMostrarModal(false);
     recargarVista(payload.fecha);
   };
 
   const borrarCita = async () => {
-    if (!citaSeleccionada) return;
+    if (!citaSeleccionada?.id) return;
+
     await eliminarCita(citaSeleccionada.id);
     setMostrarModal(false);
     recargarVista(citaSeleccionada.fecha);
   };
+
+  const citasSeguras = Array.isArray(citas) ? citas : [];
 
   return (
     <div className="container-sj space-y-6">
@@ -111,15 +124,27 @@ export default function Agenda() {
 
       <div className="seg-card">
         {vista === "dia" && (
-          <VistaDia citas={citas} onCitaClick={abrirEditar} onCrearCita={abrirCrear} />
+          <VistaDia
+            citas={citasSeguras}
+            onCitaClick={abrirEditar}
+            onCrearCita={abrirCrear}
+          />
         )}
 
         {vista === "semana" && (
-          <VistaSemana citas={citas} onCitaClick={abrirEditar} onCrearCita={abrirCrear} />
+          <VistaSemana
+            citas={citasSeguras}
+            onCitaClick={abrirEditar}
+            onCrearCita={abrirCrear}
+          />
         )}
 
         {vista === "mes" && (
-          <VistaMes citas={citas} onDiaClick={abrirCrear} onCitaClick={abrirEditar} />
+          <VistaMes
+            citas={citasSeguras}
+            onDiaClick={abrirCrear}
+            onCitaClick={abrirEditar}
+          />
         )}
       </div>
 

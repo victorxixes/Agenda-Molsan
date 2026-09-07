@@ -1,7 +1,7 @@
 import { useSeguridad } from "../../hooks/useSeguridad";
 
 export default function SeguridadRoles() {
-  const { roles } = useSeguridad();
+  const { roles = [] } = useSeguridad();
 
   return (
     <div className="border p-4 rounded bg-white shadow">
@@ -15,7 +15,7 @@ export default function SeguridadRoles() {
           </tr>
         </thead>
         <tbody>
-          {roles.map((r) => (
+          {(roles || []).map((r) => (
             <tr key={r.id} className="border-b">
               <td className="p-2">{r.id}</td>
               <td className="p-2">{r.nombre}</td>

@@ -16,7 +16,6 @@ export default function EmpleadosListado({ onSeleccionar }) {
   useEffect(cargar, [q, activo]);
 
   useEmpleadosWS((evento) => {
-    // aquí puedes recargar o aplicar cambios según tipo de evento
     if (evento.tipo === "empleado_actualizado") cargar();
   });
 
@@ -69,9 +68,7 @@ export default function EmpleadosListado({ onSeleccionar }) {
               <td className="p-2">{e.usuario}</td>
               <td className="p-2">{e.telefono}</td>
               <td className="p-2">{e.email_empresa}</td>
-              <td className="p-2">
-                {e.activo ? "✅" : "❌"}
-              </td>
+              <td className="p-2">{e.activo ? "✅" : "❌"}</td>
             </tr>
           ))}
         </tbody>

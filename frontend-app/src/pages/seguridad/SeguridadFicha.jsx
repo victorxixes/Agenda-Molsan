@@ -21,6 +21,20 @@ export default function SeguridadFicha() {
   const [nuevaPassword, setNuevaPassword] = useState("");
   const [nuevoRol, setNuevoRol] = useState("");
 
+  // Acordeones
+  const [showModulos, setShowModulos] = useState(false);
+  const [showPermisos, setShowPermisos] = useState(false);
+
+  // Paginación auditoría
+  const [paginaAuditoria, setPaginaAuditoria] = useState(0);
+  const auditoriaFiltrada = auditoria.filter(a => a.usuario === ficha?.empleado?.usuario);
+  const auditoriaPaginada = auditoriaFiltrada.slice(paginaAuditoria * 10, paginaAuditoria * 10 + 10);
+
+  // Paginación logs
+  const [paginaLogs, setPaginaLogs] = useState(0);
+  const logsFiltrados = logs.filter(l => l.usuario === ficha?.empleado?.usuario);
+  const logsPaginados = logsFiltrados.slice(paginaLogs * 10, paginaLogs * 10 + 10);
+
   useEffect(() => {
     cargarFicha(id);
   }, [id]);
@@ -168,56 +182,70 @@ export default function SeguridadFicha() {
         </div>
       </div>
 
-      {/* MÓDULOS VISIBLES (EDITABLE) */}
+      {/* MÓDULOS VISIBLES (ACORDEÓN) */}
       <div className="border p-4 rounded bg-white shadow">
-        <h2 className="text-xl font-semibold mb-3">Módulos visibles (editable)</h2>
+        <button
+          className="text-xl font-semibold mb-3 w-full text-left"
+          onClick={() => setShowModulos(!showModulos)}
+        >
+          Módulos visibles (editable)
+        </button>
 
-        <ul className="space-y-2">
-          {Object.keys(permisosGlobales).map((modulo) => (
-            <li key={modulo} className="flex items-center justify-between">
-              <span className="font-medium">{modulo}</span>
+        {showModulos && (
+          <ul className="space-y-2">
+            {Object.keys(permisosGlobales).map((modulo) => (
+              <li key={modulo} className="flex items-center justify-between">
+                <span className="font-medium">{modulo}</span>
 
-              <input
-                type="checkbox"
-                checked={modulosVisibles.includes(modulo)}
-                onChange={() => cambiarModulo(modulo)}
-                className="h-4 w-4"
-              />
-            </li>
-          ))}
-        </ul>
+                <input
+                  type="checkbox"
+                  checked={modulosVisibles.includes(modulo)}
+                  onChange={() => cambiarModulo(modulo)}
+                  className="h-4 w-4"
+                />
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
-      {/* PERMISOS POR MÓDULO (EDITABLE) */}
+      {/* PERMISOS POR MÓDULO (ACORDEÓN) */}
       <div className="border p-4 rounded bg-white shadow">
-        <h2 className="text-xl font-semibold mb-3">Permisos por módulo (editable)</h2>
+        <button
+          className="text-xl font-semibold mb-3 w-full text-left"
+          onClick={() => setShowPermisos(!showPermisos)}
+        >
+          Permisos por módulo (editable)
+        </button>
 
-        <ul className="space-y-4">
-          {Object.entries(permisosGlobales).map(([modulo, permsDisponibles]) => (
-            <li key={modulo} className="border-b pb-2">
-              <strong>{modulo}</strong>
+        {showPermisos && (
+          <ul className="space-y-4">
+            {Object.entries(permisosGlobales).map(([modulo, permsDisponibles]) => (
+              <li key={modulo} className="border-b pb-2">
+                <strong>{modulo}</strong>
 
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2">
-                {permsDisponibles.map((perm) => (
-                  <label
-                    key={perm}
-                    className="flex items-center gap-2 text-sm border px-2 py-1 rounded bg-gray-50"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={permisosEmpleado[modulo]?.includes(perm) || false}
-                      onChange={() => cambiarPermiso(modulo, perm)}
-                    />
-                    {perm}
-                  </label>
-                ))}
-              </div>
-            </li>
-          ))}
-        </ul>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2">
+                  {permsDisponibles.map((perm) => (
+                    <label
+                      key={perm}
+                      className="flex items-center gap-2 text-sm border px-2 py-1 rounded bg-gray-50"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={permisosEmpleado[modulo]?.includes(perm) || false}
+                        onChange={() => cambiarPermiso(modulo, perm)}
+                      />
+                      {perm}
+                    </label>
+                  ))}
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
-      {/* AUDITORÍA DEL SISTEMA */}
+      {/* AUDITORÍA DEL SISTEMA (PAGINADA) */}
       <div className="border p-4 rounded bg-white shadow">
         <h2 className="text-xl font-semibold mb-3">Auditoría del sistema</h2>
 
@@ -233,23 +261,39 @@ export default function SeguridadFicha() {
           </thead>
 
           <tbody>
-            {auditoria
-              .filter((a) => a.usuario === empleado.usuario)
-              .slice(0, 20)
-              .map((a) => (
-                <tr key={a.id} className="border-b">
-                  <td className="p-2">{a.fecha}</td>
-                  <td className="p-2">{a.usuario}</td>
-                  <td className="p-2">{a.modulo}</td>
-                  <td className="p-2">{a.accion}</td>
-                  <td className="p-2">{a.descripcion}</td>
-                </tr>
-              ))}
+            {auditoriaPaginada.map((a) => (
+              <tr key={a.id} className="border-b">
+                <td className="p-2">{a.fecha}</td>
+                <td className="p-2">{a.usuario}</td>
+                <td className="p-2">{a.modulo}</td>
+                <td className="p-2">{a.accion}</td>
+                <td className="p-2">{a.descripcion}</td>
+              </tr>
+            ))}
           </tbody>
         </table>
+
+        {/* Paginación auditoría */}
+        <div className="flex gap-3 mt-3">
+          <button
+            disabled={paginaAuditoria === 0}
+            onClick={() => setPaginaAuditoria(paginaAuditoria - 1)}
+            className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
+          >
+            Anterior
+          </button>
+
+          <button
+            disabled={(paginaAuditoria + 1) * 10 >= auditoriaFiltrada.length}
+            onClick={() => setPaginaAuditoria(paginaAuditoria + 1)}
+            className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
+          >
+            Siguiente
+          </button>
+        </div>
       </div>
 
-      {/* LOGS DEL USUARIO */}
+      {/* LOGS DEL USUARIO (PAGINADOS) */}
       <div className="border p-4 rounded bg-white shadow">
         <h2 className="text-xl font-semibold mb-3">Logs del usuario</h2>
 
@@ -264,19 +308,35 @@ export default function SeguridadFicha() {
           </thead>
 
           <tbody>
-            {logs
-              .filter((l) => l.usuario === empleado.usuario)
-              .slice(0, 20)
-              .map((l) => (
-                <tr key={l.id} className="border-b">
-                  <td className="p-2">{l.fecha}</td>
-                  <td className="p-2">{l.evento}</td>
-                  <td className="p-2">{l.detalle || "-"}</td>
-                  <td className="p-2">{l.ip || "-"}</td>
-                </tr>
-              ))}
+            {logsPaginados.map((l) => (
+              <tr key={l.id} className="border-b">
+                <td className="p-2">{l.fecha}</td>
+                <td className="p-2">{l.evento}</td>
+                <td className="p-2">{l.detalle || "-"}</td>
+                <td className="p-2">{l.ip || "-"}</td>
+              </tr>
+            ))}
           </tbody>
         </table>
+
+        {/* Paginación logs */}
+        <div className="flex gap-3 mt-3">
+          <button
+            disabled={paginaLogs === 0}
+            onClick={() => setPaginaLogs(paginaLogs - 1)}
+            className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
+          >
+            Anterior
+          </button>
+
+          <button
+            disabled={(paginaLogs + 1) * 10 >= logsFiltrados.length}
+            onClick={() => setPaginaLogs(paginaLogs + 1)}
+            className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
+          >
+            Siguiente
+          </button>
+        </div>
       </div>
     </div>
   );

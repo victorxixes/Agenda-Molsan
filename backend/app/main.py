@@ -41,7 +41,7 @@ origins = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # ⭐ NECESARIO PARA WEBSOCKETS EN RENDER
+    allow_origins=["*"],  # Necesario para WebSockets en Render
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -77,6 +77,7 @@ from backend.app.maestros.router import router as maestros_router
 # 🗂️ INTRANET
 from backend.app.intranet.documentos.router import router as documentos_router
 from backend.app.intranet.noticias.router import router as noticias_router
+from backend.app.websockets.intranet_ws import router as intranet_ws_router
 
 # 📅 AGENDA
 from backend.app.agenda.router import router as agenda_router
@@ -126,13 +127,14 @@ app.include_router(empleados_router, prefix="/api")
 app.include_router(maestros_router, prefix="/api")
 
 # 🗂️ Intranet
+app.include_router(intranet_ws_router)
 app.include_router(documentos_router, prefix="/api")
 app.include_router(noticias_router, prefix="/api")
 
 # 📅 Agenda
 app.include_router(agenda_router, prefix="/api")
 
-# 📨 WebSockets (TODOS CORRECTOS)
+# 📨 WebSockets
 app.include_router(empleados_ws_router)
 app.include_router(agenda_ws_router)
 app.include_router(mensajes_ws_router)

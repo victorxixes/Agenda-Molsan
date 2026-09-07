@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useSeguridad } from "../../hooks/useSeguridad";
 
 export default function SeguridadAuditoria() {
-  const { auditoria, cargarTodo } = useSeguridad();
+  const { auditoria = [], cargarTodo } = useSeguridad();
 
   useEffect(() => {
     cargarTodo();
@@ -23,7 +23,7 @@ export default function SeguridadAuditoria() {
           </tr>
         </thead>
         <tbody>
-          {auditoria.map((a) => (
+          {(auditoria || []).map((a) => (
             <tr key={a.id} className="border-b">
               <td className="p-2">{a.fecha}</td>
               <td className="p-2">{a.usuario}</td>

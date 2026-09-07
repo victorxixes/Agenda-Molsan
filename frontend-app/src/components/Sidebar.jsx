@@ -11,6 +11,7 @@ const Icon = ({ name }) => (
 
 export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(true);
+  const [fixed, setFixed] = useState(false);
 
   const item = (to, label, iconName) => (
     <NavLink
@@ -35,44 +36,79 @@ export default function Sidebar() {
         bg-white border-r shadow-sm p-4 space-y-4 transition-all duration-300
         ${collapsed ? "w-20" : "w-64"}
       `}
-      onMouseEnter={() => setCollapsed(false)}
-      onMouseLeave={() => setCollapsed(true)}
+      onMouseEnter={() => !fixed && setCollapsed(false)}
+      onMouseLeave={() => !fixed && setCollapsed(true)}
     >
-      {/* Título */}
-      <h2
-        className={`
-          text-xl font-bold mb-4 transition-opacity duration-300
-          ${collapsed ? "opacity-0 pointer-events-none" : "opacity-100"}
-        `}
-      >
-        Agenda Molsan
-      </h2>
+      {/* Botón fijar */}
+      <div className="flex items-center justify-between mb-4">
+        {!collapsed && (
+          <h2 className="text-xl font-bold">Agenda Molsan</h2>
+        )}
+
+        <button
+          onClick={() => setFixed(!fixed)}
+          className="p-2 rounded hover:bg-gray-200 transition"
+          title={fixed ? "Desfijar sidebar" : "Fijar sidebar"}
+        >
+          <Icon name={fixed ? "pin-off" : "pin"} />
+        </button>
+      </div>
 
       <nav className="space-y-2">
 
+        {/* ⭐ SECCIÓN: General */}
+        {!collapsed && (
+          <p className="text-xs text-gray-400 uppercase tracking-wide px-2">
+            General
+          </p>
+        )}
+
         {item("/dashboard", "Dashboard", "home")}
+
+        {/* ⭐ SECCIÓN: Agenda */}
+        {!collapsed && (
+          <p className="text-xs text-gray-400 uppercase tracking-wide px-2 mt-4">
+            Agenda
+          </p>
+        )}
 
         {puedeVerModulo("agenda") && item("/agenda", "Agenda", "calendar")}
         {puedeVerModulo("mis-visitas") && item("/agenda/mis-visitas", "Mis visitas", "visit")}
 
-        {puedeVerModulo("empleados") && item("/panel/empleados", "Empleados", "user-group")}
+        {/* ⭐ SECCIÓN: Gestión */}
+        {!collapsed && (
+          <p className="text-xs text-gray-400 uppercase tracking-wide px-2 mt-4">
+            Gestión
+          </p>
+        )}
 
+        {puedeVerModulo("empleados") && item("/panel/empleados", "Empleados", "user-group")}
         {puedeVerModulo("ctn") && item("/ctn", "CTN", "globe")}
 
         {/* ⭐ SOLO INTRANET */}
         {puedeVerModulo("intranet") && item("/intranet", "Intranet", "globe")}
 
         {/* ❌ Documentos y Noticias eliminados del sidebar */}
-        {/* Se gestionan dentro del módulo Intranet */}
+
+        {/* ⭐ SECCIÓN: Comunicación */}
+        {!collapsed && (
+          <p className="text-xs text-gray-400 uppercase tracking-wide px-2 mt-4">
+            Comunicación
+          </p>
+        )}
 
         {puedeVerModulo("mensajes") && item("/mensajes", "Mensajes", "chat")}
 
+        {/* ⭐ SECCIÓN: Sistema */}
+        {!collapsed && (
+          <p className="text-xs text-gray-400 uppercase tracking-wide px-2 mt-4">
+            Sistema
+          </p>
+        )}
+
         {puedeVerModulo("herramientas") && item("/herramientas", "Herramientas", "tools")}
-
         {puedeVerModulo("logs") && item("/logs", "Logs", "clipboard")}
-
         {puedeVerModulo("seguridad") && item("/seguridad", "Seguridad", "shield")}
-
         {puedeVerModulo("utilidades") && item("/utilidades", "Utilidades", "cog")}
         {puedeVerModulo("inicializacion") &&
           item("/utilidades/inicializacion", "Inicialización", "refresh")}

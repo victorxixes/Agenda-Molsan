@@ -13,7 +13,6 @@ import LoginPage from "./pages/LoginPage";
 
 /* DASHBOARD */
 import Dashboard from "./pages/dashboard/Dashboard.jsx";
-import DashboardExtendido from "./pages/dashboard/DashboardExtendido.jsx";
 
 /* AGENDA */
 import Agenda from "./pages/agenda/Agenda.jsx";

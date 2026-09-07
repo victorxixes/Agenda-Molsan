@@ -1,17 +1,25 @@
-import React from "react";
+// frontend-app/src/main.jsx
+import React, { useEffect } from "react";
 import ReactDOM from "react-dom/client";
-import App from "./App.jsx";
 import { BrowserRouter } from "react-router-dom";
-import "./css/index.css";
-
+import App from "./App";
 import { useAuthStore } from "./store/authStore";
 
-// 🔥 Hidración inicial del estado de autenticación
-useAuthStore.getState().init();
+function Root() {
+  useEffect(() => {
+    // 🔥 hidratar auth al arrancar
+    useAuthStore.getState().init();
+  }, []);
+
+  return (
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
+  );
+}
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <BrowserRouter>
-    <App />
-  </BrowserRouter>
+  <React.StrictMode>
+    <Root />
+  </React.StrictMode>
 );
-

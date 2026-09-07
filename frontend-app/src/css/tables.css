@@ -4,6 +4,7 @@
   border-radius: var(--sj-radius);
   overflow: hidden;
   border: 1px solid var(--sj-gris-azulado);
+  animation: fadeIn 0.25s ease-out;
 }
 
 .table-sj thead {
@@ -20,4 +21,8 @@
 
 .table-sj tr:hover {
   background-color: var(--sj-gris-azulado);
+}
+
+.table-sj.striped tr:nth-child(even) {
+  background-color: #f7f9fc;
 }

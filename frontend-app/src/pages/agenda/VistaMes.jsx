@@ -31,9 +31,12 @@ function colorPorTipo(tipo) {
   }
 }
 
-export default function VistaMes({ citas, onDiaClick, onCitaClick }) {
+export default function VistaMes({ citas = [], onDiaClick, onCitaClick }) {
+  const citasSeguras = Array.isArray(citas) ? citas : [];
+
   const fechaBase =
-    citas[0]?.fecha || new Date().toISOString().slice(0, 10);
+    citasSeguras[0]?.fecha || new Date().toISOString().slice(0, 10);
+
   const matrix = getMatrix(fechaBase);
 
   return (
@@ -59,7 +62,7 @@ export default function VistaMes({ citas, onDiaClick, onCitaClick }) {
             }
 
             const fechaStr = day.toISOString().slice(0, 10);
-            const citasDia = citas.filter((c) => c.fecha === fechaStr);
+            const citasDia = citasSeguras.filter((c) => c.fecha === fechaStr);
 
             return (
               <div

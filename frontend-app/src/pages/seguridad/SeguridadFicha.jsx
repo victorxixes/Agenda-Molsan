@@ -25,36 +25,56 @@ export default function SeguridadFicha() {
   const [showModulos, setShowModulos] = useState(false);
   const [showPermisos, setShowPermisos] = useState(false);
 
-  // Filtros
-  const [filtroFecha, setFiltroFecha] = useState("");
-  const [filtroModulo, setFiltroModulo] = useState("");
+  // Auditoría filtros
+  const [filtroFechaAud, setFiltroFechaAud] = useState("");
+  const [busquedaAud, setBusquedaAud] = useState("");
+  const [paginaAud, setPaginaAud] = useState(0);
+  const pageSizeAud = 20;
 
-  // Ordenación
-  const [orden, setOrden] = useState({ campo: "fecha", asc: false });
+  // Logs filtros
+  const [filtroFechaLog, setFiltroFechaLog] = useState("");
+  const [busquedaLog, setBusquedaLog] = useState("");
+  const [paginaLog, setPaginaLog] = useState(0);
+  const pageSizeLog = 20;
 
-  const ordenar = (campo) => {
-    setOrden((prev) => ({
+  // Ordenación auditoría
+  const [ordenAud, setOrdenAud] = useState({ campo: "fecha", asc: false });
+  const ordenarAud = (campo) => {
+    setOrdenAud((prev) => ({
       campo,
       asc: prev.campo === campo ? !prev.asc : true
     }));
   };
 
-  // Iconos por tipo de acción
+  // Ordenación logs
+  const [ordenLog, setOrdenLog] = useState({ campo: "fecha", asc: false });
+  const ordenarLog = (campo) => {
+    setOrdenLog((prev) => ({
+      campo,
+      asc: prev.campo === campo ? !prev.asc : true
+    }));
+  };
+
+  // Iconos
   const iconosAccion = {
     login: "🔐",
-    logout: "🚪",
+    login_error: "⚠️",
+    acceso: "📥",
     update: "✏️",
     delete: "🗑️",
-    error: "⚠️",
-    acceso: "📥",
+    permiso: "🔧",
+    modulo: "📦",
     default: "📄"
   };
 
-  // Paginación auditoría
-  const [paginaAuditoria, setPaginaAuditoria] = useState(0);
-
-  // Paginación logs
-  const [paginaLogs, setPaginaLogs] = useState(0);
+  const iconosEvento = {
+    login: "🔐",
+    login_error: "⚠️",
+    acceso: "📥",
+    update: "✏️",
+    delete: "🗑️",
+    default: "📄"
+  };
 
   useEffect(() => {
     cargarFicha(id);
@@ -103,42 +123,122 @@ export default function SeguridadFicha() {
   // AUDITORÍA — FILTROS + ORDEN + PAGINACIÓN
   // ---------------------------
 
-  const auditoriaFiltrada = auditoria.filter(
-    (a) => a.usuario === empleado.usuario
-  );
+  const auditoriaFiltrada = auditoria.filter((a) => {
+    const texto = busquedaAud.toLowerCase();
+
+    const coincideBusqueda =
+      a.usuario?.toLowerCase().includes(texto) ||
+      a.modulo?.toLowerCase().includes(texto) ||
+      a.accion?.toLowerCase().includes(texto) ||
+      a.descripcion?.toLowerCase().includes(texto) ||
+      a.fecha?.toLowerCase().includes(texto);
+
+    const coincideFecha = filtroFechaAud
+      ? a.fecha.startsWith(filtroFechaAud)
+      : true;
+
+    return coincideBusqueda && coincideFecha;
+  });
 
   const auditoriaOrdenada = [...auditoriaFiltrada].sort((a, b) => {
-    const campo = orden.campo;
-    const asc = orden.asc ? 1 : -1;
+    const campo = ordenAud.campo;
+    const asc = ordenAud.asc ? 1 : -1;
 
     if (a[campo] < b[campo]) return -1 * asc;
     if (a[campo] > b[campo]) return 1 * asc;
     return 0;
   });
 
-  const auditoriaFiltradaFinal = auditoriaOrdenada.filter((a) => {
-    const coincideFecha = filtroFecha ? a.fecha.startsWith(filtroFecha) : true;
-    const coincideModulo = filtroModulo
-      ? a.modulo.toLowerCase().includes(filtroModulo)
+  const auditoriaPaginada = auditoriaOrdenada.slice(
+    paginaAud * pageSizeAud,
+    paginaAud * pageSizeAud + pageSizeAud
+  );
+
+  // DESCARGA EXCEL AUDITORÍA
+  const descargarExcelAuditoria = () => {
+    const encabezados = ["ID", "Usuario", "Módulo", "Acción", "Descripción", "Fecha"];
+    const filas = auditoriaOrdenada.map((a) => [
+      a.id,
+      a.usuario,
+      a.modulo,
+      a.accion,
+      a.descripcion,
+      a.fecha
+    ]);
+
+    const contenido = [encabezados, ...filas]
+      .map((fila) => fila.join("\t"))
+      .join("\n");
+
+    const blob = new Blob([contenido], { type: "application/vnd.ms-excel" });
+    const url = URL.createObjectURL(blob);
+
+    const aTag = document.createElement("a");
+    aTag.href = url;
+    aTag.download = "auditoria_usuario.xls";
+    aTag.click();
+
+    URL.revokeObjectURL(url);
+  };
+
+  // ---------------------------
+  // LOGS — FILTROS + ORDEN + PAGINACIÓN
+  // ---------------------------
+
+  const logsFiltrados = logs.filter((l) => {
+    const texto = busquedaLog.toLowerCase();
+
+    const coincideBusqueda =
+      l.evento?.toLowerCase().includes(texto) ||
+      l.detalle?.toLowerCase().includes(texto) ||
+      l.fecha?.toLowerCase().includes(texto);
+
+    const coincideFecha = filtroFechaLog
+      ? l.fecha.startsWith(filtroFechaLog)
       : true;
-    return coincideFecha && coincideModulo;
+
+    return coincideBusqueda && coincideFecha;
   });
 
-  const auditoriaPaginada = auditoriaFiltradaFinal.slice(
-    paginaAuditoria * 10,
-    paginaAuditoria * 10 + 10
+  const logsOrdenados = [...logsFiltrados].sort((a, b) => {
+    const campo = ordenLog.campo;
+    const asc = ordenLog.asc ? 1 : -1;
+
+    if (a[campo] < b[campo]) return -1 * asc;
+    if (a[campo] > b[campo]) return 1 * asc;
+    return 0;
+  });
+
+  const logsPaginados = logsOrdenados.slice(
+    paginaLog * pageSizeLog,
+    paginaLog * pageSizeLog + pageSizeLog
   );
 
-  // ---------------------------
-  // LOGS — PAGINACIÓN
-  // ---------------------------
+  // DESCARGA EXCEL LOGS
+  const descargarExcelLogs = () => {
+    const encabezados = ["ID", "Evento", "Detalle", "Fecha", "IP"];
+    const filas = logsOrdenados.map((l) => [
+      l.id,
+      l.evento,
+      l.detalle,
+      l.fecha,
+      l.ip || "-"
+    ]);
 
-  const logsFiltrados = logs.filter((l) => l.usuario === empleado.usuario);
+    const contenido = [encabezados, ...filas]
+      .map((fila) => fila.join("\t"))
+      .join("\n");
 
-  const logsPaginados = logsFiltrados.slice(
-    paginaLogs * 10,
-    paginaLogs * 10 + 10
-  );
+    const blob = new Blob([contenido], { type: "application/vnd.ms-excel" });
+    const url = URL.createObjectURL(blob);
+
+    const aTag = document.createElement("a");
+    aTag.href = url;
+    aTag.download = "logs_usuario.xls";
+    aTag.click();
+
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <div className="p-6 space-y-6">
@@ -244,7 +344,7 @@ export default function SeguridadFicha() {
         </div>
       </div>
 
-      {/* MÓDULOS VISIBLES (ACORDEÓN) */}
+      {/* MÓDULOS VISIBLES */}
       <div className="border p-4 rounded bg-white shadow">
         <button
           className="text-xl font-semibold mb-3 w-full text-left"
@@ -271,7 +371,7 @@ export default function SeguridadFicha() {
         )}
       </div>
 
-      {/* PERMISOS POR MÓDULO (ACORDEÓN) */}
+      {/* PERMISOS POR MÓDULO */}
       <div className="border p-4 rounded bg-white shadow">
         <button
           className="text-xl font-semibold mb-3 w-full text-left"
@@ -307,48 +407,54 @@ export default function SeguridadFicha() {
         )}
       </div>
 
-      {/* AUDITORÍA DEL SISTEMA */}
+      {/* AUDITORÍA DEL USUARIO */}
       <div className="border p-4 rounded bg-white shadow">
-        <h2 className="text-xl font-semibold mb-3">Auditoría del sistema</h2>
+        <h2 className="text-xl font-semibold mb-3">Auditoría del usuario</h2>
 
-        {/* Filtros */}
-        <div className="flex gap-4 mb-3">
-          <div>
-            <label className="text-sm">Filtrar por fecha</label>
-            <input
-              type="date"
-              className="border rounded px-2 py-1"
-              value={filtroFecha}
-              onChange={(e) => setFiltroFecha(e.target.value)}
-            />
-          </div>
+        {/* BOTÓN EXCEL */}
+        <button
+          onClick={descargarExcelAuditoria}
+          className="px-3 py-2 bg-green-600 text-white rounded mb-4"
+        >
+          Descargar Excel
+        </button>
 
-          <div>
-            <label className="text-sm">Buscar módulo</label>
-            <input
-              type="text"
-              className="border rounded px-2 py-1"
-              placeholder="agenda, intranet, mensajes..."
-              value={filtroModulo}
-              onChange={(e) => setFiltroModulo(e.target.value.toLowerCase())}
-            />
-          </div>
+        {/* FILTROS */}
+        <div className="flex flex-col md:flex-row gap-4 mb-4">
+          <input
+            type="text"
+            className="border rounded px-3 py-2 w-full md:w-1/2"
+            placeholder="Buscar por módulo, acción, descripción..."
+            value={busquedaAud}
+            onChange={(e) => {
+              setBusquedaAud(e.target.value);
+              setPaginaAud(0);
+            }}
+          />
+
+          <input
+            type="date"
+            className="border rounded px-3 py-2 w-full md:w-1/3"
+            value={filtroFechaAud}
+            onChange={(e) => {
+              setFiltroFechaAud(e.target.value);
+              setPaginaAud(0);
+            }}
+          />
         </div>
 
-        <table className="w-full text-sm">
+        {/* TABLA */}
+        <table className="w-full text-sm border rounded bg-white">
           <thead>
-            <tr className="border-b bg-gray-100">
-              <th className="p-2 cursor-pointer" onClick={() => ordenar("fecha")}>
-                Fecha {orden.campo === "fecha" ? (orden.asc ? "▲" : "▼") : ""}
+            <tr className="bg-gray-100 border-b">
+              <th className="p-2 cursor-pointer" onClick={() => ordenarAud("fecha")}>
+                Fecha {ordenAud.campo === "fecha" ? (ordenAud.asc ? "▲" : "▼") : ""}
               </th>
-              <th className="p-2 cursor-pointer" onClick={() => ordenar("usuario")}>
-                Usuario {orden.campo === "usuario" ? (orden.asc ? "▲" : "▼") : ""}
+              <th className="p-2 cursor-pointer" onClick={() => ordenarAud("modulo")}>
+                Módulo {ordenAud.campo === "modulo" ? (ordenAud.asc ? "▲" : "▼") : ""}
               </th>
-              <th className="p-2 cursor-pointer" onClick={() => ordenar("modulo")}>
-                Módulo {orden.campo === "modulo" ? (orden.asc ? "▲" : "▼") : ""}
-              </th>
-              <th className="p-2 cursor-pointer" onClick={() => ordenar("accion")}>
-                Acción {orden.campo === "accion" ? (orden.asc ? "▲" : "▼") : ""}
+              <th className="p-2 cursor-pointer" onClick={() => ordenarAud("accion")}>
+                Acción {ordenAud.campo === "accion" ? (ordenAud.asc ? "▲" : "▼") : ""}
               </th>
               <th className="p-2">Descripción</th>
             </tr>
@@ -358,7 +464,6 @@ export default function SeguridadFicha() {
             {auditoriaPaginada.map((a) => (
               <tr key={a.id} className="border-b">
                 <td className="p-2">{a.fecha}</td>
-                <td className="p-2">{a.usuario}</td>
                 <td className="p-2">{a.modulo}</td>
                 <td className="p-2">
                   {iconosAccion[a.accion] || iconosAccion.default} {a.accion}
@@ -369,71 +474,23 @@ export default function SeguridadFicha() {
           </tbody>
         </table>
 
-        {/* Paginación auditoría */}
-        <div className="flex gap-3 mt-3">
-          <button
-            disabled={paginaAuditoria === 0}
-            onClick={() => setPaginaAuditoria(paginaAuditoria - 1)}
-            className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
-          >
-            Anterior
-          </button>
+      {/* PAGINACIÓN */}
+<div className="flex items-center gap-3 mt-4">
+  <button
+    disabled={paginaAud === 0}
+    onClick={() => setPaginaAud(paginaAud - 1)}
+    className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
+  >
+    ← Anterior
+  </button>
 
-          <button
-            disabled={(paginaAuditoria + 1) * 10 >= auditoriaFiltradaFinal.length}
-            onClick={() => setPaginaAuditoria(paginaAuditoria + 1)}
-            className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
-          >
-            Siguiente
-          </button>
-        </div>
-      </div>
+  <span className="text-sm text-gray-600">Página {paginaAud + 1}</span>
 
-      {/* LOGS DEL USUARIO */}
-      <div className="border p-4 rounded bg-white shadow">
-        <h2 className="text-xl font-semibold mb-3">Logs del usuario</h2>
-
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b bg-gray-100">
-              <th className="p-2">Fecha</th>
-              <th className="p-2">Evento</th>
-              <th className="p-2">Detalle</th>
-              <th className="p-2">IP</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {logsPaginados.map((l) => (
-              <tr key={l.id} className="border-b">
-                <td className="p-2">{l.fecha}</td>
-                <td className="p-2">{l.evento}</td>
-                <td className="p-2">{l.detalle || "-"}</td>
-                <td className="p-2">{l.ip || "-"}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-        {/* Paginación logs */}
-        <div className="flex gap-3 mt-3">
-          <button
-            disabled={paginaLogs === 0}
-            onClick={() => setPaginaLogs(paginaLogs - 1)}
-            className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
-          >
-            Anterior
-          </button>
-
-          <button
-            disabled={(paginaLogs + 1) * 10 >= logsFiltrados.length}
-            onClick={() => setPaginaLogs(paginaLogs + 1)}
-            className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
-          >
-            Siguiente
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
+  <button
+    disabled={(paginaAud + 1) * pageSizeAud >= auditoriaOrdenada.length}
+    onClick={() => setPaginaAud(paginaAud + 1)}
+    className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
+  >
+    Siguiente →
+  </button>
+</div>

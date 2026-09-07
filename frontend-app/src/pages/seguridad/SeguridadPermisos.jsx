@@ -1,11 +1,14 @@
 import { useSeguridad } from "../../hooks/useSeguridad";
 
 export default function SeguridadPermisos() {
-  const { permisos, guardarPermisos } = useSeguridad();
+  const { ficha, asignarPermisos } = useSeguridad();
+
+  // Los permisos vienen de la ficha del empleado
+  const permisos = ficha?.permisos || {};
 
   const cambiar = (key) => {
     const nuevo = { ...permisos, [key]: !permisos[key] };
-    guardarPermisos(nuevo);
+    asignarPermisos(ficha.id, nuevo);
   };
 
   return (

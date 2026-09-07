@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { obtenerNotarios } from "../../api/agenda";
-import { listarApoderados } from "../../api/empleados";
 
 const TIPOS_CITA = ["Firma notarial", "Reunión", "Otros"];
 

@@ -96,7 +96,6 @@ export default function App() {
 
         {/* DASHBOARD */}
         <Route path="dashboard" element={<Dashboard />} />
-        <Route path="dashboard/extendido" element={<DashboardExtendido />} />
 
         {/* AGENDA */}
         <Route path="agenda" element={<Agenda />} />

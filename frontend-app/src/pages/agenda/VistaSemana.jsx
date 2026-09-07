@@ -12,10 +12,15 @@ function colorPorTipo(tipo) {
   }
 }
 
-export default function VistaSemana({ citas, onCitaClick, onCrearCita }) {
+export default function VistaSemana({
+  citas = [],            // ⭐ SIEMPRE array
+  onCitaClick,
+  onCrearCita,
+}) {
   return (
     <div className="grid grid-cols-[80px,repeat(7,1fr)] gap-1 text-xs">
       <div />
+
       {DIAS.map((d) => (
         <div key={d} className="text-center font-semibold text-gray-700">
           {d}
@@ -23,20 +28,22 @@ export default function VistaSemana({ citas, onCitaClick, onCrearCita }) {
       ))}
 
       {HORAS.map((h) => (
-        <>
+        <React.Fragment key={h}>
           <div
-            key={`hora-${h}`}
             className="h-16 flex items-start justify-end pr-2 text-gray-500"
           >
             {h}
           </div>
+
           {DIAS.map((d, idx) => (
             <div
               key={`${h}-${d}`}
               className="h-16 border border-gray-100 hover:bg-gray-50 cursor-pointer"
-              onDoubleClick={() => onCrearCita(new Date().toISOString().slice(0, 10))}
+              onDoubleClick={() =>
+                onCrearCita(new Date().toISOString().slice(0, 10))
+              }
             >
-              {citas
+              {(citas || [])        // ⭐ blindaje extra
                 .filter((c) => {
                   const fecha = new Date(c.fecha);
                   return fecha.getDay() === ((idx + 1) % 7);
@@ -60,7 +67,7 @@ export default function VistaSemana({ citas, onCitaClick, onCrearCita }) {
                 ))}
             </div>
           ))}
-        </>
+        </React.Fragment>
       ))}
     </div>
   );

@@ -5,7 +5,7 @@ import { useAgendaWS } from "../../hooks/useAgendaWS";
 import VistaDia from "./VistaDia";
 import VistaSemana from "./VistaSemana";
 import VistaMes from "./VistaMes";
-import ModalNuevaCita from "./ModalNuevaCita";
+import ModalNuevaCita from "../../components/agenda/ModalNuevaCita.jsx";
 
 import {
   crearCita,

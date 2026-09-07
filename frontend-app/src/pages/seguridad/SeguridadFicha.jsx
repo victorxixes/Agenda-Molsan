@@ -1,3 +1,5 @@
+
+
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useSeguridad } from "../../hooks/useSeguridad";
@@ -21,23 +23,19 @@ export default function SeguridadFicha() {
   const [nuevaPassword, setNuevaPassword] = useState("");
   const [nuevoRol, setNuevoRol] = useState("");
 
-  // Acordeones
   const [showModulos, setShowModulos] = useState(false);
   const [showPermisos, setShowPermisos] = useState(false);
 
-  // Auditoría filtros
   const [filtroFechaAud, setFiltroFechaAud] = useState("");
   const [busquedaAud, setBusquedaAud] = useState("");
   const [paginaAud, setPaginaAud] = useState(0);
   const pageSizeAud = 20;
 
-  // Logs filtros
   const [filtroFechaLog, setFiltroFechaLog] = useState("");
   const [busquedaLog, setBusquedaLog] = useState("");
   const [paginaLog, setPaginaLog] = useState(0);
   const pageSizeLog = 20;
 
-  // Ordenación auditoría
   const [ordenAud, setOrdenAud] = useState({ campo: "fecha", asc: false });
   const ordenarAud = (campo) => {
     setOrdenAud((prev) => ({
@@ -46,7 +44,6 @@ export default function SeguridadFicha() {
     }));
   };
 
-  // Ordenación logs
   const [ordenLog, setOrdenLog] = useState({ campo: "fecha", asc: false });
   const ordenarLog = (campo) => {
     setOrdenLog((prev) => ({
@@ -55,7 +52,6 @@ export default function SeguridadFicha() {
     }));
   };
 
-  // Iconos
   const iconosAccion = {
     login: "🔐",
     login_error: "⚠️",
@@ -93,6 +89,8 @@ export default function SeguridadFicha() {
     return acc;
   }, {});
 
+
+
   const cambiarModulo = (modulo) => {
     let nuevo;
 
@@ -120,7 +118,7 @@ export default function SeguridadFicha() {
   };
 
   // ---------------------------
-  // AUDITORÍA — FILTROS + ORDEN + PAGINACIÓN
+  // AUDITORÍA
   // ---------------------------
 
   const auditoriaFiltrada = auditoria.filter((a) => {
@@ -154,7 +152,6 @@ export default function SeguridadFicha() {
     paginaAud * pageSizeAud + pageSizeAud
   );
 
-  // DESCARGA EXCEL AUDITORÍA
   const descargarExcelAuditoria = () => {
     const encabezados = ["ID", "Usuario", "Módulo", "Acción", "Descripción", "Fecha"];
     const filas = auditoriaOrdenada.map((a) => [
@@ -181,8 +178,10 @@ export default function SeguridadFicha() {
     URL.revokeObjectURL(url);
   };
 
+
+
   // ---------------------------
-  // LOGS — FILTROS + ORDEN + PAGINACIÓN
+  // LOGS
   // ---------------------------
 
   const logsFiltrados = logs.filter((l) => {
@@ -214,7 +213,6 @@ export default function SeguridadFicha() {
     paginaLog * pageSizeLog + pageSizeLog
   );
 
-  // DESCARGA EXCEL LOGS
   const descargarExcelLogs = () => {
     const encabezados = ["ID", "Evento", "Detalle", "Fecha", "IP"];
     const filas = logsOrdenados.map((l) => [
@@ -239,6 +237,8 @@ export default function SeguridadFicha() {
 
     URL.revokeObjectURL(url);
   };
+
+
 
   return (
     <div className="p-6 space-y-6">
@@ -344,6 +344,8 @@ export default function SeguridadFicha() {
         </div>
       </div>
 
+  
+
       {/* MÓDULOS VISIBLES */}
       <div className="border p-4 rounded bg-white shadow">
         <button
@@ -411,7 +413,6 @@ export default function SeguridadFicha() {
       <div className="border p-4 rounded bg-white shadow">
         <h2 className="text-xl font-semibold mb-3">Auditoría del usuario</h2>
 
-        {/* BOTÓN EXCEL */}
         <button
           onClick={descargarExcelAuditoria}
           className="px-3 py-2 bg-green-600 text-white rounded mb-4"
@@ -419,7 +420,6 @@ export default function SeguridadFicha() {
           Descargar Excel
         </button>
 
-        {/* FILTROS */}
         <div className="flex flex-col md:flex-row gap-4 mb-4">
           <input
             type="text"
@@ -443,7 +443,6 @@ export default function SeguridadFicha() {
           />
         </div>
 
-        {/* TABLA */}
         <table className="w-full text-sm border rounded bg-white">
           <thead>
             <tr className="bg-gray-100 border-b">
@@ -474,7 +473,93 @@ export default function SeguridadFicha() {
           </tbody>
         </table>
 
-     {/* PAGINACIÓN */}
+                {/* PAGINACIÓN AUDITORÍA */}
+        <div className="flex items-center gap-3 mt-4">
+          <button
+            disabled={paginaAud === 0}
+            onClick={() => setPaginaAud(paginaAud - 1)}
+            className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
+          >
+            ← Anterior
+          </button>
+
+          <span className="text-sm text-gray-600">Página {paginaAud + 1}</span>
+
+          <button
+            disabled={(paginaAud + 1) * pageSizeAud >= auditoriaOrdenada.length}
+            onClick={() => setPaginaAud(paginaAud + 1)}
+            className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
+          >
+            Siguiente →
+          </button>
+        </div>
+      </div>
+
+      {/* LOGS DEL USUARIO */}
+      <div className="border p-4 rounded bg-white shadow">
+        <h2 className="text-xl font-semibold mb-3">Logs del usuario</h2>
+
+        <button
+          onClick={descargarExcelLogs}
+          className="px-3 py-2 bg-green-600 text-white rounded mb-4"
+        >
+          Descargar Excel
+        </button>
+
+        {/* FILTROS */}
+        <div className="flex flex-col md:flex-row gap-4 mb-4">
+          <input
+            type="text"
+            className="border rounded px-3 py-2 w-full md:w-1/2"
+            placeholder="Buscar por evento, detalle o fecha..."
+            value={busquedaLog}
+            onChange={(e) => {
+              setBusquedaLog(e.target.value);
+              setPaginaLog(0);
+            }}
+          />
+
+          <input
+            type="date"
+            className="border rounded px-3 py-2 w-full md:w-1/3"
+            value={filtroFechaLog}
+            onChange={(e) => {
+              setFiltroFechaLog(e.target.value);
+              setPaginaLog(0);
+            }}
+          />
+        </div>
+
+        {/* TABLA */}
+        <table className="w-full text-sm border rounded bg-white">
+          <thead>
+            <tr className="bg-gray-100 border-b">
+              <th className="p-2 cursor-pointer" onClick={() => ordenarLog("fecha")}>
+                Fecha {ordenLog.campo === "fecha" ? (ordenLog.asc ? "▲" : "▼") : ""}
+              </th>
+              <th className="p-2 cursor-pointer" onClick={() => ordenarLog("evento")}>
+                Evento {ordenLog.campo === "evento" ? (ordenLog.asc ? "▲" : "▼") : ""}
+              </th>
+              <th className="p-2">Detalle</th>
+              <th className="p-2">IP</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {logsPaginados.map((l) => (
+              <tr key={l.id} className="border-b">
+                <td className="p-2">{l.fecha}</td>
+                <td className="p-2">
+                  {iconosEvento[l.evento] || iconosEvento.default} {l.evento}
+                </td>
+                <td className="p-2">{l.detalle || "-"}</td>
+                <td className="p-2">{l.ip || "-"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        {/* PAGINACIÓN LOGS */}
         <div className="flex items-center gap-3 mt-4">
           <button
             disabled={paginaLog === 0}

@@ -56,12 +56,16 @@ export default function SeguridadUsuarios() {
             <th className="p-2">Acciones</th>
           </tr>
         </thead>
+
         <tbody>
           {(empleados || []).map((e) => (
             <tr key={e.id} className="border-b">
               <td className="p-2">{e.id}</td>
               <td className="p-2">{e.nombre}</td>
-              <td className="p-2">{e.usuario}</td>
+
+              {/* USUARIO — corregido */}
+              <td className="p-2">{e.usuario || "—"}</td>
+
               <td className="p-2">
                 {e.activo ? (
                   <span className="text-green-600 font-semibold">Activo</span>
@@ -69,7 +73,10 @@ export default function SeguridadUsuarios() {
                   <span className="text-red-600 font-semibold">Bloqueado</span>
                 )}
               </td>
-              <td className="p-2">{e.rol_id}</td>
+
+              {/* ROL — corregido */}
+              <td className="p-2">{e.rol?.nombre || "—"}</td>
+
               <td className="p-2 space-x-2">
                 <Link
                   to={`/seguridad/ficha/${e.id}`}

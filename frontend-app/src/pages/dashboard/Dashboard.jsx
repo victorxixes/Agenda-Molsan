@@ -5,11 +5,11 @@ export default function Dashboard() {
   const {
     data,
     loading,
-    cargarDashboard,
+    cargarDashboardExtendido,
   } = useDashboardExtendido();
 
   useEffect(() => {
-    cargarDashboard();
+    cargarDashboardExtendido();
   }, []);
 
   if (loading || !data) {

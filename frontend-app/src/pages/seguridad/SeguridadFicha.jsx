@@ -10,7 +10,10 @@ export default function SeguridadFicha() {
     bloquear,
     desbloquear,
     resetPassword,
-    asignarRol
+    asignarRol,
+    asignarModulos,
+    asignarPermisos,
+    permisos // permisos globales
   } = useSeguridad();
 
   const [nuevaPassword, setNuevaPassword] = useState("");
@@ -22,19 +25,45 @@ export default function SeguridadFicha() {
 
   if (!ficha) return <p className="p-6">Cargando ficha…</p>;
 
-  const empleado = ficha.empleado || {};
+  const empleado = ficha.empleado;
 
-  const onResetPassword = async () => {
-    if (!nuevaPassword) return;
-    await resetPassword(empleado.id, nuevaPassword);
-    setNuevaPassword("");
+  // Módulos visibles del empleado
+  const modulosVisibles = ficha.modulos_visibles || [];
+
+  // Permisos del empleado
+  const permisosEmpleado = ficha.permisos_modulo || {};
+
+  // Permisos globales agrupados por módulo
+  const permisosGlobales = permisos.reduce((acc, p) => {
+    if (!acc[p.modulo]) acc[p.modulo] = [];
+    acc[p.modulo].push(p.permiso);
+    return acc;
+  }, {});
+
+  const cambiarModulo = (modulo) => {
+    let nuevo;
+
+    if (modulosVisibles.includes(modulo)) {
+      nuevo = modulosVisibles.filter((m) => m !== modulo);
+    } else {
+      nuevo = [...modulosVisibles, modulo];
+    }
+
+    asignarModulos(empleado.id, nuevo);
   };
 
-  const onAsignarRol = async () => {
-    if (!nuevoRol) return;
-    await asignarRol(empleado.id, Number(nuevoRol));
-    setNuevoRol("");
-    cargarFicha(empleado.id);
+  const cambiarPermiso = (modulo, permiso) => {
+    const nuevo = { ...permisosEmpleado };
+
+    if (!nuevo[modulo]) nuevo[modulo] = [];
+
+    if (nuevo[modulo].includes(permiso)) {
+      nuevo[modulo] = nuevo[modulo].filter((p) => p !== permiso);
+    } else {
+      nuevo[modulo] = [...nuevo[modulo], permiso];
+    }
+
+    asignarPermisos(empleado.id, nuevo);
   };
 
   return (
@@ -109,7 +138,10 @@ export default function SeguridadFicha() {
             />
             <button
               className="mt-2 px-3 py-1 bg-blue-600 text-white rounded text-sm"
-              onClick={onResetPassword}
+              onClick={() => {
+                resetPassword(empleado.id, nuevaPassword);
+                setNuevaPassword("");
+              }}
             >
               Resetear contraseña
             </button>
@@ -127,7 +159,10 @@ export default function SeguridadFicha() {
             />
             <button
               className="mt-2 px-3 py-1 bg-purple-600 text-white rounded text-sm"
-              onClick={onAsignarRol}
+              onClick={() => {
+                asignarRol(empleado.id, Number(nuevoRol));
+                setNuevoRol("");
+              }}
             >
               Asignar rol
             </button>
@@ -135,35 +170,48 @@ export default function SeguridadFicha() {
         </div>
       </div>
 
-      {/* MÓDULOS VISIBLES */}
+      {/* MÓDULOS VISIBLES (EDITABLE) */}
       <div className="border p-4 rounded bg-white shadow">
-        <h2 className="text-xl font-semibold mb-3">Módulos visibles</h2>
+        <h2 className="text-xl font-semibold mb-3">Módulos visibles (editable)</h2>
 
         <ul className="space-y-2">
-          {ficha.modulos_visibles.map((m) => (
-            <li key={m} className="flex items-center justify-between">
-              <span className="font-medium">{m}</span>
+          {Object.keys(permisosGlobales).map((modulo) => (
+            <li key={modulo} className="flex items-center justify-between">
+              <span className="font-medium">{modulo}</span>
+
+              <input
+                type="checkbox"
+                checked={modulosVisibles.includes(modulo)}
+                onChange={() => cambiarModulo(modulo)}
+                className="h-4 w-4"
+              />
             </li>
           ))}
         </ul>
       </div>
 
-      {/* PERMISOS POR MÓDULO */}
+      {/* PERMISOS POR MÓDULO (EDITABLE) */}
       <div className="border p-4 rounded bg-white shadow">
-        <h2 className="text-xl font-semibold mb-3">Permisos por módulo</h2>
+        <h2 className="text-xl font-semibold mb-3">Permisos por módulo (editable)</h2>
 
-        <ul className="space-y-2">
-          {Object.entries(ficha.permisos_modulo).map(([modulo, perms]) => (
+        <ul className="space-y-4">
+          {Object.entries(permisosGlobales).map(([modulo, permsDisponibles]) => (
             <li key={modulo} className="border-b pb-2">
               <strong>{modulo}</strong>
-              <div className="flex gap-2 mt-1">
-                {perms.map((p) => (
-                  <span
-                    key={p}
-                    className="px-2 py-1 bg-gray-100 rounded text-sm border"
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2">
+                {permsDisponibles.map((perm) => (
+                  <label
+                    key={perm}
+                    className="flex items-center gap-2 text-sm border px-2 py-1 rounded bg-gray-50"
                   >
-                    {p}
-                  </span>
+                    <input
+                      type="checkbox"
+                      checked={permisosEmpleado[modulo]?.includes(perm) || false}
+                      onChange={() => cambiarPermiso(modulo, perm)}
+                    />
+                    {perm}
+                  </label>
                 ))}
               </div>
             </li>

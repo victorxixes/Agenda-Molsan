@@ -2,6 +2,23 @@
   background: var(--sj-blanco);
   border: 1px solid var(--sj-gris-azulado);
   border-radius: var(--sj-radius);
-  padding: 28px;
+  padding: 24px;
   box-shadow: var(--sj-shadow);
+  transition: 0.25s;
+  animation: fadeIn 0.25s ease-out;
+}
+
+.card-sj:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+
+.card-sj-header {
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.card-sj-footer {
+  margin-top: 16px;
+  text-align: right;
 }

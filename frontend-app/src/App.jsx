@@ -42,6 +42,7 @@ import Herramientas from "./pages/herramientas/Herramientas.jsx";
 import ImportarCTN from "./pages/herramientas/ImportarCTN.jsx";
 import Utilidades from "./pages/herramientas/Utilidades.jsx";
 
+
 /* LOGS */
 import Logs from "./pages/logs/Logs.jsx";
 
@@ -124,6 +125,9 @@ export default function App() {
         <Route path="herramientas" element={<Herramientas />} />
         <Route path="herramientas/importar-ctn" element={<ImportarCTN />} />
         <Route path="herramientas/utilidades" element={<Utilidades />} />
+        <Route path="herramientas/utilidades/crear-noticia" element={<CrearNoticia />} />
+        <Route path="herramientas/utilidades/subir-documento" element={<SubirDocumento />} />
+
 
         {/* LOGS */}
         <Route path="logs" element={<Logs />} />

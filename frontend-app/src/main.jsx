@@ -4,6 +4,8 @@ import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 import { useAuthStore } from "./store/authStore";
 
+import "./css/index.css";
+
 function Root() {
   useEffect(() => {
     // 🔥 hidratar auth al arrancar

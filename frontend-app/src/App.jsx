@@ -38,127 +38,40 @@ export default function App() {
       {/* LOGIN */}
       <Route path="/login" element={<LoginPage />} />
 
-      {/* REDIRECCIÓN INICIAL CORRECTA */}
-      <Route path="/" element={<Navigate to="/login" replace />} />
+      {/* ERP PROTEGIDO */}
+      <Route
+        path="/"
+        element={
+          <RequireAuth>
+            <Layout />
+          </RequireAuth>
+        }
+      >
+        {/* REDIRECCIÓN INICIAL */}
+        <Route index element={<Navigate to="/panel/empleados" replace />} />
 
-      {/* RUTAS PROTEGIDAS */}
-      <Route element={<Layout />}>
-        <Route
-          path="/panel/empleados"
-          element={
-            <RequireAuth>
-              <EmpleadosModulo2026 />
-            </RequireAuth>
-          }
-        />
+        {/* EMPLEADOS */}
+        <Route path="panel/empleados" element={<EmpleadosModulo2026 />} />
 
-        <Route
-          path="/ctn"
-          element={
-            <RequireAuth>
-              <Ctn />
-            </RequireAuth>
-          }
-        />
+        {/* CTN */}
+        <Route path="ctn" element={<Ctn />} />
+        <Route path="ctn/:id" element={<CtnDetallePage />} />
 
-        <Route
-          path="/ctn/:id"
-          element={
-            <RequireAuth>
-              <CtnDetallePage />
-            </RequireAuth>
-          }
-        />
+        {/* LOGS */}
+        <Route path="logs" element={<Logs />} />
 
-        <Route
-          path="/logs"
-          element={
-            <RequireAuth>
-              <Logs />
-            </RequireAuth>
-          }
-        />
+        {/* HERRAMIENTAS */}
+        <Route path="herramientas" element={<Herramientas />} />
+        <Route path="herramientas/importar-ctn" element={<ImportarCTN />} />
+        <Route path="herramientas/utilidades" element={<Utilidades />} />
 
-        <Route
-          path="/herramientas"
-          element={
-            <RequireAuth>
-              <Herramientas />
-            </RequireAuth>
-          }
-        />
-
-        <Route
-          path="/herramientas/importar-ctn"
-          element={
-            <RequireAuth>
-              <ImportarCTN />
-            </RequireAuth>
-          }
-        />
-
-        <Route
-          path="/herramientas/utilidades"
-          element={
-            <RequireAuth>
-              <Utilidades />
-            </RequireAuth>
-          }
-        />
-
-        <Route
-          path="/seguridad"
-          element={
-            <RequireAuth>
-              <Seguridad />
-            </RequireAuth>
-          }
-        />
-
-        <Route
-          path="/seguridad/usuarios"
-          element={
-            <RequireAuth>
-              <SeguridadUsuarios />
-            </RequireAuth>
-          }
-        />
-
-        <Route
-          path="/seguridad/ficha/:id"
-          element={
-            <RequireAuth>
-              <SeguridadFicha />
-            </RequireAuth>
-          }
-        />
-
-        <Route
-          path="/seguridad/auditoria"
-          element={
-            <RequireAuth>
-              <SeguridadAuditoria />
-            </RequireAuth>
-          }
-        />
-
-        <Route
-          path="/seguridad/logs"
-          element={
-            <RequireAuth>
-              <SeguridadLogs />
-            </RequireAuth>
-          }
-        />
-
-        <Route
-          path="/seguridad/roles/editor"
-          element={
-            <RequireAuth>
-              <SeguridadRolEditor />
-            </RequireAuth>
-          }
-        />
+        {/* SEGURIDAD */}
+        <Route path="seguridad" element={<Seguridad />} />
+        <Route path="seguridad/usuarios" element={<SeguridadUsuarios />} />
+        <Route path="seguridad/ficha/:id" element={<SeguridadFicha />} />
+        <Route path="seguridad/auditoria" element={<SeguridadAuditoria />} />
+        <Route path="seguridad/logs" element={<SeguridadLogs />} />
+        <Route path="seguridad/roles/editor" element={<SeguridadRolEditor />} />
       </Route>
     </Routes>
   );

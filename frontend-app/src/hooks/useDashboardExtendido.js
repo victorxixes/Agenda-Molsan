@@ -1,3 +1,3 @@
-import { useDashboardExtendidoStore } from "../store/dashboardExtendidoStore";
+import { useDashboardStore } from "../store/dashboardStore";
 
-export const useDashboardExtendido = () => useDashboardExtendidoStore();
+export const useDashboard = () => useDashboardStore();

@@ -31,7 +31,8 @@ function colorPorTipo(tipo) {
   }
 }
 
-export default function VistaMes({ citas = [], onDiaClick, onCitaClick }) {
+export default function VistaMes({ citas, onDiaClick, onCitaClick }) {
+  // ⭐ Blindaje total
   const citasSeguras = Array.isArray(citas) ? citas : [];
 
   const fechaBase =
@@ -63,10 +64,8 @@ export default function VistaMes({ citas = [], onDiaClick, onCitaClick }) {
 
             const fechaStr = day.toISOString().slice(0, 10);
 
-            // ⭐ Blindaje total
-            const citasDia = Array.isArray(citasSeguras)
-              ? citasSeguras.filter((c) => c.fecha === fechaStr)
-              : [];
+            // ⭐ Blindaje extra
+            const citasDia = citasSeguras.filter((c) => c.fecha === fechaStr);
 
             return (
               <div

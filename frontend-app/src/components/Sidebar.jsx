@@ -37,9 +37,14 @@ export default function Sidebar() {
 
         {puedeVerModulo("ctn") && item("/ctn", "CTN", "globe")}
 
+        {/* ⭐ SOLO INTRANET */}
         {puedeVerModulo("intranet") && item("/intranet", "Intranet", "globe")}
+
+        {/* ❌ ELIMINADOS: Documentos y Noticias */}
+        {/* 
         {puedeVerModulo("documentos") && item("/intranet/documentos", "Documentos", "document")}
         {puedeVerModulo("noticias") && item("/intranet/noticias", "Noticias", "news")}
+        */}
 
         {puedeVerModulo("mensajes") && item("/mensajes", "Mensajes", "chat")}
 

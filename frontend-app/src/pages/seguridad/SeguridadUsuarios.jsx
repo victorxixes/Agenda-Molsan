@@ -4,8 +4,8 @@ import { useSeguridad } from "../../hooks/useSeguridad";
 
 export default function SeguridadUsuarios() {
   const {
-    empleados,
-    roles,
+    empleados = [],
+    roles = [],
     cargarTodo,
     bloquear,
     desbloquear,
@@ -57,7 +57,7 @@ export default function SeguridadUsuarios() {
           </tr>
         </thead>
         <tbody>
-          {empleados.map((e) => (
+          {(empleados || []).map((e) => (
             <tr key={e.id} className="border-b">
               <td className="p-2">{e.id}</td>
               <td className="p-2">{e.nombre}</td>
@@ -139,7 +139,7 @@ export default function SeguridadUsuarios() {
                 onChange={(e) => setRolNuevo(e.target.value)}
               >
                 <option value="">Seleccionar rol…</option>
-                {roles.map((r) => (
+                {(roles || []).map((r) => (
                   <option key={r.id} value={r.id}>
                     {r.nombre}
                   </option>

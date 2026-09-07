@@ -1,14 +1,22 @@
-// Aquí solo gestionamos la URL del WebSocket.
-// El análisis de conexiones lo hacemos en el front.
+import axios from "./axios";
 
-export const buildRealtimeWsUrl = (baseUrl, params = {}) => {
-  const url = new URL("/ws/realtime/", baseUrl);
+// ⭐ LISTAR TABLAS
+export const listarTablas = () => {
+  return axios.get("/debug/tablas");
+};
 
-  Object.entries(params).forEach(([key, value]) => {
-    if (value !== undefined && value !== null) {
-      url.searchParams.set(key, value);
-    }
-  });
+// ⭐ DESCRIBIR TABLA
+export const describirTabla = (tabla) => {
+  return axios.get(`/debug/describe/${tabla}`);
+};
 
-  return url.toString().replace("http", "ws");
+// ⭐ OBTENER CONTENIDO DE TABLA
+export const obtenerContenidoTabla = (tabla) => {
+  return axios.get(`/debug/contenido/${tabla}`);
+};
+
+// ⭐ URL para WebSocket realtime
+export const buildRealtimeWsUrl = (baseUrl, params) => {
+  const query = new URLSearchParams(params).toString();
+  return `${baseUrl.replace("http", "ws")}/ws/realtime/?${query}`;
 };

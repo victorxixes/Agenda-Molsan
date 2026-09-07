@@ -1,13 +1,13 @@
 import { create } from "zustand";
 import * as api from "../api/dashboard";
 
-export const useDashboardExtendidoStore = create((set) => ({
+export const useDashboardStore = create((set) => ({
   data: null,
   loading: false,
 
-  cargarDashboardExtendido: async () => {
+  cargarDashboard: async () => {
     set({ loading: true });
-    const res = await api.obtenerDashboardExtendido();
+    const res = await api.obtenerDashboard();
     set({ data: res.data, loading: false });
   },
 }));

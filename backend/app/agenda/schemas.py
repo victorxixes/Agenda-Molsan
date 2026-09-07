@@ -2,7 +2,12 @@ from pydantic import BaseModel, validator
 from datetime import date, time
 from typing import Optional
 
+from backend.app.empleados.schemas import Empleado
 
+
+# =========================================================
+# BASE
+# =========================================================
 class CitaBase(BaseModel):
     fecha: date
     hora_inicio: time
@@ -30,10 +35,16 @@ class CitaBase(BaseModel):
         return v
 
 
+# =========================================================
+# CREATE
+# =========================================================
 class CitaCreate(CitaBase):
     pass
 
 
+# =========================================================
+# UPDATE
+# =========================================================
 class CitaUpdate(BaseModel):
     fecha: Optional[date] = None
     hora_inicio: Optional[time] = None
@@ -48,45 +59,28 @@ class CitaUpdate(BaseModel):
     estado: Optional[str] = None
 
 
-class NotarioResponse(BaseModel):
-    id: int
-    nombre: str
-    apellidos: Optional[str] = None
-    vc: Optional[str] = None
-    apoderado_id: Optional[int] = None
-    apoderado_s: Optional[str] = None
-    observacion: Optional[str] = None
-
-    class Config:
-        orm_mode = True
-
-
-class ApoderadoResponse(BaseModel):
-    id: int
-    nombre: str
-    apellidos: Optional[str] = None
-
-    class Config:
-        orm_mode = True
-
-
+# =========================================================
+# RESPONSE (incluye relaciones completas)
+# =========================================================
 class CitaResponse(BaseModel):
     id: int
     fecha: date
     hora_inicio: time
     hora_fin: time
     tipo_cita: str
-    tipo_firma: str | None
-    observaciones: str | None
+    tipo_firma: Optional[str] = None
+    observaciones: Optional[str] = None
+    estado: Optional[str] = None
 
-    notario_id: int | None
-    notario_nombre: str | None
-    notario: Empleado | None
+    # --- Notario ---
+    notario_id: Optional[int] = None
+    notario_nombre: Optional[str] = None
+    notario: Optional[Empleado] = None
 
-    apoderado_id: int | None
-    apoderado_nombre: str | None
-    apoderado: Empleado | None
+    # --- Apoderado ---
+    apoderado_id: Optional[int] = None
+    apoderado_nombre: Optional[str] = None
+    apoderado: Optional[Empleado] = None
 
     class Config:
         orm_mode = True
-

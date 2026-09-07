@@ -8,28 +8,30 @@ import ModalNuevaCita from "../../components/agenda/ModalNuevaCita.jsx";
 import { crearCita, editarCita, eliminarCita } from "../../api/agenda";
 
 export default function Agenda() {
-  const { citas, cargarMes, fechaActual } = useAgenda();
+  const { citas, cargarMes } = useAgenda();
 
   const [mostrarModal, setMostrarModal] = useState(false);
   const [modalModo, setModalModo] = useState("crear");
   const [fechaSeleccionada, setFechaSeleccionada] = useState(null);
   const [citaSeleccionada, setCitaSeleccionada] = useState(null);
 
+  const hoy = new Date();
+  const [year, setYear] = useState(hoy.getFullYear());
+  const [month, setMonth] = useState(hoy.getMonth() + 1);
+
   useAgendaWS(1);
 
-  // ⭐ Cargar MES al entrar
   useEffect(() => {
-    const hoy = new Date();
-    cargarMes(hoy.getFullYear(), hoy.getMonth() + 1);
-  }, []);
+    cargarMes(year, month);
+  }, [year, month]);
 
   const abrirCrear = (fecha) => {
-  if (!fecha) return; // ⭐ Blindaje
-  setModalModo("crear");
-  setFechaSeleccionada(fecha);
-  setCitaSeleccionada(null);
-  setMostrarModal(true);
-};
+    if (!fecha) return;
+    setModalModo("crear");
+    setFechaSeleccionada(fecha);
+    setCitaSeleccionada(null);
+    setMostrarModal(true);
+  };
 
   const abrirEditar = (cita) => {
     setModalModo("editar");
@@ -59,6 +61,25 @@ export default function Agenda() {
     cargarMes(f.getFullYear(), f.getMonth() + 1);
   };
 
+  // ⭐ Navegación con flechas
+  const mesAnterior = () => {
+    if (month === 1) {
+      setYear(year - 1);
+      setMonth(12);
+    } else {
+      setMonth(month - 1);
+    }
+  };
+
+  const mesSiguiente = () => {
+    if (month === 12) {
+      setYear(year + 1);
+      setMonth(1);
+    } else {
+      setMonth(month + 1);
+    }
+  };
+
   return (
     <div className="container-sj space-y-6">
       <div className="seg-card">
@@ -66,12 +87,54 @@ export default function Agenda() {
         <p className="seg-desc">Calendario de citas SJ‑2026.</p>
       </div>
 
-      <div className="seg-card flex items-center justify-between">
+      {/* SELECTORES + FLECHAS */}
+      <div className="seg-card flex items-center gap-4">
+
+        {/* Flecha izquierda */}
         <button
-          className="sj-btn bg-green-600 hover:bg-green-700"
-          onClick={() => abrirCrear(fechaActual)}
+          className="sj-btn px-3"
+          onClick={mesAnterior}
         >
-          Nueva cita rápida
+          ←
+        </button>
+
+        {/* Selector de año */}
+        <select
+          className="sj-input w-32"
+          value={year}
+          onChange={(e) => setYear(parseInt(e.target.value))}
+        >
+          {Array.from({ length: 6 }, (_, i) => hoy.getFullYear() - 2 + i).map((y) => (
+            <option key={y} value={y}>{y}</option>
+          ))}
+        </select>
+
+        {/* Selector de mes */}
+        <select
+          className="sj-input w-40"
+          value={month}
+          onChange={(e) => setMonth(parseInt(e.target.value))}
+        >
+          <option value={1}>Enero</option>
+          <option value={2}>Febrero</option>
+          <option value={3}>Marzo</option>
+          <option value={4}>Abril</option>
+          <option value={5}>Mayo</option>
+          <option value={6}>Junio</option>
+          <option value={7}>Julio</option>
+          <option value={8}>Agosto</option>
+          <option value={9}>Septiembre</option>
+          <option value={10}>Octubre</option>
+          <option value={11}>Noviembre</option>
+          <option value={12}>Diciembre</option>
+        </select>
+
+        {/* Flecha derecha */}
+        <button
+          className="sj-btn px-3"
+          onClick={mesSiguiente}
+        >
+          →
         </button>
       </div>
 

@@ -42,9 +42,6 @@ function MensajesWrapper() {
   return <Mensajes usuarioId={empleado?.id} />;
 }
 
-<Route path="mensajes" element={<MensajesWrapper />} />
-
-
 /* HERRAMIENTAS */
 import Herramientas from "./pages/herramientas/Herramientas.jsx";
 import ImportarCTN from "./pages/herramientas/ImportarCTN.jsx";
@@ -67,7 +64,7 @@ import LogsAvanzados from "./pages/paneltecnico/LogsAvanzados.jsx";
 import Seguridad from "./pages/seguridad/Seguridad.jsx";
 import SeguridadUsuarios from "./pages/seguridad/SeguridadUsuarios.jsx";
 import SeguridadRoles from "./pages/seguridad/SeguridadRoles.jsx";
-import SeguridadModulos from "./pages/seguridad/SeguridadModulos.jsx;
+import SeguridadModulos from "./pages/seguridad/SeguridadModulos.jsx";  // ✔ FIX
 import SeguridadPermisos from "./pages/seguridad/SeguridadPermisos.jsx";
 import SeguridadFicha from "./pages/seguridad/SeguridadFicha.jsx";
 import SeguridadAuditoria from "./pages/seguridad/SeguridadAuditoria.jsx";
@@ -89,7 +86,6 @@ export default function App() {
           </RequireAuth>
         }
       >
-        {/* REDIRECCIÓN INICIAL */}
         <Route index element={<Navigate to="/dashboard" replace />} />
 
         {/* DASHBOARD */}
@@ -117,7 +113,7 @@ export default function App() {
         <Route path="intranet" element={<Intranet />} />
 
         {/* MENSAJES */}
-        <Route path="mensajes" element={<Mensajes />} />
+        <Route path="mensajes" element={<MensajesWrapper />} />
 
         {/* HERRAMIENTAS */}
         <Route path="herramientas" element={<Herramientas />} />

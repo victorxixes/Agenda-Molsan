@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useSeguridad } from "../../hooks/useSeguridad";
 
 export default function SeguridadLogs() {
-  const { logs, cargarTodo } = useSeguridad();
+  const { logs = [], cargarTodo } = useSeguridad();
 
   useEffect(() => {
     cargarTodo();
@@ -21,7 +21,7 @@ export default function SeguridadLogs() {
           </tr>
         </thead>
         <tbody>
-          {logs.map((l) => (
+          {(logs || []).map((l) => (
             <tr key={l.id} className="border-b">
               <td className="p-2">{l.fecha}</td>
               <td className="p-2">{l.tipo}</td>

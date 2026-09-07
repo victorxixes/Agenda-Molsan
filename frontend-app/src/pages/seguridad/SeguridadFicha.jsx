@@ -190,6 +190,40 @@ export default function SeguridadFicha() {
         </ul>
       </div>
 
+      {/* AUDITORÍA DEL USUARIO */}
+<div className="border p-4 rounded bg-white shadow">
+  <h2 className="text-xl font-semibold mb-3">Auditoría del usuario</h2>
+
+  <ul className="space-y-2 text-sm">
+    {auditoria
+      .filter((a) => a.usuario === empleado.usuario)
+      .slice(0, 10)
+      .map((a) => (
+        <li key={a.id} className="border-b pb-1">
+          <strong>{a.fecha}</strong> — {a.accion} ({a.modulo})
+          <div className="text-gray-600">{a.descripcion}</div>
+        </li>
+      ))}
+  </ul>
+</div>
+
+{/* LOGS DEL USUARIO */}
+<div className="border p-4 rounded bg-white shadow">
+  <h2 className="text-xl font-semibold mb-3">Logs del usuario</h2>
+
+  <ul className="space-y-2 text-sm">
+    {logs
+      .filter((l) => l.usuario === empleado.usuario)
+      .slice(0, 10)
+      .map((l) => (
+        <li key={l.id} className="border-b pb-1">
+          <strong>{l.fecha}</strong> — {l.tipo}: {l.mensaje}
+        </li>
+      ))}
+  </ul>
+</div>
+
+      
       {/* PERMISOS POR MÓDULO (EDITABLE) */}
       <div className="border p-4 rounded bg-white shadow">
         <h2 className="text-xl font-semibold mb-3">Permisos por módulo (editable)</h2>

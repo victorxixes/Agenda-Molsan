@@ -12,7 +12,7 @@ export function useAgendaData(year, month) {
   const { notarias, cargarNotarias } = useNotariasStore();
 
   // WebSocket blindado
-  useAgendaWS(1);
+  //useAgendaWS(1);
 
   // Cargar todo en paralelo
   useEffect(() => {

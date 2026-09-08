@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { obtenerNotarios } from "../../api/agenda";
-import { listarApoderados } from "../../api/empleados";
+import { useNotariasStore } from "../../store/notariasStore";
+import { useEmpleadosStore } from "../../store/empleadosStore";
 
 const TIPOS_CITA = ["Firma notarial", "Reunión", "Otros"];
 
@@ -17,16 +17,18 @@ export default function ModalNuevaCita({
   const [tipoCita, setTipoCita] = useState("Firma notarial");
 
   const [notarioBusqueda, setNotarioBusqueda] = useState("");
-  const [notarios, setNotarios] = useState([]);
   const [notarioSeleccionado, setNotarioSeleccionado] = useState(null);
 
   const [tipoFirma, setTipoFirma] = useState("");
   const [observaciones, setObservaciones] = useState("");
 
-  const [apoderados, setApoderados] = useState([]);
   const [apoderadoId, setApoderadoId] = useState("");
 
-  // Blindaje: cargar datos de cita en edición
+  // Stores blindados
+  const { notarios, cargarNotarios } = useNotariasStore();
+  const { apoderados, cargarApoderados } = useEmpleadosStore();
+
+  // Cargar datos de edición
   useEffect(() => {
     if (modo === "editar" && cita) {
       setHoraInicio(cita.hora_inicio || "10:00");
@@ -43,15 +45,10 @@ export default function ModalNuevaCita({
     }
   }, [modo, cita]);
 
-  // Blindaje: cargar listas
+  // Cargar listas desde stores blindados
   useEffect(() => {
-    obtenerNotarios().then((res) => {
-      setNotarios(Array.isArray(res.data) ? res.data : []);
-    });
-
-    listarApoderados().then((res) => {
-      setApoderados(Array.isArray(res.data) ? res.data : []);
-    });
+    cargarNotarios();
+    cargarApoderados();
   }, []);
 
   const handleGuardar = () => {

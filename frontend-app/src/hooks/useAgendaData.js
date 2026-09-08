@@ -7,7 +7,9 @@ import { useAgendaWS } from "./useAgendaWS";
 export function useAgendaData(year, month) {
   const { citas, cargarMes } = useAgendaStore();
   const { apoderados, cargarApoderados } = useEmpleadosStore();
-  const { notarios, cargarNotarios } = useNotariasStore();
+
+  // ⭐ Nombres correctos del store
+  const { notarias, cargarNotarias } = useNotariasStore();
 
   // WebSocket blindado
   useAgendaWS(1);
@@ -16,12 +18,12 @@ export function useAgendaData(year, month) {
   useEffect(() => {
     cargarMes(year, month);
     cargarApoderados();
-    cargarNotarios();
+    cargarNotarias();   // ⭐ nombre correcto
   }, [year, month]);
 
   return {
     citas,
     apoderados,
-    notarios,
+    notarias,           // ⭐ nombre correcto
   };
 }

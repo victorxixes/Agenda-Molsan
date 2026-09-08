@@ -11,10 +11,15 @@ export const useNotariasStore = create((set) => ({
       set({ cargando: true, error: null });
 
       const res = await obtenerNotarios();
-      const lista = Array.isArray(res.data) ? res.data : [];
+      const notarías = Array.isArray(res.data) ? res.data : [];
+
+      // ⭐ Extraer notarios de cada notaría
+      const listaNotarios = notarías.flatMap((n) =>
+        Array.isArray(n.notarios) ? n.notarios : []
+      );
 
       set({
-        notarios: lista,
+        notarios: listaNotarios,
         cargando: false,
         error: null,
       });

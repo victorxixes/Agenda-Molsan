@@ -19,6 +19,7 @@ export const editarEmpleado = (id, payload) =>
 export const eliminarEmpleado = (id) =>
   axios.delete(`/empleados/${id}`);
 
+
 // Foto
 export const subirFotoEmpleado = (id, file) => {
   const formData = new FormData();
@@ -41,6 +42,7 @@ export const obtenerFichaCompleta = (id) =>
 
 // ⭐ APODERADOS (filtrados desde empleados)
 export const listarApoderados = async () => {
-  const res = await listarEmpleados();
-  return res.data.filter((e) => e.apoderado === true);
+  const res = await axios.get("/empleados/apoderados");
+  return { data: Array.isArray(res.data) ? res.data : [] };
 };
+

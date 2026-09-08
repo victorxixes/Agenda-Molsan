@@ -11,7 +11,7 @@ export const useNotariasStore = create((set) => ({
     const res = await obtenerNotarios();
     const notarías = Array.isArray(res.data) ? res.data : [];
 
-    // ⭐ Convertimos cada notaría en un “notario”
+    // ⭐ Convertimos cada notaría en un “notario” válido para el modal
     const listaNotarios = notarías.map((n) => ({
       id: n.id,
       nombre: n.nombre,

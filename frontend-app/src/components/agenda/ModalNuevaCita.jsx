@@ -16,58 +16,48 @@ export default function ModalNuevaCita({
   const [horaFin, setHoraFin] = useState("11:00");
   const [tipoCita, setTipoCita] = useState("Firma notarial");
 
-  const [notarioBusqueda, setNotarioBusqueda] = useState("");
-  const [notarioSeleccionado, setNotarioSeleccionado] = useState(null);
+  const [notariaBusqueda, setNotariaBusqueda] = useState("");
+  const [notariaSeleccionada, setNotariaSeleccionada] = useState(null);
 
   const [tipoFirma, setTipoFirma] = useState("");
   const [observaciones, setObservaciones] = useState("");
 
-  const [apoderadoId, setApoderadoId] = useState("");
+  const [apoderadoCTN, setApoderadoCTN] = useState("");
+  const [apoderadoSuplente, setApoderadoSuplente] = useState("");
 
-  // ⭐ Stores blindados
-  const { notarios, cargarNotarios } = useNotariasStore();
+  const [apoderadoOtorgante, setApoderadoOtorgante] = useState("");
+
+  // Stores
+  const { notarias, cargarNotarias } = useNotariasStore();
   const { apoderados, cargarApoderados } = useEmpleadosStore();
 
-  // ⭐ Cargar datos de edición
+  // Cargar datos de edición
   useEffect(() => {
     if (modo === "editar" && cita) {
       setHoraInicio(cita.hora_inicio || "10:00");
       setHoraFin(cita.hora_fin || "11:00");
       setTipoCita(cita.tipo_cita || "Firma notarial");
+
       setTipoFirma(cita.tipo_firma || "");
       setObservaciones(cita.observaciones || "");
-      setApoderadoId(cita.apoderado_id || "");
-      setNotarioSeleccionado(
-        cita.notario && typeof cita.notario === "object"
-          ? cita.notario
-          : null
-      );
+
+      setApoderadoCTN(cita.apoderado_id || "");
+      setApoderadoSuplente(cita.apoderado_s || "");
+
+      setApoderadoOtorgante(cita.apoderado_otorgante || "");
+
+      setNotariaSeleccionada(cita.notaria || null);
     }
   }, [modo, cita]);
 
-  // ⭐ Cargar listas desde stores
+  // Cargar datos iniciales
   useEffect(() => {
-    cargarNotarios();
+    cargarNotarias();
     cargarApoderados();
   }, []);
 
-  const handleGuardar = () => {
-    const payload = {
-      fecha,
-      hora_inicio: horaInicio,
-      hora_fin: horaFin,
-      tipo_cita: tipoCita,
-      notario_id: notarioSeleccionado?.id || null,
-      tipo_firma: tipoFirma || "",
-      apoderado_id: apoderadoId || null,
-      observaciones: observaciones || "",
-    };
-
-    onGuardar(payload);
-  };
-
-  // ⭐ Fallback de carga — evita modal vacío
-  if (notarios.length === 0 || apoderados.length === 0) {
+  // Fallback de carga
+  if (!Array.isArray(notarias) || notarias.length === 0) {
     return (
       <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
         <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl p-6">
@@ -76,6 +66,26 @@ export default function ModalNuevaCita({
       </div>
     );
   }
+
+  const handleGuardar = () => {
+    const payload = {
+      fecha,
+      hora_inicio: horaInicio,
+      hora_fin: horaFin,
+      tipo_cita: tipoCita,
+
+      notaria_id: notariaSeleccionada?.id || null,
+
+      tipo_firma: tipoFirma || "",
+      observaciones: observaciones || "",
+
+      apoderado_id: apoderadoCTN || null,
+      apoderado_s: apoderadoSuplente || "",
+      apoderado_otorgante: apoderadoOtorgante || null,
+    };
+
+    onGuardar(payload);
+  };
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
@@ -98,8 +108,10 @@ export default function ModalNuevaCita({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
           {/* Columna izquierda */}
           <div className="space-y-3">
+
             <label className="text-sm font-medium">Hora inicio</label>
             <input
               type="time"
@@ -127,13 +139,13 @@ export default function ModalNuevaCita({
               ))}
             </select>
 
-            <label className="text-sm font-medium">Apoderado</label>
+            <label className="text-sm font-medium">Apoderado Otorgante</label>
             <select
               className="sj-input"
-              value={apoderadoId}
-              onChange={(e) => setApoderadoId(e.target.value)}
+              value={apoderadoOtorgante}
+              onChange={(e) => setApoderadoOtorgante(e.target.value)}
             >
-              <option value="">Sin apoderado</option>
+              <option value="">Seleccionar apoderado</option>
               {apoderados.map((a) => (
                 <option key={a.id} value={a.id}>
                   {a.nombre} {a.apellidos}
@@ -144,36 +156,36 @@ export default function ModalNuevaCita({
 
           {/* Columna derecha */}
           <div className="space-y-3">
-            <label className="text-sm font-medium">Notario</label>
+
+            <label className="text-sm font-medium">Buscar notaría</label>
             <input
               type="text"
               className="sj-input"
-              value={notarioBusqueda}
-              onChange={(e) => setNotarioBusqueda(e.target.value)}
-              placeholder="Buscar notario..."
+              value={notariaBusqueda}
+              onChange={(e) => setNotariaBusqueda(e.target.value)}
+              placeholder="Buscar notaría..."
             />
 
             <div className="max-h-32 overflow-y-auto border rounded">
-              {notarios
+              {notarias
                 .filter((n) =>
-                  `${n.nombre} ${n.apellidos}`
-                    .toLowerCase()
-                    .includes(notarioBusqueda.toLowerCase())
+                  n.nombre.toLowerCase().includes(notariaBusqueda.toLowerCase())
                 )
                 .map((n) => (
                   <div
                     key={n.id}
                     onClick={() => {
-                      setNotarioSeleccionado(n);
+                      setNotariaSeleccionada(n);
                       setTipoFirma(n.vc || "");
                       setObservaciones(n.observacion || "");
-                      setApoderadoId(n.apoderado_id || "");
+                      setApoderadoCTN(n.apoderado_id || "");
+                      setApoderadoSuplente(n.apoderado_s || "");
                     }}
                     className={`cursor-pointer p-2 border-b text-sm hover:bg-blue-50 ${
-                      notarioSeleccionado?.id === n.id ? "bg-blue-100" : ""
+                      notariaSeleccionada?.id === n.id ? "bg-blue-100" : ""
                     }`}
                   >
-                    {n.nombre} {n.apellidos}
+                    {n.nombre}
                   </div>
                 ))}
             </div>
@@ -183,6 +195,20 @@ export default function ModalNuevaCita({
               className="sj-input"
               value={tipoFirma}
               onChange={(e) => setTipoFirma(e.target.value)}
+            />
+
+            <label className="text-sm font-medium">Apoderado CTN</label>
+            <input
+              className="sj-input"
+              value={apoderadoCTN}
+              onChange={(e) => setApoderadoCTN(e.target.value)}
+            />
+
+            <label className="text-sm font-medium">Apoderado suplente</label>
+            <input
+              className="sj-input"
+              value={apoderadoSuplente}
+              onChange={(e) => setApoderadoSuplente(e.target.value)}
             />
 
             <label className="text-sm font-medium">Observaciones</label>

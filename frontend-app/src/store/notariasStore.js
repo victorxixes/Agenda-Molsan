@@ -2,28 +2,28 @@ import { create } from "zustand";
 import { obtenerNotarios } from "../api/agenda";
 
 export const useNotariasStore = create((set) => ({
-  notarios: [],
+  notarias: [],
   cargando: false,
+  error: null,
 
-  cargarNotarios: async () => {
-    set({ cargando: true });
+  cargarNotarias: async () => {
+    try {
+      set({ cargando: true, error: null });
 
-    const res = await obtenerNotarios();
-    const notarías = Array.isArray(res.data) ? res.data : [];
+      const res = await obtenerNotarios();
+      const lista = Array.isArray(res.data) ? res.data : [];
 
-    // ⭐ Convertimos cada notaría en un “notario” válido para el modal
-    const listaNotarios = notarías.map((n) => ({
-      id: n.id,
-      nombre: n.nombre,
-      apellidos: n.apellidos || "",
-      vc: n.vc || "",
-      observacion: n.observacion || "",
-      apoderado_id: n.apoderado_id || null,
-    }));
-
-    set({
-      notarios: listaNotarios,
-      cargando: false,
-    });
+      set({
+        notarias: lista,
+        cargando: false,
+        error: null,
+      });
+    } catch (err) {
+      console.error("Error cargando notarías:", err);
+      set({
+        cargando: false,
+        error: err.message || "Error cargando notarías",
+      });
+    }
   },
 }));

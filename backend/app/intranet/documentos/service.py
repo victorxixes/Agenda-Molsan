@@ -42,7 +42,7 @@ def crear_documento(db: Session, titulo: str, concepto: str, archivo):
         titulo=titulo,
         concepto=concepto,
         fichero=ruta_fichero,
-        fecha_publicacion=datetime.utcnow(),
+        fecha_publicacion=datetime.utcnow().isoformat(),
         usuario_id=None  # Ajusta si usas autenticación
     )
 

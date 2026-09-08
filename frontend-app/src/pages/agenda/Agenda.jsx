@@ -122,8 +122,9 @@ export default function Agenda() {
       </div>
 
       <div className="seg-card">
+        {/* Blindaje crítico */}
         <VistaMes
-          citas={Array.isArray(citas) ? citas : []}   {/* ⭐ Blindaje crítico */}
+          citas={Array.isArray(citas) ? citas : []}
           onDiaClick={abrirCrear}
           onCitaClick={abrirEditar}
         />

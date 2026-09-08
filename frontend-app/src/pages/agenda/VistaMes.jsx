@@ -35,8 +35,10 @@ export default function VistaMes({ citas, onDiaClick, onCitaClick }) {
   // ⭐ Blindaje total
   const citasSeguras = Array.isArray(citas) ? citas : [];
 
-  const fechaBase =
-    citasSeguras[0]?.fecha || new Date().toISOString().slice(0, 10);
+  const fechaBase = (() => {
+  const f = citasSeguras[0]?.fecha;
+  return typeof f === "string" ? f : new Date().toISOString().slice(0, 10);
+})();
 
   const matrix = getMatrix(fechaBase);
 

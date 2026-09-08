@@ -1,43 +1,39 @@
 import axios from "axios";
 
-/* ============================================
-   ERP SJ‑2026 — Cliente Axios centralizado
-   ============================================ */
-
-const api = axios.create({
+const instance = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
+  withCredentials: false,
 });
 
-/* ============================================
-   INTERCEPTOR — Añadir token automáticamente
-   ============================================ */
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
+// Interceptor de request
+instance.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("token");
 
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-
-  return config;
-});
-
-/* ============================================
-   INTERCEPTOR — Manejo de errores global
-   ============================================ */
-api.interceptors.response.use(
-  (res) => res,
-  (err) => {
-    // Si el token expira → redirigir al login
-    if (err.response && err.response.status === 401) {
-      localStorage.removeItem("token");
-      window.location.href = "/login";
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
 
-    return Promise.reject(err);
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// Interceptor de respuesta
+instance.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    // Blindaje total: nunca rompe el frontend
+    if (!error.response) {
+      return Promise.reject({
+        status: 500,
+        data: null,
+        message: "Error de red o servidor no disponible",
+      });
+    }
+
+    return Promise.reject(error);
   }
 );
 
-export default api;
+export default instance;

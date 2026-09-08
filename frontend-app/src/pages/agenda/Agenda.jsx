@@ -6,27 +6,21 @@ import VistaMes from "./VistaMes";
 import ModalNuevaCita from "../../components/agenda/ModalNuevaCita.jsx";
 
 import { crearCita, editarCita, eliminarCita } from "../../api/agenda";
+import { useAgendaData } from "../../hooks/useAgendaData";
 
 export default function Agenda() {
-  const { citas, cargarMes } = useAgenda();
+  const hoy = new Date();
+  const [year, setYear] = useState(hoy.getFullYear());
+  const [month, setMonth] = useState(hoy.getMonth() + 1);
+
+  const { citas } = useAgendaData(year, month);
 
   const [mostrarModal, setMostrarModal] = useState(false);
   const [modalModo, setModalModo] = useState("crear");
   const [fechaSeleccionada, setFechaSeleccionada] = useState(null);
   const [citaSeleccionada, setCitaSeleccionada] = useState(null);
 
-  const hoy = new Date();
-  const [year, setYear] = useState(hoy.getFullYear());
-  const [month, setMonth] = useState(hoy.getMonth() + 1);
-
-  useAgendaWS(1);
-
-  useEffect(() => {
-    cargarMes(year, month);
-  }, [year, month]);
-
   const abrirCrear = (fecha) => {
-    if (!fecha) return;
     setModalModo("crear");
     setFechaSeleccionada(fecha);
     setCitaSeleccionada(null);
@@ -34,7 +28,6 @@ export default function Agenda() {
   };
 
   const abrirEditar = (cita) => {
-    if (!cita) return;
     setModalModo("editar");
     setFechaSeleccionada(cita.fecha);
     setCitaSeleccionada(cita);
@@ -47,21 +40,12 @@ export default function Agenda() {
     } else {
       await editarCita(citaSeleccionada.id, payload);
     }
-
     setMostrarModal(false);
-
-    const f = new Date(payload.fecha);
-    cargarMes(f.getFullYear(), f.getMonth() + 1);
   };
 
   const borrarCita = async () => {
-    if (!citaSeleccionada) return;
-
     await eliminarCita(citaSeleccionada.id);
     setMostrarModal(false);
-
-    const f = new Date(citaSeleccionada.fecha);
-    cargarMes(f.getFullYear(), f.getMonth() + 1);
   };
 
   const mesAnterior = () => {
@@ -107,18 +91,9 @@ export default function Agenda() {
           value={month}
           onChange={(e) => setMonth(parseInt(e.target.value))}
         >
-          <option value={1}>Enero</option>
-          <option value={2}>Febrero</option>
-          <option value={3}>Marzo</option>
-          <option value={4}>Abril</option>
-          <option value={5}>Mayo</option>
-          <option value={6}>Junio</option>
-          <option value={7}>Julio</option>
-          <option value={8}>Agosto</option>
-          <option value={9}>Septiembre</option>
-          <option value={10}>Octubre</option>
-          <option value={11}>Noviembre</option>
-          <option value={12}>Diciembre</option>
+          {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+            <option key={m} value={m}>{m}</option>
+          ))}
         </select>
 
         <button className="sj-btn px-3" onClick={mesSiguiente}>→</button>

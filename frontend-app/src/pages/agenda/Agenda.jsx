@@ -100,11 +100,13 @@ export default function Agenda() {
       </div>
 
       <div className="seg-card">
-        <VistaMes
-          citas={Array.isArray(citas) ? citas : []}
-          onDiaClick={abrirCrear}
-          onCitaClick={abrirEditar}
-        />
+       <VistaMes
+  year={year}
+  month={month}
+  citas={Array.isArray(citas) ? citas : []}
+  onDiaClick={abrirCrear}
+  onCitaClick={abrirEditar}
+/>
       </div>
 
       {mostrarModal && (

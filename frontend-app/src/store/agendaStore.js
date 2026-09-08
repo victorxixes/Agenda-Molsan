@@ -2,26 +2,35 @@ import { create } from "zustand";
 import * as api from "../api/agenda";
 
 export const useAgendaStore = create((set, get) => ({
-citas: [],
-cargando: false,
+  citas: [],
+  cargando: false,
   vista: "mes",
   fechaActual: new Date().toISOString().slice(0, 10),
 
-  set({ cargando: true });
+  cargarMes: async (year, month) => {
+    // Marcar como cargando
+    set({ cargando: true });
 
-const res = await api.getCitasMes(year, month);
+    const res = await api.getCitasMes(year, month);
 
-set({
-  citas: Array.isArray(res.data) ? res.data : [],
-  vista: "mes",
-  fechaActual: `${year}-${month}-01`,
-  cargando: false
-});
+    // Blindaje total: siempre array
+    const citas = Array.isArray(res.data) ? res.data : [];
 
+    set({
+      citas,
+      vista: "mes",
+      fechaActual: `${year}-${month}-01`,
+      cargando: false,
+    });
+  },
 
   buscar: async (params) => {
+    set({ cargando: true });
+
     const res = await api.buscarCitas(params);
-    set({ citas: Array.isArray(res.data) ? res.data : [] });
+    const citas = Array.isArray(res.data) ? res.data : [];
+
+    set({ citas, cargando: false });
   },
 
   obtener: async (id) => {

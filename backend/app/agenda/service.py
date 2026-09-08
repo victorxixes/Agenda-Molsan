@@ -5,7 +5,6 @@ from calendar import monthrange
 from backend.app.agenda.models import Cita
 from backend.app.ctn.models import Notaria
 from backend.app.empleados.models import Empleado
-from backend.app.agenda.schemas import CitaResponse
 
 
 def cita_con_relaciones(db: Session, cita: Cita):
@@ -21,9 +20,9 @@ def cita_con_relaciones(db: Session, cita: Cita):
 
     return {
         "id": cita.id,
-        "fecha": cita.fecha,
-        "hora_inicio": cita.hora_inicio,
-        "hora_fin": cita.hora_fin,
+        "fecha": cita.fecha.isoformat(),  # ✔ fecha ISO
+        "hora_inicio": cita.hora_inicio.isoformat(),
+        "hora_fin": cita.hora_fin.isoformat(),
         "tipo_cita": cita.tipo_cita,
         "tipo_firma": cita.tipo_firma,
         "observaciones": cita.observaciones,
@@ -31,28 +30,20 @@ def cita_con_relaciones(db: Session, cita: Cita):
         # Relaciones
         "notario_id": cita.notario_id,
         "notario_nombre": f"{notario.nombre} {notario.apellidos}" if notario else None,
-        "notario": notario,
+        "notario": {
+            "id": notario.id,
+            "nombre": notario.nombre,
+            "apellidos": notario.apellidos
+        } if notario else None,
 
         "apoderado_id": cita.apoderado_id,
         "apoderado_nombre": f"{apoderado.nombre} {apoderado.apellidos}" if apoderado else None,
-        "apoderado": apoderado,
+        "apoderado": {
+            "id": apoderado.id,
+            "nombre": apoderado.nombre,
+            "apellidos": apoderado.apellidos
+        } if apoderado else None,
     }
-
-
-    return CitaResponse(
-        id=cita.id,
-        fecha=cita.fecha,
-        hora_inicio=cita.hora_inicio,
-        hora_fin=cita.hora_fin,
-        tipo_cita=cita.tipo_cita,
-        notario_id=cita.notario_id,
-        tipo_firma=cita.tipo_firma,
-        apoderado_id=cita.apoderado_id,
-        observaciones=cita.observaciones,
-        estado=cita.estado,
-        notario=notario,
-        apoderado=apoderado_obj,
-    )
 
 
 def obtener_cita(db: Session, cita_id: int):
@@ -110,7 +101,7 @@ def _rellenar_desde_notario(db: Session, cita: Cita):
     if not notaria:
         return
 
-    # Tipo de firma desde vc (si la usas como tal)
+    # Tipo de firma desde vc
     if not cita.tipo_firma and notaria.vc:
         cita.tipo_firma = notaria.vc
 

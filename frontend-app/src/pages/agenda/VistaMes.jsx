@@ -2,6 +2,12 @@ const DIAS_SEMANA = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 
 function getMatrix(fechaBase) {
   const f = new Date(fechaBase);
+
+  if (isNaN(f.getTime())) {
+    // Fecha inválida → devolvemos matriz vacía
+    return [[]];
+  }
+
   const year = f.getFullYear();
   const month = f.getMonth();
   const firstDay = new Date(year, month, 1);
@@ -32,18 +38,19 @@ function colorPorTipo(tipo) {
 }
 
 export default function VistaMes({ citas, onDiaClick, onCitaClick }) {
-  // ⭐ Blindaje total
   const citasSeguras = Array.isArray(citas) ? citas : [];
 
-  // ⭐ Blindaje de fecha base
+  // Blindaje total de fechaBase
   const fechaBase = (() => {
     const f = citasSeguras[0]?.fecha;
-    return typeof f === "string" && f.length === 10
-      ? f
-      : new Date().toISOString().slice(0, 10);
+
+    if (typeof f === "string" && f.length === 10) return f;
+
+    return new Date().toISOString().slice(0, 10);
   })();
 
-  const matrix = getMatrix(fechaBase);
+  // Blindaje total de matrix
+  const matrix = getMatrix(fechaBase) || [[]];
 
   return (
     <div className="text-xs">
@@ -56,8 +63,8 @@ export default function VistaMes({ citas, onDiaClick, onCitaClick }) {
       </div>
 
       <div className="grid grid-cols-7 gap-1">
-        {matrix.map((week, wi) =>
-          week.map((day, di) => {
+        {(matrix || [[]]).map((week, wi) =>
+          (week || []).map((day, di) => {
             if (!day) {
               return (
                 <div
@@ -69,7 +76,6 @@ export default function VistaMes({ citas, onDiaClick, onCitaClick }) {
 
             const fechaStr = day.toISOString().slice(0, 10);
 
-            // ⭐ Blindaje total de citas del día
             const citasDia = Array.isArray(citasSeguras)
               ? citasSeguras.filter((c) => c.fecha === fechaStr)
               : [];
@@ -78,9 +84,7 @@ export default function VistaMes({ citas, onDiaClick, onCitaClick }) {
               <div
                 key={`${wi}-${di}`}
                 className="h-24 border border-gray-100 bg-white rounded hover:bg-gray-50 cursor-pointer flex flex-col p-1"
-                onClick={() => {
-                  if (typeof fechaStr === "string") onDiaClick(fechaStr);
-                }}
+                onClick={() => onDiaClick(fechaStr)}
               >
                 <div className="text-right text-[11px] font-semibold text-gray-700">
                   {day.getDate()}

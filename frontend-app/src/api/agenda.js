@@ -50,7 +50,7 @@ export const moverCita = async (id, nueva_fecha, nueva_hora_inicio, nueva_hora_f
   return { data: res.data || null };
 };
 
-/* NOTARIOS — BLINDADO */
+/* NOTARIOS — CORRECTO */
 export const obtenerNotarios = async () => {
   const res = await axios.get("/ctn/notarias");
   return { data: Array.isArray(res.data) ? res.data : [] };

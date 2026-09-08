@@ -26,21 +26,32 @@ export default function ModalNuevaCita({
   const [apoderados, setApoderados] = useState([]);
   const [apoderadoId, setApoderadoId] = useState("");
 
+  // Blindaje: cargar datos de cita en edición
   useEffect(() => {
     if (modo === "editar" && cita) {
-      setHoraInicio(cita.hora_inicio);
-      setHoraFin(cita.hora_fin);
-      setTipoCita(cita.tipo_cita);
+      setHoraInicio(cita.hora_inicio || "10:00");
+      setHoraFin(cita.hora_fin || "11:00");
+      setTipoCita(cita.tipo_cita || "Firma notarial");
       setTipoFirma(cita.tipo_firma || "");
       setObservaciones(cita.observaciones || "");
       setApoderadoId(cita.apoderado_id || "");
-      setNotarioSeleccionado(cita.notario || null);
+      setNotarioSeleccionado(
+        cita.notario && typeof cita.notario === "object"
+          ? cita.notario
+          : null
+      );
     }
   }, [modo, cita]);
 
+  // Blindaje: cargar listas
   useEffect(() => {
-    obtenerNotarios().then((res) => setNotarios(res.data));
-    listarApoderados().then((res) => setApoderados(res.data));
+    obtenerNotarios().then((res) => {
+      setNotarios(Array.isArray(res.data) ? res.data : []);
+    });
+
+    listarApoderados().then((res) => {
+      setApoderados(Array.isArray(res.data) ? res.data : []);
+    });
   }, []);
 
   const handleGuardar = () => {
@@ -50,10 +61,11 @@ export default function ModalNuevaCita({
       hora_fin: horaFin,
       tipo_cita: tipoCita,
       notario_id: notarioSeleccionado?.id || null,
-      tipo_firma: tipoFirma,
+      tipo_firma: tipoFirma || "",
       apoderado_id: apoderadoId || null,
-      observaciones,
+      observaciones: observaciones || "",
     };
+
     onGuardar(payload);
   };
 
@@ -65,10 +77,9 @@ export default function ModalNuevaCita({
             <h2 className="text-xl font-bold">
               {modo === "crear" ? "Nueva cita" : "Editar cita"}
             </h2>
-            <p className="text-sm text-gray-500">
-              {fecha}
-            </p>
+            <p className="text-sm text-gray-500">{fecha}</p>
           </div>
+
           <button
             onClick={onClose}
             className="text-gray-500 hover:text-gray-800"
@@ -78,6 +89,7 @@ export default function ModalNuevaCita({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Columna izquierda */}
           <div className="space-y-3">
             <label className="text-sm font-medium">Hora inicio</label>
             <input
@@ -121,6 +133,7 @@ export default function ModalNuevaCita({
             </select>
           </div>
 
+          {/* Columna derecha */}
           <div className="space-y-3">
             <label className="text-sm font-medium">Notario</label>
             <input
@@ -132,7 +145,7 @@ export default function ModalNuevaCita({
             />
 
             <div className="max-h-32 overflow-y-auto border rounded">
-              {notarios
+              {(Array.isArray(notarios) ? notarios : [])
                 .filter((n) =>
                   `${n.nombre} ${n.apellidos}`
                     .toLowerCase()
@@ -148,9 +161,7 @@ export default function ModalNuevaCita({
                       setApoderadoId(n.apoderado_id || "");
                     }}
                     className={`cursor-pointer p-2 border-b text-sm hover:bg-blue-50 ${
-                      notarioSeleccionado?.id === n.id
-                        ? "bg-blue-100"
-                        : ""
+                      notarioSeleccionado?.id === n.id ? "bg-blue-100" : ""
                     }`}
                   >
                     {n.nombre} {n.apellidos}
@@ -185,10 +196,7 @@ export default function ModalNuevaCita({
             </button>
           )}
 
-          <button
-            onClick={onClose}
-            className="px-4 py-2 border rounded"
-          >
+          <button onClick={onClose} className="px-4 py-2 border rounded">
             Cancelar
           </button>
 

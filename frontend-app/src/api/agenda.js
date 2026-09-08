@@ -1,43 +1,57 @@
 import axios from "./axios";
 
 /* CITAS */
-export const getCitasDia = (fecha) =>
-  axios.get(`/agenda/dia/${fecha}`);
+export const getCitasDia = async (fecha) => {
+  const res = await axios.get(`/agenda/dia/${fecha}`);
+  return { data: Array.isArray(res.data) ? res.data : [] };
+};
 
-export const getCitasSemana = (fecha) =>
-  axios.get(`/agenda/semana/${fecha}`);
+export const getCitasSemana = async (fecha) => {
+  const res = await axios.get(`/agenda/semana/${fecha}`);
+  return { data: Array.isArray(res.data) ? res.data : [] };
+};
 
-export const getCitasMes = (year, month) =>
-  axios.get(`/agenda/mes/${year}/${month}`);
+export const getCitasMes = async (year, month) => {
+  const res = await axios.get(`/agenda/mes/${year}/${month}`);
+  return { data: Array.isArray(res.data) ? res.data : [] };
+};
 
-export const buscarCitas = (params) =>
-  axios.get("/agenda/search", { params });
+export const buscarCitas = async (params) => {
+  const res = await axios.get("/agenda/search", { params });
+  return { data: Array.isArray(res.data) ? res.data : [] };
+};
 
-export const obtenerCita = (id) =>
-  axios.get(`/agenda/${id}`);
+export const obtenerCita = async (id) => {
+  const res = await axios.get(`/agenda/${id}`);
+  return { data: res.data || null };
+};
 
-export const crearCita = (data) =>
-  axios.post("/agenda", data);
+export const crearCita = async (data) => {
+  const res = await axios.post("/agenda", data);
+  return { data: res.data || null };
+};
 
-export const editarCita = (id, data) =>
-  axios.put(`/agenda/${id}`, data);
+export const editarCita = async (id, data) => {
+  const res = await axios.put(`/agenda/${id}`, data);
+  return { data: res.data || null };
+};
 
-export const eliminarCita = (id) =>
-  axios.delete(`/agenda/${id}`);
+export const eliminarCita = async (id) => {
+  const res = await axios.delete(`/agenda/${id}`);
+  return { data: res.data || null };
+};
 
-export const moverCita = (id, nueva_fecha, nueva_hora_inicio, nueva_hora_fin) =>
-  axios.put(`/agenda/mover/${id}`, {
+export const moverCita = async (id, nueva_fecha, nueva_hora_inicio, nueva_hora_fin) => {
+  const res = await axios.put(`/agenda/mover/${id}`, {
     nueva_fecha,
     nueva_hora_inicio,
     nueva_hora_fin,
   });
+  return { data: res.data || null };
+};
 
-/* NOTARIOS — CORREGIDO */
-export const obtenerNotarios = () =>
-  axios.get("/ctn/notarias");   // ✔ Ruta real del backend
-
-/* Eliminado: esta ruta NO existe en backend */
-export const obtenerRutaNotarios = () => {
-  console.warn("⚠ obtenerRutaNotarios: endpoint no existe en backend");
-  return Promise.resolve({ data: [] });
+/* NOTARIOS — BLINDADO */
+export const obtenerNotarios = async () => {
+  const res = await axios.get("/ctn/notarias");
+  return { data: Array.isArray(res.data) ? res.data : [] };
 };

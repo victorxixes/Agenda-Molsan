@@ -37,19 +37,12 @@ function colorPorTipo(tipo) {
   }
 }
 
-export default function VistaMes({ year, month, citas, onDiaClick, onCitaClick })
+export default function VistaMes({ year, month, citas, onDiaClick, onCitaClick }) {
   const citasSeguras = Array.isArray(citas) ? citas : [];
 
   // Blindaje total de fechaBase
   const fechaBase = new Date(year, month - 1, 1).toISOString().slice(0, 10);
 
-
-    if (typeof f === "string" && f.length === 10) return f;
-
-    return new Date().toISOString().slice(0, 10);
-  })();
-
-  // Blindaje total de matrix
   const matrix = getMatrix(fechaBase) || [[]];
 
   return (

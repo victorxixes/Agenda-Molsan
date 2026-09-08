@@ -35,10 +35,13 @@ export default function VistaMes({ citas, onDiaClick, onCitaClick }) {
   // ⭐ Blindaje total
   const citasSeguras = Array.isArray(citas) ? citas : [];
 
+  // ⭐ Blindaje de fecha base
   const fechaBase = (() => {
-  const f = citasSeguras[0]?.fecha;
-  return typeof f === "string" ? f : new Date().toISOString().slice(0, 10);
-})();
+    const f = citasSeguras[0]?.fecha;
+    return typeof f === "string" && f.length === 10
+      ? f
+      : new Date().toISOString().slice(0, 10);
+  })();
 
   const matrix = getMatrix(fechaBase);
 
@@ -66,14 +69,18 @@ export default function VistaMes({ citas, onDiaClick, onCitaClick }) {
 
             const fechaStr = day.toISOString().slice(0, 10);
 
-            // ⭐ Blindaje extra
-            const citasDia = citasSeguras.filter((c) => c.fecha === fechaStr);
+            // ⭐ Blindaje total de citas del día
+            const citasDia = Array.isArray(citasSeguras)
+              ? citasSeguras.filter((c) => c.fecha === fechaStr)
+              : [];
 
             return (
               <div
                 key={`${wi}-${di}`}
                 className="h-24 border border-gray-100 bg-white rounded hover:bg-gray-50 cursor-pointer flex flex-col p-1"
-                onClick={() => onDiaClick(fechaStr)}
+                onClick={() => {
+                  if (typeof fechaStr === "string") onDiaClick(fechaStr);
+                }}
               >
                 <div className="text-right text-[11px] font-semibold text-gray-700">
                   {day.getDate()}
@@ -94,6 +101,7 @@ export default function VistaMes({ citas, onDiaClick, onCitaClick }) {
                       {c.tipo_cita} ({c.hora_inicio})
                     </div>
                   ))}
+
                   {citasDia.length > 3 && (
                     <div className="text-[10px] text-gray-500">
                       +{citasDia.length - 3} más…

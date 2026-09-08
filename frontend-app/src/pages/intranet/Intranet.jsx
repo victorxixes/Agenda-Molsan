@@ -44,7 +44,7 @@ export default function Intranet() {
 
     const okFecha =
       filtroFecha === "" ||
-      d.fecha.startsWith(filtroFecha);
+      (d.fecha_publicacion && d.fecha_publicacion.startsWith(filtroFecha));
 
     return okConcepto && okFecha;
   });
@@ -55,8 +55,12 @@ export default function Intranet() {
     const dir = orden.dir === "asc" ? 1 : -1;
 
     if (campo === "fecha") {
-      return (new Date(a.fecha) - new Date(b.fecha)) * dir;
+      return (
+        new Date(a.fecha_publicacion || 0) -
+        new Date(b.fecha_publicacion || 0)
+      ) * dir;
     }
+
     return a[campo].localeCompare(b[campo]) * dir;
   });
 
@@ -185,7 +189,12 @@ export default function Intranet() {
                       <td>{d.id}</td>
                       <td>{d.titulo}</td>
                       <td>{d.concepto}</td>
-                      <td>{new Date(d.fecha).toLocaleString("es-ES")}</td>
+
+                      <td>
+                        {d.fecha_publicacion
+                          ? new Date(d.fecha_publicacion).toLocaleString("es-ES")
+                          : "Sin fecha"}
+                      </td>
 
                       <td className="flex gap-3">
 

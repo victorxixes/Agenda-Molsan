@@ -4,31 +4,26 @@ import { obtenerNotarios } from "../api/agenda";
 export const useNotariasStore = create((set) => ({
   notarios: [],
   cargando: false,
-  error: null,
 
   cargarNotarios: async () => {
-    try {
-      set({ cargando: true, error: null });
+    set({ cargando: true });
 
-      const res = await obtenerNotarios();
-      const notarías = Array.isArray(res.data) ? res.data : [];
+    const res = await obtenerNotarios();
+    const notarías = Array.isArray(res.data) ? res.data : [];
 
-      // ⭐ Extraer notarios de cada notaría
-      const listaNotarios = notarías.flatMap((n) =>
-        Array.isArray(n.notarios) ? n.notarios : []
-      );
+    // ⭐ Aquí cada notaría ES un notario
+    const listaNotarios = notarías.map((n) => ({
+      id: n.id,
+      nombre: n.nombre,
+      apellidos: n.apellidos || "",
+      vc: n.vc || "",
+      observacion: n.observacion || "",
+      apoderado_id: n.apoderado_id || null,
+    }));
 
-      set({
-        notarios: listaNotarios,
-        cargando: false,
-        error: null,
-      });
-    } catch (err) {
-      console.error("Error cargando notarios:", err);
-      set({
-        cargando: false,
-        error: err.message || "Error cargando notarios",
-      });
-    }
+    set({
+      notarios: listaNotarios,
+      cargando: false,
+    });
   },
 }));

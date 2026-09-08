@@ -30,11 +30,11 @@ export default function ModalNuevaCita({
   const [modoVacaciones, setModoVacaciones] = useState(false);
   const [diasVacaciones, setDiasVacaciones] = useState([]);
 
-  // Stores
+  // Stores correctos
   const { notarias, cargarNotarias } = useNotariasStore();
   const { apoderados, cargarApoderados } = useEmpleadosStore();
 
-  // Cargar datos de edición
+  // ⭐ Cargar datos de edición
   useEffect(() => {
     if (modo === "editar" && cita) {
       setHoraInicio(cita.hora_inicio || "10:00");
@@ -57,13 +57,13 @@ export default function ModalNuevaCita({
     }
   }, [modo, cita]);
 
-  // Cargar datos iniciales
+  // ⭐ Cargar datos iniciales
   useEffect(() => {
     cargarNotarias();
     cargarApoderados();
   }, []);
 
-  // Fallback de carga
+  // ⭐ Fallback de carga
   if (!Array.isArray(notarias) || notarias.length === 0) {
     return (
       <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
@@ -74,7 +74,7 @@ export default function ModalNuevaCita({
     );
   }
 
-  // ⭐ Mini calendario para vacaciones
+  // ⭐ Mini calendario vacaciones
   const generarDiasMes = () => {
     const fechaBase = new Date(fecha);
     const year = fechaBase.getFullYear();
@@ -98,6 +98,7 @@ export default function ModalNuevaCita({
     }
   };
 
+  // ⭐ Guardar
   const handleGuardar = () => {
     const payload = modoVacaciones
       ? {

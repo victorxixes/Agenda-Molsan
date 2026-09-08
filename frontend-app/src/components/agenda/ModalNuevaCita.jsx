@@ -66,6 +66,16 @@ export default function ModalNuevaCita({
     onGuardar(payload);
   };
 
+  if (!Array.isArray(notarios) || !Array.isArray(apoderados)) {
+  return (
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl p-6">
+        <p className="text-center text-gray-600">Cargando datos…</p>
+      </div>
+    </div>
+  );
+}
+
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl p-6">

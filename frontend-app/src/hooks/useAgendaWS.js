@@ -1,59 +1,55 @@
 import { useEffect, useRef } from "react";
-import { useAgendaStore } from "../store/agendaStore";
 
-export const useAgendaWS = (usuarioId) => {
-  const refrescarVista = useAgendaStore((s) => s.refrescarVista);
+export function useAgendaWS(userId) {
   const wsRef = useRef(null);
 
   useEffect(() => {
-    // Cerrar conexión previa
-    if (wsRef.current) {
-      try {
-        wsRef.current.close();
-      } catch {}
-      wsRef.current = null;
-    }
-
     let ws;
+
     try {
-      ws = new WebSocket(`${import.meta.env.VITE_WS_URL}/ws/agenda`);
-    } catch {
+      ws = new WebSocket("wss://agenda-intranet-b.onrender.com/ws/agenda");
+    } catch (e) {
+      console.warn("WS no disponible (Render). Modo offline.");
       return;
     }
 
     wsRef.current = ws;
 
-    ws.onopen = () => {};
-
-    ws.onerror = () => {};
-
-    ws.onclose = () => {
-      wsRef.current = null;
+    ws.onopen = () => {
+      console.log("WS Agenda conectado");
+      try {
+        ws.send(JSON.stringify({ tipo: "suscribir", userId }));
+      } catch (e) {
+        console.warn("WS: no se pudo enviar mensaje inicial");
+      }
     };
 
-    ws.onmessage = (event) => {
-      if (!event.data) return;
+    ws.onerror = () => {
+      console.warn("WS Agenda error. Modo offline.");
+    };
 
-      let data;
+    ws.onclose = () => {
+      console.warn("WS Agenda cerrado. Modo offline.");
+    };
+
+    ws.onmessage = (msg) => {
       try {
-        data = JSON.parse(event.data);
-      } catch {
-        return;
-      }
+        const data = JSON.parse(msg.data);
 
-      if (!data || typeof data !== "object") return;
-      if (!data.tipo) return;
+        // Blindaje total: si no hay tipo, ignoramos
+        if (!data || !data.tipo) return;
 
-      if (data.tipo !== "ws_conectado") {
-        refrescarVista?.();
+        // Aquí puedes manejar eventos sin romper nada
+        console.log("WS evento:", data);
+      } catch (e) {
+        console.warn("WS mensaje inválido");
       }
     };
 
     return () => {
       try {
-        wsRef.current?.close();
-      } catch {}
-      wsRef.current = null;
+        ws.close();
+      } catch (e) {}
     };
-  }, [usuarioId]);
-};
+  }, [userId]);
+}

@@ -8,7 +8,7 @@ import ModalNuevaCita from "../../components/agenda/ModalNuevaCita.jsx";
 import { crearCita, editarCita, eliminarCita } from "../../api/agenda";
 
 export default function Agenda() {
-  const { citas, cargarMes, cargando } = useAgenda();
+  const { citas, cargarMes } = useAgenda();
 
   const [mostrarModal, setMostrarModal] = useState(false);
   const [modalModo, setModalModo] = useState("crear");
@@ -34,6 +34,7 @@ export default function Agenda() {
   };
 
   const abrirEditar = (cita) => {
+    if (!cita) return;
     setModalModo("editar");
     setFechaSeleccionada(cita.fecha);
     setCitaSeleccionada(cita);
@@ -46,6 +47,7 @@ export default function Agenda() {
     } else {
       await editarCita(citaSeleccionada.id, payload);
     }
+
     setMostrarModal(false);
 
     const f = new Date(payload.fecha);
@@ -54,6 +56,7 @@ export default function Agenda() {
 
   const borrarCita = async () => {
     if (!citaSeleccionada) return;
+
     await eliminarCita(citaSeleccionada.id);
     setMostrarModal(false);
 
@@ -122,7 +125,6 @@ export default function Agenda() {
       </div>
 
       <div className="seg-card">
-        {/* Blindaje crítico */}
         <VistaMes
           citas={Array.isArray(citas) ? citas : []}
           onDiaClick={abrirCrear}

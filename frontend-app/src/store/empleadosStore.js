@@ -12,23 +12,34 @@ export const useEmpleadosStore = create((set, get) => ({
   empleados: [],
   apoderados: [],
   cargando: false,
+  error: null,
 
   cargarEmpleados: async () => {
-    set({ cargando: true });
+    try {
+      set({ cargando: true });
 
-    const res = await listarEmpleados();
-    const lista = Array.isArray(res.data) ? res.data : [];
+      const res = await listarEmpleados();
+      const lista = Array.isArray(res.data) ? res.data : [];
 
-    set({ empleados: lista, cargando: false });
+      set({ empleados: lista, cargando: false });
+    } catch (err) {
+      console.error("Error cargando empleados:", err);
+      set({ cargando: false, error: err.message });
+    }
   },
 
   cargarApoderados: async () => {
-    set({ cargando: true });
+    try {
+      set({ cargando: true });
 
-    const res = await listarApoderados();
-    const lista = Array.isArray(res.data) ? res.data : [];
+      const res = await listarApoderados();
+      const lista = Array.isArray(res.data) ? res.data : [];
 
-    set({ apoderados: lista, cargando: false });
+      set({ apoderados: lista, cargando: false });
+    } catch (err) {
+      console.error("Error cargando apoderados:", err);
+      set({ cargando: false, error: err.message });
+    }
   },
 
   obtener: async (id) => {

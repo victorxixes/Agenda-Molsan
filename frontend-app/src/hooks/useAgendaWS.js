@@ -6,7 +6,7 @@ export const useAgendaWS = (usuarioId) => {
   const wsRef = useRef(null);
 
   useEffect(() => {
-    // Cerrar cualquier conexión previa
+    // Cerrar conexión previa
     if (wsRef.current) {
       try {
         wsRef.current.close();
@@ -18,20 +18,14 @@ export const useAgendaWS = (usuarioId) => {
     try {
       ws = new WebSocket(`${import.meta.env.VITE_WS_URL}/ws/agenda`);
     } catch {
-      // Si falla la creación del WS, no rompemos nada
       return;
     }
 
     wsRef.current = ws;
 
-    ws.onopen = () => {
-      // Opcional: podrías enviar algo con usuarioId en el futuro
-      // ws.send(JSON.stringify({ tipo: "init", usuarioId }));
-    };
+    ws.onopen = () => {};
 
-    ws.onerror = () => {
-      // No hacemos nada, solo evitamos que burbujee
-    };
+    ws.onerror = () => {};
 
     ws.onclose = () => {
       wsRef.current = null;
@@ -47,9 +41,9 @@ export const useAgendaWS = (usuarioId) => {
         return;
       }
 
-      if (!data || !data.tipo) return;
+      if (!data || typeof data !== "object") return;
+      if (!data.tipo) return;
 
-      // Ignoramos mensajes de handshake
       if (data.tipo !== "ws_conectado") {
         refrescarVista?.();
       }

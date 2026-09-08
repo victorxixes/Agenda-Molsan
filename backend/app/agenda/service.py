@@ -18,33 +18,31 @@ def cita_con_relaciones(db: Session, cita: Cita):
     if cita.apoderado_id:
         apoderado = db.query(Empleado).filter(Empleado.id == cita.apoderado_id).first()
 
-    return {
-        "id": cita.id,
-        "fecha": cita.fecha.isoformat(),  # ✔ fecha ISO
-        "hora_inicio": cita.hora_inicio.isoformat(),
-        "hora_fin": cita.hora_fin.isoformat(),
-        "tipo_cita": cita.tipo_cita,
-        "tipo_firma": cita.tipo_firma,
-        "observaciones": cita.observaciones,
+   return {
+    "id": cita.id,
+    "fecha": str(cita.fecha),
+    "hora_inicio": str(cita.hora_inicio),
+    "hora_fin": str(cita.hora_fin),
+    "tipo_cita": cita.tipo_cita,
+    "tipo_firma": cita.tipo_firma,
+    "observaciones": cita.observaciones,
 
-        # Relaciones
-        "notario_id": cita.notario_id,
-        "notario_nombre": f"{notario.nombre} {notario.apellidos}" if notario else None,
-        "notario": {
-            "id": notario.id,
-            "nombre": notario.nombre,
-            "apellidos": notario.apellidos
-        } if notario else None,
+    "notario_id": cita.notario_id,
+    "notario_nombre": f"{notario.nombre} {notario.apellidos}" if notario else None,
+    "notario": {
+        "id": notario.id,
+        "nombre": notario.nombre,
+        "apellidos": notario.apellidos
+    } if notario else None,
 
-        "apoderado_id": cita.apoderado_id,
-        "apoderado_nombre": f"{apoderado.nombre} {apoderado.apellidos}" if apoderado else None,
-        "apoderado": {
-            "id": apoderado.id,
-            "nombre": apoderado.nombre,
-            "apellidos": apoderado.apellidos
-        } if apoderado else None,
-    }
-
+    "apoderado_id": cita.apoderado_id,
+    "apoderado_nombre": f"{apoderado.nombre} {apoderado.apellidos}" if apoderado else None,
+    "apoderado": {
+        "id": apoderado.id,
+        "nombre": apoderado.nombre,
+        "apellidos": apoderado.apellidos
+    } if apoderado else None,
+}
 
 def obtener_cita(db: Session, cita_id: int):
     cita = db.query(Cita).filter(Cita.id == cita_id).first()

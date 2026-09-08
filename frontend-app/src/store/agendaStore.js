@@ -8,12 +8,10 @@ export const useAgendaStore = create((set, get) => ({
   fechaActual: new Date().toISOString().slice(0, 10),
 
   cargarMes: async (year, month) => {
-    // Marcar como cargando
     set({ cargando: true });
 
     const res = await api.getCitasMes(year, month);
 
-    // Blindaje total: siempre array
     const citas = Array.isArray(res.data) ? res.data : [];
 
     set({

@@ -8,7 +8,7 @@ import ModalNuevaCita from "../../components/agenda/ModalNuevaCita.jsx";
 import { crearCita, editarCita, eliminarCita } from "../../api/agenda";
 
 export default function Agenda() {
-  const { citas, cargarMes } = useAgenda();
+  const { citas, cargarMes, cargando } = useAgenda();
 
   const [mostrarModal, setMostrarModal] = useState(false);
   const [modalModo, setModalModo] = useState("crear");
@@ -61,7 +61,6 @@ export default function Agenda() {
     cargarMes(f.getFullYear(), f.getMonth() + 1);
   };
 
-  // ⭐ Navegación con flechas
   const mesAnterior = () => {
     if (month === 1) {
       setYear(year - 1);
@@ -87,18 +86,9 @@ export default function Agenda() {
         <p className="seg-desc">Calendario de citas SJ‑2026.</p>
       </div>
 
-      {/* SELECTORES + FLECHAS */}
       <div className="seg-card flex items-center gap-4">
+        <button className="sj-btn px-3" onClick={mesAnterior}>←</button>
 
-        {/* Flecha izquierda */}
-        <button
-          className="sj-btn px-3"
-          onClick={mesAnterior}
-        >
-          ←
-        </button>
-
-        {/* Selector de año */}
         <select
           className="sj-input w-32"
           value={year}
@@ -109,7 +99,6 @@ export default function Agenda() {
           ))}
         </select>
 
-        {/* Selector de mes */}
         <select
           className="sj-input w-40"
           value={month}
@@ -129,21 +118,15 @@ export default function Agenda() {
           <option value={12}>Diciembre</option>
         </select>
 
-        {/* Flecha derecha */}
-        <button
-          className="sj-btn px-3"
-          onClick={mesSiguiente}
-        >
-          →
-        </button>
+        <button className="sj-btn px-3" onClick={mesSiguiente}>→</button>
       </div>
 
       <div className="seg-card">
-<VistaMes
-  citas={Array.isArray(citas) ? citas : []}
-  onDiaClick={abrirCrear}
-  onCitaClick={abrirEditar}
-/>
+        <VistaMes
+          citas={Array.isArray(citas) ? citas : []}   {/* ⭐ Blindaje crítico */}
+          onDiaClick={abrirCrear}
+          onCitaClick={abrirEditar}
+        />
       </div>
 
       {mostrarModal && (

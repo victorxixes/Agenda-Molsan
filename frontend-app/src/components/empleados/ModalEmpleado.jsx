@@ -539,4 +539,3 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
     </div>
   );
 }
-  if (!open || !empleadoId) return null;

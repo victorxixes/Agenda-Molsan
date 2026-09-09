@@ -56,7 +56,7 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
           getMaestros("departamentos"),
           getMaestros("secciones"),
           getMaestros("cargos"),
-axios.get("/api/seguridad/roles/")
+axios.get(`${API_BASE}/maestros/${tipo}`)
         ]);
 
         setDepartamentos(depRes.data || []);

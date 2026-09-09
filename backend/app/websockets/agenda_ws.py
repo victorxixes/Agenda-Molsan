@@ -24,9 +24,19 @@ class AgendaWebSocketManager:
                 self.disconnect(connection)
 
 
+# Instancia global del manager
 manager = AgendaWebSocketManager()
 
 
+# Función para enviar eventos desde el router
+async def enviar_evento(tipo: str, cita: dict):
+    await manager.broadcast({
+        "tipo": tipo,
+        "cita": cita
+    })
+
+
+# WebSocket principal
 @router.websocket("/agenda")
 async def agenda_ws(websocket: WebSocket):
     await manager.connect(websocket)

@@ -3,6 +3,8 @@ from sqlalchemy.orm import Session
 from uuid import uuid4
 import os
 
+from backend.app.empleados.models import Empleado
+
 from backend.app.database import get_db
 from backend.app.mensajes.schemas import MensajeCreate
 from backend.app.mensajes.service import (
@@ -19,8 +21,23 @@ router = APIRouter(prefix="/mensajes", tags=["Mensajes"])
 # EMPLEADOS CONECTADOS
 # ---------------------------------------------------------
 @router.get("/conectados")
-def conectados():
-    return list(manager.conectados.keys())
+def conectados(db: Session = Depends(get_db)):
+    resultado = []
+
+    for empleado_id in manager.conectados.keys():
+        empleado = db.query(Empleado).filter(Empleado.id == empleado_id).first()
+        if not empleado:
+            continue
+
+        resultado.append({
+            "id": empleado.id,
+            "nombre": empleado.nombre,
+            "apellidos": empleado.apellidos,
+            "foto": empleado.foto,
+            "rol": empleado.rol.nombre if empleado.rol else None
+        })
+
+    return resultado
 
 
 # ---------------------------------------------------------

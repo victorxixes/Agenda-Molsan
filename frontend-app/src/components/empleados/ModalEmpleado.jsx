@@ -1,4 +1,4 @@
-import axios from "axios";   // ✔ Importación correcta
+import axios from "axios";
 
 import { useEffect, useState } from "react";
 import { API_BASE } from "../../api/config";
@@ -51,12 +51,11 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
         setPermisos(d.permisos_modulo || {});
         setAuditoria(d.auditoria || []);
 
-        // ✔ CORREGIDO: roles vienen de seguridad, no de maestros
         const [depRes, secRes, carRes, rolesRes] = await Promise.all([
           getMaestros("departamentos"),
           getMaestros("secciones"),
           getMaestros("cargos"),
-          axios.get(`${API_BASE}/seguridad/roles/`)
+          axios.get(`${API_BASE}/seguridad/roles`)
         ]);
 
         setDepartamentos(depRes.data || []);
@@ -70,6 +69,7 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
 
     cargar();
   }, [open, empleadoId]);
+
 
   const handleEmpleadoChange = (campo, valor) =>
     setEmpleado((e) => ({ ...e, [campo]: valor }));

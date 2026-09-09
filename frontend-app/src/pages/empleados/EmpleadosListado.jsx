@@ -60,7 +60,7 @@ export default function EmpleadosListado({ onSeleccionar }) {
               <img
                 src={
                   e.foto
-                    ? `${API_BASE}${e.foto}`
+                    ? e.foto
                     : "/no-foto.png"
                 }
                 alt="foto"

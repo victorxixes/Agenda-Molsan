@@ -406,22 +406,7 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
                   <h3 className="text-sm font-semibold mb-3 text-gray-900">
                     Datos laborales
                   </h3>
-
-                  <div className="grid grid-cols-3 gap-2 text-xs mb-3 text-gray-700">
-                    <div>
-                      <strong>Departamento actual:</strong>{" "}
-                      {departamento?.nombre || "Sin departamento"}
-                    </div>
-                    <div>
-                      <strong>Sección actual:</strong>{" "}
-                      {seccion?.nombre || "Sin sección"}
-                    </div>
-                    <div>
-                      <strong>Cargo actual:</strong>{" "}
-                      {cargo?.nombre || "Sin cargo"}
-                    </div>
-                  </div>
-
+                 
                   <div className="grid grid-cols-3 gap-3 text-xs">
                     <div>
                       <span className="block mb-1 text-gray-700">

@@ -1,9 +1,13 @@
 from sqlalchemy.orm import Session
+from sqlalchemy import or_
 import hashlib
 
 from backend.app.empleados.models import Empleado
 from backend.app.empleados.schemas import EmpleadoCreate, EmpleadoUpdate
 from backend.app.auth.service import crear_token, serializar_empleado
+
+# IMPORTANTE: importar las tablas laborales
+from backend.app.laborales.models import Departamento, Seccion, Cargo
 
 
 def hash_password(password: str) -> str:
@@ -64,16 +68,36 @@ def crear_empleado(db: Session, data: EmpleadoCreate):
     return empleado
 
 
+# ---------------------------------------------------------
+# ⭐ LISTADO DE EMPLEADOS (con JOIN laborales)
+# ---------------------------------------------------------
 def listar_empleados(db: Session, q: str | None = None, activo: bool | None = None):
-    query = db.query(Empleado)
+
+    query = db.query(
+        Empleado.id,
+        Empleado.nombre,
+        Empleado.apellidos,
+        Empleado.telefono,
+        Empleado.email_empresa,
+        Empleado.activo,
+        Empleado.foto,
+
+        Departamento.nombre.label("departamento_nombre"),
+        Seccion.nombre.label("seccion_nombre"),
+        Cargo.nombre.label("cargo_nombre")
+    ).outerjoin(Departamento, Empleado.departamento_id == Departamento.id
+    ).outerjoin(Seccion, Empleado.seccion_id == Seccion.id
+    ).outerjoin(Cargo, Empleado.cargo_id == Cargo.id)
 
     # Filtro por texto (nombre, usuario, DNI)
     if q:
         q_like = f"%{q}%"
         query = query.filter(
-            (Empleado.nombre.ilike(q_like)) |
-            (Empleado.usuario.ilike(q_like)) |
-            (Empleado.dni.ilike(q_like))
+            or_(
+                Empleado.nombre.ilike(q_like),
+                Empleado.usuario.ilike(q_like),
+                Empleado.dni.ilike(q_like)
+            )
         )
 
     # Filtro por activo/inactivo

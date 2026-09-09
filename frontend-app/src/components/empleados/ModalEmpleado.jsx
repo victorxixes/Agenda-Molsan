@@ -596,7 +596,7 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
           />
         </div>
 
-        const guardarRol = async () => {
+const guardarRol = async () => {
   if (!empleado?.id) return;
 
   await axios.put(`${API_BASE}/seguridad/empleado/${empleado.id}/rol`, {

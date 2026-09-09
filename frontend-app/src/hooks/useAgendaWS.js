@@ -1,13 +1,21 @@
 import { useEffect, useRef } from "react";
+import { useAgendaStore } from "../store/agendaStore";
 
 export function useAgendaWS(userId) {
   const wsRef = useRef(null);
+
+  // Acceso al store
+  const cargarDia = useAgendaStore((s) => s.cargarDia);
+  const cargarSemana = useAgendaStore((s) => s.cargarSemana);
+  const cargarMes = useAgendaStore((s) => s.cargarMes);
+  const vista = useAgendaStore((s) => s.vista);
+  const fechaActual = useAgendaStore((s) => s.fechaActual);
 
   useEffect(() => {
     let ws;
 
     try {
-      ws = new WebSocket("wss://agenda-intranet-b.onrender.com/ws/agenda");
+      ws = new WebSocket(import.meta.env.VITE_WS_URL + "/ws/agenda");
     } catch (e) {
       console.warn("WS no disponible (Render). Modo offline.");
       return;
@@ -36,11 +44,26 @@ export function useAgendaWS(userId) {
       try {
         const data = JSON.parse(msg.data);
 
-        // Blindaje total: si no hay tipo, ignoramos
         if (!data || !data.tipo) return;
 
-        // Aquí puedes manejar eventos sin romper nada
         console.log("WS evento:", data);
+
+        // Refresco automático según la vista actual
+        switch (vista) {
+          case "dia":
+            cargarDia(fechaActual);
+            break;
+
+          case "semana":
+            cargarSemana(fechaActual);
+            break;
+
+          case "mes": {
+            const f = new Date(fechaActual);
+            cargarMes(f.getFullYear(), f.getMonth() + 1);
+            break;
+          }
+        }
       } catch (e) {
         console.warn("WS mensaje inválido");
       }
@@ -51,5 +74,5 @@ export function useAgendaWS(userId) {
         ws.close();
       } catch (e) {}
     };
-  }, [userId]);
+  }, [userId, vista, fechaActual]);
 }

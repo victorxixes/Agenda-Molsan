@@ -33,8 +33,11 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
   const [permisosModulo, setPermisosModulo] = useState({});
   const [auditoria, setAuditoria] = useState([]);
 
+  // CORREGIDO: solo carga cuando se abre
   useEffect(() => {
-    if (!open || !empleadoId) return;
+    if (!open) return;
+    if (!empleadoId) return;
+
     setLoading(true);
     obtenerFichaCompleta(empleadoId)
       .then((res) => {
@@ -65,13 +68,15 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
       .finally(() => setLoading(false));
   }, [open, empleadoId]);
 
+  // Escape para cerrar
   useEffect(() => {
     const handler = (e) => e.key === "Escape" && onClose();
     if (open) window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, [open, onClose]);
 
-  if (!open || !empleadoId) return null;
+  if (!open) return null;
+  if (!empleadoId) return null;
 
   const handleEmpleadoChange = (campo, valor) =>
     setEmpleado((prev) => ({ ...prev, [campo]: valor }));
@@ -93,8 +98,7 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
     if (!file) return;
     await subirFotoEmpleado(empleadoId, file);
     const res = await obtenerFichaCompleta(empleadoId);
-    const d = res.data || {};
-    setData(d);
+    setData(res.data || {});
   };
 
   const Tab = ({ id, label }) => (
@@ -146,79 +150,46 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
         <div className="p-4 text-sm">
           {loading && <div>Cargando ficha...</div>}
 
-          {!loading && tab === "personales" && (
+                    {!loading && tab === "personales" && (
             <div className="space-y-3">
               <h3 className="font-semibold mb-2">Datos personales</h3>
               <div className="grid grid-cols-2 gap-2">
-                <input
-                  className="border p-2 rounded"
-                  placeholder="Nombre"
+                <input className="border p-2 rounded" placeholder="Nombre"
                   value={empleado.nombre}
-                  onChange={(e) =>
-                    handleEmpleadoChange("nombre", e.target.value)
-                  }
+                  onChange={(e) => handleEmpleadoChange("nombre", e.target.value)}
                 />
-                <input
-                  className="border p-2 rounded"
-                  placeholder="Apellidos"
+                <input className="border p-2 rounded" placeholder="Apellidos"
                   value={empleado.apellidos}
-                  onChange={(e) =>
-                    handleEmpleadoChange("apellidos", e.target.value)
-                  }
+                  onChange={(e) => handleEmpleadoChange("apellidos", e.target.value)}
                 />
-                <input
-                  className="border p-2 rounded"
-                  placeholder="DNI"
+                <input className="border p-2 rounded" placeholder="DNI"
                   value={empleado.dni}
-                  onChange={(e) =>
-                    handleEmpleadoChange("dni", e.target.value)
-                  }
+                  onChange={(e) => handleEmpleadoChange("dni", e.target.value)}
                 />
-                <input
-                  className="border p-2 rounded"
-                  placeholder="Teléfono"
+                <input className="border p-2 rounded" placeholder="Teléfono"
                   value={empleado.telefono}
-                  onChange={(e) =>
-                    handleEmpleadoChange("telefono", e.target.value)
-                  }
+                  onChange={(e) => handleEmpleadoChange("telefono", e.target.value)}
                 />
-                <input
-                  className="border p-2 rounded"
-                  placeholder="Email personal"
+                <input className="border p-2 rounded" placeholder="Email personal"
                   value={empleado.email_personal}
-                  onChange={(e) =>
-                    handleEmpleadoChange("email_personal", e.target.value)
-                  }
+                  onChange={(e) => handleEmpleadoChange("email_personal", e.target.value)}
                 />
-                <input
-                  className="border p-2 rounded"
-                  placeholder="Email empresa"
+                <input className="border p-2 rounded" placeholder="Email empresa"
                   value={empleado.email_empresa}
-                  onChange={(e) =>
-                    handleEmpleadoChange("email_empresa", e.target.value)
-                  }
+                  onChange={(e) => handleEmpleadoChange("email_empresa", e.target.value)}
                 />
-                <input
-                  className="border p-2 rounded"
-                  placeholder="Usuario"
+                <input className="border p-2 rounded" placeholder="Usuario"
                   value={empleado.usuario}
-                  onChange={(e) =>
-                    handleEmpleadoChange("usuario", e.target.value)
-                  }
+                  onChange={(e) => handleEmpleadoChange("usuario", e.target.value)}
                 />
                 <label className="flex items-center gap-2 mt-2">
-                  <input
-                    type="checkbox"
-                    checked={empleado.activo}
-                    onChange={(e) =>
-                      handleEmpleadoChange("activo", e.target.checked)
-                    }
+                  <input type="checkbox" checked={empleado.activo}
+                    onChange={(e) => handleEmpleadoChange("activo", e.target.checked)}
                   />
                   Activo
                 </label>
               </div>
-              <button
-                className="mt-2 px-3 py-1 bg-green-600 text-white rounded text-sm"
+              <button className="mt-2 px-3 py-1 bg-green-600 text-white rounded text-sm"
                 onClick={guardarDatosEmpleado}
               >
                 Guardar datos personales
@@ -230,33 +201,20 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
             <div className="space-y-3">
               <h3 className="font-semibold mb-2">Datos laborales</h3>
               <div className="grid grid-cols-2 gap-2">
-                <input
-                  className="border p-2 rounded"
-                  placeholder="Cargo"
+                <input className="border p-2 rounded" placeholder="Cargo"
                   value={empleado.cargo}
-                  onChange={(e) =>
-                    handleEmpleadoChange("cargo", e.target.value)
-                  }
+                  onChange={(e) => handleEmpleadoChange("cargo", e.target.value)}
                 />
-                <input
-                  className="border p-2 rounded"
-                  placeholder="Departamento"
+                <input className="border p-2 rounded" placeholder="Departamento"
                   value={empleado.departamento}
-                  onChange={(e) =>
-                    handleEmpleadoChange("departamento", e.target.value)
-                  }
+                  onChange={(e) => handleEmpleadoChange("departamento", e.target.value)}
                 />
-                <input
-                  className="border p-2 rounded"
-                  placeholder="Fecha alta"
+                <input className="border p-2 rounded" placeholder="Fecha alta"
                   value={empleado.fecha_alta}
-                  onChange={(e) =>
-                    handleEmpleadoChange("fecha_alta", e.target.value)
-                  }
+                  onChange={(e) => handleEmpleadoChange("fecha_alta", e.target.value)}
                 />
               </div>
-              <button
-                className="mt-2 px-3 py-1 bg-green-600 text-white rounded text-sm"
+              <button className="mt-2 px-3 py-1 bg-green-600 text-white rounded text-sm"
                 onClick={guardarDatosEmpleado}
               >
                 Guardar datos laborales
@@ -267,13 +225,9 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
           {!loading && tab === "roles" && (
             <div className="space-y-3">
               <h3 className="font-semibold mb-2">Roles</h3>
-              <p>
-                <strong>Rol principal:</strong> {rol?.nombre || "Sin rol"}
-              </p>
+              <p><strong>Rol principal:</strong> {rol?.nombre || "Sin rol"}</p>
               <ul className="list-disc ml-6">
-                {roles.map((r) => (
-                  <li key={r}>{r}</li>
-                ))}
+                {roles.map((r) => <li key={r}>{r}</li>)}
               </ul>
             </div>
           )}
@@ -282,9 +236,7 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
             <div className="space-y-3">
               <h3 className="font-semibold mb-2">Permisos</h3>
               <ul className="list-disc ml-6">
-                {permisos.map((p) => (
-                  <li key={p}>{p}</li>
-                ))}
+                {permisos.map((p) => <li key={p}>{p}</li>)}
               </ul>
             </div>
           )}
@@ -293,23 +245,19 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
             <div className="space-y-3">
               <h3 className="font-semibold mb-2">Auditoría</h3>
               {auditoria.length === 0 && (
-                <p className="text-gray-500 text-xs">
-                  No hay registros de auditoría disponibles.
-                </p>
+                <p className="text-gray-500 text-xs">No hay registros de auditoría disponibles.</p>
               )}
               {auditoria.length > 0 && (
                 <ul className="list-disc ml-6 text-xs">
                   {auditoria.map((a, idx) => (
-                    <li key={idx}>
-                      {a.fecha} — {a.descripcion}
-                    </li>
+                    <li key={idx}>{a.fecha} — {a.descripcion}</li>
                   ))}
                 </ul>
               )}
             </div>
           )}
 
-          {!loading && tab === "foto" && (
+                    {!loading && tab === "foto" && (
             <div className="space-y-3">
               <h3 className="font-semibold mb-2">Foto</h3>
               <div className="flex items-center gap-4">
@@ -322,11 +270,7 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
                 )}
                 <label className="text-sm">
                   Subir nueva foto:
-                  <input
-                    type="file"
-                    className="block mt-1"
-                    onChange={handleFoto}
-                  />
+                  <input type="file" className="block mt-1" onChange={handleFoto} />
                 </label>
               </div>
             </div>
@@ -342,9 +286,7 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
                 onChange={(e) => {
                   try {
                     setModulosVisibles(JSON.parse(e.target.value));
-                  } catch {
-                    // ignorar
-                  }
+                  } catch {}
                 }}
               />
               <button
@@ -366,9 +308,7 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
                 onChange={(e) => {
                   try {
                     setPermisosModulo(JSON.parse(e.target.value));
-                  } catch {
-                    // ignorar
-                  }
+                  } catch {}
                 }}
               />
               <button
@@ -381,8 +321,6 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
           )}
         </div>
       </div>
-
-      <div className="absolute inset-0" onClick={onClose}></div>
     </div>
   );
 }

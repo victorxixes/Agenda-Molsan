@@ -21,10 +21,11 @@ export default function EmpleadosListado({ onSeleccionar }) {
 
   return (
     <div className="space-y-4">
+      {/* BUSCADOR */}
       <div className="flex gap-2">
         <input
           className="border p-2 rounded flex-1"
-          placeholder="Buscar por nombre, usuario o DNI"
+          placeholder="Buscar por nombre o DNI"
           value={q}
           onChange={(e) => setQ(e.target.value)}
         />
@@ -45,17 +46,22 @@ export default function EmpleadosListado({ onSeleccionar }) {
         </select>
       </div>
 
+      {/* TABLA */}
       <table className="w-full border text-sm">
         <thead className="bg-gray-100">
           <tr>
+            <th className="p-2">Foto</th>
             <th className="p-2">ID</th>
             <th className="p-2">Nombre</th>
-            <th className="p-2">Usuario</th>
             <th className="p-2">Teléfono</th>
             <th className="p-2">Email empresa</th>
+            <th className="p-2">Departamento</th>
+            <th className="p-2">Sección</th>
+            <th className="p-2">Cargo</th>
             <th className="p-2">Activo</th>
           </tr>
         </thead>
+
         <tbody>
           {empleados.map((e) => (
             <tr
@@ -63,11 +69,25 @@ export default function EmpleadosListado({ onSeleccionar }) {
               className="border-b hover:bg-gray-50 cursor-pointer"
               onClick={() => onSeleccionar?.(e.id)}
             >
+              {/* FOTO */}
+              <td className="p-2">
+                <img
+                  src={e.foto || "/img/no-foto.png"}
+                  alt="foto"
+                  className="w-10 h-10 rounded-full object-cover border"
+                />
+              </td>
+
               <td className="p-2">{e.id}</td>
-              <td className="p-2">{e.nombre}</td>
-              <td className="p-2">{e.usuario}</td>
+              <td className="p-2">{e.nombre} {e.apellidos}</td>
               <td className="p-2">{e.telefono}</td>
               <td className="p-2">{e.email_empresa}</td>
+
+              {/* NUEVOS CAMPOS */}
+              <td className="p-2">{e.departamento_nombre || "-"}</td>
+              <td className="p-2">{e.seccion_nombre || "-"}</td>
+              <td className="p-2">{e.cargo_nombre || "-"}</td>
+
               <td className="p-2">{e.activo ? "✅" : "❌"}</td>
             </tr>
           ))}

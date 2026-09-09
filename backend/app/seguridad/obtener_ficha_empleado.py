@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from backend.app.database import get_db
+from backend.app.seguridad.auditoria.service import obtener_auditoria_empleado
 
 router = APIRouter(
     prefix="/seguridad",
@@ -40,6 +41,9 @@ def obtener_ficha_completa(empleado_id: int, db: Session = Depends(get_db)):
             "nombre": rol.nombre
         }
 
+    # 🔥 AUDITORÍA POR USUARIO (CORRECTO)
+    auditoria = obtener_auditoria_empleado(db, empleado.usuario)
+
     return {
         "empleado": {
             "id": empleado.id,
@@ -70,5 +74,7 @@ def obtener_ficha_completa(empleado_id: int, db: Session = Depends(get_db)):
             "activo": empleado.activo
         },
         "modulos_visibles": empleado.modulos_visibles_list or [],
-        "permisos_modulo": empleado.permisos_modulo_dict or {}
+        "permisos_modulo": empleado.permisos_modulo_dict or {},
+        "auditoria": auditoria   # ← 🔥 YA SALE EN EL FRONT
     }
+

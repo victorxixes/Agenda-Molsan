@@ -5,7 +5,8 @@ from backend.app.database import get_db
 from backend.app.seguridad.auditoria.service import (
     obtener_auditoria,
     obtener_metricas,
-    registrar_auditoria
+    registrar_auditoria,
+    obtener_auditoria_empleado
 )
 
 router = APIRouter(
@@ -14,11 +15,18 @@ router = APIRouter(
 )
 
 # ---------------------------------------------------------
-# LISTAR AUDITORÍA
+# LISTAR AUDITORÍA GLOBAL
 # ---------------------------------------------------------
 @router.get("/")
 def listar_auditoria(db: Session = Depends(get_db)):
     return obtener_auditoria(db)
+
+# ---------------------------------------------------------
+# LISTAR AUDITORÍA POR EMPLEADO
+# ---------------------------------------------------------
+@router.get("/empleado/{empleado_id}")
+def listar_auditoria_empleado(empleado_id: int, db: Session = Depends(get_db)):
+    return obtener_auditoria_empleado(db, empleado_id)
 
 # ---------------------------------------------------------
 # MÉTRICAS
@@ -28,7 +36,7 @@ def metricas(db: Session = Depends(get_db)):
     return obtener_metricas(db)
 
 # ---------------------------------------------------------
-# REGISTRAR AUDITORÍA (opcional)
+# REGISTRAR AUDITORÍA
 # ---------------------------------------------------------
 @router.post("/")
 def registrar(

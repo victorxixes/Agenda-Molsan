@@ -786,3 +786,9 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
     </section>
   </div>
 )}
+          </div> {/* cierre contenido */}
+        </div> {/* cierre caja modal */}
+      </div> {/* cierre overlay */}
+    </>
+  );
+}

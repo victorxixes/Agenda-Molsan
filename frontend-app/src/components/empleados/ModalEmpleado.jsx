@@ -31,9 +31,9 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
     persona_contacto: "",
     telefono_contacto: "",
     observaciones: "",
-    cargo_id: "",
     departamento_id: "",
     seccion_id: "",
+    cargo_id: "",
     fecha_alta: "",
     fecha_baja: "",
     activo: true,
@@ -45,7 +45,7 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
   const [permisosModulo, setPermisosModulo] = useState({});
   const [auditoria, setAuditoria] = useState([]);
 
-  // Cargar ficha cuando se abre
+  // Cargar ficha completa
   useEffect(() => {
     if (!open || !empleadoId) return;
 
@@ -74,9 +74,9 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
           persona_contacto: e.persona_contacto ?? "",
           telefono_contacto: e.telefono_contacto ?? "",
           observaciones: e.observaciones ?? "",
-          cargo_id: e.cargo_id ?? "",
           departamento_id: e.departamento_id ?? "",
           seccion_id: e.seccion_id ?? "",
+          cargo_id: e.cargo_id ?? "",
           fecha_alta: e.fecha_alta ?? "",
           fecha_baja: e.fecha_baja ?? "",
           activo: e.activo ?? true,
@@ -107,10 +107,8 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
   const guardarDatosEmpleado = async () => {
     await editarEmpleado(empleadoId, empleado);
 
-    // Recargar ficha
     const res = await obtenerFichaCompleta(empleadoId);
-    const d = res.data || {};
-    setData(d);
+    setData(res.data || {});
   };
 
   const guardarModulos = async () => {
@@ -175,6 +173,7 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
 
         <div className="p-4 text-sm">
           {loading && <div>Cargando ficha...</div>}
+
           {!loading && tab === "personales" && (
             <div className="space-y-3">
               <h3 className="font-semibold mb-2">Datos personales</h3>

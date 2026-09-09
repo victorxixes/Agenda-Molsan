@@ -22,10 +22,29 @@ def registrar_auditoria(db: Session, usuario: str, modulo: str, accion: str, des
 
 
 # ---------------------------------------------------------
-# LISTAR AUDITORÍA
+# LISTAR AUDITORÍA GLOBAL
 # ---------------------------------------------------------
 def obtener_auditoria(db: Session):
-    registros = db.query(Auditoria).order_by(Auditoria.fecha.desc()).limit(200).all()
+    registros = (
+        db.query(Auditoria)
+        .order_by(Auditoria.fecha.desc())
+        .limit(200)
+        .all()
+    )
+    return [r.as_dict() for r in registros]
+
+
+# ---------------------------------------------------------
+# LISTAR AUDITORÍA POR EMPLEADO
+# ---------------------------------------------------------
+def obtener_auditoria_empleado(db: Session, empleado_id: int):
+    registros = (
+        db.query(Auditoria)
+        .filter(Auditoria.usuario == str(empleado_id))
+        .order_by(Auditoria.fecha.desc())
+        .limit(100)
+        .all()
+    )
     return [r.as_dict() for r in registros]
 
 

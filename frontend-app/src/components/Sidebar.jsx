@@ -106,7 +106,7 @@ export default function Sidebar() {
           </p>
         )}
 
-        {puedeVerModulo("herramientas") && item("/herramientas", "Herramientas", "tools")}
+        
         {puedeVerModulo("logs") && item("/logs", "Logs", "clipboard")}
         {puedeVerModulo("seguridad") && item("/seguridad", "Seguridad", "shield")}
         {puedeVerModulo("utilidades") && item("/herramientas/utilidades", "Utilidades", "cog")}

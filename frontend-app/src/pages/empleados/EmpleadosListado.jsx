@@ -55,7 +55,7 @@ export default function EmpleadosListado({ onSeleccionar }) {
             className="border rounded-xl p-4 shadow-sm bg-white hover:shadow-md cursor-pointer transition"
             onClick={() => onSeleccionar?.(e.id)}
           >
-            {/* FOTO */}
+            {/* FOTO + NOMBRE */}
             <div className="flex items-center gap-3">
               <img
                 src={

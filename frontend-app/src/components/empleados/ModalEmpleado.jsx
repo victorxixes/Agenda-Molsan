@@ -620,22 +620,22 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
                   )}
 
                   {auditoria && auditoria.length > 0 && (
-                    <ul className="list-disc ml-5 text-xs text-neutral-200">
-                      {auditoria.map((a) => (
-                        <li key={a.id}>
-                          {new Date(a.fecha).toLocaleString()} —{" "}
-                          <strong>{a.modulo}</strong> [{a.accion}] —{" "}
-                          {a.descripcion}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </section>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </>
-  );
+  <ul className="list-disc ml-5 text-xs text-neutral-200">
+    {auditoria.map((a) => (
+      <li key={a.id}>
+        {new Date(a.fecha).toLocaleString()} —{" "}
+        <strong>{a.modulo}</strong> [{a.accion}] —{" "}
+        {a.descripcion}
+      </li>
+    ))}
+  </ul>
+)}
+</section>
+</div>
+)}
+</div>
+</div>
+</div>
+</>
+);
 }

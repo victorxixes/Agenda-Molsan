@@ -73,6 +73,15 @@ export const obtenerFichaCompleta = async (id) => {
 };
 
 /* ============================
+   RESET PASSWORD (NUEVO)
+============================ */
+
+export const resetPasswordEmpleado = async (id) => {
+  const res = await axios.post(`/empleados/${id}/reset-password`);
+  return { data: res.data || null };
+};
+
+/* ============================
    APODERADOS (BLINDADO)
 ============================ */
 

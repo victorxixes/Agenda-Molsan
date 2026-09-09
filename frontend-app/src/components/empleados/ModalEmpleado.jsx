@@ -564,30 +564,225 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
               </div>
             )}
 
-            {/* TAB 4: SEGURIDAD */}
-            {!loading && tab === "seguridad" && (
-              <div className="transition-all duration-200 ease-out transform">
-                {/* TODO: aquí va tu contenido actual de seguridad:
-                    - modulos visibles
-                    - permisos
-                    - reset password
-                    - roles
-                   Usa modulos, permisos, roles, seguridadTab, guardarModulos, guardarPermisos, resetPasswordEmpleado
-                */}
-              </div>
-            )}
+           {/* TAB 4: SEGURIDAD */}
+{!loading && tab === "seguridad" && (
+  <div className="transition-all duration-200 ease-out transform">
+    <section className="border border-gray-300 bg-white p-4 rounded-xl shadow-sm">
+      <h3 className="text-sm font-semibold mb-3 text-gray-900">
+        Seguridad interna
+      </h3>
 
-            {/* TAB 5: AUDITORÍA */}
-            {!loading && tab === "auditoria" && (
-              <div className="transition-all duration-200 ease-out transform">
-                {/* TODO: aquí va tu tabla/listado de auditoría usando el estado auditoria */}
-              </div>
-            )}
-          </div>
+      {/* Usuario */}
+      <div className="grid grid-cols-3 gap-3 text-xs mb-4">
+        <div>
+          <span className="block mb-1 text-gray-700">Usuario</span>
+          <input
+            className="w-full bg-gray-100 border border-gray-300 rounded-md px-2 py-1 text-gray-600 text-xs"
+            value={empleado.usuario || ""}
+            readOnly
+          />
+        </div>
+
+        <div>
+          <span className="block mb-1 text-gray-700">Password</span>
+          <input
+            className="w-full bg-gray-100 border border-gray-300 rounded-md px-2 py-1 text-gray-600 text-xs"
+            value="********"
+            readOnly
+          />
+        </div>
+
+        {/* Rol */}
+        <div>
+          <span className="block mb-1 text-gray-700">Rol</span>
+          <select
+            className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
+            value={empleado.rol_id || ""}
+            onChange={(e) =>
+              handleEmpleadoChange("rol_id", Number(e.target.value) || null)
+            }
+          >
+            <option value="">Sin rol</option>
+            {roles.map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.nombre}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
-    </>
-  );
-}
 
-         
+      {/* Botón reset contraseña */}
+      <button
+        className="mb-4 px-3 py-1 bg-orange-600 text-white rounded text-xs"
+        onClick={async () => {
+          await resetPasswordEmpleado(empleado.id);
+          mostrarToast("ok", "Contraseña reseteada");
+        }}
+      >
+        Reset contraseña
+      </button>
+
+      {/* Tabs internos */}
+      <div className="flex gap-2 mb-4 text-xs">
+        <button
+          className={`px-3 py-1 rounded-full ${
+            seguridadTab === "modulos"
+              ? "bg-blue-600 text-white"
+              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+          }`}
+          onClick={() => setSeguridadTab("modulos")}
+        >
+          Módulos visibles
+        </button>
+
+        <button
+          className={`px-3 py-1 rounded-full ${
+            seguridadTab === "permisos"
+              ? "bg-blue-600 text-white"
+              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+          }`}
+          onClick={() => setSeguridadTab("permisos")}
+        >
+          Permisos por módulo
+        </button>
+      </div>
+
+      {/* Módulos visibles */}
+      {seguridadTab === "modulos" && (
+        <div className="border border-gray-300 rounded-lg p-4 bg-white">
+          <h4 className="font-semibold text-xs mb-3 text-gray-900">
+            Selecciona los módulos visibles
+          </h4>
+
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            {[
+              "dashboard",
+              "agenda",
+              "empleados",
+              "seguridad",
+              "auditoria",
+              "intranet",
+              "mensajes",
+              "utilidades",
+            ].map((mod) => (
+              <label key={mod} className="flex items-center gap-2 text-gray-700">
+                <input
+                  type="checkbox"
+                  checked={modulos.includes(mod)}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      setModulos([...modulos, mod]);
+                    } else {
+                      setModulos(modulos.filter((m) => m !== mod));
+                    }
+                  }}
+                />
+                {mod}
+              </label>
+            ))}
+          </div>
+
+          <button
+            className="mt-4 px-3 py-1 bg-blue-600 text-white rounded text-xs"
+            onClick={guardarModulos}
+          >
+            Guardar módulos visibles
+          </button>
+
+          <button
+            className="mt-2 px-3 py-1 bg-red-600 text-white rounded text-xs"
+            onClick={() => setModulos([])}
+          >
+            Reset módulos visibles
+          </button>
+        </div>
+      )}
+
+      {/* Permisos por módulo */}
+      {seguridadTab === "permisos" && (
+        <div className="border border-gray-300 rounded-lg p-4 bg-white">
+          <h4 className="font-semibold text-xs mb-3 text-gray-900">
+            Permisos por módulo
+          </h4>
+
+          {Object.keys(permisos).map((mod) => (
+            <div key={mod} className="mb-4">
+              <span className="block font-semibold text-gray-800 mb-2 text-xs">
+                {mod.toUpperCase()}
+              </span>
+
+              <div className="grid grid-cols-4 gap-2 text-xs">
+                {["ver", "crear", "editar", "eliminar"].map((perm) => (
+                  <label key={perm} className="flex items-center gap-2 text-gray-700">
+                    <input
+                      type="checkbox"
+                      checked={permisos[mod]?.includes(perm)}
+                      onChange={(e) => {
+                        const actual = permisos[mod] || [];
+                        let nuevo;
+
+                        if (e.target.checked) {
+                          nuevo = [...actual, perm];
+                        } else {
+                          nuevo = actual.filter((p) => p !== perm);
+                        }
+
+                        setPermisos({
+                          ...permisos,
+                          [mod]: nuevo,
+                        });
+                      }}
+                    />
+                    {perm}
+                  </label>
+                ))}
+              </div>
+            </div>
+          ))}
+
+          <button
+            className="mt-4 px-3 py-1 bg-blue-600 text-white rounded text-xs"
+            onClick={guardarPermisos}
+          >
+            Guardar permisos
+          </button>
+
+          <button
+            className="mt-2 px-3 py-1 bg-red-600 text-white rounded text-xs"
+            onClick={() => setPermisos({})}
+          >
+            Reset permisos
+          </button>
+        </div>
+      )}
+    </section>
+  </div>
+)}
+{/* TAB 5: AUDITORÍA */}
+{!loading && tab === "auditoria" && (
+  <div className="transition-all duration-200 ease-out transform">
+    <section className="border border-gray-300 bg-white p-4 rounded-xl shadow-sm">
+      <h3 className="text-sm font-semibold mb-3 text-gray-900">
+        Auditoría
+      </h3>
+
+      {(!auditoria || auditoria.length === 0) && (
+        <p className="text-gray-500 text-xs">
+          No hay registros de auditoría para este empleado.
+        </p>
+      )}
+
+      {auditoria && auditoria.length > 0 && (
+        <ul className="list-disc ml-5 text-xs text-gray-800">
+          {auditoria.map((a) => (
+            <li key={a.id}>
+              {new Date(a.fecha).toLocaleString()} —{" "}
+              <strong>{a.modulo}</strong> [{a.accion}] — {a.descripcion}
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  </div>
+)}

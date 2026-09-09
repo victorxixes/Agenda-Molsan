@@ -17,9 +17,15 @@ from backend.app.agenda.service import (
     cita_con_relaciones,
 )
 
+# WebSocket manager
+from backend.app.websockets.agenda_ws import enviar_evento
+
 router = APIRouter(prefix="/agenda", tags=["Agenda"])
 
 
+# -----------------------------
+# BÚSQUEDA
+# -----------------------------
 @router.get("/search", response_model=list[CitaResponse])
 def buscar_citas(
     query: str | None = None,
@@ -61,6 +67,9 @@ def buscar_citas(
     return [cita_con_relaciones(db, c) for c in citas]
 
 
+# -----------------------------
+# OBTENER CITA
+# -----------------------------
 @router.get("/{id}", response_model=CitaResponse)
 def obtener(id: int, db: Session = Depends(get_db)):
     cita = obtener_cita(db, id)
@@ -69,6 +78,9 @@ def obtener(id: int, db: Session = Depends(get_db)):
     return cita
 
 
+# -----------------------------
+# VISTAS: DÍA / SEMANA / MES
+# -----------------------------
 @router.get("/dia/{fecha}", response_model=list[CitaResponse])
 def citas_dia(fecha: str, db: Session = Depends(get_db)):
     return listar_citas_dia(db, date.fromisoformat(fecha))
@@ -84,26 +96,44 @@ def citas_mes(year: int, month: int, db: Session = Depends(get_db)):
     return listar_citas_mes(db, year, month)
 
 
+# -----------------------------
+# CREAR CITA (CON WS)
+# -----------------------------
 @router.post("/", response_model=CitaResponse)
-def create_cita(cita: CitaCreate, db: Session = Depends(get_db)):
-    return crear_cita(db, cita)
+async def create_cita(cita: CitaCreate, db: Session = Depends(get_db)):
+    nueva = crear_cita(db, cita)
+    await enviar_evento("crear", nueva)
+    return nueva
 
 
+# -----------------------------
+# EDITAR CITA (CON WS)
+# -----------------------------
 @router.put("/{id}", response_model=CitaResponse)
-def editar(id: int, data: CitaUpdate, db: Session = Depends(get_db)):
+async def editar(id: int, data: CitaUpdate, db: Session = Depends(get_db)):
     editada = editar_cita(db, id, data)
     if not editada:
         raise HTTPException(404, "Cita no encontrada")
+
+    await enviar_evento("editar", editada)
     return editada
 
 
+# -----------------------------
+# ELIMINAR CITA (CON WS)
+# -----------------------------
 @router.delete("/{id}")
-def eliminar(id: int, db: Session = Depends(get_db)):
+async def eliminar(id: int, db: Session = Depends(get_db)):
     if not eliminar_cita(db, id):
         raise HTTPException(404, "Cita no encontrada")
+
+    await enviar_evento("eliminar", {"id": id})
     return {"detail": "Cita eliminada correctamente"}
 
 
+# -----------------------------
+# MOVER CITA (SIN WS)
+# -----------------------------
 @router.put("/mover/{id}", response_model=CitaResponse)
 def mover(id: int, nueva_fecha: str, nueva_hora_inicio: str, nueva_hora_fin: str, db: Session = Depends(get_db)):
     movida = mover_cita(
@@ -117,8 +147,10 @@ def mover(id: int, nueva_fecha: str, nueva_hora_inicio: str, nueva_hora_fin: str
         raise HTTPException(404, "Cita no encontrada")
     return movida
 
-from backend.app.agenda.fix_table import fix_table
 
+# -----------------------------
+# FIX TABLE
+# -----------------------------
 from backend.app.agenda.fix_table import fix_table
 
 @router.post("/fix-table")

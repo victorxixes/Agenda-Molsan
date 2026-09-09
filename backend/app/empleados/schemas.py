@@ -75,4 +75,6 @@ class EmpleadoUpdate(BaseModel):
 # RESPONSE COMPLETO
 # =========================================================
 class Empleado(EmpleadoBase):
-    pass
+    departamento_nombre: Optional[str] = None
+    seccion_nombre: Optional[str] = None
+    cargo_nombre: Optional[str] = None

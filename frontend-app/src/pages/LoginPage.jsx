@@ -20,7 +20,7 @@ export default function LoginPage() {
     const ok = await iniciarSesion(usuario, password);
 
     if (ok) {
-      navigate("/panel/empleados");
+      navigate("/panel");
     } else {
       setError("Credenciales incorrectas");
     }

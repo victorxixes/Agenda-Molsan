@@ -7,7 +7,7 @@ from backend.app.empleados.schemas import EmpleadoCreate, EmpleadoUpdate
 from backend.app.auth.service import crear_token, serializar_empleado
 
 # IMPORTANTE: importar las tablas laborales
-from backend.app.laborales.models import Departamento, Seccion, Cargo
+from backend.app.maestros.models import Departamento, Seccion, Cargo
 
 
 def hash_password(password: str) -> str:

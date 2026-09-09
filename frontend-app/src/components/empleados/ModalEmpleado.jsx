@@ -655,4 +655,13 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
     ))}
   </ul>
 )}
-      
+                      </section>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+

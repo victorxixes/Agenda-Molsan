@@ -103,6 +103,16 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
     mostrarToast("ok", "Permisos guardados");
   };
 
+  const guardarRol = async () => {
+  if (!empleado?.id) return;
+
+  await axios.put(`${API_BASE}/seguridad/empleado/${empleado.id}/rol`, {
+    rol_id: empleado.rol_id
+  });
+
+  mostrarToast("ok", "Rol actualizado");
+};
+
   if (!open || !empleadoId) return null;
 
 
@@ -576,37 +586,28 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
         Seguridad interna
       </h3>
 
-      {/* Usuario */}
-      <div className="grid grid-cols-3 gap-3 text-xs mb-4">
-        <div>
-          <span className="block mb-1 text-gray-700">Usuario</span>
-          <input
-            className="w-full bg-gray-100 border border-gray-300 rounded-md px-2 py-1 text-gray-600 text-xs"
-            value={empleado.usuario || ""}
-            readOnly
-          />
-        </div>
+    {/* Usuario */}
+<div className="grid grid-cols-3 gap-3 text-xs mb-4">
+  <div>
+    <span className="block mb-1 text-gray-700">Usuario</span>
+    <input
+      className="w-full bg-gray-100 border border-gray-300 rounded-md px-2 py-1 text-gray-600 text-xs"
+      value={empleado.usuario || ""}
+      readOnly
+    />
+  </div>
 
-        <div>
-          <span className="block mb-1 text-gray-700">Password</span>
-          <input
-            className="w-full bg-gray-100 border border-gray-300 rounded-md px-2 py-1 text-gray-600 text-xs"
-            value="********"
-            readOnly
-          />
-        </div>
+  <div>
+    <span className="block mb-1 text-gray-700">Password</span>
+    <input
+      className="w-full bg-gray-100 border border-gray-300 rounded-md px-2 py-1 text-gray-600 text-xs"
+      value="********"
+      readOnly
+    />
+  </div>
+</div>
 
-const guardarRol = async () => {
-  if (!empleado?.id) return;
-
-  await axios.put(`${API_BASE}/seguridad/empleado/${empleado.id}/rol`, {
-    rol_id: empleado.rol_id
-  });
-
-  mostrarToast("ok", "Rol actualizado");
-};
-
-     {/* Panel: Rol del empleado */}
+{/* Panel: Rol del empleado */}
 <div className="border border-gray-300 rounded-lg p-4 bg-white mb-4">
   <h4 className="font-semibold text-xs mb-3 text-gray-900">
     Rol del empleado
@@ -643,6 +644,7 @@ const guardarRol = async () => {
     </button>
   </div>
 </div>
+
 
       {/* Botón reset contraseña */}
       <button

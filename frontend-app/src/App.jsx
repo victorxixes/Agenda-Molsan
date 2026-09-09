@@ -95,7 +95,7 @@ export default function App() {
           </RequireAuth>
         }
       >
-        <Route index element={<Navigate to="/dashboard" replace />} />
+        <Route index element={<Navigate to="/login" replace />} />
 
         {/* DASHBOARD */}
         <Route path="dashboard" element={<Dashboard />} />

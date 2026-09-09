@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { buscarEmpleados } from "../../api/empleados";
 import { useEmpleadosWS } from "../../hooks/useEmpleadosWS";
+import { API_BASE } from "../../api/config";
 
 export default function EmpleadosListado({ onSeleccionar }) {
   const [empleados, setEmpleados] = useState([]);
@@ -46,53 +47,60 @@ export default function EmpleadosListado({ onSeleccionar }) {
         </select>
       </div>
 
-      {/* TABLA */}
-      <table className="w-full border text-sm">
-        <thead className="bg-gray-100">
-          <tr>
-            <th className="p-2">Foto</th>
-            <th className="p-2">ID</th>
-            <th className="p-2">Nombre</th>
-            <th className="p-2">Teléfono</th>
-            <th className="p-2">Email empresa</th>
-            <th className="p-2">Departamento</th>
-            <th className="p-2">Sección</th>
-            <th className="p-2">Cargo</th>
-            <th className="p-2">Activo</th>
-          </tr>
-        </thead>
+      {/* TARJETAS */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {empleados.map((e) => (
+          <div
+            key={e.id}
+            className="border rounded-xl p-4 shadow-sm bg-white hover:shadow-md cursor-pointer transition"
+            onClick={() => onSeleccionar?.(e.id)}
+          >
+            {/* FOTO */}
+            <div className="flex items-center gap-3">
+              <img
+                src={
+                  e.foto
+                    ? `${API_BASE}${e.foto}`
+                    : "/no-foto.png"
+                }
+                alt="foto"
+                className="w-16 h-16 rounded-full object-cover border"
+              />
 
-        <tbody>
-          {empleados.map((e) => (
-            <tr
-              key={e.id}
-              className="border-b hover:bg-gray-50 cursor-pointer"
-              onClick={() => onSeleccionar?.(e.id)}
-            >
-              {/* FOTO */}
-              <td className="p-2">
-                <img
-                  src={e.foto || "/img/no-foto.png"}
-                  alt="foto"
-                  className="w-10 h-10 rounded-full object-cover border"
-                />
-              </td>
+              <div>
+                <div className="font-semibold text-gray-900 text-sm">
+                  {e.nombre} {e.apellidos}
+                </div>
+                <div className="text-xs text-gray-600">
+                  ID: {e.id}
+                </div>
+              </div>
+            </div>
 
-              <td className="p-2">{e.id}</td>
-              <td className="p-2">{e.nombre} {e.apellidos}</td>
-              <td className="p-2">{e.telefono}</td>
-              <td className="p-2">{e.email_empresa}</td>
+            {/* INFO */}
+            <div className="mt-3 text-xs text-gray-700 space-y-1">
+              <div><strong>Tel:</strong> {e.telefono || "-"}</div>
+              <div><strong>Email:</strong> {e.email_empresa || "-"}</div>
+              <div><strong>Departamento:</strong> {e.departamento_nombre || "-"}</div>
+              <div><strong>Sección:</strong> {e.seccion_nombre || "-"}</div>
+              <div><strong>Cargo:</strong> {e.cargo_nombre || "-"}</div>
+            </div>
 
-              {/* NUEVOS CAMPOS */}
-              <td className="p-2">{e.departamento_nombre || "-"}</td>
-              <td className="p-2">{e.seccion_nombre || "-"}</td>
-              <td className="p-2">{e.cargo_nombre || "-"}</td>
-
-              <td className="p-2">{e.activo ? "✅" : "❌"}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+            {/* ESTADO */}
+            <div className="mt-3">
+              {e.activo ? (
+                <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">
+                  Activo
+                </span>
+              ) : (
+                <span className="px-2 py-1 bg-red-100 text-red-700 rounded text-xs">
+                  Inactivo
+                </span>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

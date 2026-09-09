@@ -20,10 +20,22 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
     telefono: "",
     email_personal: "",
     email_empresa: "",
+    extension: "",
     usuario: "",
-    cargo: "",
-    departamento: "",
+    direccion: "",
+    codigo_postal: "",
+    poblacion: "",
+    provincia: "",
+    fecha_nacimiento: "",
+    alergias: "",
+    persona_contacto: "",
+    telefono_contacto: "",
+    observaciones: "",
+    cargo_id: "",
+    departamento_id: "",
+    seccion_id: "",
     fecha_alta: "",
+    fecha_baja: "",
     activo: true,
   });
 
@@ -33,10 +45,9 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
   const [permisosModulo, setPermisosModulo] = useState({});
   const [auditoria, setAuditoria] = useState([]);
 
-  // CORREGIDO: solo carga cuando se abre
+  // Cargar ficha cuando se abre
   useEffect(() => {
-    if (!open) return;
-    if (!empleadoId) return;
+    if (!open || !empleadoId) return;
 
     setLoading(true);
     obtenerFichaCompleta(empleadoId)
@@ -52,10 +63,22 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
           telefono: e.telefono ?? "",
           email_personal: e.email_personal ?? "",
           email_empresa: e.email_empresa ?? "",
+          extension: e.extension ?? "",
           usuario: e.usuario ?? "",
-          cargo: e.cargo ?? "",
-          departamento: e.departamento ?? "",
+          direccion: e.direccion ?? "",
+          codigo_postal: e.codigo_postal ?? "",
+          poblacion: e.poblacion ?? "",
+          provincia: e.provincia ?? "",
+          fecha_nacimiento: e.fecha_nacimiento ?? "",
+          alergias: e.alergias ?? "",
+          persona_contacto: e.persona_contacto ?? "",
+          telefono_contacto: e.telefono_contacto ?? "",
+          observaciones: e.observaciones ?? "",
+          cargo_id: e.cargo_id ?? "",
+          departamento_id: e.departamento_id ?? "",
+          seccion_id: e.seccion_id ?? "",
           fecha_alta: e.fecha_alta ?? "",
+          fecha_baja: e.fecha_baja ?? "",
           activo: e.activo ?? true,
         });
 
@@ -83,6 +106,11 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
 
   const guardarDatosEmpleado = async () => {
     await editarEmpleado(empleadoId, empleado);
+
+    // Recargar ficha
+    const res = await obtenerFichaCompleta(empleadoId);
+    const d = res.data || {};
+    setData(d);
   };
 
   const guardarModulos = async () => {
@@ -114,7 +142,6 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
 
   const empleadoRaw = data?.empleado || {};
   const rol = empleadoRaw?.rol || {};
-
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div
@@ -124,8 +151,7 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
         {/* Header */}
         <div className="flex justify-between items-center p-4 border-b">
           <h2 className="text-xl font-bold">
-            Ficha empleado #{empleadoId} — {empleadoRaw.nombre}{" "}
-            {empleadoRaw.apellidos}
+            Ficha empleado #{empleadoId} — {empleadoRaw.nombre} {empleadoRaw.apellidos}
           </h2>
           <button
             onClick={onClose}
@@ -149,11 +175,13 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
 
         <div className="p-4 text-sm">
           {loading && <div>Cargando ficha...</div>}
-
-                    {!loading && tab === "personales" && (
+          {!loading && tab === "personales" && (
             <div className="space-y-3">
               <h3 className="font-semibold mb-2">Datos personales</h3>
+
               <div className="grid grid-cols-2 gap-2">
+
+                {/* Datos básicos */}
                 <input className="border p-2 rounded" placeholder="Nombre"
                   value={empleado.nombre}
                   onChange={(e) => handleEmpleadoChange("nombre", e.target.value)}
@@ -178,10 +206,54 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
                   value={empleado.email_empresa}
                   onChange={(e) => handleEmpleadoChange("email_empresa", e.target.value)}
                 />
+                <input className="border p-2 rounded" placeholder="Extensión"
+                  value={empleado.extension}
+                  onChange={(e) => handleEmpleadoChange("extension", e.target.value)}
+                />
                 <input className="border p-2 rounded" placeholder="Usuario"
                   value={empleado.usuario}
                   onChange={(e) => handleEmpleadoChange("usuario", e.target.value)}
                 />
+
+                {/* Datos personales reales */}
+                <input className="border p-2 rounded" placeholder="Dirección"
+                  value={empleado.direccion}
+                  onChange={(e) => handleEmpleadoChange("direccion", e.target.value)}
+                />
+                <input className="border p-2 rounded" placeholder="Código postal"
+                  value={empleado.codigo_postal}
+                  onChange={(e) => handleEmpleadoChange("codigo_postal", e.target.value)}
+                />
+                <input className="border p-2 rounded" placeholder="Población"
+                  value={empleado.poblacion}
+                  onChange={(e) => handleEmpleadoChange("poblacion", e.target.value)}
+                />
+                <input className="border p-2 rounded" placeholder="Provincia"
+                  value={empleado.provincia}
+                  onChange={(e) => handleEmpleadoChange("provincia", e.target.value)}
+                />
+                <input className="border p-2 rounded" placeholder="Fecha nacimiento"
+                  value={empleado.fecha_nacimiento}
+                  onChange={(e) => handleEmpleadoChange("fecha_nacimiento", e.target.value)}
+                />
+                <input className="border p-2 rounded" placeholder="Alergias"
+                  value={empleado.alergias}
+                  onChange={(e) => handleEmpleadoChange("alergias", e.target.value)}
+                />
+                <input className="border p-2 rounded" placeholder="Persona contacto"
+                  value={empleado.persona_contacto}
+                  onChange={(e) => handleEmpleadoChange("persona_contacto", e.target.value)}
+                />
+                <input className="border p-2 rounded" placeholder="Teléfono contacto"
+                  value={empleado.telefono_contacto}
+                  onChange={(e) => handleEmpleadoChange("telefono_contacto", e.target.value)}
+                />
+
+                <textarea className="border p-2 rounded col-span-2" placeholder="Observaciones"
+                  value={empleado.observaciones}
+                  onChange={(e) => handleEmpleadoChange("observaciones", e.target.value)}
+                />
+
                 <label className="flex items-center gap-2 mt-2">
                   <input type="checkbox" checked={empleado.activo}
                     onChange={(e) => handleEmpleadoChange("activo", e.target.checked)}
@@ -189,32 +261,44 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
                   Activo
                 </label>
               </div>
-              <button className="mt-2 px-3 py-1 bg-green-600 text-white rounded text-sm"
+
+              <button
+                className="mt-2 px-3 py-1 bg-green-600 text-white rounded text-sm"
                 onClick={guardarDatosEmpleado}
               >
                 Guardar datos personales
               </button>
             </div>
           )}
-
           {!loading && tab === "laborales" && (
             <div className="space-y-3">
               <h3 className="font-semibold mb-2">Datos laborales</h3>
+
               <div className="grid grid-cols-2 gap-2">
-                <input className="border p-2 rounded" placeholder="Cargo"
-                  value={empleado.cargo}
-                  onChange={(e) => handleEmpleadoChange("cargo", e.target.value)}
+                <input className="border p-2 rounded" placeholder="Departamento ID"
+                  value={empleado.departamento_id}
+                  onChange={(e) => handleEmpleadoChange("departamento_id", e.target.value)}
                 />
-                <input className="border p-2 rounded" placeholder="Departamento"
-                  value={empleado.departamento}
-                  onChange={(e) => handleEmpleadoChange("departamento", e.target.value)}
+                <input className="border p-2 rounded" placeholder="Sección ID"
+                  value={empleado.seccion_id}
+                  onChange={(e) => handleEmpleadoChange("seccion_id", e.target.value)}
+                />
+                <input className="border p-2 rounded" placeholder="Cargo ID"
+                  value={empleado.cargo_id}
+                  onChange={(e) => handleEmpleadoChange("cargo_id", e.target.value)}
                 />
                 <input className="border p-2 rounded" placeholder="Fecha alta"
                   value={empleado.fecha_alta}
                   onChange={(e) => handleEmpleadoChange("fecha_alta", e.target.value)}
                 />
+                <input className="border p-2 rounded" placeholder="Fecha baja"
+                  value={empleado.fecha_baja}
+                  onChange={(e) => handleEmpleadoChange("fecha_baja", e.target.value)}
+                />
               </div>
-              <button className="mt-2 px-3 py-1 bg-green-600 text-white rounded text-sm"
+
+              <button
+                className="mt-2 px-3 py-1 bg-green-600 text-white rounded text-sm"
                 onClick={guardarDatosEmpleado}
               >
                 Guardar datos laborales
@@ -257,7 +341,7 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
             </div>
           )}
 
-                    {!loading && tab === "foto" && (
+          {!loading && tab === "foto" && (
             <div className="space-y-3">
               <h3 className="font-semibold mb-2">Foto</h3>
               <div className="flex items-center gap-4">

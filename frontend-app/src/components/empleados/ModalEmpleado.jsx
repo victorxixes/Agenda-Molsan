@@ -596,25 +596,53 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
           />
         </div>
 
-        {/* Rol */}
-        <div>
-          <span className="block mb-1 text-gray-700">Rol</span>
-          <select
-            className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
-            value={empleado.rol_id || ""}
-            onChange={(e) =>
-              handleEmpleadoChange("rol_id", Number(e.target.value) || null)
-            }
-          >
-            <option value="">Sin rol</option>
-            {roles.map((r) => (
-              <option key={r.id} value={r.id}>
-                {r.nombre}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
+        const guardarRol = async () => {
+  if (!empleado?.id) return;
+
+  await axios.put(`${API_BASE}/seguridad/empleado/${empleado.id}/rol`, {
+    rol_id: empleado.rol_id
+  });
+
+  mostrarToast("ok", "Rol actualizado");
+};
+
+     {/* Panel: Rol del empleado */}
+<div className="border border-gray-300 rounded-lg p-4 bg-white mb-4">
+  <h4 className="font-semibold text-xs mb-3 text-gray-900">
+    Rol del empleado
+  </h4>
+
+  <div className="flex items-center gap-3 text-xs">
+    <select
+      className="bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
+      value={empleado.rol_id || ""}
+      onChange={(e) =>
+        handleEmpleadoChange("rol_id", Number(e.target.value) || null)
+      }
+    >
+      <option value="">Sin rol</option>
+      {roles.map((r) => (
+        <option key={r.id} value={r.id}>
+          {r.nombre}
+        </option>
+      ))}
+    </select>
+
+    <button
+      className="px-3 py-1 bg-blue-600 text-white rounded text-xs"
+      onClick={guardarRol}
+    >
+      Guardar rol
+    </button>
+
+    <button
+      className="px-3 py-1 bg-red-600 text-white rounded text-xs"
+      onClick={() => handleEmpleadoChange("rol_id", null)}
+    >
+      Reset rol
+    </button>
+  </div>
+</div>
 
       {/* Botón reset contraseña */}
       <button

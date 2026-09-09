@@ -1,31 +1,39 @@
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends
+from sqlalchemy.orm import Session
+import json
+
+from backend.app.database import get_db
+from backend.app.empleados.models import Empleado
 from backend.app.mensajes.ws_manager import manager
 
 router = APIRouter()
 
 @router.websocket("/ws/mensajes/{empleado_id}")
-async def mensajes_ws(websocket: WebSocket, empleado_id: int):
+async def mensajes_ws(websocket: WebSocket, empleado_id: int, db: Session = Depends(get_db)):
     # Conectar usuario
     await manager.connect(websocket, empleado_id)
     print(f"[WS-MSG] Conectado: {empleado_id}")
 
-    # Notificar a todos que este usuario está online
+    # Obtener datos del empleado
+    empleado = db.query(Empleado).filter(Empleado.id == empleado_id).first()
+
+    # Notificar a todos que este usuario está online (con foto + nombre)
     await manager.broadcast({
         "tipo": "online",
-        "user_id": empleado_id
+        "id": empleado.id,
+        "nombre": empleado.nombre,
+        "apellidos": empleado.apellidos,
+        "foto": empleado.foto
     })
 
     try:
         while True:
             try:
-                # Recibir texto (más tolerante que JSON)
                 msg = await websocket.receive_text()
 
-                # Si el frontend envía "ping"
                 if msg == "ping":
                     continue
 
-                # Intentar parsear JSON
                 try:
                     data = json.loads(msg)
                 except:
@@ -86,7 +94,8 @@ async def mensajes_ws(websocket: WebSocket, empleado_id: int):
         print(f"[WS-MSG] Desconectado: {empleado_id}")
         manager.disconnect(empleado_id)
 
+        # Notificar desconexión
         await manager.broadcast({
             "tipo": "offline",
-            "user_id": empleado_id
+            "id": empleado.id
         })

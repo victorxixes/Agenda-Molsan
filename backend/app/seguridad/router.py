@@ -14,18 +14,7 @@ router = APIRouter(prefix="/seguridad", tags=["Seguridad"])
 
 
 # -------------------------
-# Obtener permisos del usuario
-# -------------------------
-@router.get("/permisos/{empleado_id}")
-def get_permisos(empleado_id: int, db: Session = Depends(get_db)):
-    permisos = obtener_permisos(db, empleado_id)
-    if not permisos:
-        raise HTTPException(404, "Empleado no encontrado")
-    return permisos
-
-
-# -------------------------
-# Obtener ficha completa de seguridad del usuario
+# Ficha completa de seguridad del usuario
 # -------------------------
 @router.get("/ficha/{empleado_id}")
 def get_ficha(empleado_id: int, db: Session = Depends(get_db)):
@@ -34,6 +23,17 @@ def get_ficha(empleado_id: int, db: Session = Depends(get_db)):
         raise HTTPException(404, "Empleado no encontrado")
 
     return serializar_empleado_seguridad(empleado)
+
+
+# -------------------------
+# Obtener permisos del usuario
+# -------------------------
+@router.get("/permisos/{empleado_id}")
+def get_permisos(empleado_id: int, db: Session = Depends(get_db)):
+    permisos = obtener_permisos(db, empleado_id)
+    if not permisos:
+        raise HTTPException(404, "Empleado no encontrado")
+    return permisos
 
 
 # -------------------------

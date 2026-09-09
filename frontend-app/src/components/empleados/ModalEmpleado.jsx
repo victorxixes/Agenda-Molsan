@@ -490,13 +490,27 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
                   </div>
 
                   <div className="grid grid-cols-2 gap-3 text-xs mt-4 text-gray-700">
-                    <div>
-                      <strong>Fecha alta:</strong> {empleado.fecha_alta || "-"}
-                    </div>
-                    <div>
-                      <strong>Fecha baja:</strong> {empleado.fecha_baja || "-"}
-                    </div>
-                  </div>
+  <div>
+    <span className="block mb-1 text-gray-700">Fecha alta</span>
+    <input
+      type="date"
+      className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs focus:outline-none focus:border-blue-500"
+      value={empleado.fecha_alta || ""}
+      onChange={(e) => handleEmpleadoChange("fecha_alta", e.target.value)}
+    />
+  </div>
+
+  <div>
+    <span className="block mb-1 text-gray-700">Fecha baja</span>
+    <input
+      type="date"
+      className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs focus:outline-none focus:border-blue-500"
+      value={empleado.fecha_baja || ""}
+      onChange={(e) => handleEmpleadoChange("fecha_baja", e.target.value)}
+    />
+  </div>
+</div>
+
 
                   <button
                     className="mt-4 px-3 py-1 bg-blue-600 text-white rounded text-xs"

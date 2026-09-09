@@ -92,6 +92,9 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
     if (!empleado?.id) return;
     await actualizarPermisosModulo(empleado.id, permisos);
   };
+
+  if (!open || !empleadoId) return null;
+
   const rol = empleado?.rol || {};
   const departamento = data?.departamento || null;
   const seccion = data?.seccion || null;
@@ -220,7 +223,7 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
               </div>
             </section>
 
-            {/* Maestros: nombres + selects */}
+            {/* Maestros */}
             <section className="border p-4 rounded bg-white shadow-sm">
               <h3 className="text-lg font-semibold mb-3">
                 Datos laborales (maestros)
@@ -330,9 +333,7 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
                 onChange={(e) => {
                   try {
                     setModulos(JSON.parse(e.target.value));
-                  } catch {
-                    // ignorar
-                  }
+                  } catch {}
                 }}
               />
               <button
@@ -355,9 +356,7 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
                 onChange={(e) => {
                   try {
                     setPermisos(JSON.parse(e.target.value));
-                  } catch {
-                    // ignorar
-                  }
+                  } catch {}
                 }}
               />
               <button
@@ -396,5 +395,3 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
     </div>
   );
 }
-
-  if (!open || !empleadoId) return null;

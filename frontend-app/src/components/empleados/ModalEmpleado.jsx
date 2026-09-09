@@ -1,3 +1,5 @@
+axios.get("/api/seguridad/roles/")
+
 import { useEffect, useState } from "react";
 import { API_BASE } from "../../api/config";
 import {
@@ -53,7 +55,7 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
           getMaestros("departamentos"),
           getMaestros("secciones"),
           getMaestros("cargos"),
-          getMaestros("roles")
+axios.get("/api/seguridad/roles/")
         ]);
 
         setDepartamentos(depRes.data || []);

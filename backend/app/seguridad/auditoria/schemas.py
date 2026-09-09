@@ -16,3 +16,4 @@ class AuditoriaOut(AuditoriaBase):
     model_config = {
         "from_attributes": True
     }
+

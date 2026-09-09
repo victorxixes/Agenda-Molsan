@@ -159,7 +159,7 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
               <div className="text-sm text-gray-500">Cargando ficha...</div>
             )}
 
-            {/* DATOS BÁSICOS */}
+            {/* TAB 1: DATOS BÁSICOS */}
             {!loading && tab === "basicos" && (
               <div className="transition-all duration-200 ease-out transform">
                 <section className="border border-gray-300 bg-white p-4 rounded-xl shadow-sm">
@@ -168,8 +168,7 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
                   </h3>
 
                   <div className="grid grid-cols-3 gap-3 text-xs">
-
-                    {/* Activo */}
+                    {/* Estado */}
                     <div>
                       <span className="block mb-1 text-gray-700">Estado</span>
                       <select
@@ -182,6 +181,30 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
                         <option value="1">Activo</option>
                         <option value="0">Baja</option>
                       </select>
+                    </div>
+
+                    {/* Nombre */}
+                    <div>
+                      <span className="block mb-1 text-gray-700">Nombre</span>
+                      <input
+                        className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
+                        value={empleado.nombre || ""}
+                        onChange={(e) =>
+                          handleEmpleadoChange("nombre", e.target.value)
+                        }
+                      />
+                    </div>
+
+                    {/* Teléfono */}
+                    <div>
+                      <span className="block mb-1 text-gray-700">Teléfono</span>
+                      <input
+                        className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
+                        value={empleado.telefono || ""}
+                        onChange={(e) =>
+                          handleEmpleadoChange("telefono", e.target.value)
+                        }
+                      />
                     </div>
 
                     {/* Email empresa */}
@@ -207,27 +230,6 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
                         }
                       />
                     </div>
-
-                    {/* Usuario */}
-                    <div>
-                      <span className="block mb-1 text-gray-700">Usuario</span>
-                      <input
-                        className="w-full bg-gray-100 border border-gray-300 rounded-md px-2 py-1 text-gray-600 text-xs"
-                        value={empleado.usuario || ""}
-                        readOnly
-                      />
-                    </div>
-
-                    {/* Password */}
-                    <div>
-                      <span className="block mb-1 text-gray-700">Password</span>
-                      <input
-                        className="w-full bg-gray-100 border border-gray-300 rounded-md px-2 py-1 text-gray-600 text-xs"
-                        value="********"
-                        readOnly
-                      />
-                    </div>
-
                   </div>
 
                   <button
@@ -240,7 +242,7 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
               </div>
             )}
 
-            {/* DATOS PERSONALES */}
+            {/* TAB 2: DATOS PERSONALES */}
             {!loading && tab === "personales" && (
               <div className="transition-all duration-200 ease-out transform">
                 <section className="border border-gray-300 bg-white p-4 rounded-xl shadow-sm">
@@ -249,6 +251,31 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
                   </h3>
 
                   <div className="grid grid-cols-2 gap-3 text-xs">
+                    {/* Nombre */}
+                    <div>
+                      <span className="block mb-1 text-gray-700">Nombre</span>
+                      <input
+                        className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
+                        value={empleado.nombre || ""}
+                        onChange={(e) =>
+                          handleEmpleadoChange("nombre", e.target.value)
+                        }
+                      />
+                    </div>
+
+                    {/* Teléfono */}
+                    <div>
+                      <span className="block mb-1 text-gray-700">Teléfono</span>
+                      <input
+                        className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
+                        value={empleado.telefono || ""}
+                        onChange={(e) =>
+                          handleEmpleadoChange("telefono", e.target.value)
+                        }
+                      />
+                    </div>
+
+                    {/* Apellidos */}
                     <div>
                       <span className="block mb-1 text-gray-700">Apellidos</span>
                       <input
@@ -260,6 +287,7 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
                       />
                     </div>
 
+                    {/* DNI */}
                     <div>
                       <span className="block mb-1 text-gray-700">DNI</span>
                       <input
@@ -271,6 +299,7 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
                       />
                     </div>
 
+                    {/* Email personal */}
                     <div>
                       <span className="block mb-1 text-gray-700">Email personal</span>
                       <input
@@ -282,6 +311,7 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
                       />
                     </div>
 
+                    {/* Dirección */}
                     <div>
                       <span className="block mb-1 text-gray-700">Dirección</span>
                       <input
@@ -293,6 +323,7 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
                       />
                     </div>
 
+                    {/* Código postal */}
                     <div>
                       <span className="block mb-1 text-gray-700">Código postal</span>
                       <input
@@ -304,6 +335,7 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
                       />
                     </div>
 
+                    {/* Población */}
                     <div>
                       <span className="block mb-1 text-gray-700">Población</span>
                       <input
@@ -315,6 +347,7 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
                       />
                     </div>
 
+                    {/* Provincia */}
                     <div>
                       <span className="block mb-1 text-gray-700">Provincia</span>
                       <input
@@ -326,6 +359,7 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
                       />
                     </div>
 
+                    {/* Fecha nacimiento */}
                     <div>
                       <span className="block mb-1 text-gray-700">Fecha nacimiento</span>
                       <input
@@ -338,6 +372,7 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
                       />
                     </div>
 
+                    {/* Alergias */}
                     <div>
                       <span className="block mb-1 text-gray-700">Alergias</span>
                       <input
@@ -349,6 +384,7 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
                       />
                     </div>
 
+                    {/* Persona contacto */}
                     <div>
                       <span className="block mb-1 text-gray-700">Persona contacto</span>
                       <input
@@ -360,6 +396,7 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
                       />
                     </div>
 
+                    {/* Teléfono contacto */}
                     <div>
                       <span className="block mb-1 text-gray-700">Teléfono contacto</span>
                       <input
@@ -371,6 +408,7 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
                       />
                     </div>
 
+                    {/* Observaciones */}
                     <div className="col-span-2">
                       <span className="block mb-1 text-gray-700">Observaciones</span>
                       <textarea
@@ -412,7 +450,7 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
               </div>
             )}
 
-            {/* DATOS LABORALES */}
+            {/* TAB 3: DATOS LABORALES */}
             {!loading && tab === "laborales" && (
               <div className="transition-all duration-200 ease-out transform">
                 <section className="border border-gray-300 bg-white p-4 rounded-xl shadow-sm">
@@ -421,6 +459,7 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
                   </h3>
 
                   <div className="grid grid-cols-3 gap-3 text-xs">
+                    {/* Departamento */}
                     <div>
                       <span className="block mb-1 text-gray-700">Departamento</span>
                       <select
@@ -442,6 +481,7 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
                       </select>
                     </div>
 
+                    {/* Sección */}
                     <div>
                       <span className="block mb-1 text-gray-700">Sección</span>
                       <select
@@ -463,66 +503,91 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
                       </select>
                     </div>
 
+                    {/* Cargo */}
                     <div>
                       <span className="block mb-1 text-gray-700">Cargo</span>
                       <select
                         className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
-    value={empleado.cargo_id || ""}
-    onChange={(e) =>
-      handleEmpleadoChange(
-        "cargo_id",
-        Number(e.target.value) || null
-      )
-    }
-  >
-    <option value="">Sin cargo</option>
-    {cargos.map((c) => (
-      <option key={c.id} value={c.id}>
-        {c.nombre}
-      </option>
-    ))}
-  </select>
-</div>
-</div>
+                        value={empleado.cargo_id || ""}
+                        onChange={(e) =>
+                          handleEmpleadoChange(
+                            "cargo_id",
+                            Number(e.target.value) || null
+                          )
+                        }
+                      >
+                        <option value="">Sin cargo</option>
+                        {cargos.map((c) => (
+                          <option key={c.id} value={c.id}>
+                            {c.nombre}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
 
-<div className="grid grid-cols-2 gap-3 text-xs mt-4 text-gray-700">
-  <div>
-    <span className="block mb-1 text-gray-700">Fecha alta</span>
-    <input
-      type="date"
-      className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
-      value={empleado.fecha_alta || ""}
-      onChange={(e) =>
-        handleEmpleadoChange("fecha_alta", e.target.value)
-      }
-    />
-  </div>
+                  <div className="grid grid-cols-2 gap-3 text-xs mt-4 text-gray-700">
+                    {/* Fecha alta */}
+                    <div>
+                      <span className="block mb-1 text-gray-700">Fecha alta</span>
+                      <input
+                        type="date"
+                        className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
+                        value={empleado.fecha_alta || ""}
+                        onChange={(e) =>
+                          handleEmpleadoChange("fecha_alta", e.target.value)
+                        }
+                      />
+                    </div>
 
-  <div>
-    <span className="block mb-1 text-gray-700">Fecha baja</span>
-    <input
-      type="date"
-      className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
-      value={empleado.fecha_baja || ""}
-      onChange={(e) =>
-        handleEmpleadoChange("fecha_baja", e.target.value)
-      }
-    />
-  </div>
-</div>
+                    {/* Fecha baja */}
+                    <div>
+                      <span className="block mb-1 text-gray-700">Fecha baja</span>
+                      <input
+                        type="date"
+                        className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
+                        value={empleado.fecha_baja || ""}
+                        onChange={(e) =>
+                          handleEmpleadoChange("fecha_baja", e.target.value)
+                        }
+                      />
+                    </div>
+                  </div>
 
-<button
-  className="mt-4 px-3 py-1 bg-blue-600 text-white rounded text-xs"
-  onClick={guardarEmpleado}
->
-  Guardar datos laborales
-</button>
-</section>
-</div>
+                  <button
+                    className="mt-4 px-3 py-1 bg-blue-600 text-white rounded text-xs"
+                    onClick={guardarEmpleado}
+                  >
+                    Guardar datos laborales
+                  </button>
+                </section>
+              </div>
             )}
-          </div> {/* cierre contenido */}
-        </div> {/* cierre caja modal */}
-      </div> {/* cierre overlay */}
+
+            {/* TAB 4: SEGURIDAD */}
+            {!loading && tab === "seguridad" && (
+              <div className="transition-all duration-200 ease-out transform">
+                {/* TODO: aquí va tu contenido actual de seguridad:
+                    - modulos visibles
+                    - permisos
+                    - reset password
+                    - roles
+                   Usa modulos, permisos, roles, seguridadTab, guardarModulos, guardarPermisos, resetPasswordEmpleado
+                */}
+              </div>
+            )}
+
+            {/* TAB 5: AUDITORÍA */}
+            {!loading && tab === "auditoria" && (
+              <div className="transition-all duration-200 ease-out transform">
+                {/* TODO: aquí va tu tabla/listado de auditoría usando el estado auditoria */}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </>
   );
 }
+
+         

@@ -1,11 +1,11 @@
-import axios from "./axios";
+import axios from "./axios";   // ✔ tu wrapper con baseURL correcto
 
 /* ============================
    MAESTROS (Departamentos, Secciones, Cargos)
 ============================ */
 
 export const getMaestros = async (tipo) => {
-  const res = await axios.get(`/api/maestros/${tipo}`);
+  const res = await axios.get(`/maestros/${tipo}`);
   return { data: Array.isArray(res.data) ? res.data : [] };
 };
 

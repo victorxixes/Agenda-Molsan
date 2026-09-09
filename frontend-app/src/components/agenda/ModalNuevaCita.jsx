@@ -168,8 +168,7 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
                   </h3>
 
                   <div className="grid grid-cols-3 gap-3 text-xs">
-
-                    {/* Activo */}
+                    {/* Estado */}
                     <div>
                       <span className="block mb-1 text-gray-700">Estado</span>
                       <select
@@ -182,6 +181,30 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
                         <option value="1">Activo</option>
                         <option value="0">Baja</option>
                       </select>
+                    </div>
+
+                    {/* Nombre */}
+                    <div>
+                      <span className="block mb-1 text-gray-700">Nombre</span>
+                      <input
+                        className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
+                        value={empleado.nombre || ""}
+                        onChange={(e) =>
+                          handleEmpleadoChange("nombre", e.target.value)
+                        }
+                      />
+                    </div>
+
+                    {/* Teléfono */}
+                    <div>
+                      <span className="block mb-1 text-gray-700">Teléfono</span>
+                      <input
+                        className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
+                        value={empleado.telefono || ""}
+                        onChange={(e) =>
+                          handleEmpleadoChange("telefono", e.target.value)
+                        }
+                      />
                     </div>
 
                     {/* Email empresa */}
@@ -207,27 +230,6 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
                         }
                       />
                     </div>
-
-                    {/* Usuario */}
-                    <div>
-                      <span className="block mb-1 text-gray-700">Usuario</span>
-                      <input
-                        className="w-full bg-gray-100 border border-gray-300 rounded-md px-2 py-1 text-gray-600 text-xs"
-                        value={empleado.usuario || ""}
-                        readOnly
-                      />
-                    </div>
-
-                    {/* Password */}
-                    <div>
-                      <span className="block mb-1 text-gray-700">Password</span>
-                      <input
-                        className="w-full bg-gray-100 border border-gray-300 rounded-md px-2 py-1 text-gray-600 text-xs"
-                        value="********"
-                        readOnly
-                      />
-                    </div>
-
                   </div>
 
                   <button
@@ -250,6 +252,16 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
 
                   <div className="grid grid-cols-2 gap-3 text-xs">
                     <div>
+                      <div>
+  <span className="block mb-1 text-gray-700">Nombre</span>
+  <input
+    className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
+    value={empleado.nombre || ""}
+    onChange={(e) =>
+      handleEmpleadoChange("nombre", e.target.value)
+    }
+  />
+</div>
                       <span className="block mb-1 text-gray-700">Apellidos</span>
                       <input
                         className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
@@ -481,7 +493,6 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
                             {c.nombre}
                           </option>
                         ))}
-                      </                         ))}
                       </select>
                     </div>
                   </div>
@@ -549,6 +560,17 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
                       onClick={() => setSeguridadTab("permisos")}
                     >
                       Permisos por módulo
+                    </button>
+
+                    <button
+                      className={`px-3 py-1 rounded-full ${
+                        seguridadTab === "credenciales"
+                          ? "bg-blue-600 text-white"
+                          : "bg-gray-200 text-gray-700"
+                      }`}
+                      onClick={() => setSeguridadTab("credenciales")}
+                    >
+                      Credenciales
                     </button>
 
                     <button
@@ -638,6 +660,44 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
                         onClick={guardarPermisos}
                       >
                         Guardar permisos
+                      </button>
+                    </div>
+                  )}
+
+                  {/* CREDENCIALES */}
+                  {seguridadTab === "credenciales" && (
+                    <div className="text-xs">
+                      <h4 className="font-semibold mb-2">Credenciales de acceso</h4>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <span className="block mb-1 text-gray-700">Usuario</span>
+                          <input
+                            className="w-full bg-gray-100 border border-gray-300 rounded-md px-2 py-1 text-gray-600 text-xs"
+                            value={empleado.usuario || ""}
+                            readOnly
+                          />
+                        </div>
+
+                        <div>
+                          <span className="block mb-1 text-gray-700">Password</span>
+                          <input
+                            className="w-full bg-gray-100 border border-gray-300 rounded-md px-2 py-1 text-gray-600 text-xs"
+                            value="********"
+                            readOnly
+                          />
+                        </div>
+                      </div>
+
+                      <button
+                        className="mt-3 px-3 py-1 bg-blue-600 text-white rounded text-xs"
+                        onClick={async () => {
+                          if (!empleado?.id) return;
+                          await resetPasswordEmpleado(empleado.id);
+                          mostrarToast("ok", "Password reseteado");
+                        }}
+                      >
+                        Resetear password
                       </button>
                     </div>
                   )}

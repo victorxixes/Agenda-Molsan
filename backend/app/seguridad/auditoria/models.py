@@ -16,7 +16,6 @@ class Auditoria(Base):
 
     fecha = Column(DateTime, default=datetime.utcnow)
 
-    # Representación estándar ERP‑2026
     def as_dict(self):
         return {
             "id": self.id,

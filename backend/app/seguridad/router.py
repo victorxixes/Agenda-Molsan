@@ -1,58 +1,49 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from backend.app.database import get_db
-from backend.app.seguridad.service import (
-    obtener_permisos,
-    asignar_modulos,
-    asignar_permisos,
-    serializar_empleado_seguridad
-)
+from backend.app.database import SessionLocal
 from backend.app.empleados.models import Empleado
+from backend.app.maestros.models import Departamento, Seccion, Cargo
 
 router = APIRouter(prefix="/seguridad", tags=["Seguridad"])
 
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
-# -------------------------
-# Ficha completa de seguridad del usuario
-# -------------------------
-@router.get("/ficha/{empleado_id}")
-def get_ficha(empleado_id: int, db: Session = Depends(get_db)):
+
+@router.get("/empleado/{empleado_id}/ficha-completa")
+def ficha_completa(empleado_id: int, db: Session = Depends(get_db)):
     empleado = db.query(Empleado).filter(Empleado.id == empleado_id).first()
     if not empleado:
-        raise HTTPException(404, "Empleado no encontrado")
+        raise HTTPException(status_code=404, detail="Empleado no encontrado")
 
-    return serializar_empleado_seguridad(empleado)
+    # Relaciones maestros
+    departamento = None
+    seccion = None
+    cargo = None
 
+    if empleado.departamento_id:
+        departamento = db.query(Departamento).filter(Departamento.id == empleado.departamento_id).first()
 
-# -------------------------
-# Obtener permisos del usuario
-# -------------------------
-@router.get("/permisos/{empleado_id}")
-def get_permisos(empleado_id: int, db: Session = Depends(get_db)):
-    permisos = obtener_permisos(db, empleado_id)
-    if not permisos:
-        raise HTTPException(404, "Empleado no encontrado")
-    return permisos
+    if empleado.seccion_id:
+        seccion = db.query(Seccion).filter(Seccion.id == empleado.seccion_id).first()
 
+    if empleado.cargo_id:
+        cargo = db.query(Cargo).filter(Cargo.id == empleado.cargo_id).first()
 
-# -------------------------
-# Asignar módulos visibles
-# -------------------------
-@router.post("/modulos/{empleado_id}")
-def set_modulos(empleado_id: int, modulos: list, db: Session = Depends(get_db)):
-    actualizado = asignar_modulos(db, empleado_id, modulos)
-    if not actualizado:
-        raise HTTPException(404, "Empleado no encontrado")
-    return actualizado
+    # Auditoría (si la quieres)
+    auditoria = []  # Aquí puedes añadir tu sistema de logs
 
-
-# -------------------------
-# Asignar permisos por módulo
-# -------------------------
-@router.post("/permisos-modulo/{empleado_id}")
-def set_permisos_modulo(empleado_id: int, permisos: dict, db: Session = Depends(get_db)):
-    actualizado = asignar_permisos(db, empleado_id, permisos)
-    if not actualizado:
-        raise HTTPException(404, "Empleado no encontrado")
-    return actualizado
+    return {
+        "empleado": empleado,
+        "modulos_visibles": empleado.modulos_visibles_list,
+        "permisos_modulo": empleado.permisos_modulo_dict,
+        "departamento": departamento,
+        "seccion": seccion,
+        "cargo": cargo,
+        "auditoria": auditoria
+    }

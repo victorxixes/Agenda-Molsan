@@ -439,7 +439,7 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
                   <div className="mt-4 flex items-center gap-4">
                     {empleado.foto && (
                       <img
-                        src={`${API_BASE}${empleado.foto}`}
+                        src={empleado.foto || "/no-foto.png"}
                         alt="Foto empleado"
                         className="w-20 h-20 rounded object-cover border border-gray-300"
                       />

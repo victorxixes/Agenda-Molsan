@@ -22,7 +22,7 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
   const [secciones, setSecciones] = useState([]);
   const [cargos, setCargos] = useState([]);
 
-  const [tab, setTab] = useState("datos");
+  const [tab, setTab] = useState("basicos");
 
   useEffect(() => {
     if (!open || !empleadoId) return;
@@ -128,11 +128,29 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
         <div className="flex gap-2 mb-4 text-sm">
           <button
             className={`px-3 py-1 rounded ${
-              tab === "datos" ? "bg-blue-600 text-white" : "bg-gray-100"
+              tab === "basicos" ? "bg-blue-600 text-white" : "bg-gray-100"
             }`}
-            onClick={() => setTab("datos")}
+            onClick={() => setTab("basicos")}
           >
-            Datos
+            Datos básicos
+          </button>
+
+          <button
+            className={`px-3 py-1 rounded ${
+              tab === "personales" ? "bg-blue-600 text-white" : "bg-gray-100"
+            }`}
+            onClick={() => setTab("personales")}
+          >
+            Datos personales
+          </button>
+
+          <button
+            className={`px-3 py-1 rounded ${
+              tab === "laborales" ? "bg-blue-600 text-white" : "bg-gray-100"
+            }`}
+            onClick={() => setTab("laborales")}
+          >
+            Datos laborales
           </button>
 
           <button
@@ -155,12 +173,9 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
         </div>
 
         {loading && <div className="text-sm text-gray-500">Cargando ficha...</div>}
-        {!loading && tab === "datos" && (
+        {!loading && tab === "basicos" && (
           <div className="space-y-6">
 
-            {/* ============================
-                BLOQUE 1 — Datos básicos
-            ============================ */}
             <section className="border p-4 rounded bg-white shadow-sm">
               <h3 className="text-lg font-semibold mb-3">Datos básicos</h3>
 
@@ -213,10 +228,11 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
                 </div>
               </div>
             </section>
+          </div>
+        )}
+        {!loading && tab === "personales" && (
+          <div className="space-y-6">
 
-            {/* ============================
-                BLOQUE 2 — Datos personales
-            ============================ */}
             <section className="border p-4 rounded bg-white shadow-sm">
               <h3 className="text-lg font-semibold mb-3">Datos personales</h3>
 
@@ -355,10 +371,11 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
                 </label>
               </div>
             </section>
+          </div>
+        )}
+        {!loading && tab === "laborales" && (
+          <div className="space-y-6">
 
-            {/* ============================
-                BLOQUE 3 — Datos laborales
-            ============================ */}
             <section className="border p-4 rounded bg-white shadow-sm">
               <h3 className="text-lg font-semibold mb-3">Datos laborales</h3>
 
@@ -430,7 +447,6 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
                 Guardar datos laborales
               </button>
             </section>
-
           </div>
         )}
         {!loading && tab === "seguridad" && (
@@ -488,7 +504,7 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
                 </button>
               </div>
 
-              <div className="mt-6">
+                            <div className="mt-6">
                 <h4 className="font-semibold mb-2">Permisos por módulo</h4>
                 <textarea
                   className="w-full border rounded p-2 text-xs"
@@ -510,9 +526,7 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
             </section>
 
           </div>
-        )}
-
-        {!loading && tab === "auditoria" && (
+              {!loading && tab === "auditoria" && (
           <div className="space-y-3">
             <h3 className="font-semibold mb-2">Auditoría</h3>
 
@@ -534,8 +548,9 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
             )}
           </div>
         )}
-
       </div>
     </div>
   );
 }
+
+        )}

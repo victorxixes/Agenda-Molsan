@@ -1,375 +1,338 @@
 import { useEffect, useState } from "react";
+import { API_BASE } from "../../api/config";
 import {
   obtenerFichaCompleta,
-  editarEmpleado,
   actualizarModulosVisibles,
   actualizarPermisosModulo,
   subirFotoEmpleado,
+  editarEmpleado,
 } from "../../api/empleados";
-import { API_BASE } from "../../api/config";
+import { getMaestros } from "../../api/maestros";
 
 export default function ModalEmpleado({ open, onClose, empleadoId }) {
-  const [tab, setTab] = useState("personales");
-  const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [data, setData] = useState(null);
 
-  const [empleado, setEmpleado] = useState({
-    nombre: "",
-    apellidos: "",
-    dni: "",
-    telefono: "",
-    email_personal: "",
-    email_empresa: "",
-    extension: "",
-    usuario: "",
-    direccion: "",
-    codigo_postal: "",
-    poblacion: "",
-    provincia: "",
-    fecha_nacimiento: "",
-    alergias: "",
-    persona_contacto: "",
-    telefono_contacto: "",
-    observaciones: "",
-    departamento_id: "",
-    seccion_id: "",
-    cargo_id: "",
-    fecha_alta: "",
-    fecha_baja: "",
-    activo: true,
-  });
-
-  const [roles, setRoles] = useState([]);
-  const [permisos, setPermisos] = useState([]);
-  const [modulosVisibles, setModulosVisibles] = useState([]);
-  const [permisosModulo, setPermisosModulo] = useState({});
+  const [empleado, setEmpleado] = useState({});
+  const [modulos, setModulos] = useState([]);
+  const [permisos, setPermisos] = useState({});
   const [auditoria, setAuditoria] = useState([]);
 
-  // Cargar ficha completa
+  const [departamentos, setDepartamentos] = useState([]);
+  const [secciones, setSecciones] = useState([]);
+  const [cargos, setCargos] = useState([]);
+
+  const [tab, setTab] = useState("datos");
+
   useEffect(() => {
     if (!open || !empleadoId) return;
 
-    setLoading(true);
-    obtenerFichaCompleta(empleadoId)
-      .then((res) => {
-        const d = res.data || {};
+    const cargar = async () => {
+      setLoading(true);
+      try {
+        const res = await obtenerFichaCompleta(empleadoId);
+        const d = res.data;
+
         setData(d);
-
-        const e = d.empleado || {};
-        setEmpleado({
-          nombre: e.nombre ?? "",
-          apellidos: e.apellidos ?? "",
-          dni: e.dni ?? "",
-          telefono: e.telefono ?? "",
-          email_personal: e.email_personal ?? "",
-          email_empresa: e.email_empresa ?? "",
-          extension: e.extension ?? "",
-          usuario: e.usuario ?? "",
-          direccion: e.direccion ?? "",
-          codigo_postal: e.codigo_postal ?? "",
-          poblacion: e.poblacion ?? "",
-          provincia: e.provincia ?? "",
-          fecha_nacimiento: e.fecha_nacimiento ?? "",
-          alergias: e.alergias ?? "",
-          persona_contacto: e.persona_contacto ?? "",
-          telefono_contacto: e.telefono_contacto ?? "",
-          observaciones: e.observaciones ?? "",
-          departamento_id: e.departamento_id ?? "",
-          seccion_id: e.seccion_id ?? "",
-          cargo_id: e.cargo_id ?? "",
-          fecha_alta: e.fecha_alta ?? "",
-          fecha_baja: e.fecha_baja ?? "",
-          activo: e.activo ?? true,
-        });
-
-        setRoles(d.roles || []);
-        setPermisos(d.permisos || []);
-        setModulosVisibles(d.modulos_visibles || []);
-        setPermisosModulo(d.permisos_modulo || {});
+        setEmpleado(d.empleado || {});
+        setModulos(d.modulos_visibles || []);
+        setPermisos(d.permisos_modulo || {});
         setAuditoria(d.auditoria || []);
-      })
-      .finally(() => setLoading(false));
+
+        const [depRes, secRes, carRes] = await Promise.all([
+          getMaestros("departamentos"),
+          getMaestros("secciones"),
+          getMaestros("cargos"),
+        ]);
+
+        setDepartamentos(depRes.data || []);
+        setSecciones(secRes.data || []);
+        setCargos(carRes.data || []);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    cargar();
   }, [open, empleadoId]);
 
-  // Escape para cerrar
-  useEffect(() => {
-    const handler = (e) => e.key === "Escape" && onClose();
-    if (open) window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [open, onClose]);
-
-  if (!open) return null;
-  if (!empleadoId) return null;
-
   const handleEmpleadoChange = (campo, valor) =>
-    setEmpleado((prev) => ({ ...prev, [campo]: valor }));
-
-  const guardarDatosEmpleado = async () => {
-    await editarEmpleado(empleadoId, empleado);
-
-    const res = await obtenerFichaCompleta(empleadoId);
-    setData(res.data || {});
-  };
-
-  const guardarModulos = async () => {
-    await actualizarModulosVisibles(empleadoId, modulosVisibles);
-  };
-
-  const guardarPermisosModulo = async () => {
-    await actualizarPermisosModulo(empleadoId, permisosModulo);
-  };
+    setEmpleado((e) => ({ ...e, [campo]: valor }));
 
   const handleFoto = async (e) => {
     const file = e.target.files[0];
-    if (!file) return;
-    await subirFotoEmpleado(empleadoId, file);
-    const res = await obtenerFichaCompleta(empleadoId);
-    setData(res.data || {});
+    if (!file || !empleado?.id) return;
+    await subirFotoEmpleado(empleado.id, file);
+    const res = await obtenerFichaCompleta(empleado.id);
+    const d = res.data;
+    setData(d);
+    setEmpleado(d.empleado || {});
   };
 
-  const Tab = ({ id, label }) => (
-    <button
-      onClick={() => setTab(id)}
-      className={`px-4 py-2 border-b-2 text-sm ${
-        tab === id ? "border-blue-600 text-blue-600" : "border-transparent"
-      }`}
-    >
-      {label}
-    </button>
-  );
+  const guardarEmpleado = async () => {
+    if (!empleado?.id) return;
+    await editarEmpleado(empleado.id, {
+      nombre: empleado.nombre,
+      apellidos: empleado.apellidos,
+      telefono: empleado.telefono,
+      email_empresa: empleado.email_empresa,
+      activo: empleado.activo,
+      departamento_id: empleado.departamento_id,
+      seccion_id: empleado.seccion_id,
+      cargo_id: empleado.cargo_id,
+    });
+  };
 
-  const empleadoRaw = data?.empleado || {};
-  const rol = empleadoRaw?.rol || {};
+  const guardarModulos = async () => {
+    if (!empleado?.id) return;
+    await actualizarModulosVisibles(empleado.id, modulos);
+  };
+
+  const guardarPermisos = async () => {
+    if (!empleado?.id) return;
+    await actualizarPermisosModulo(empleado.id, permisos);
+  };
+  const rol = empleado?.rol || {};
+  const departamento = data?.departamento || null;
+  const seccion = data?.seccion || null;
+  const cargo = data?.cargo || null;
+
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div
-        className="bg-white rounded-lg shadow-xl w-[1000px] max-h-[90vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex justify-between items-center p-4 border-b">
-          <h2 className="text-xl font-bold">
-            Ficha empleado #{empleadoId} — {empleadoRaw.nombre} {empleadoRaw.apellidos}
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+      <div className="bg-white rounded shadow-lg w-[900px] max-h-[90vh] overflow-y-auto p-4">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold">
+            Ficha empleado #{empleado.id} — {empleado.nombre} {empleado.apellidos}
           </h2>
           <button
+            className="px-3 py-1 text-sm rounded bg-gray-200 hover:bg-gray-300"
             onClick={onClose}
-            className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 text-sm"
           >
             Cerrar
           </button>
         </div>
 
-        {/* Tabs */}
-        <div className="flex gap-4 px-4 border-b">
-          <Tab id="personales" label="Datos personales" />
-          <Tab id="laborales" label="Datos laborales" />
-          <Tab id="roles" label="Roles" />
-          <Tab id="permisos" label="Permisos" />
-          <Tab id="auditoria" label="Auditoría" />
-          <Tab id="foto" label="Foto" />
-          <Tab id="modulos" label="Módulos visibles" />
-          <Tab id="permisos_modulo" label="Permisos por módulo" />
+        <div className="flex gap-2 mb-4 text-sm">
+          <button
+            className={`px-3 py-1 rounded ${
+              tab === "datos" ? "bg-blue-600 text-white" : "bg-gray-100"
+            }`}
+            onClick={() => setTab("datos")}
+          >
+            Datos
+          </button>
+          <button
+            className={`px-3 py-1 rounded ${
+              tab === "seguridad" ? "bg-blue-600 text-white" : "bg-gray-100"
+            }`}
+            onClick={() => setTab("seguridad")}
+          >
+            Seguridad
+          </button>
+          <button
+            className={`px-3 py-1 rounded ${
+              tab === "auditoria" ? "bg-blue-600 text-white" : "bg-gray-100"
+            }`}
+            onClick={() => setTab("auditoria")}
+          >
+            Auditoría
+          </button>
         </div>
 
-        <div className="p-4 text-sm">
-          {loading && <div>Cargando ficha...</div>}
+        {loading && <div className="text-sm text-gray-500">Cargando ficha...</div>}
 
-          {!loading && tab === "personales" && (
-            <div className="space-y-3">
-              <h3 className="font-semibold mb-2">Datos personales</h3>
-
-              <div className="grid grid-cols-2 gap-2">
-
-                {/* Datos básicos */}
-                <input className="border p-2 rounded" placeholder="Nombre"
-                  value={empleado.nombre}
-                  onChange={(e) => handleEmpleadoChange("nombre", e.target.value)}
-                />
-                <input className="border p-2 rounded" placeholder="Apellidos"
-                  value={empleado.apellidos}
-                  onChange={(e) => handleEmpleadoChange("apellidos", e.target.value)}
-                />
-                <input className="border p-2 rounded" placeholder="DNI"
-                  value={empleado.dni}
-                  onChange={(e) => handleEmpleadoChange("dni", e.target.value)}
-                />
-                <input className="border p-2 rounded" placeholder="Teléfono"
-                  value={empleado.telefono}
-                  onChange={(e) => handleEmpleadoChange("telefono", e.target.value)}
-                />
-                <input className="border p-2 rounded" placeholder="Email personal"
-                  value={empleado.email_personal}
-                  onChange={(e) => handleEmpleadoChange("email_personal", e.target.value)}
-                />
-                <input className="border p-2 rounded" placeholder="Email empresa"
-                  value={empleado.email_empresa}
-                  onChange={(e) => handleEmpleadoChange("email_empresa", e.target.value)}
-                />
-                <input className="border p-2 rounded" placeholder="Extensión"
-                  value={empleado.extension}
-                  onChange={(e) => handleEmpleadoChange("extension", e.target.value)}
-                />
-                <input className="border p-2 rounded" placeholder="Usuario"
-                  value={empleado.usuario}
-                  onChange={(e) => handleEmpleadoChange("usuario", e.target.value)}
-                />
-
-                {/* Datos personales reales */}
-                <input className="border p-2 rounded" placeholder="Dirección"
-                  value={empleado.direccion}
-                  onChange={(e) => handleEmpleadoChange("direccion", e.target.value)}
-                />
-                <input className="border p-2 rounded" placeholder="Código postal"
-                  value={empleado.codigo_postal}
-                  onChange={(e) => handleEmpleadoChange("codigo_postal", e.target.value)}
-                />
-                <input className="border p-2 rounded" placeholder="Población"
-                  value={empleado.poblacion}
-                  onChange={(e) => handleEmpleadoChange("poblacion", e.target.value)}
-                />
-                <input className="border p-2 rounded" placeholder="Provincia"
-                  value={empleado.provincia}
-                  onChange={(e) => handleEmpleadoChange("provincia", e.target.value)}
-                />
-                <input className="border p-2 rounded" placeholder="Fecha nacimiento"
-                  value={empleado.fecha_nacimiento}
-                  onChange={(e) => handleEmpleadoChange("fecha_nacimiento", e.target.value)}
-                />
-                <input className="border p-2 rounded" placeholder="Alergias"
-                  value={empleado.alergias}
-                  onChange={(e) => handleEmpleadoChange("alergias", e.target.value)}
-                />
-                <input className="border p-2 rounded" placeholder="Persona contacto"
-                  value={empleado.persona_contacto}
-                  onChange={(e) => handleEmpleadoChange("persona_contacto", e.target.value)}
-                />
-                <input className="border p-2 rounded" placeholder="Teléfono contacto"
-                  value={empleado.telefono_contacto}
-                  onChange={(e) => handleEmpleadoChange("telefono_contacto", e.target.value)}
-                />
-
-                <textarea className="border p-2 rounded col-span-2" placeholder="Observaciones"
-                  value={empleado.observaciones}
-                  onChange={(e) => handleEmpleadoChange("observaciones", e.target.value)}
-                />
-
-                <label className="flex items-center gap-2 mt-2">
-                  <input type="checkbox" checked={empleado.activo}
-                    onChange={(e) => handleEmpleadoChange("activo", e.target.checked)}
+        {!loading && tab === "datos" && (
+          <div className="space-y-6">
+            {/* Datos básicos */}
+            <section className="border p-4 rounded bg-white shadow-sm">
+              <h3 className="text-lg font-semibold mb-3">Datos básicos</h3>
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div>
+                  <strong>Nombre:</strong>{" "}
+                  <input
+                    className="border p-1 rounded w-full"
+                    value={empleado.nombre || ""}
+                    onChange={(e) =>
+                      handleEmpleadoChange("nombre", e.target.value)
+                    }
                   />
-                  Activo
-                </label>
+                </div>
+                <div>
+                  <strong>Apellidos:</strong>{" "}
+                  <input
+                    className="border p-1 rounded w-full"
+                    value={empleado.apellidos || ""}
+                    onChange={(e) =>
+                      handleEmpleadoChange("apellidos", e.target.value)
+                    }
+                  />
+                </div>
+                <div>
+                  <strong>DNI:</strong> {empleado.dni}
+                </div>
+                <div>
+                  <strong>Teléfono:</strong>{" "}
+                  <input
+                    className="border p-1 rounded w-full"
+                    value={empleado.telefono || ""}
+                    onChange={(e) =>
+                      handleEmpleadoChange("telefono", e.target.value)
+                    }
+                  />
+                </div>
+                <div>
+                  <strong>Email personal:</strong> {empleado.email_personal}
+                </div>
+                <div>
+                  <strong>Email empresa:</strong>{" "}
+                  <input
+                    className="border p-1 rounded w-full"
+                    value={empleado.email_empresa || ""}
+                    onChange={(e) =>
+                      handleEmpleadoChange("email_empresa", e.target.value)
+                    }
+                  />
+                </div>
+                <div>
+                  <strong>Usuario:</strong> {empleado.usuario}
+                </div>
+                <div>
+                  <strong>Rol:</strong> {rol?.nombre}
+                </div>
               </div>
 
-              <button
-                className="mt-2 px-3 py-1 bg-green-600 text-white rounded text-sm"
-                onClick={guardarDatosEmpleado}
-              >
-                Guardar datos personales
-              </button>
-            </div>
-          )}
-          {!loading && tab === "laborales" && (
-            <div className="space-y-3">
-              <h3 className="font-semibold mb-2">Datos laborales</h3>
-
-              <div className="grid grid-cols-2 gap-2">
-                <input className="border p-2 rounded" placeholder="Departamento ID"
-                  value={empleado.departamento_id}
-                  onChange={(e) => handleEmpleadoChange("departamento_id", e.target.value)}
-                />
-                <input className="border p-2 rounded" placeholder="Sección ID"
-                  value={empleado.seccion_id}
-                  onChange={(e) => handleEmpleadoChange("seccion_id", e.target.value)}
-                />
-                <input className="border p-2 rounded" placeholder="Cargo ID"
-                  value={empleado.cargo_id}
-                  onChange={(e) => handleEmpleadoChange("cargo_id", e.target.value)}
-                />
-                <input className="border p-2 rounded" placeholder="Fecha alta"
-                  value={empleado.fecha_alta}
-                  onChange={(e) => handleEmpleadoChange("fecha_alta", e.target.value)}
-                />
-                <input className="border p-2 rounded" placeholder="Fecha baja"
-                  value={empleado.fecha_baja}
-                  onChange={(e) => handleEmpleadoChange("fecha_baja", e.target.value)}
-                />
-              </div>
-
-              <button
-                className="mt-2 px-3 py-1 bg-green-600 text-white rounded text-sm"
-                onClick={guardarDatosEmpleado}
-              >
-                Guardar datos laborales
-              </button>
-            </div>
-          )}
-
-          {!loading && tab === "roles" && (
-            <div className="space-y-3">
-              <h3 className="font-semibold mb-2">Roles</h3>
-              <p><strong>Rol principal:</strong> {rol?.nombre || "Sin rol"}</p>
-              <ul className="list-disc ml-6">
-                {roles.map((r) => <li key={r}>{r}</li>)}
-              </ul>
-            </div>
-          )}
-
-          {!loading && tab === "permisos" && (
-            <div className="space-y-3">
-              <h3 className="font-semibold mb-2">Permisos</h3>
-              <ul className="list-disc ml-6">
-                {permisos.map((p) => <li key={p}>{p}</li>)}
-              </ul>
-            </div>
-          )}
-
-          {!loading && tab === "auditoria" && (
-            <div className="space-y-3">
-              <h3 className="font-semibold mb-2">Auditoría</h3>
-              {auditoria.length === 0 && (
-                <p className="text-gray-500 text-xs">No hay registros de auditoría disponibles.</p>
-              )}
-              {auditoria.length > 0 && (
-                <ul className="list-disc ml-6 text-xs">
-                  {auditoria.map((a, idx) => (
-                    <li key={idx}>{a.fecha} — {a.descripcion}</li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          )}
-
-          {!loading && tab === "foto" && (
-            <div className="space-y-3">
-              <h3 className="font-semibold mb-2">Foto</h3>
-              <div className="flex items-center gap-4">
-                {empleadoRaw.foto && (
+              <div className="mt-4 flex items-center gap-4">
+                {empleado.foto && (
                   <img
-                    src={`${API_BASE}${empleadoRaw.foto}`}
+                    src={`${API_BASE}${empleado.foto}`}
                     alt="Foto empleado"
                     className="w-24 h-24 rounded object-cover border"
                   />
                 )}
                 <label className="text-sm">
                   Subir nueva foto:
-                  <input type="file" className="block mt-1" onChange={handleFoto} />
+                  <input
+                    type="file"
+                    className="block mt-1"
+                    onChange={handleFoto}
+                  />
                 </label>
               </div>
-            </div>
-          )}
+            </section>
 
-          {!loading && tab === "modulos" && (
-            <div className="space-y-3">
-              <h3 className="font-semibold mb-2">Módulos visibles</h3>
+            {/* Maestros: nombres + selects */}
+            <section className="border p-4 rounded bg-white shadow-sm">
+              <h3 className="text-lg font-semibold mb-3">
+                Datos laborales (maestros)
+              </h3>
+
+              <div className="grid grid-cols-3 gap-2 text-xs mb-3">
+                <div>
+                  <strong>Departamento actual:</strong>{" "}
+                  {departamento?.nombre || "Sin departamento"}
+                </div>
+                <div>
+                  <strong>Sección actual:</strong>{" "}
+                  {seccion?.nombre || "Sin sección"}
+                </div>
+                <div>
+                  <strong>Cargo actual:</strong>{" "}
+                  {cargo?.nombre || "Sin cargo"}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2 text-sm">
+                <div>
+                  <label className="block mb-1">Departamento</label>
+                  <select
+                    className="border p-2 rounded w-full"
+                    value={empleado.departamento_id || ""}
+                    onChange={(e) =>
+                      handleEmpleadoChange(
+                        "departamento_id",
+                        e.target.value ? Number(e.target.value) : null
+                      )
+                    }
+                  >
+                    <option value="">Sin departamento</option>
+                    {departamentos.map((d) => (
+                      <option key={d.id} value={d.id}>
+                        {d.nombre}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block mb-1">Sección</label>
+                  <select
+                    className="border p-2 rounded w-full"
+                    value={empleado.seccion_id || ""}
+                    onChange={(e) =>
+                      handleEmpleadoChange(
+                        "seccion_id",
+                        e.target.value ? Number(e.target.value) : null
+                      )
+                    }
+                  >
+                    <option value="">Sin sección</option>
+                    {secciones.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.nombre}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block mb-1">Cargo</label>
+                  <select
+                    className="border p-2 rounded w-full"
+                    value={empleado.cargo_id || ""}
+                    onChange={(e) =>
+                      handleEmpleadoChange(
+                        "cargo_id",
+                        e.target.value ? Number(e.target.value) : null
+                      )
+                    }
+                  >
+                    <option value="">Sin cargo</option>
+                    {cargos.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.nombre}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <button
+                className="mt-3 px-3 py-1 bg-green-600 text-white rounded text-sm"
+                onClick={guardarEmpleado}
+              >
+                Guardar datos laborales
+              </button>
+            </section>
+          </div>
+        )}
+
+        {!loading && tab === "seguridad" && (
+          <div className="space-y-6">
+            {/* Módulos visibles */}
+            <section className="border p-4 rounded bg-white shadow-sm">
+              <h3 className="text-lg font-semibold mb-3">
+                Módulos visibles
+              </h3>
               <textarea
                 className="w-full border rounded p-2 text-xs"
-                rows={6}
-                value={JSON.stringify(modulosVisibles, null, 2)}
+                rows={4}
+                value={JSON.stringify(modulos, null, 2)}
                 onChange={(e) => {
                   try {
-                    setModulosVisibles(JSON.parse(e.target.value));
-                  } catch {}
+                    setModulos(JSON.parse(e.target.value));
+                  } catch {
+                    // ignorar
+                  }
                 }}
               />
               <button
@@ -378,32 +341,60 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
               >
                 Guardar módulos visibles
               </button>
-            </div>
-          )}
+            </section>
 
-          {!loading && tab === "permisos_modulo" && (
-            <div className="space-y-3">
-              <h3 className="font-semibold mb-2">Permisos por módulo</h3>
+            {/* Permisos por módulo */}
+            <section className="border p-4 rounded bg-white shadow-sm">
+              <h3 className="text-lg font-semibold mb-3">
+                Permisos por módulo
+              </h3>
               <textarea
                 className="w-full border rounded p-2 text-xs"
-                rows={8}
-                value={JSON.stringify(permisosModulo, null, 2)}
+                rows={6}
+                value={JSON.stringify(permisos, null, 2)}
                 onChange={(e) => {
                   try {
-                    setPermisosModulo(JSON.parse(e.target.value));
-                  } catch {}
+                    setPermisos(JSON.parse(e.target.value));
+                  } catch {
+                    // ignorar
+                  }
                 }}
               />
               <button
                 className="mt-2 px-3 py-1 bg-blue-600 text-white rounded text-sm"
-                onClick={guardarPermisosModulo}
+                onClick={guardarPermisos}
               >
-                Guardar permisos por módulo
+                Guardar permisos
               </button>
-            </div>
-          )}
-        </div>
+            </section>
+          </div>
+        )}
+
+        {!loading && tab === "auditoria" && (
+          <div className="space-y-3">
+            <h3 className="font-semibold mb-2">Auditoría</h3>
+
+            {(!auditoria || auditoria.length === 0) && (
+              <p className="text-gray-500 text-xs">
+                No hay registros de auditoría para este empleado.
+              </p>
+            )}
+
+            {auditoria && auditoria.length > 0 && (
+              <ul className="list-disc ml-6 text-xs">
+                {auditoria.map((a) => (
+                  <li key={a.id}>
+                    {new Date(a.fecha).toLocaleString()} —{" "}
+                    <strong>{a.modulo}</strong> [{a.accion}] — {a.descripcion}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
 }
+
+  if (!open || !empleadoId) return null;

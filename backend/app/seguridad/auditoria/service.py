@@ -37,16 +37,15 @@ def obtener_auditoria(db: Session):
 # ---------------------------------------------------------
 # LISTAR AUDITORÍA POR EMPLEADO
 # ---------------------------------------------------------
-def obtener_auditoria_empleado(db: Session, empleado_id: int):
+def obtener_auditoria_empleado(db: Session, empleado_usuario: str):
     registros = (
         db.query(Auditoria)
-        .filter(Auditoria.usuario == str(empleado_id))
+        .filter(Auditoria.usuario == empleado_usuario)
         .order_by(Auditoria.fecha.desc())
         .limit(100)
         .all()
     )
     return [r.as_dict() for r in registros]
-
 
 # ---------------------------------------------------------
 # MÉTRICAS

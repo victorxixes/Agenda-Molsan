@@ -36,14 +36,26 @@ export default function ModalNuevaCita({
     setForm((f) => ({ ...f, [campo]: valor }));
   };
 
-  // Cargar notarios
-  useEffect(() => {
-    const cargarNotarios = async () => {
-      const res = await axios.get("/agenda/notarios");
-      setResultadosNotarios(res.data || []);
-    };
-    cargarNotarios();
-  }, []);
+  // Buscar notarios (corregido)
+useEffect(() => {
+  const cargarNotarios = async () => {
+    const res = await axios.get("/agenda/notarios"); // ✔ ruta correcta
+    const lista = res.data || [];
+
+    // ✔ filtro en frontend
+    if (busqueda.trim().length >= 2) {
+      const filtrados = lista.filter((n) =>
+        n.nombre.toLowerCase().includes(busqueda.toLowerCase())
+      );
+      setResultadosNotarios(filtrados);
+    } else {
+      setResultadosNotarios([]);
+    }
+  };
+
+  cargarNotarios();
+}, [busqueda]);
+
 
   // Si estamos editando, rellenar el formulario
   useEffect(() => {

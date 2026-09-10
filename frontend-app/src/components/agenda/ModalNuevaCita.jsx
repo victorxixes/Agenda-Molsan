@@ -166,31 +166,30 @@ export default function ModalNuevaCita({
             </select>
           </div>
 
-          {/* Buscador de notarios */}
-          <div className="col-span-2">
-            <label className="block mb-1 text-gray-700">Buscar notario</label>
-            <input
-              className="w-full border rounded px-2 py-1"
-              placeholder="Escribe el nombre del notario…"
-              value={busqueda}
-              onChange={(e) => setBusqueda(e.target.value)}
-            />
+         {/* Buscador de notarios */}
+<div className="col-span-2">
+  <label className="block mb-1 text-gray-700">Buscar notario</label>
+  <input
+    className="w-full border rounded px-2 py-1"
+    placeholder="Escribe el nombre del notario…"
+    value={busqueda}
+    onChange={(e) => setBusqueda(e.target.value)}
+  />
 
-            {busqueda.trim().length >= 2 && notariosFiltrados.length > 0 && (
-              <div className="border rounded bg-white shadow mt-1 max-h-40 overflow-y-auto">
-                {notariosFiltrados.map((n) => (
-                  <div
-                    key={n.id}
-                    className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
-                    onClick={() => seleccionarNotario(n)}
-                  >
-                    {n.nombre}{" "}
-                    {n.municipio ? `— ${n.municipio}` : ""}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+  {busqueda.trim().length >= 2 && notariosFiltrados.length > 0 && (
+    <div className="border rounded bg-white shadow mt-1 max-h-40 overflow-y-auto">
+      {notariosFiltrados.map((n) => (
+        <div
+          key={n.id}
+          className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
+          onClick={() => seleccionarNotario(n)}
+        >
+          <strong>{n.nombre} {n.apellidos}</strong>
+        </div>
+      ))}
+    </div>
+  )}
+</div>
 
           {/* Datos del notario */}
           {notarioSeleccionado && (

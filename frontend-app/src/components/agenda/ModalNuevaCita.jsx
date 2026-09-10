@@ -1,26 +1,29 @@
 import { useEffect, useState } from "react";
 import axios from "../../api/axios";
 
-export default function ModalNuevaCita({ open, onClose, fechaSeleccionada }) {
+export default function ModalNuevaCita({
+  fecha,
+  modo,
+  cita,
+  onClose,
+  onGuardar,
+  onDelete,
+}) {
   const [loading, setLoading] = useState(false);
 
-  // Campos del formulario
   const [form, setForm] = useState({
     hora_inicio: "",
     hora_fin: "",
     tipo_cita: "",
     notario_id: null,
     tipo_firma: "",
-    apoderado: "",
+    apoderado_id: null,
     observaciones: "",
   });
 
-  // Buscador de notarios
   const [busqueda, setBusqueda] = useState("");
   const [resultadosNotarios, setResultadosNotarios] = useState([]);
   const [notarioSeleccionado, setNotarioSeleccionado] = useState(null);
-
-  // Tipos de cita
   const [tiposCita, setTiposCita] = useState([]);
 
   const handleChange = (campo, valor) => {
@@ -29,15 +32,32 @@ export default function ModalNuevaCita({ open, onClose, fechaSeleccionada }) {
 
   // Cargar tipos de cita
   useEffect(() => {
-    if (!open) return;
-
     const cargarTipos = async () => {
       const res = await axios.get("/api/maestros/tipo_cita");
       setTiposCita(res.data || []);
     };
-
     cargarTipos();
-  }, [open]);
+  }, []);
+
+  // Si estamos editando, rellenar el formulario
+  useEffect(() => {
+    if (modo === "editar" && cita) {
+      setForm({
+        hora_inicio: cita.hora_inicio,
+        hora_fin: cita.hora_fin,
+        tipo_cita: cita.tipo_cita,
+        notario_id: cita.notario_id,
+        tipo_firma: cita.tipo_firma || "",
+        apoderado_id: cita.apoderado_id || null,
+        observaciones: cita.observaciones || "",
+      });
+
+      if (cita.notario) {
+        setNotarioSeleccionado(cita.notario);
+        setBusqueda(cita.notario.nombre);
+      }
+    }
+  }, [modo, cita]);
 
   // Buscar notarios
   useEffect(() => {
@@ -54,44 +74,43 @@ export default function ModalNuevaCita({ open, onClose, fechaSeleccionada }) {
     buscar();
   }, [busqueda]);
 
-  // Seleccionar notario
-  const seleccionarNotario = async (notario) => {
-    setNotarioSeleccionado(notario);
+  const seleccionarNotario = (n) => {
+    setNotarioSeleccionado(n);
     setResultadosNotarios([]);
-    setBusqueda(notario.nombre);
+    setBusqueda(n.nombre);
 
-    // Rellenar campos automáticos desde el Excel CTN
-    handleChange("notario_id", notario.id);
-    handleChange("tipo_firma", notario.tipo_firma || "");
-    handleChange("apoderado", notario.apoderado || "");
-    handleChange("observaciones", notario.observaciones || "");
+    handleChange("notario_id", n.id);
+    handleChange("tipo_firma", n.vc || "");
+    handleChange("apoderado_id", n.apoderado_id || null);
+    handleChange("observaciones", n.observacion || "");
   };
 
-  // Guardar cita
-  const guardarCita = async () => {
+  const guardar = async () => {
+    setLoading(true);
+
     const payload = {
-      fecha: fechaSeleccionada,
+      fecha,
       hora_inicio: form.hora_inicio,
       hora_fin: form.hora_fin,
       tipo_cita: form.tipo_cita,
       notario_id: form.notario_id,
       tipo_firma: form.tipo_firma,
-      apoderado: form.apoderado,
+      apoderado_id: form.apoderado_id,
       observaciones: form.observaciones,
     };
 
-    await axios.post("/api/agenda/citas", payload);
-    onClose();
+    await onGuardar(payload);
+    setLoading(false);
   };
 
-  if (!open) return null;
+  if (!fecha) return null;
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
       <div className="bg-white rounded-xl shadow-xl w-full max-w-xl p-6">
 
         <h2 className="text-lg font-semibold mb-4 text-gray-900">
-          Nueva cita — {fechaSeleccionada}
+          {modo === "crear" ? "Nueva cita" : "Editar cita"} — {fecha}
         </h2>
 
         <div className="grid grid-cols-2 gap-4 text-sm">
@@ -152,7 +171,7 @@ export default function ModalNuevaCita({ open, onClose, fechaSeleccionada }) {
                     className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
                     onClick={() => seleccionarNotario(n)}
                   >
-                    {n.nombre} — {n.poblacion}
+                    {n.nombre} — {n.municipio}
                   </div>
                 ))}
               </div>
@@ -173,7 +192,6 @@ export default function ModalNuevaCita({ open, onClose, fechaSeleccionada }) {
                 Teléfono: {notarioSeleccionado.telefono}
               </p>
 
-              {/* Mapa */}
               <iframe
                 className="w-full h-40 mt-2 rounded"
                 src={`https://www.google.com/maps?q=${encodeURIComponent(
@@ -198,8 +216,8 @@ export default function ModalNuevaCita({ open, onClose, fechaSeleccionada }) {
             <label className="block mb-1 text-gray-700">Apoderado</label>
             <input
               className="w-full border rounded px-2 py-1"
-              value={form.apoderado}
-              onChange={(e) => handleChange("apoderado", e.target.value)}
+              value={form.apoderado_id || ""}
+              onChange={(e) => handleChange("apoderado_id", e.target.value)}
             />
           </div>
 
@@ -216,15 +234,25 @@ export default function ModalNuevaCita({ open, onClose, fechaSeleccionada }) {
         </div>
 
         <div className="mt-6 flex justify-end gap-3">
+          {modo === "editar" && (
+            <button
+              className="px-3 py-1 bg-red-600 text-white rounded"
+              onClick={onDelete}
+            >
+              Eliminar
+            </button>
+          )}
+
           <button className="px-3 py-1 bg-gray-200 rounded" onClick={onClose}>
             Cancelar
           </button>
 
           <button
             className="px-3 py-1 bg-blue-600 text-white rounded"
-            onClick={guardarCita}
+            onClick={guardar}
+            disabled={loading}
           >
-            Crear cita
+            {modo === "crear" ? "Crear cita" : "Guardar cambios"}
           </button>
         </div>
       </div>

@@ -31,49 +31,47 @@ export default function ModalNuevaCita({
     setForm((f) => ({ ...f, [campo]: valor }));
   };
 
-  // Autocompletado de notarios desde CTN
+  // 🔎 Autocompletado de notarios desde CTN
   useEffect(() => {
     const cargarNotarios = async () => {
-      try {
-        // OJO: axios ya tiene baseURL /api → aquí solo "/ctn/notarias"
-        const res = await axios.get("/ctn/notarias");
-        const lista = Array.isArray(res.data) ? res.data : [];
+      const q = busqueda.trim();
 
-        if (busqueda.trim().length >= 2) {
-          const filtrados = lista.filter((n) =>
-            (n.nombre || "")
-              .toString()
-              .toLowerCase()
-              .includes(busqueda.toLowerCase())
-          );
-          setResultadosNotarios(filtrados);
-        } else {
-          setResultadosNotarios([]);
-        }
+      // Menos de 2 caracteres → no buscamos nada
+      if (q.length < 2) {
+        setResultadosNotarios([]);
+        return;
+      }
+
+      try {
+        // ✔ ruta correcta: /ctn/notarias (el /api ya lo pone axios baseURL)
+        const res = await axios.get("/ctn/notarias", {
+          params: {
+            q,
+            page_size: 50,
+          },
+        });
+
+        const items = Array.isArray(res.data?.items) ? res.data.items : [];
+        setResultadosNotarios(items);
       } catch (e) {
         console.error("Error cargando notarios:", e);
         setResultadosNotarios([]);
       }
     };
 
-    // Solo buscamos si hay algo tecleado
-    if (busqueda.trim().length >= 1) {
-      cargarNotarios();
-    } else {
-      setResultadosNotarios([]);
-    }
+    cargarNotarios();
   }, [busqueda]);
 
   // Si estamos editando, rellenar el formulario
   useEffect(() => {
     if (modo === "editar" && cita) {
       setForm({
-        hora_inicio: cita.hora_inicio || "",
-        hora_fin: cita.hora_fin || "",
-        tipo_cita: cita.tipo_cita || "",
-        notario_id: cita.notario_id ?? null,
+        hora_inicio: cita.hora_inicio,
+        hora_fin: cita.hora_fin,
+        tipo_cita: cita.tipo_cita,
+        notario_id: cita.notario_id,
         tipo_firma: cita.tipo_firma || "",
-        apoderado_id: cita.apoderado_id ?? null,
+        apoderado_id: cita.apoderado_id || null,
         observaciones: cita.observaciones || "",
       });
 
@@ -84,30 +82,24 @@ export default function ModalNuevaCita({
     }
   }, [modo, cita]);
 
-  // Filtrar notarios en frontend (por si la API devuelve más cosas)
+  // En realidad el backend ya viene filtrado por q, pero blindamos por si acaso
   const notariosFiltrados = Array.isArray(resultadosNotarios)
     ? resultadosNotarios.filter((n) =>
-        (n.nombre || "")
-          .toString()
-          .toLowerCase()
-          .includes(busqueda.toLowerCase())
+        (n.nombre || "").toLowerCase().includes(busqueda.toLowerCase())
       )
     : [];
 
   const seleccionarNotario = (n) => {
-    if (!n) return;
-
     setNotarioSeleccionado(n);
     setBusqueda(n.nombre || "");
 
-    handleChange("notario_id", n.id ?? null);
+    handleChange("notario_id", n.id);
     handleChange("tipo_firma", n.vc || "");
-    handleChange("apoderado_id", n.apoderado_id ?? null);
+    handleChange("apoderado_id", n.apoderado_id || null);
     handleChange("observaciones", n.observacion || "");
   };
 
   const guardar = async () => {
-    if (!fecha) return;
     setLoading(true);
 
     const payload = {
@@ -121,11 +113,8 @@ export default function ModalNuevaCita({
       observaciones: form.observaciones,
     };
 
-    try {
-      await onGuardar(payload);
-    } finally {
-      setLoading(false);
-    }
+    await onGuardar(payload);
+    setLoading(false);
   };
 
   if (!fecha) return null;
@@ -182,12 +171,12 @@ export default function ModalNuevaCita({
             <label className="block mb-1 text-gray-700">Buscar notario</label>
             <input
               className="w-full border rounded px-2 py-1"
+              placeholder="Escribe el nombre del notario…"
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
-              placeholder="Escribe el nombre del notario…"
             />
 
-            {busqueda.length >= 2 && notariosFiltrados.length > 0 && (
+            {busqueda.trim().length >= 2 && notariosFiltrados.length > 0 && (
               <div className="border rounded bg-white shadow mt-1 max-h-40 overflow-y-auto">
                 {notariosFiltrados.map((n) => (
                   <div
@@ -195,7 +184,8 @@ export default function ModalNuevaCita({
                     className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
                     onClick={() => seleccionarNotario(n)}
                   >
-                    {n.nombre} — {n.municipio}
+                    {n.nombre}{" "}
+                    {n.municipio ? `— ${n.municipio}` : ""}
                   </div>
                 ))}
               </div>
@@ -209,19 +199,25 @@ export default function ModalNuevaCita({
                 {notarioSeleccionado.nombre}
               </h4>
 
-              <p className="text-xs text-gray-700">
-                Dirección: {notarioSeleccionado.direccion}
-              </p>
-              <p className="text-xs text-gray-700">
-                Teléfono: {notarioSeleccionado.telefono}
-              </p>
+              {notarioSeleccionado.direccion && (
+                <p className="text-xs text-gray-700">
+                  Dirección: {notarioSeleccionado.direccion}
+                </p>
+              )}
+              {notarioSeleccionado.telefono && (
+                <p className="text-xs text-gray-700">
+                  Teléfono: {notarioSeleccionado.telefono}
+                </p>
+              )}
 
-              <iframe
-                className="w-full h-40 mt-2 rounded"
-                src={`https://www.google.com/maps?q=${encodeURIComponent(
-                  notarioSeleccionado.direccion || ""
-                )}&output=embed`}
-              ></iframe>
+              {notarioSeleccionado.direccion && (
+                <iframe
+                  className="w-full h-40 mt-2 rounded"
+                  src={`https://www.google.com/maps?q=${encodeURIComponent(
+                    notarioSeleccionado.direccion
+                  )}&output=embed`}
+                ></iframe>
+              )}
             </div>
           )}
 

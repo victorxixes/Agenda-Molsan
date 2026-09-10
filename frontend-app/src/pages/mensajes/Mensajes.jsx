@@ -154,31 +154,36 @@ export default function Mensajes({ usuarioId }) {
 
             {/* Input */}
             <form
-              onSubmit={async (e) => {
-                e.preventDefault();
-                if (!texto.trim()) return;
+  onSubmit={async (e) => {
+    e.preventDefault();
+    if (!texto.trim()) return;
 
-                enviarMensajeWS();
+    enviarMensajeWS();
 
-                await enviarMensajeREST({
-                  remitente_id: usuarioId,
-                  destinatario_id: otroId,
-                  contenido: texto,
-                });
+    await enviarMensajeREST({
+      remitente_id: usuarioId,
+      destinatario_id: otroId,
+      contenido: texto,
+    });
 
-                setTexto("");
-              }}
-            >
-              <input
-                value={texto}
-                onChange={(e) => {
-                  setTexto(e.target.value);
-                  enviarTypingWS();
-                }}
-                className="border p-2 w-full"
-                placeholder="Escribe un mensaje…"
-              />
-            </form>
+    setTexto("");
+  }}
+  className="flex gap-2"
+>
+  <input
+    value={texto}
+    onChange={(e) => {
+      setTexto(e.target.value);
+      enviarTypingWS();
+    }}
+    className="border p-2 w-full"
+    placeholder="Escribe un mensaje…"
+  />
+
+  <button className="bg-blue-500 text-white px-4 py-2 rounded">
+    Enviar
+  </button>
+</form>
           </>
         ) : (
           <p>Selecciona un usuario para chatear.</p>

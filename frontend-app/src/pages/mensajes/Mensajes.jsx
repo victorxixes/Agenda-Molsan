@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useMensajesStore } from "../../store/mensajesStore";
 import { useMensajesWS } from "../../hooks/useMensajesWS";
 import MensajeBubble from "../../components/mensajes/MensajeBubble";
+import MensajesHeader from "../../components/mensajes/MensajesHeader";
 
 export default function Mensajes({ usuarioId }) {
   const [otroId, setOtroId] = useState(null);
@@ -106,19 +107,13 @@ export default function Mensajes({ usuarioId }) {
       <div className="col-span-2 border p-4">
         {otroId ? (
           <>
-            <h2 className="font-bold mb-2 flex items-center gap-2">
-              Chat con usuario {otroId}
-              <span
-                className={`w-3 h-3 rounded-full ${
-                  conectados.some((x) => x.id === otroId)
-                    ? "bg-green-500"
-                    : "bg-gray-400"
-                }`}
-              ></span>
-            </h2>
+            {/* Cabecera del chat */}
+            <MensajesHeader otroId={otroId} conectados={conectados} />
 
-            <div ref={chatRef} className="h-[400px] overflow-y-auto border p-2 mb-4">
-
+            <div
+              ref={chatRef}
+              className="h-[400px] overflow-y-auto border p-2 mb-4"
+            >
               {Object.keys(mensajesAgrupados).map((fecha) => (
                 <div key={fecha}>
                   <div className="text-center text-gray-500 text-sm my-2">

@@ -76,25 +76,27 @@ export default function Agenda() {
       <div className="seg-card flex items-center gap-4">
         <button className="sj-btn px-3" onClick={mesAnterior}>←</button>
 
-        <select
-          className="sj-input w-32"
-          value={year}
-          onChange={(e) => setYear(parseInt(e.target.value))}
-        >
-          {Array.from({ length: 6 }, (_, i) => hoy.getFullYear() - 2 + i).map((y) => (
-            <option key={y} value={y}>{y}</option>
-          ))}
-        </select>
+       <select
+  className="sj-input w-32"
+  value={year}
+  onChange={(e) => setYear(parseInt(e.target.value))}
+>
+  {Array.from({ length: 10 }, (_, i) => year - 5 + i).map((y) => (
+    <option key={y} value={y}>{y}</option>
+  ))}
+</select>
 
         <select
-          className="sj-input w-40"
-          value={month}
-          onChange={(e) => setMonth(parseInt(e.target.value))}
-        >
-          {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
-            <option key={m} value={m}>{m}</option>
-          ))}
-        </select>
+  className="sj-input w-40"
+  value={month}
+  onChange={(e) => setMonth(parseInt(e.target.value))}
+>
+  {MESES.map((nombre, index) => (
+    <option key={index} value={index + 1}>
+      {nombre}
+    </option>
+  ))}
+</select>
 
         <button className="sj-btn px-3" onClick={mesSiguiente}>→</button>
       </div>

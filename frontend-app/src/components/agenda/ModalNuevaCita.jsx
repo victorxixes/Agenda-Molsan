@@ -1,12 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "../../api/axios";
 
-const TIPOS_CITA = [
-  "Firma notarial",
-  "Reunión",
-  "Visita",
-  "Otros",
-];
+const TIPOS_CITA = ["Firma notarial", "Reunión", "Visita", "Otros"];
 
 export default function ModalNuevaCita({
   fecha,
@@ -36,42 +31,30 @@ export default function ModalNuevaCita({
     setForm((f) => ({ ...f, [campo]: valor }));
   };
 
-  // Buscar notarios (corregido)
-useEffect(() => {
-  const cargarNotarios = async () => {
-    const res = await axios.get("/api/ctn/notarias"); // ✔ ruta correcta en Render
-    const lista = res.data || [];
+  // 🔍 Buscar notarios desde CTN
+  useEffect(() => {
+    const cargarNotarios = async () => {
+      try {
+        const res = await axios.get("/api/ctn/notarias"); // ✔ ruta correcta Render
+        const lista = res.data || [];
 
-    if (busqueda.trim().length >= 2) {
-      const filtrados = lista.filter((n) =>
-        n.nombre.toLowerCase().includes(busqueda.toLowerCase())
-      );
-      setResultadosNotarios(filtrados);
-    } else {
-      setResultadosNotarios([]);
-    }
-  };
+        if (busqueda.trim().length >= 2) {
+          const filtrados = lista.filter((n) =>
+            n.nombre.toLowerCase().includes(busqueda.toLowerCase())
+          );
+          setResultadosNotarios(filtrados);
+        } else {
+          setResultadosNotarios([]);
+        }
+      } catch (e) {
+        console.error("Error cargando notarios:", e);
+      }
+    };
 
-  cargarNotarios();
-}, [busqueda]);
+    cargarNotarios();
+  }, [busqueda]);
 
-
-    // ✔ filtro en frontend
-    if (busqueda.trim().length >= 2) {
-      const filtrados = lista.filter((n) =>
-        n.nombre.toLowerCase().includes(busqueda.toLowerCase())
-      );
-      setResultadosNotarios(filtrados);
-    } else {
-      setResultadosNotarios([]);
-    }
-  };
-
-  cargarNotarios();
-}, [busqueda]);
-
-
-  // Si estamos editando, rellenar el formulario
+  // ✏ Rellenar formulario si estamos editando
   useEffect(() => {
     if (modo === "editar" && cita) {
       setForm({
@@ -91,11 +74,12 @@ useEffect(() => {
     }
   }, [modo, cita]);
 
-  // Filtrar notarios en frontend
+  // 🔎 Filtrar notarios en frontend
   const notariosFiltrados = resultadosNotarios.filter((n) =>
     n.nombre.toLowerCase().includes(busqueda.toLowerCase())
   );
 
+  // ✔ Autorrellenar campos desde CTN
   const seleccionarNotario = (n) => {
     setNotarioSeleccionado(n);
     setBusqueda(n.nombre);

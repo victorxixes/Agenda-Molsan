@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from backend.app.database import Base
+from sqlalchemy.sql import func
 
 class Mensaje(Base):
     __tablename__ = "mensajes"
@@ -18,7 +19,7 @@ class Mensaje(Base):
     # Archivo adjunto (PDF, Word, imagen…)
     archivo_url = Column(String, nullable=True)
 
-    fecha = Column(DateTime, default=datetime.utcnow)
+    fecha = Column(DateTime, server_default=func.now(), nullable=False)
     leido = Column(Boolean, default=False)
 
     remitente = relationship("Empleado", foreign_keys=[remitente_id])

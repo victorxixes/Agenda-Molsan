@@ -79,7 +79,11 @@ export default function Mensajes({ usuarioId }) {
             onClick={() => setOtroId(c.id)}
           >
             <img
-              src={usuario?.foto ? `${import.meta.env.VITE_API_URL}${usuario.foto}` : "/no-foto.png"}
+              src={
+                c.foto
+                  ? `${import.meta.env.VITE_API_URL}${c.foto}`
+                  : "/no-foto.png"
+              }
               className="w-10 h-10 rounded-full object-cover border"
             />
 
@@ -129,7 +133,11 @@ export default function Mensajes({ usuarioId }) {
                         key={m.id}
                         mensaje={m}
                         usuarioId={usuarioId}
-                        avatarUrl={remitente?.foto || "/no-foto.png"}
+                        avatarUrl={
+                          remitente?.foto
+                            ? `${import.meta.env.VITE_API_URL}${remitente.foto}`
+                            : "/no-foto.png"
+                        }
                         online={conectados.some(
                           (x) => x.id === m.remitente_id
                         )}
@@ -153,36 +161,36 @@ export default function Mensajes({ usuarioId }) {
 
             {/* Input */}
             <form
-  onSubmit={async (e) => {
-    e.preventDefault();
-    if (!texto.trim()) return;
+              onSubmit={async (e) => {
+                e.preventDefault();
+                if (!texto.trim()) return;
 
-    enviarMensajeWS();
+                enviarMensajeWS();
 
-    await enviarMensajeREST({
-      remitente_id: usuarioId,
-      destinatario_id: otroId,
-      contenido: texto,
-    });
+                await enviarMensajeREST({
+                  remitente_id: usuarioId,
+                  destinatario_id: otroId,
+                  contenido: texto,
+                });
 
-    setTexto("");
-  }}
-  className="flex gap-2"
->
-  <input
-    value={texto}
-    onChange={(e) => {
-      setTexto(e.target.value);
-      enviarTypingWS();
-    }}
-    className="border p-2 w-full"
-    placeholder="Escribe un mensaje…"
-  />
+                setTexto("");
+              }}
+              className="flex gap-2"
+            >
+              <input
+                value={texto}
+                onChange={(e) => {
+                  setTexto(e.target.value);
+                  enviarTypingWS();
+                }}
+                className="border p-2 w-full"
+                placeholder="Escribe un mensaje…"
+              />
 
-  <button className="bg-blue-500 text-white px-4 py-2 rounded">
-    Enviar
-  </button>
-</form>
+              <button className="bg-blue-500 text-white px-4 py-2 rounded">
+                Enviar
+              </button>
+            </form>
           </>
         ) : (
           <p>Selecciona un usuario para chatear.</p>

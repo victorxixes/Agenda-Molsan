@@ -1,6 +1,6 @@
 FROM python:3.11
 
-# Carpeta de trabajo dentro del contenedor
+# Carpeta de trabajo dentro del contenedo
 WORKDIR /app
 
 # Copiar TODO el backend (no solo backend/app)

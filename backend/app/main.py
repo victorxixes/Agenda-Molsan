@@ -103,6 +103,9 @@ from backend.app.ctn.router import router as ctn_router
 # 📊 DASHBOARD
 from backend.app.dashboard.router import router as dashboard_router
 
+# 📨MENSAJES
+from backend.app.mensajes.router import router as mensajes_router
+
 # 🧰 UTILIDADES
 from backend.app.Utilidades.router import router as utilidades_router
 
@@ -154,6 +157,9 @@ app.include_router(ctn_router, prefix="/api")
 
 # 📊 Dashboard
 app.include_router(dashboard_router, prefix="/api")
+
+# 📨 Mensajes REST
+app.include_router(mensajes_router, prefix="/api")
 
 # 🧰 Utilidades
 app.include_router(utilidades_router, prefix="/api")

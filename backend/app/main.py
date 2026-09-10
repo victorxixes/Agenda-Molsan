@@ -53,6 +53,16 @@ app.add_middleware(
 STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
+# ---------------------------------------------------------
+# STATIC FILES (incluye mensajes)
+# ---------------------------------------------------------
+STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+
+# Carpeta temporal de mensajes (Render)
+TMP_MENSAJES = "/tmp/mensajes"
+os.makedirs(TMP_MENSAJES, exist_ok=True)
+app.mount("/static/mensajes", StaticFiles(directory=TMP_MENSAJES), name="mensajes")
 
 # ---------------------------------------------------------
 # IMPORTAR ROUTERS

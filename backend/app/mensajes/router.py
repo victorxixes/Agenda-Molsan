@@ -4,7 +4,6 @@ from uuid import uuid4
 import os
 
 from backend.app.empleados.models import Empleado
-
 from backend.app.database import get_db
 from backend.app.mensajes.schemas import MensajeCreate
 from backend.app.mensajes.service import (
@@ -15,7 +14,11 @@ from backend.app.mensajes.service import (
 )
 from backend.app.mensajes.ws_manager import manager
 
-router = APIRouter(prefix="/mensajes", tags=["Mensajes"])
+router = APIRouter(
+    prefix="/mensajes",
+    tags=["Mensajes"],
+    redirect_slashes=False   # <── IMPORTANTE
+)
 
 # ---------------------------------------------------------
 # EMPLEADOS CONECTADOS
@@ -43,46 +46,35 @@ def conectados(db: Session = Depends(get_db)):
 # ---------------------------------------------------------
 # ENVIAR MENSAJE (REST)
 # ---------------------------------------------------------
-@router.post("/")
+@router.post("")   # <── SIN BARRA FINAL
 def enviar(datos: MensajeCreate, db: Session = Depends(get_db)):
     return enviar_mensaje(db, datos.dict())
 
 
 # ---------------------------------------------------------
-# SUBIR ARCHIVO (PDF, Word, imágenes…)
+# SUBIR ARCHIVO
 # ---------------------------------------------------------
 @router.post("/upload")
 def subir_archivo(file: UploadFile = File(...)):
-    # Validar extensión
     ext = file.filename.split(".")[-1].lower()
     extensiones_permitidas = ["pdf", "doc", "docx", "jpg", "jpeg", "png"]
 
     if ext not in extensiones_permitidas:
-        return {
-            "status": "error",
-            "msg": f"Extensión no permitida: .{ext}"
-        }
+        return {"status": "error", "msg": f"Extensión no permitida: .{ext}"}
 
-    # Crear nombre único
     nombre = f"{uuid4()}.{ext}"
 
-    # Ruta interna
     carpeta = "/tmp/mensajes"
     os.makedirs(carpeta, exist_ok=True)
 
     ruta = f"{carpeta}/{nombre}"
 
-    # Guardar archivo
     with open(ruta, "wb") as f:
         f.write(file.file.read())
 
-    # URL accesible (el frontend la usará)
     archivo_url = f"/static/mensajes/{nombre}"
 
-    return {
-        "status": "ok",
-        "archivo_url": archivo_url
-    }
+    return {"status": "ok", "archivo_url": archivo_url}
 
 
 # ---------------------------------------------------------

@@ -14,15 +14,18 @@ from backend.app.mensajes.service import (
 )
 from backend.app.mensajes.ws_manager import manager
 
+# =========================================================
+# ROUTER (CORS FIX: redirect_slashes=False)
+# =========================================================
 router = APIRouter(
     prefix="/mensajes",
     tags=["Mensajes"],
-    redirect_slashes=False   # <── IMPORTANTE
+    redirect_slashes=False
 )
 
-# ---------------------------------------------------------
+# =========================================================
 # EMPLEADOS CONECTADOS
-# ---------------------------------------------------------
+# =========================================================
 @router.get("/conectados")
 def conectados(db: Session = Depends(get_db)):
     resultado = []
@@ -42,28 +45,31 @@ def conectados(db: Session = Depends(get_db)):
 
     return resultado
 
-
-# ---------------------------------------------------------
+# =========================================================
 # ENVIAR MENSAJE (REST)
-# ---------------------------------------------------------
-@router.post("")   # <── SIN BARRA FINAL
+# CORS FIX → NO USAR "/"
+# =========================================================
+@router.post("")   # <── IMPORTANTE: sin barra final
 def enviar(datos: MensajeCreate, db: Session = Depends(get_db)):
     return enviar_mensaje(db, datos.dict())
 
-
-# ---------------------------------------------------------
+# =========================================================
 # SUBIR ARCHIVO
-# ---------------------------------------------------------
+# =========================================================
 @router.post("/upload")
 def subir_archivo(file: UploadFile = File(...)):
     ext = file.filename.split(".")[-1].lower()
     extensiones_permitidas = ["pdf", "doc", "docx", "jpg", "jpeg", "png"]
 
     if ext not in extensiones_permitidas:
-        return {"status": "error", "msg": f"Extensión no permitida: .{ext}"}
+        return {
+            "status": "error",
+            "msg": f"Extensión no permitida: .{ext}"
+        }
 
     nombre = f"{uuid4()}.{ext}"
 
+    # Guardar en /tmp (Render permite esto)
     carpeta = "/tmp/mensajes"
     os.makedirs(carpeta, exist_ok=True)
 
@@ -72,30 +78,31 @@ def subir_archivo(file: UploadFile = File(...)):
     with open(ruta, "wb") as f:
         f.write(file.file.read())
 
+    # URL accesible
     archivo_url = f"/static/mensajes/{nombre}"
 
-    return {"status": "ok", "archivo_url": archivo_url}
+    return {
+        "status": "ok",
+        "archivo_url": archivo_url
+    }
 
-
-# ---------------------------------------------------------
+# =========================================================
 # CONVERSACIÓN ENTRE DOS EMPLEADOS
-# ---------------------------------------------------------
+# =========================================================
 @router.get("/{usuario_id}/{otro_id}")
 def conversacion(usuario_id: int, otro_id: int, db: Session = Depends(get_db)):
     return listar_conversacion(db, usuario_id, otro_id)
 
-
-# ---------------------------------------------------------
+# =========================================================
 # MARCAR UN MENSAJE COMO LEÍDO
-# ---------------------------------------------------------
+# =========================================================
 @router.put("/leido/{mensaje_id}")
 def leido(mensaje_id: int, db: Session = Depends(get_db)):
     return marcar_leido(db, mensaje_id)
 
-
-# ---------------------------------------------------------
+# =========================================================
 # MARCAR TODA LA CONVERSACIÓN COMO LEÍDA
-# ---------------------------------------------------------
+# =========================================================
 @router.put("/leido/conversacion/{usuario_id}/{otro_id}")
 def marcar_conversacion(usuario_id: int, otro_id: int, db: Session = Depends(get_db)):
     return marcar_conversacion_leida(db, usuario_id, otro_id)

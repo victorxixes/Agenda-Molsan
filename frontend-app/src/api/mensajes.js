@@ -20,4 +20,3 @@ export const marcarLeido = (mensajeId) =>
 
 export const marcarConversacionLeida = (usuarioId, otroId) =>
   axios.put(`/mensajes/leido/conversacion/${usuarioId}/${otroId}`);
-

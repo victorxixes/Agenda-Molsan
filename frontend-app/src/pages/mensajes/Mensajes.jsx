@@ -70,32 +70,35 @@ export default function Mensajes({ usuarioId }) {
       {/* Lista de empleados conectados */}
       <div className="border p-4">
         <h2 className="font-bold mb-2">Conectados</h2>
-       {conectados.map((c) => (
-  <div
-    key={c.id}
-    className="cursor-pointer hover:bg-gray-100 p-2 flex items-center gap-3"
-    onClick={() => setOtroId(c.id)}
-  >
-    <img
-      src={c.foto || "/no-foto.png"}
-      alt="foto"
-      className="w-10 h-10 rounded-full object-cover border"
-    />
 
-    <div className="text-sm">
-      <div className="font-semibold text-gray-900">
-        {c.nombre} {c.apellidos}
-      </div>
-      <div className="text-xs text-gray-600">ID: {c.id}</div>
-    </div>
+        {conectados.map((c) => (
+          <div
+            key={c.id}
+            className="cursor-pointer hover:bg-gray-100 p-2 flex items-center gap-3"
+            onClick={() => setOtroId(c.id)}
+          >
+            <img
+              src={c.foto || "/no-foto.png"}
+              alt="foto"
+              className="w-10 h-10 rounded-full object-cover border"
+            />
 
-    <span
-      className={`w-3 h-3 rounded-full ${
-        conectados.some((x) => x.id === c.id) ? "bg-green-500" : "bg-gray-400"
-      }`}
-    ></span>
-  </div>
-))}
+            <div className="text-sm">
+              <div className="font-semibold text-gray-900">
+                {c.nombre} {c.apellidos}
+              </div>
+              <div className="text-xs text-gray-600">ID: {c.id}</div>
+            </div>
+
+            <span
+              className={`w-3 h-3 rounded-full ${
+                conectados.some((x) => x.id === c.id)
+                  ? "bg-green-500"
+                  : "bg-gray-400"
+              }`}
+            ></span>
+          </div>
+        ))}
 
       </div>
 
@@ -107,7 +110,9 @@ export default function Mensajes({ usuarioId }) {
               Chat con usuario {otroId}
               <span
                 className={`w-3 h-3 rounded-full ${
-                  conectados.some((x) => x.id === otroId) ? "bg-green-500" : "bg-gray-400"
+                  conectados.some((x) => x.id === otroId)
+                    ? "bg-green-500"
+                    : "bg-gray-400"
                 }`}
               ></span>
             </h2>
@@ -120,15 +125,23 @@ export default function Mensajes({ usuarioId }) {
                     {fecha}
                   </div>
 
-                  {mensajesAgrupados[fecha].map((m) => (
-                    <MensajeBubble
-                      key={m.id}
-                      mensaje={m}
-                      usuarioId={usuarioId}
-                      avatarUrl={`/avatars/${m.remitente_id}.png`}
-                      online={conectados.includes(m.remitente_id)}
-                    />
-                  ))}
+                  {mensajesAgrupados[fecha].map((m) => {
+                    const remitente = conectados.find(
+                      (x) => x.id === m.remitente_id
+                    );
+
+                    return (
+                      <MensajeBubble
+                        key={m.id}
+                        mensaje={m}
+                        usuarioId={usuarioId}
+                        avatarUrl={remitente?.foto || "/no-foto.png"}
+                        online={conectados.some(
+                          (x) => x.id === m.remitente_id
+                        )}
+                      />
+                    );
+                  })}
                 </div>
               ))}
 

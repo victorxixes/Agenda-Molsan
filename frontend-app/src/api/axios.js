@@ -2,7 +2,7 @@ import axios from "axios";
  
 const instance = axios.create({
   // ✔ baseURL correcta: tu backend expone /api, aquí lo añadimos una sola vez
-  baseURL: `${import.meta.env.VITE_API_URL}/api`,
+  baseURL: import.meta.env.VITE_API_URL,
   withCredentials: true,
 });
 

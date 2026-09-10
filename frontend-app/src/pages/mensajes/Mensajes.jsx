@@ -107,7 +107,7 @@ export default function Mensajes({ usuarioId }) {
               Chat con usuario {otroId}
               <span
                 className={`w-3 h-3 rounded-full ${
-                  conectados.includes(otroId) ? "bg-green-500" : "bg-gray-400"
+                  conectados.some((x) => x.id === otroId) ? "bg-green-500" : "bg-gray-400"
                 }`}
               ></span>
             </h2>

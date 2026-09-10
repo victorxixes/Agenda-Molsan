@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "../../api/axios";
+import AutocompleteNotario from "../components/AutocompleteNotario";
 
 const TIPOS_CITA = ["Firma notarial", "Reunión", "Visita", "Otros"];
 
@@ -23,46 +23,13 @@ export default function ModalNuevaCita({
     observaciones: "",
   });
 
-  const [busqueda, setBusqueda] = useState("");
-  const [resultadosNotarios, setResultadosNotarios] = useState([]);
   const [notarioSeleccionado, setNotarioSeleccionado] = useState(null);
 
   const handleChange = (campo, valor) => {
     setForm((f) => ({ ...f, [campo]: valor }));
   };
 
-  // 🔎 Autocompletado de notarios desde CTN
-  useEffect(() => {
-    const cargarNotarios = async () => {
-      const q = busqueda.trim();
-
-      // Menos de 2 caracteres → no buscamos nada
-      if (q.length < 2) {
-        setResultadosNotarios([]);
-        return;
-      }
-
-      try {
-        // ✔ ruta correcta: /ctn/notarias (el /api ya lo pone axios baseURL)
-        const res = await axios.get("/ctn/notarias", {
-          params: {
-            q,
-            page_size: 50,
-          },
-        });
-
-        const items = Array.isArray(res.data?.items) ? res.data.items : [];
-        setResultadosNotarios(items);
-      } catch (e) {
-        console.error("Error cargando notarios:", e);
-        setResultadosNotarios([]);
-      }
-    };
-
-    cargarNotarios();
-  }, [busqueda]);
-
-  // Si estamos editando, rellenar el formulario
+  // Rellenar datos si estamos editando
   useEffect(() => {
     if (modo === "editar" && cita) {
       setForm({
@@ -77,27 +44,9 @@ export default function ModalNuevaCita({
 
       if (cita.notario) {
         setNotarioSeleccionado(cita.notario);
-        setBusqueda(cita.notario.nombre || "");
       }
     }
   }, [modo, cita]);
-
-  // En realidad el backend ya viene filtrado por q, pero blindamos por si acaso
-  const notariosFiltrados = Array.isArray(resultadosNotarios)
-    ? resultadosNotarios.filter((n) =>
-        (n.nombre || "").toLowerCase().includes(busqueda.toLowerCase())
-      )
-    : [];
-
-  const seleccionarNotario = (n) => {
-    setNotarioSeleccionado(n);
-    setBusqueda(n.nombre || "");
-
-    handleChange("notario_id", n.id);
-    handleChange("tipo_firma", n.vc || "");
-    handleChange("apoderado_id", n.apoderado_id || null);
-    handleChange("observaciones", n.observacion || "");
-  };
 
   const guardar = async () => {
     setLoading(true);
@@ -166,56 +115,42 @@ export default function ModalNuevaCita({
             </select>
           </div>
 
-         {/* Buscador de notarios */}
-<div className="col-span-2">
-  <label className="block mb-1 text-gray-700">Buscar notario</label>
-  <input
-    className="w-full border rounded px-2 py-1"
-    placeholder="Escribe el nombre del notario…"
-    value={busqueda}
-    onChange={(e) => setBusqueda(e.target.value)}
-  />
+          {/* Autocomplete Notario */}
+          <div className="col-span-2">
+            <label className="block mb-1 text-gray-700">Buscar notario</label>
 
-  {busqueda.trim().length >= 2 && notariosFiltrados.length > 0 && (
-    <div className="border rounded bg-white shadow mt-1 max-h-40 overflow-y-auto">
-      {notariosFiltrados.map((n) => (
-        <div
-          key={n.id}
-          className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
-          onClick={() => seleccionarNotario(n)}
-        >
-          <strong>{n.nombre} {n.apellidos}</strong>
-        </div>
-      ))}
-    </div>
-  )}
-</div>
+            <AutocompleteNotario
+              value={notarioSeleccionado}
+              onSelect={(n) => {
+                setNotarioSeleccionado(n);
+                handleChange("notario_id", n.id);
+                handleChange("tipo_firma", n.vc || "");
+                handleChange("apoderado_id", n.apoderado_id || null);
+                handleChange("observaciones", n.observacion || "");
+              }}
+            />
+          </div>
 
           {/* Datos del notario */}
           {notarioSeleccionado && (
             <div className="col-span-2 border rounded p-3 bg-gray-50">
               <h4 className="font-semibold text-sm mb-2">
-                {notarioSeleccionado.nombre}
+                {notarioSeleccionado.nombre} {notarioSeleccionado.apellidos}
               </h4>
 
               {notarioSeleccionado.direccion && (
-                <p className="text-xs text-gray-700">
-                  Dirección: {notarioSeleccionado.direccion}
-                </p>
-              )}
-              {notarioSeleccionado.telefono && (
-                <p className="text-xs text-gray-700">
-                  Teléfono: {notarioSeleccionado.telefono}
-                </p>
-              )}
+                <>
+                  <p className="text-xs text-gray-700">
+                    Dirección: {notarioSeleccionado.direccion}
+                  </p>
 
-              {notarioSeleccionado.direccion && (
-                <iframe
-                  className="w-full h-40 mt-2 rounded"
-                  src={`https://www.google.com/maps?q=${encodeURIComponent(
-                    notarioSeleccionado.direccion
-                  )}&output=embed`}
-                ></iframe>
+                  <iframe
+                    className="w-full h-40 mt-2 rounded"
+                    src={`https://www.google.com/maps?q=${encodeURIComponent(
+                      notarioSeleccionado.direccion
+                    )}&output=embed`}
+                  ></iframe>
+                </>
               )}
             </div>
           )}

@@ -7,9 +7,9 @@ export default function MensajesHeader({ otroId, conectados }) {
       {/* Foto */}
       <div className="relative w-12 h-12 rounded-full overflow-hidden border bg-gray-200">
         <img
-          src={`${import.meta.env.VITE_API_URL}${usuario?.foto}`}
-          className="w-full h-full object-cover"
-        />
+  src={usuario?.foto ? `${import.meta.env.VITE_API_URL}${usuario.foto}` : "/no-foto.png"}
+  className="w-full h-full object-cover"
+/>
 
         {/* Estado online */}
         {usuario && (

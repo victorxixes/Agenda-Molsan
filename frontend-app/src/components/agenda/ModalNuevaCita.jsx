@@ -19,7 +19,7 @@ export default function ModalNuevaCita({
     tipo_cita: "",
     notario_id: null,
     tipo_firma: "",
-    apoderado_id: null,
+    apoderado: "",
     observaciones: "",
   });
 
@@ -31,7 +31,7 @@ export default function ModalNuevaCita({
     setForm((f) => ({ ...f, [campo]: valor }));
   };
 
-  // Cargar notarios desde CTN (solo una vez)
+  // Cargar notarios desde CTN
   useEffect(() => {
     const cargar = async () => {
       try {
@@ -45,14 +45,25 @@ export default function ModalNuevaCita({
   }, []);
 
   // Filtrar notarios según búsqueda
-  const resultadosNotarios =
+  const resultadosFiltrados =
     busqueda.trim().length >= 2
       ? notarios.filter((n) =>
           n.nombre.toLowerCase().includes(busqueda.toLowerCase())
         )
       : [];
 
-  // Rellenar datos si estamos editando
+  // Seleccionar notario
+  const seleccionarNotario = (n) => {
+    setNotarioSeleccionado(n);
+    setBusqueda(n.nombre);
+
+    handleChange("notario_id", n.id);
+    handleChange("tipo_firma", n.vc || "");
+    handleChange("apoderado", n.apoderado || n.apoderado_s || "");
+    handleChange("observaciones", n.observacion || "");
+  };
+
+  // Rellenar si estamos editando
   useEffect(() => {
     if (modo === "editar" && cita) {
       setForm({
@@ -61,7 +72,7 @@ export default function ModalNuevaCita({
         tipo_cita: cita.tipo_cita,
         notario_id: cita.notario_id,
         tipo_firma: cita.tipo_firma || "",
-        apoderado_id: cita.apoderado_id || null,
+        apoderado: cita.apoderado || "",
         observaciones: cita.observaciones || "",
       });
 
@@ -71,16 +82,6 @@ export default function ModalNuevaCita({
       }
     }
   }, [modo, cita]);
-
-  const seleccionarNotario = (n) => {
-    setNotarioSeleccionado(n);
-    setBusqueda(n.nombre);
-
-    handleChange("notario_id", n.id);
-    handleChange("tipo_firma", n.vc || "");
-    handleChange("apoderado_id", n.apoderado_id || null);
-    handleChange("observaciones", n.observacion || "");
-  };
 
   const guardar = async () => {
     setLoading(true);
@@ -92,7 +93,7 @@ export default function ModalNuevaCita({
       tipo_cita: form.tipo_cita,
       notario_id: form.notario_id,
       tipo_firma: form.tipo_firma,
-      apoderado_id: form.apoderado_id,
+      apoderado: form.apoderado,
       observaciones: form.observaciones,
     };
 
@@ -160,9 +161,9 @@ export default function ModalNuevaCita({
               onChange={(e) => setBusqueda(e.target.value)}
             />
 
-            {resultadosNotarios.length > 0 && (
+            {resultadosFiltrados.length > 0 && (
               <div className="border rounded bg-white shadow mt-1 max-h-40 overflow-y-auto">
-                {resultadosNotarios.map((n) => (
+                {resultadosFiltrados.map((n) => (
                   <div
                     key={n.id}
                     className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
@@ -213,8 +214,8 @@ export default function ModalNuevaCita({
             <label className="block mb-1 text-gray-700">Apoderado</label>
             <input
               className="w-full border rounded px-2 py-1"
-              value={form.apoderado_id || ""}
-              onChange={(e) => handleChange("apoderado_id", e.target.value)}
+              value={form.apoderado}
+              onChange={(e) => handleChange("apoderado", e.target.value)}
             />
           </div>
 

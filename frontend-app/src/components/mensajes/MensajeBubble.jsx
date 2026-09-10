@@ -11,9 +11,9 @@ export default function MensajeBubble({ mensaje, usuarioId, avatarUrl, online })
       {!propio && (
         <div className="relative w-8 h-8 rounded-full overflow-hidden border bg-gray-200">
           <img
-            src={`${import.meta.env.VITE_API_URL}${usuario?.foto}`}
-            className="w-full h-full object-cover"
-          />
+  src={usuario?.foto ? `${import.meta.env.VITE_API_URL}${usuario.foto}` : "/no-foto.png"}
+  className="w-full h-full object-cover"
+/>
 
           {/* Estado online */}
           {online && (

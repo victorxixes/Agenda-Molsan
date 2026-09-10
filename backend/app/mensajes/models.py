@@ -19,7 +19,9 @@ class Mensaje(Base):
     # Archivo adjunto (PDF, Word, imagen…)
     archivo_url = Column(String, nullable=True)
 
+    # FIX: fecha siempre válida, incluso en mensajes antiguos
     fecha = Column(DateTime, server_default=func.now(), nullable=False)
+
     leido = Column(Boolean, default=False)
 
     remitente = relationship("Empleado", foreign_keys=[remitente_id])
@@ -27,14 +29,25 @@ class Mensaje(Base):
 
     # ---------------------------------------------------------
     # Representación estándar para WebSocket y REST
+    # FIX: evita 500 si fecha es None o viene como string
     # ---------------------------------------------------------
     def as_dict(self):
+        # Si fecha es None → evitar isoformat()
+        if not self.fecha:
+            fecha_str = None
+        else:
+            try:
+                fecha_str = self.fecha.isoformat()
+            except Exception:
+                # Si fecha viene como string desde PostgreSQL
+                fecha_str = str(self.fecha)
+
         return {
             "id": self.id,
             "remitente_id": self.remitente_id,
             "destinatario_id": self.destinatario_id,
             "contenido": self.contenido,
             "archivo_url": self.archivo_url,
-            "fecha": self.fecha.isoformat(),
+            "fecha": fecha_str,
             "leido": self.leido
         }

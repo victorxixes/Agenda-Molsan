@@ -6,7 +6,7 @@ import ModalNuevaCita from "../../components/agenda/ModalNuevaCita.jsx";
 
 import { crearCita, editarCita, eliminarCita } from "../../api/agenda";
 
-// Meses en texto
+// ⭐ MESES DEFINIDOS AQUÍ
 const MESES = [
   "Enero",
   "Febrero",

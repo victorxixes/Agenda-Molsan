@@ -39,8 +39,22 @@ export default function ModalNuevaCita({
   // Buscar notarios (corregido)
 useEffect(() => {
   const cargarNotarios = async () => {
-    const res = await axios.get("/agenda/notarios"); // ✔ ruta correcta
+    const res = await axios.get("/api/ctn/notarias"); // ✔ ruta correcta en Render
     const lista = res.data || [];
+
+    if (busqueda.trim().length >= 2) {
+      const filtrados = lista.filter((n) =>
+        n.nombre.toLowerCase().includes(busqueda.toLowerCase())
+      );
+      setResultadosNotarios(filtrados);
+    } else {
+      setResultadosNotarios([]);
+    }
+  };
+
+  cargarNotarios();
+}, [busqueda]);
+
 
     // ✔ filtro en frontend
     if (busqueda.trim().length >= 2) {

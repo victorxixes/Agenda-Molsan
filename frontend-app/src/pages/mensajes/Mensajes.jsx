@@ -70,7 +70,7 @@ export default function Mensajes({ usuarioId }) {
       {/* Lista de empleados conectados */}
       <div className="border p-4">
         <h2 className="font-bold mb-2">Conectados</h2>
-        {conectados.map((c) => (
+       {conectados.map((c) => (
   <div
     key={c.id}
     className="cursor-pointer hover:bg-gray-100 p-2 flex items-center gap-3"

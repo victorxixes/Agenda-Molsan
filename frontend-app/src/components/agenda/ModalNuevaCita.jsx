@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import AutocompleteNotario from "../components/agenda/AutocompleteNotario";
+import AutocompleteNotario from "./AutocompleteNotario";
 
 const TIPOS_CITA = ["Firma notarial", "Reunión", "Visita", "Otros"];
 

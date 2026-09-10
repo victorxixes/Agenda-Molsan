@@ -30,30 +30,30 @@ def root():
     return {"status": "ERP Molsan 2026 funcionando correctamente"}
 
 # ---------------------------------------------------------
-# CORS
+# CORS — FIX DEFINITIVO
 # ---------------------------------------------------------
 origins = [
     "https://agenda-intranet-f.onrender.com",
     "https://agenda-intranet-frontend.onrender.com",
-    "https://agenda-intranet-b.onrender.com",
     "https://agenda-intranet.onrender.com",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
 ]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Necesario para WebSockets en Render
-    allow_credentials=True,
+    allow_origins=origins,          # ❌ NO "*" — FIX
+    allow_credentials=True,         # axios.withCredentials = true
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 # ---------------------------------------------------------
-# STATIC FILES (incluye mensajes)
+# STATIC FILES
 # ---------------------------------------------------------
 STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
-# Carpeta temporal de mensajes (Render)
 TMP_MENSAJES = "/tmp/mensajes"
 os.makedirs(TMP_MENSAJES, exist_ok=True)
 app.mount("/static/mensajes", StaticFiles(directory=TMP_MENSAJES), name="mensajes")
@@ -107,14 +107,14 @@ from backend.app.ctn.router import router as ctn_router
 # 📊 DASHBOARD
 from backend.app.dashboard.router import router as dashboard_router
 
-# 📨MENSAJES
+# 📨 MENSAJES REST
 from backend.app.mensajes.router import router as mensajes_router
 
 # 🧰 UTILIDADES
 from backend.app.Utilidades.router import router as utilidades_router
 
 # ---------------------------------------------------------
-# INCLUIR ROUTERS (ORDENADOS)
+# INCLUIR ROUTERS
 # ---------------------------------------------------------
 
 # 🔐 Seguridad

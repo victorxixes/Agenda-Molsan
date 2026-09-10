@@ -42,8 +42,14 @@ origins = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,          # ❌ NO "*" — FIX
-    allow_credentials=True,         # axios.withCredentials = true
+    allow_origins=[
+        "https://agenda-intranet-f.onrender.com",
+        "https://agenda-intranet-frontend.onrender.com",
+        "https://agenda-intranet.onrender.com",
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )

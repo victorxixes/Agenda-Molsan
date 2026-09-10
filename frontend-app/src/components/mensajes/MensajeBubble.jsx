@@ -7,16 +7,22 @@ export default function MensajeBubble({ mensaje, usuarioId, avatarUrl, online })
   return (
     <div className={`flex items-start gap-2 my-2 ${propio ? "justify-end" : ""}`}>
       
-      {/* Avatar */}
+      {/* Avatar del otro usuario */}
       {!propio && (
-        <div className="w-8 h-8 rounded-full bg-gray-300 overflow-hidden border">
+        <div className="relative w-8 h-8 rounded-full overflow-hidden border bg-gray-200">
           <img
-            src={avatarUrl || "/avatar-default.png"}
+            src={avatarUrl || "/no-foto.png"}
             className="w-full h-full object-cover"
           />
+
+          {/* Estado online */}
+          {online && (
+            <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border border-white rounded-full"></span>
+          )}
         </div>
       )}
 
+      {/* Burbuja */}
       <div
         className={`p-2 rounded max-w-[70%] ${
           propio ? "bg-blue-100 text-right" : "bg-gray-100"
@@ -25,7 +31,7 @@ export default function MensajeBubble({ mensaje, usuarioId, avatarUrl, online })
         {/* Texto */}
         {mensaje.contenido && <p>{mensaje.contenido}</p>}
 
-        {/* Preview de imagen */}
+        {/* Imagen */}
         {esImagen && (
           <img
             src={mensaje.archivo_url}
@@ -33,7 +39,7 @@ export default function MensajeBubble({ mensaje, usuarioId, avatarUrl, online })
           />
         )}
 
-        {/* Preview PDF */}
+        {/* PDF */}
         {esPDF && (
           <a
             href={mensaje.archivo_url}
@@ -63,9 +69,9 @@ export default function MensajeBubble({ mensaje, usuarioId, avatarUrl, online })
 
       {/* Avatar propio */}
       {propio && (
-        <div className="w-8 h-8 rounded-full bg-blue-300 overflow-hidden border">
+        <div className="w-8 h-8 rounded-full overflow-hidden border bg-blue-200">
           <img
-            src={avatarUrl || "/avatar-default.png"}
+            src={avatarUrl || "/no-foto.png"}
             className="w-full h-full object-cover"
           />
         </div>

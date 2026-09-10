@@ -11,7 +11,7 @@ export const useMensajesWS = (empleadoId, otroId) => {
 
   useEffect(() => {
     if (!empleadoId) return;
-    if (wsRef.current) return; // evita doble conexión
+    if (wsRef.current) return;
 
     const ws = new WebSocket(
       `${import.meta.env.VITE_WS_URL}/ws/mensajes/${empleadoId}`
@@ -31,32 +31,19 @@ export const useMensajesWS = (empleadoId, otroId) => {
 
       if (!data || !data.tipo) return;
 
-      // ---------------------------------------------------------
-      // USUARIO ONLINE (envía objeto completo)
-      // ---------------------------------------------------------
       if (data.tipo === "online") {
-        // data = { id, nombre, apellidos, foto }
         setConectadosWS(data);
       }
 
-      // ---------------------------------------------------------
-      // USUARIO OFFLINE
-      // ---------------------------------------------------------
       if (data.tipo === "offline") {
-        setConectadosWS({ id: data.id }); // elimina del store
+        setConectadosWS({ id: data.id });
       }
 
-      // ---------------------------------------------------------
-      // TYPING
-      // ---------------------------------------------------------
       if (data.tipo === "typing") {
         setTyping(data.from);
         setTimeout(() => clearTyping(data.from), 1500);
       }
 
-      // ---------------------------------------------------------
-      // NUEVO MENSAJE / ARCHIVO
-      // ---------------------------------------------------------
       if (
         data.tipo === "mensaje" ||
         data.tipo === "archivo" ||

@@ -79,8 +79,7 @@ export default function Mensajes({ usuarioId }) {
             onClick={() => setOtroId(c.id)}
           >
             <img
-              src={c.foto || "/no-foto.png"}
-              alt="foto"
+              src={usuario?.foto ? `${import.meta.env.VITE_API_URL}${usuario.foto}` : "/no-foto.png"}
               className="w-10 h-10 rounded-full object-cover border"
             />
 

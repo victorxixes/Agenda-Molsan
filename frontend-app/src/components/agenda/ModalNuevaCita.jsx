@@ -24,37 +24,35 @@ export default function ModalNuevaCita({
   });
 
   const [busqueda, setBusqueda] = useState("");
-  const [resultadosNotarios, setResultadosNotarios] = useState([]);
+  const [notarios, setNotarios] = useState([]);
   const [notarioSeleccionado, setNotarioSeleccionado] = useState(null);
 
   const handleChange = (campo, valor) => {
     setForm((f) => ({ ...f, [campo]: valor }));
   };
 
-  // 🔍 Buscar notarios desde CTN
+  // Cargar notarios desde CTN (solo una vez)
   useEffect(() => {
-    const cargarNotarios = async () => {
+    const cargar = async () => {
       try {
-        const res = await axios.get("/api/ctn/notarias"); // ✔ ruta correcta Render
-        const lista = res.data || [];
-
-        if (busqueda.trim().length >= 2) {
-          const filtrados = lista.filter((n) =>
-            n.nombre.toLowerCase().includes(busqueda.toLowerCase())
-          );
-          setResultadosNotarios(filtrados);
-        } else {
-          setResultadosNotarios([]);
-        }
+        const res = await axios.get("/ctn/notarias"); // ✔ ruta correcta
+        setNotarios(res.data || []);
       } catch (e) {
         console.error("Error cargando notarios:", e);
       }
     };
+    cargar();
+  }, []);
 
-    cargarNotarios();
-  }, [busqueda]);
+  // Filtrar notarios según búsqueda
+  const resultadosNotarios =
+    busqueda.trim().length >= 2
+      ? notarios.filter((n) =>
+          n.nombre.toLowerCase().includes(busqueda.toLowerCase())
+        )
+      : [];
 
-  // ✏ Rellenar formulario si estamos editando
+  // Rellenar datos si estamos editando
   useEffect(() => {
     if (modo === "editar" && cita) {
       setForm({
@@ -74,12 +72,6 @@ export default function ModalNuevaCita({
     }
   }, [modo, cita]);
 
-  // 🔎 Filtrar notarios en frontend
-  const notariosFiltrados = resultadosNotarios.filter((n) =>
-    n.nombre.toLowerCase().includes(busqueda.toLowerCase())
-  );
-
-  // ✔ Autorrellenar campos desde CTN
   const seleccionarNotario = (n) => {
     setNotarioSeleccionado(n);
     setBusqueda(n.nombre);
@@ -168,9 +160,9 @@ export default function ModalNuevaCita({
               onChange={(e) => setBusqueda(e.target.value)}
             />
 
-            {busqueda.length >= 2 && notariosFiltrados.length > 0 && (
+            {resultadosNotarios.length > 0 && (
               <div className="border rounded bg-white shadow mt-1 max-h-40 overflow-y-auto">
-                {notariosFiltrados.map((n) => (
+                {resultadosNotarios.map((n) => (
                   <div
                     key={n.id}
                     className="px-3 py-2 hover:bg-gray-100 cursor-pointer"

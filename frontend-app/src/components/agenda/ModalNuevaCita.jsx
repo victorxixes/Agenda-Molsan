@@ -1,6 +1,13 @@
 import { useEffect, useState } from "react";
 import axios from "../../api/axios";
 
+const TIPOS_CITA = [
+  "Firma notarial",
+  "Reunión",
+  "Visita",
+  "Otros",
+];
+
 export default function ModalNuevaCita({
   fecha,
   modo,
@@ -24,19 +31,18 @@ export default function ModalNuevaCita({
   const [busqueda, setBusqueda] = useState("");
   const [resultadosNotarios, setResultadosNotarios] = useState([]);
   const [notarioSeleccionado, setNotarioSeleccionado] = useState(null);
-  const [tiposCita, setTiposCita] = useState([]);
 
   const handleChange = (campo, valor) => {
     setForm((f) => ({ ...f, [campo]: valor }));
   };
 
-  // Cargar tipos de cita
+  // Cargar notarios
   useEffect(() => {
-    const cargarTipos = async () => {
-      const res = await axios.get("/api/maestros/tipo_cita");
-      setTiposCita(res.data || []);
+    const cargarNotarios = async () => {
+      const res = await axios.get("/agenda/notarios");
+      setResultadosNotarios(res.data || []);
     };
-    cargarTipos();
+    cargarNotarios();
   }, []);
 
   // Si estamos editando, rellenar el formulario
@@ -59,24 +65,13 @@ export default function ModalNuevaCita({
     }
   }, [modo, cita]);
 
-  // Buscar notarios
-  useEffect(() => {
-    if (busqueda.trim().length < 2) {
-      setResultadosNotarios([]);
-      return;
-    }
-
-    const buscar = async () => {
-      const res = await axios.get(`/api/ctn/notarios?search=${busqueda}`);
-      setResultadosNotarios(res.data || []);
-    };
-
-    buscar();
-  }, [busqueda]);
+  // Filtrar notarios en frontend
+  const notariosFiltrados = resultadosNotarios.filter((n) =>
+    n.nombre.toLowerCase().includes(busqueda.toLowerCase())
+  );
 
   const seleccionarNotario = (n) => {
     setNotarioSeleccionado(n);
-    setResultadosNotarios([]);
     setBusqueda(n.nombre);
 
     handleChange("notario_id", n.id);
@@ -146,9 +141,9 @@ export default function ModalNuevaCita({
               onChange={(e) => handleChange("tipo_cita", e.target.value)}
             >
               <option value="">Seleccionar tipo</option>
-              {tiposCita.map((t) => (
-                <option key={t.id} value={t.nombre}>
-                  {t.nombre}
+              {TIPOS_CITA.map((t) => (
+                <option key={t} value={t}>
+                  {t}
                 </option>
               ))}
             </select>
@@ -163,9 +158,9 @@ export default function ModalNuevaCita({
               onChange={(e) => setBusqueda(e.target.value)}
             />
 
-            {resultadosNotarios.length > 0 && (
+            {busqueda.length >= 2 && notariosFiltrados.length > 0 && (
               <div className="border rounded bg-white shadow mt-1 max-h-40 overflow-y-auto">
-                {resultadosNotarios.map((n) => (
+                {notariosFiltrados.map((n) => (
                   <div
                     key={n.id}
                     className="px-3 py-2 hover:bg-gray-100 cursor-pointer"

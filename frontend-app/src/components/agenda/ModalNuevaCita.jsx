@@ -19,71 +19,95 @@ export default function ModalNuevaCita({
     tipo_cita: "",
     notario_id: null,
     tipo_firma: "",
-    apoderado: "",
+    apoderado_id: null,
     observaciones: "",
   });
 
   const [busqueda, setBusqueda] = useState("");
-  const [notarios, setNotarios] = useState([]);
+  const [resultadosNotarios, setResultadosNotarios] = useState([]);
   const [notarioSeleccionado, setNotarioSeleccionado] = useState(null);
 
   const handleChange = (campo, valor) => {
     setForm((f) => ({ ...f, [campo]: valor }));
   };
 
-  // Cargar notarios desde CTN
+  // Autocompletado de notarios desde CTN
   useEffect(() => {
-    const cargar = async () => {
+    const cargarNotarios = async () => {
       try {
-        const res = await axios.get("/ctn/notarias"); // ✔ ruta correcta
-        setNotarios(res.data || []);
+        // OJO: axios ya tiene baseURL /api → aquí solo "/ctn/notarias"
+        const res = await axios.get("/ctn/notarias");
+        const lista = Array.isArray(res.data) ? res.data : [];
+
+        if (busqueda.trim().length >= 2) {
+          const filtrados = lista.filter((n) =>
+            (n.nombre || "")
+              .toString()
+              .toLowerCase()
+              .includes(busqueda.toLowerCase())
+          );
+          setResultadosNotarios(filtrados);
+        } else {
+          setResultadosNotarios([]);
+        }
       } catch (e) {
         console.error("Error cargando notarios:", e);
+        setResultadosNotarios([]);
       }
     };
-    cargar();
-  }, []);
 
-  // Filtrar notarios según búsqueda
-  const resultadosFiltrados =
-    busqueda.trim().length >= 2
-      ? notarios.filter((n) =>
-          n.nombre.toLowerCase().includes(busqueda.toLowerCase())
-        )
-      : [];
+    // Solo buscamos si hay algo tecleado
+    if (busqueda.trim().length >= 1) {
+      cargarNotarios();
+    } else {
+      setResultadosNotarios([]);
+    }
+  }, [busqueda]);
 
-  // Seleccionar notario
-  const seleccionarNotario = (n) => {
-    setNotarioSeleccionado(n);
-    setBusqueda(n.nombre);
-
-    handleChange("notario_id", n.id);
-    handleChange("tipo_firma", n.vc || "");
-    handleChange("apoderado", n.apoderado || n.apoderado_s || "");
-    handleChange("observaciones", n.observacion || "");
-  };
-
-  // Rellenar si estamos editando
+  // Si estamos editando, rellenar el formulario
   useEffect(() => {
     if (modo === "editar" && cita) {
       setForm({
-        hora_inicio: cita.hora_inicio,
-        hora_fin: cita.hora_fin,
-        tipo_cita: cita.tipo_cita,
-        notario_id: cita.notario_id,
+        hora_inicio: cita.hora_inicio || "",
+        hora_fin: cita.hora_fin || "",
+        tipo_cita: cita.tipo_cita || "",
+        notario_id: cita.notario_id ?? null,
         tipo_firma: cita.tipo_firma || "",
-        apoderado: cita.apoderado || "",
+        apoderado_id: cita.apoderado_id ?? null,
         observaciones: cita.observaciones || "",
       });
 
       if (cita.notario) {
         setNotarioSeleccionado(cita.notario);
-        setBusqueda(cita.notario.nombre);
+        setBusqueda(cita.notario.nombre || "");
       }
     }
   }, [modo, cita]);
 
+  // Filtrar notarios en frontend (por si la API devuelve más cosas)
+  const notariosFiltrados = Array.isArray(resultadosNotarios)
+    ? resultadosNotarios.filter((n) =>
+        (n.nombre || "")
+          .toString()
+          .toLowerCase()
+          .includes(busqueda.toLowerCase())
+      )
+    : [];
+
+  const seleccionarNotario = (n) => {
+    if (!n) return;
+
+    setNotarioSeleccionado(n);
+    setBusqueda(n.nombre || "");
+
+    handleChange("notario_id", n.id ?? null);
+    handleChange("tipo_firma", n.vc || "");
+    handleChange("apoderado_id", n.apoderado_id ?? null);
+    handleChange("observaciones", n.observacion || "");
+  };
+
   const guardar = async () => {
+    if (!fecha) return;
     setLoading(true);
 
     const payload = {
@@ -93,12 +117,15 @@ export default function ModalNuevaCita({
       tipo_cita: form.tipo_cita,
       notario_id: form.notario_id,
       tipo_firma: form.tipo_firma,
-      apoderado: form.apoderado,
+      apoderado_id: form.apoderado_id,
       observaciones: form.observaciones,
     };
 
-    await onGuardar(payload);
-    setLoading(false);
+    try {
+      await onGuardar(payload);
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (!fecha) return null;
@@ -106,13 +133,11 @@ export default function ModalNuevaCita({
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
       <div className="bg-white rounded-xl shadow-xl w-full max-w-xl p-6">
-
         <h2 className="text-lg font-semibold mb-4 text-gray-900">
           {modo === "crear" ? "Nueva cita" : "Editar cita"} — {fecha}
         </h2>
 
         <div className="grid grid-cols-2 gap-4 text-sm">
-
           {/* Hora inicio */}
           <div>
             <label className="block mb-1 text-gray-700">Hora inicio</label>
@@ -159,11 +184,12 @@ export default function ModalNuevaCita({
               className="w-full border rounded px-2 py-1"
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
+              placeholder="Escribe el nombre del notario…"
             />
 
-            {resultadosFiltrados.length > 0 && (
+            {busqueda.length >= 2 && notariosFiltrados.length > 0 && (
               <div className="border rounded bg-white shadow mt-1 max-h-40 overflow-y-auto">
-                {resultadosFiltrados.map((n) => (
+                {notariosFiltrados.map((n) => (
                   <div
                     key={n.id}
                     className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
@@ -193,7 +219,7 @@ export default function ModalNuevaCita({
               <iframe
                 className="w-full h-40 mt-2 rounded"
                 src={`https://www.google.com/maps?q=${encodeURIComponent(
-                  notarioSeleccionado.direccion
+                  notarioSeleccionado.direccion || ""
                 )}&output=embed`}
               ></iframe>
             </div>
@@ -214,8 +240,8 @@ export default function ModalNuevaCita({
             <label className="block mb-1 text-gray-700">Apoderado</label>
             <input
               className="w-full border rounded px-2 py-1"
-              value={form.apoderado}
-              onChange={(e) => handleChange("apoderado", e.target.value)}
+              value={form.apoderado_id || ""}
+              onChange={(e) => handleChange("apoderado_id", e.target.value)}
             />
           </div>
 

@@ -5,7 +5,7 @@ export const useMensajesWS = (empleadoId, otroId) => {
   const wsRef = useRef(null);
 
   const cargarConversacion = useMensajesStore((s) => s.cargarConversacion);
-  const setConectados = useMensajesStore((s) => s.setConectados);
+  const setConectadosWS = useMensajesStore((s) => s.setConectadosWS);
   const setTyping = useMensajesStore((s) => s.setTyping);
   const clearTyping = useMensajesStore((s) => s.clearTyping);
 
@@ -31,15 +31,32 @@ export const useMensajesWS = (empleadoId, otroId) => {
 
       if (!data || !data.tipo) return;
 
-      if (data.tipo === "online" || data.tipo === "offline") {
-        setConectados(data.user_id);
+      // ---------------------------------------------------------
+      // USUARIO ONLINE (envía objeto completo)
+      // ---------------------------------------------------------
+      if (data.tipo === "online") {
+        // data = { id, nombre, apellidos, foto }
+        setConectadosWS(data);
       }
 
+      // ---------------------------------------------------------
+      // USUARIO OFFLINE
+      // ---------------------------------------------------------
+      if (data.tipo === "offline") {
+        setConectadosWS({ id: data.id }); // elimina del store
+      }
+
+      // ---------------------------------------------------------
+      // TYPING
+      // ---------------------------------------------------------
       if (data.tipo === "typing") {
         setTyping(data.from);
         setTimeout(() => clearTyping(data.from), 1500);
       }
 
+      // ---------------------------------------------------------
+      // NUEVO MENSAJE / ARCHIVO
+      // ---------------------------------------------------------
       if (
         data.tipo === "mensaje" ||
         data.tipo === "archivo" ||

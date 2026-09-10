@@ -1,22 +1,23 @@
 import axios from "./axios";
 
 export const obtenerConectados = () =>
-  axios.get("/api/mensajes/conectados");
+  axios.get("/mensajes/conectados");
 
 export const enviarMensajeREST = (data) =>
-  axios.post("/api/mensajes", data);
+  axios.post("/mensajes", data);
 
 export const subirArchivo = (file) => {
   const formData = new FormData();
   formData.append("file", file);
-  return axios.post("/api/mensajes/upload", formData);
+  return axios.post("/mensajes/upload", formData);
 };
 
 export const obtenerConversacion = (usuarioId, otroId) =>
-  axios.get(`/api/mensajes/${usuarioId}/${otroId}`);
+  axios.get(`/mensajes/${usuarioId}/${otroId}`);
 
 export const marcarLeido = (mensajeId) =>
-  axios.put(`/api/mensajes/leido/${mensajeId}`);
+  axios.put(`/mensajes/leido/${mensajeId}`);
 
 export const marcarConversacionLeida = (usuarioId, otroId) =>
-  axios.put(`/api/mensajes/leido/conversacion/${usuarioId}/${otroId}`);
+  axios.put(`/mensajes/leido/conversacion/${usuarioId}/${otroId}`);
+

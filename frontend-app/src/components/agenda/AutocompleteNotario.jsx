@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import axios from "../../api/axios";
 
 export default function AutocompleteNotario({ value, onSelect }) {
-  const [busqueda, setBusqueda] = useState(value || "");
+  const [busqueda, setBusqueda] = useState(value?.nombre || "");
   const [todos, setTodos] = useState([]);
   const [filtrados, setFiltrados] = useState([]);
   const [abierto, setAbierto] = useState(false);
@@ -15,7 +15,7 @@ export default function AutocompleteNotario({ value, onSelect }) {
     const cargar = async () => {
       try {
         const res = await axios.get("/ctn/notarias", {
-          params: { page_size: 5000 }, // traer todos
+          params: { page_size: 5000 },
         });
 
         const items = Array.isArray(res.data?.items) ? res.data.items : [];
@@ -80,4 +80,51 @@ export default function AutocompleteNotario({ value, onSelect }) {
   // Cerrar si clic fuera
   useEffect(() => {
     const cerrar = (e) => {
-      if (ref.current && !ref.current
+      if (ref.current && !ref.current.contains(e.target)) {
+        setAbierto(false);
+      }
+    };
+
+    document.addEventListener("mousedown", cerrar);
+    return () => document.removeEventListener("mousedown", cerrar);
+  }, []);
+
+  return (
+    <div className="relative" ref={ref}>
+      <input
+        className="w-full border rounded px-2 py-1"
+        placeholder="Escribe nombre o apellido…"
+        value={busqueda}
+        onChange={(e) => setBusqueda(e.target.value)}
+        onKeyDown={manejarTeclas}
+        onFocus={() => busqueda.length > 0 && setAbierto(true)}
+      />
+
+      {abierto && filtrados.length > 0 && (
+        <div className="absolute left-0 right-0 bg-white border rounded shadow max-h-48 overflow-y-auto mt-1 z-50">
+          {filtrados.map((n, i) => (
+            <div
+              key={n.id}
+              className={`px-3 py-2 cursor-pointer ${
+                i === indexActivo ? "bg-gray-200" : "hover:bg-gray-100"
+              }`}
+              onClick={() => seleccionar(n)}
+            >
+              <strong>{n.nombre} {n.apellidos}</strong>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* 🗺️ Mapa de la notaría */}
+      {value?.direccion && (
+        <iframe
+          className="w-full h-40 mt-3 rounded"
+          src={`https://www.google.com/maps?q=${encodeURIComponent(
+            value.direccion
+          )}&output=embed`}
+        ></iframe>
+      )}
+    </div>
+  );
+}

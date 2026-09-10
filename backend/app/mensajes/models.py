@@ -1,8 +1,8 @@
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 from datetime import datetime
-from backend.app.database import Base
 from sqlalchemy.sql import func
+from backend.app.database import Base
 
 class Mensaje(Base):
     __tablename__ = "mensajes"

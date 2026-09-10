@@ -4,23 +4,6 @@ from fastapi.staticfiles import StaticFiles
 import os
 
 # ---------------------------------------------------------
-# DATABASE
-# ---------------------------------------------------------
-from backend.app.database import Base, engine
-
-# IMPORTAR MODELOS ANTES DE CREATE_ALL
-from backend.app.seguridad.roles.models import Rol
-from backend.app.empleados.models import Empleado
-from backend.app.seguridad.auditoria.models import Auditoria
-from backend.app.seguridad.logs.models import Log
-from backend.app.agenda.models import Cita
-from backend.app.intranet.documentos.models import Documento
-from backend.app.intranet.noticias.models import Noticia
-from backend.app.ctn.models import Notaria
-
-Base.metadata.create_all(bind=engine)
-
-# ---------------------------------------------------------
 # APP
 # ---------------------------------------------------------
 app = FastAPI(title="Agenda Intranet Backend")
@@ -30,26 +13,14 @@ def root():
     return {"status": "ERP Molsan 2026 funcionando correctamente"}
 
 # ---------------------------------------------------------
-# CORS — FIX DEFINITIVO
+# CORS — CONFIGURACIÓN FINAL PARA RENDER
 # ---------------------------------------------------------
-origins = [
-    "https://agenda-intranet-f.onrender.com",
-    "https://agenda-intranet-frontend.onrender.com",
-    "https://agenda-intranet.onrender.com",
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-]
+FRONTEND = "https://agenda-intranet-f.onrender.com"
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://agenda-intranet-f.onrender.com",
-        "https://agenda-intranet-frontend.onrender.com",
-        "https://agenda-intranet.onrender.com",
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-    ],
-    allow_credentials=True,
+    allow_origins=[FRONTEND],      # SOLO el front, nunca "*"
+    allow_credentials=True,        # axios.withCredentials = true
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -67,8 +38,6 @@ app.mount("/static/mensajes", StaticFiles(directory=TMP_MENSAJES), name="mensaje
 # ---------------------------------------------------------
 # IMPORTAR ROUTERS
 # ---------------------------------------------------------
-
-# 🔐 AUTENTICACIÓN Y SEGURIDAD
 from backend.app.auth.router import router as auth_router
 from backend.app.seguridad.roles.roles_router import router as roles_router
 from backend.app.seguridad.roles.asignar_rol_router import router as asignar_rol_router
@@ -81,25 +50,20 @@ from backend.app.seguridad.auditoria.router import router as seguridad_auditoria
 from backend.app.seguridad.logs.router import router as seguridad_logs_router
 from backend.app.seguridad.admin_router import router as admin_router
 
-# 👥 EMPLEADOS / MAESTROS
 from backend.app.empleados.router import router as empleados_router
 from backend.app.maestros.router import router as maestros_router
 
-# 🗂️ INTRANET
 from backend.app.intranet.documentos.router import router as documentos_router
 from backend.app.intranet.noticias.router import router as noticias_router
 from backend.app.websockets.intranet_ws import router as intranet_ws_router
 
-# 📅 AGENDA
 from backend.app.agenda.router import router as agenda_router
 
-# 📨 WEBSOCKETS
 from backend.app.websockets.empleados_ws import router as empleados_ws_router
 from backend.app.websockets.agenda_ws import router as agenda_ws_router
 from backend.app.mensajes.router_ws import router as mensajes_ws_router
 from backend.app.realtime.router import router as realtime_router
 
-# 🛠️ HERRAMIENTAS SWAGGER
 from backend.app.herramientasswager.crear_tablas import router as herramientas_router
 from backend.app.herramientasswager.reset_intranet import router as reset_intranet_router
 from backend.app.herramientasswager.debug_router import router as debug_router
@@ -107,23 +71,14 @@ from backend.app.herramientasswager.borrar_roles import router as borrar_roles_r
 from backend.app.herramientasswager.borrar_tablas import router as borrar_tablas_router
 from backend.app.herramientasswager.asignar_bloqueo_router import router as asignar_bloqueo_router
 
-# 🏢 CTN
 from backend.app.ctn.router import router as ctn_router
-
-# 📊 DASHBOARD
 from backend.app.dashboard.router import router as dashboard_router
-
-# 📨 MENSAJES REST
 from backend.app.mensajes.router import router as mensajes_router
-
-# 🧰 UTILIDADES
 from backend.app.Utilidades.router import router as utilidades_router
 
 # ---------------------------------------------------------
 # INCLUIR ROUTERS
 # ---------------------------------------------------------
-
-# 🔐 Seguridad
 app.include_router(auth_router, prefix="/api")
 app.include_router(roles_router, prefix="/api")
 app.include_router(asignar_rol_router, prefix="/api")
@@ -136,25 +91,20 @@ app.include_router(seguridad_auditoria_router, prefix="/api")
 app.include_router(seguridad_logs_router, prefix="/api")
 app.include_router(admin_router, prefix="/api")
 
-# 👥 Empleados / Maestros
 app.include_router(empleados_router, prefix="/api")
 app.include_router(maestros_router, prefix="/api")
 
-# 🗂️ Intranet
 app.include_router(intranet_ws_router)
 app.include_router(documentos_router, prefix="/api")
 app.include_router(noticias_router, prefix="/api")
 
-# 📅 Agenda
 app.include_router(agenda_router, prefix="/api")
 
-# 📨 WebSockets
 app.include_router(empleados_ws_router)
 app.include_router(agenda_ws_router)
 app.include_router(mensajes_ws_router)
 app.include_router(realtime_router)
 
-# 🛠️ Herramientas Swagger
 app.include_router(herramientas_router, prefix="/api")
 app.include_router(reset_intranet_router, prefix="/api")
 app.include_router(debug_router)
@@ -162,14 +112,7 @@ app.include_router(borrar_roles_router)
 app.include_router(borrar_tablas_router)
 app.include_router(asignar_bloqueo_router, prefix="/api")
 
-# 🏢 CTN
 app.include_router(ctn_router, prefix="/api")
-
-# 📊 Dashboard
 app.include_router(dashboard_router, prefix="/api")
-
-# 📨 Mensajes REST
 app.include_router(mensajes_router, prefix="/api")
-
-# 🧰 Utilidades
 app.include_router(utilidades_router, prefix="/api")

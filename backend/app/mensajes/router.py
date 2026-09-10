@@ -69,7 +69,6 @@ def subir_archivo(file: UploadFile = File(...)):
 
     nombre = f"{uuid4()}.{ext}"
 
-    # Guardar en /tmp (Render permite esto)
     carpeta = "/tmp/mensajes"
     os.makedirs(carpeta, exist_ok=True)
 
@@ -78,7 +77,6 @@ def subir_archivo(file: UploadFile = File(...)):
     with open(ruta, "wb") as f:
         f.write(file.file.read())
 
-    # URL accesible
     archivo_url = f"/static/mensajes/{nombre}"
 
     return {

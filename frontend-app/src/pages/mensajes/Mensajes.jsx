@@ -22,7 +22,7 @@ export default function Mensajes({ usuarioId }) {
   // Cargar conversación al seleccionar usuario
   useEffect(() => {
     if (otroId) cargarConversacion(usuarioId, otroId);
-  }, [otroId]);
+  }, [otroId, usuarioId, cargarConversacion]);
 
   // Scroll inteligente
   useEffect(() => {
@@ -38,6 +38,8 @@ export default function Mensajes({ usuarioId }) {
 
   // Enviar mensaje por WebSocket
   const enviarMensajeWS = () => {
+    if (!otroId || !texto.trim()) return;
+
     wsRef.current?.send(
       JSON.stringify({
         tipo: "mensaje",
@@ -49,6 +51,8 @@ export default function Mensajes({ usuarioId }) {
 
   // Enviar typing por WebSocket
   const enviarTypingWS = () => {
+    if (!otroId) return;
+
     wsRef.current?.send(
       JSON.stringify({
         tipo: "typing",
@@ -57,9 +61,14 @@ export default function Mensajes({ usuarioId }) {
     );
   };
 
-  // Agrupar mensajes por fecha
+  // Agrupar mensajes por fecha (FIX: fecha como Date, no split directo)
   const mensajesAgrupados = mensajes.reduce((acc, m) => {
-    const fecha = m.fecha.split(" ")[0];
+    const fechaObj = new Date(m.fecha);
+    const fecha =
+      isNaN(fechaObj.getTime())
+        ? "Sin fecha"
+        : fechaObj.toISOString().split("T")[0]; // YYYY-MM-DD
+
     if (!acc[fecha]) acc[fecha] = [];
     acc[fecha].push(m);
     return acc;
@@ -67,15 +76,20 @@ export default function Mensajes({ usuarioId }) {
 
   return (
     <div className="p-6 grid grid-cols-3 gap-4">
-      
-      {/* Lista de empleados conectados */}
+      {/* Lista de empleados conectados (sidebar fijo) */}
       <div className="border p-4">
         <h2 className="font-bold mb-2">Conectados</h2>
+
+        {conectados.length === 0 && (
+          <p className="text-sm text-gray-500">No hay empleados conectados.</p>
+        )}
 
         {conectados.map((c) => (
           <div
             key={c.id}
-            className="cursor-pointer hover:bg-gray-100 p-2 flex items-center gap-3"
+            className={`cursor-pointer hover:bg-gray-100 p-2 flex items-center gap-3 ${
+              otroId === c.id ? "bg-blue-50" : ""
+            }`}
             onClick={() => setOtroId(c.id)}
           >
             <img
@@ -87,7 +101,7 @@ export default function Mensajes({ usuarioId }) {
               className="w-10 h-10 rounded-full object-cover border"
             />
 
-            <div className="text-sm">
+            <div className="text-sm flex-1">
               <div className="font-semibold text-gray-900">
                 {c.nombre} {c.apellidos}
               </div>
@@ -103,10 +117,9 @@ export default function Mensajes({ usuarioId }) {
             ></span>
           </div>
         ))}
-
       </div>
 
-      {/* Chat */}
+      {/* Chat (columna derecha, no desaparece el sidebar) */}
       <div className="col-span-2 border p-4">
         {otroId ? (
           <>
@@ -115,7 +128,7 @@ export default function Mensajes({ usuarioId }) {
 
             <div
               ref={chatRef}
-              className="h-[400px] overflow-y-auto border p-2 mb-4"
+              className="h-[400px] overflow-y-auto border p-2 mb-4 bg-white"
             >
               {Object.keys(mensajesAgrupados).map((fecha) => (
                 <div key={fecha}>
@@ -128,19 +141,21 @@ export default function Mensajes({ usuarioId }) {
                       (x) => x.id === m.remitente_id
                     );
 
+                    const avatarUrl = remitente?.foto
+                      ? `${import.meta.env.VITE_API_URL}${remitente.foto}`
+                      : "/no-foto.png";
+
+                    const online = conectados.some(
+                      (x) => x.id === m.remitente_id
+                    );
+
                     return (
                       <MensajeBubble
                         key={m.id}
                         mensaje={m}
                         usuarioId={usuarioId}
-                        avatarUrl={
-                          remitente?.foto
-                            ? `${import.meta.env.VITE_API_URL}${remitente.foto}`
-                            : "/no-foto.png"
-                        }
-                        online={conectados.some(
-                          (x) => x.id === m.remitente_id
-                        )}
+                        avatarUrl={avatarUrl}
+                        online={online}
                       />
                     );
                   })}
@@ -149,12 +164,13 @@ export default function Mensajes({ usuarioId }) {
 
               {/* Typing animado */}
               {typing[otroId] && (
-                <div className="flex items-center gap-2 text-gray-500 italic text-sm">
+                <div className="flex items-center gap-2 text-gray-500 italic text-sm mt-2">
                   <div className="flex gap-1">
                     <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></span>
                     <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-150"></span>
                     <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-300"></span>
                   </div>
+                  <span>escribiendo…</span>
                 </div>
               )}
             </div>
@@ -163,7 +179,7 @@ export default function Mensajes({ usuarioId }) {
             <form
               onSubmit={async (e) => {
                 e.preventDefault();
-                if (!texto.trim()) return;
+                if (!texto.trim() || !otroId) return;
 
                 enviarMensajeWS();
 
@@ -187,13 +203,19 @@ export default function Mensajes({ usuarioId }) {
                 placeholder="Escribe un mensaje…"
               />
 
-              <button className="bg-blue-500 text-white px-4 py-2 rounded">
+              <button
+                type="submit"
+                className="bg-blue-500 text-white px-4 py-2 rounded"
+              >
                 Enviar
               </button>
             </form>
           </>
         ) : (
-          <p>Selecciona un usuario para chatear.</p>
+          <p className="text-gray-600">
+            Selecciona un usuario conectado en la columna izquierda para
+            empezar a chatear.
+          </p>
         )}
       </div>
     </div>

@@ -3,8 +3,8 @@ import * as api from "../api/mensajes";
 
 export const useMensajesStore = create((set, get) => ({
   mensajes: [],
-  conectados: [],       // lista de IDs conectados
-  typing: {},           // { userId: true }
+  conectados: [],       // ahora será lista de OBJETOS
+  typing: {},
 
   // =========================================================
   // CARGAR CONVERSACIÓN
@@ -17,6 +17,32 @@ export const useMensajesStore = create((set, get) => ({
       console.error("Error cargando conversación:", err);
     }
   },
+
+  // =========================================================
+  // CARGAR CONECTADOS (REST)
+  // =========================================================
+  cargarConectados: async () => {
+    try {
+      const res = await api.obtenerConectados(); // GET /mensajes/conectados
+      set({ conectados: res.data });             // <-- ahora es array de objetos
+    } catch (err) {
+      console.error("Error cargando conectados:", err);
+    }
+  },
+
+  // =========================================================
+  // ACTUALIZAR CONECTADOS (WS)
+  // =========================================================
+  setConectadosWS: (empleado) =>
+    set((state) => {
+      const existe = state.conectados.some((e) => e.id === empleado.id);
+
+      return {
+        conectados: existe
+          ? state.conectados.filter((e) => e.id !== empleado.id) // offline
+          : [...state.conectados, empleado],                     // online
+      };
+    }),
 
   // =========================================================
   // ENVIAR MENSAJE REST
@@ -67,20 +93,6 @@ export const useMensajesStore = create((set, get) => ({
       console.error("Error marcando conversación leída:", err);
     }
   },
-
-  // =========================================================
-  // USUARIOS CONECTADOS (online/offline)
-  // =========================================================
-  setConectados: (userId) =>
-    set((state) => {
-      const esta = state.conectados.includes(userId);
-
-      return {
-        conectados: esta
-          ? state.conectados.filter((id) => id !== userId) // offline
-          : [...state.conectados, userId],                // online
-      };
-    }),
 
   // =========================================================
   // TYPING

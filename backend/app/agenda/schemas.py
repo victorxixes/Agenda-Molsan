@@ -20,7 +20,7 @@ class CitaBase(BaseModel):
 
     apoderado_id: Optional[int] = None
     observaciones: Optional[str] = None
-    estado: Optional[str] = "Pendiente"
+    
 
     @validator("tipo_cita")
     def validar_tipo_cita(cls, v):
@@ -56,7 +56,7 @@ class CitaUpdate(BaseModel):
 
     apoderado_id: Optional[int] = None
     observaciones: Optional[str] = None
-    estado: Optional[str] = None
+    
 
 
 # =========================================================
@@ -70,7 +70,7 @@ class CitaResponse(BaseModel):
     tipo_cita: str
     tipo_firma: Optional[str] = None
     observaciones: Optional[str] = None
-    estado: Optional[str] = None
+    
 
     # --- Notario ---
     notario_id: Optional[int] = None

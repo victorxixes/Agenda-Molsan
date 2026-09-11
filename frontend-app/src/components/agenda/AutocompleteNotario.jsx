@@ -75,32 +75,35 @@ export default function AutocompleteNotario({ value, onSelect }) {
     setBusqueda(`${n.nombre} ${n.apellidos}`);
     setAbierto(false);
 
-    // 🔥 Mapeo seguro de campos del CTN
+    // 🔥 Dirección
     const direccion =
       n.direccion_notaria ||
       n.direccion ||
       n.direccion_completa ||
       "";
 
-    const apoderado =
+    // 🔥 Apoderado texto
+    const apoderadoTexto =
       n.apoderado ||
-      n.apoderado_nombre ||
-      n.apoderado_id ||
+      n.apoderado_s ||
       "";
 
+    // 🔥 Observaciones
     const observaciones =
+      n.observacion ||
       n.observaciones ||
       n.obs ||
-      n.comentario ||
       "";
 
-    const tipo_firma = n.vc || n.tipo_firma || "";
+    // 🔥 Tipo firma (VC)
+    let tipo_firma = "Presencial";
+    if (n.vc === "SI") tipo_firma = "VideoConferencia";
 
     // Enviar al modal con los campos ya preparados
     onSelect({
       ...n,
       direccion,
-      apoderado,
+      apoderadoTexto,
       observaciones,
       tipo_firma,
     });

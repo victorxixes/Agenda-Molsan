@@ -94,12 +94,15 @@ export default function AutocompleteNotario({ value, onSelect }) {
       n.comentario ||
       "";
 
+    const tipo_firma = n.vc || n.tipo_firma || "";
+
     // Enviar al modal con los campos ya preparados
     onSelect({
       ...n,
       direccion,
       apoderado,
       observaciones,
+      tipo_firma,
     });
   };
 

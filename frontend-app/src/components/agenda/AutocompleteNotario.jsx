@@ -74,7 +74,33 @@ export default function AutocompleteNotario({ value, onSelect }) {
   const seleccionar = (n) => {
     setBusqueda(`${n.nombre} ${n.apellidos}`);
     setAbierto(false);
-    onSelect(n);
+
+    // 🔥 Mapeo seguro de campos del CTN
+    const direccion =
+      n.direccion_notaria ||
+      n.direccion ||
+      n.direccion_completa ||
+      "";
+
+    const apoderado =
+      n.apoderado ||
+      n.apoderado_nombre ||
+      n.apoderado_id ||
+      "";
+
+    const observaciones =
+      n.observaciones ||
+      n.obs ||
+      n.comentario ||
+      "";
+
+    // Enviar al modal con los campos ya preparados
+    onSelect({
+      ...n,
+      direccion,
+      apoderado,
+      observaciones,
+    });
   };
 
   // Cerrar si clic fuera

@@ -70,23 +70,30 @@ export default function ModalNuevaCita({
     }
   }, [modo, cita]);
 
-  const guardar = async () => {
-    setLoading(true);
+ const guardar = async () => {
+  setLoading(true);
 
-    const payload = {
-      fecha,
-      hora_inicio: form.hora_inicio,
-      hora_fin: form.hora_fin,
-      tipo_cita: form.tipo_cita,
-      notario_id: form.notario_id,
-      tipo_firma: form.tipo_firma,
-      apoderado_id: form.apoderado_id,     // numérico
-      observaciones: form.observaciones,   // texto limpio
-    };
-
-    await onGuardar(payload);
-    setLoading(false);
+  const payload = {
+    fecha,
+    hora_inicio: form.hora_inicio,
+    hora_fin: form.hora_fin,
+    tipo_cita: form.tipo_cita,
+    notario_id: form.notario_id,
+    tipo_firma: form.tipo_firma,
+    apoderado_id: form.apoderado_id,
+    observaciones: form.observaciones,
   };
+
+  try {
+    console.log("Payload enviado:", payload);
+    await onGuardar(payload);
+  } catch (err) {
+    console.error("ERROR AL GUARDAR CITA:", err);
+  }
+
+  setLoading(false);
+};
+
 
   if (!fecha) return null;
 

@@ -3,6 +3,9 @@ import AutocompleteNotario from "./AutocompleteNotario";
 
 const TIPOS_CITA = ["Firma notarial", "Reunión", "Visita", "Otros"];
 
+// 🔥 ID del empleado actual (apoderado real)
+const EMPLEADO_ACTUAL_ID = 1;
+
 export default function ModalNuevaCita({
   fecha,
   modo,
@@ -19,8 +22,8 @@ export default function ModalNuevaCita({
     tipo_cita: "",
     notario_id: null,
     tipo_firma: "",
-    apoderado_id: 0,          // numérico para backend
-    apoderado_visible: "",    // nombre del apoderado para UI
+    apoderado_id: EMPLEADO_ACTUAL_ID,   // 🔥 SIEMPRE el empleado actual
+    apoderado_visible: "",              // nombre del apoderado del notario
     observaciones: "",
   });
 
@@ -39,7 +42,7 @@ export default function ModalNuevaCita({
         tipo_cita: cita.tipo_cita,
         notario_id: cita.notario_id,
         tipo_firma: cita.tipo_firma || "",
-        apoderado_id: cita.apoderado_id || 0,
+        apoderado_id: cita.apoderado_id || EMPLEADO_ACTUAL_ID,
         apoderado_visible: cita.apoderado_nombre || "",
         observaciones: cita.observaciones || "",
       });
@@ -70,30 +73,29 @@ export default function ModalNuevaCita({
     }
   }, [modo, cita]);
 
- const guardar = async () => {
-  setLoading(true);
+  const guardar = async () => {
+    setLoading(true);
 
-  const payload = {
-    fecha,
-    hora_inicio: form.hora_inicio,
-    hora_fin: form.hora_fin,
-    tipo_cita: form.tipo_cita,
-    notario_id: form.notario_id,
-    tipo_firma: form.tipo_firma,
-    apoderado_id: form.apoderado_id,
-    observaciones: form.observaciones,
+    const payload = {
+      fecha,
+      hora_inicio: form.hora_inicio,
+      hora_fin: form.hora_fin,
+      tipo_cita: form.tipo_cita,
+      notario_id: form.notario_id,
+      tipo_firma: form.tipo_firma,
+      apoderado_id: form.apoderado_id,     // 🔥 ID real del empleado
+      observaciones: form.observaciones,
+    };
+
+    try {
+      console.log("Payload enviado:", payload);
+      await onGuardar(payload);
+    } catch (err) {
+      console.error("ERROR AL GUARDAR CITA:", err);
+    }
+
+    setLoading(false);
   };
-
-  try {
-    console.log("Payload enviado:", payload);
-    await onGuardar(payload);
-  } catch (err) {
-    console.error("ERROR AL GUARDAR CITA:", err);
-  }
-
-  setLoading(false);
-};
-
 
   if (!fecha) return null;
 
@@ -156,11 +158,10 @@ export default function ModalNuevaCita({
                 handleChange("notario_id", n.id);
                 handleChange("tipo_firma", n.tipo_firma);
 
-                // 🔥 apoderado_id numérico para backend
-                const apoderadoID = n.apoderadoTexto ? 1 : 0;
-                handleChange("apoderado_id", apoderadoID);
+                // 🔥 apoderado_id = empleado actual
+                handleChange("apoderado_id", EMPLEADO_ACTUAL_ID);
 
-                // 🔥 Apoderado visible = nombre del apoderado
+                // 🔥 Apoderado visible = nombre del apoderado del notario
                 handleChange("apoderado_visible", n.apoderadoTexto || "");
 
                 // 🔥 Observaciones = solo observación real

@@ -19,7 +19,8 @@ export default function ModalNuevaCita({
     tipo_cita: "",
     notario_id: null,
     tipo_firma: "",
-    apoderado_id: 0,
+    apoderado_id: 0,          // numérico para backend
+    apoderado_visible: "",    // nombre del apoderado para UI
     observaciones: "",
   });
 
@@ -39,6 +40,7 @@ export default function ModalNuevaCita({
         notario_id: cita.notario_id,
         tipo_firma: cita.tipo_firma || "",
         apoderado_id: cita.apoderado_id || 0,
+        apoderado_visible: cita.apoderado_nombre || "",
         observaciones: cita.observaciones || "",
       });
 
@@ -78,8 +80,8 @@ export default function ModalNuevaCita({
       tipo_cita: form.tipo_cita,
       notario_id: form.notario_id,
       tipo_firma: form.tipo_firma,
-      apoderado_id: form.apoderado_id,
-      observaciones: form.observaciones,
+      apoderado_id: form.apoderado_id,     // numérico
+      observaciones: form.observaciones,   // texto limpio
     };
 
     await onGuardar(payload);
@@ -147,15 +149,15 @@ export default function ModalNuevaCita({
                 handleChange("notario_id", n.id);
                 handleChange("tipo_firma", n.tipo_firma);
 
-                // 🔥 apoderado_id debe ser número
+                // 🔥 apoderado_id numérico para backend
                 const apoderadoID = n.apoderadoTexto ? 1 : 0;
                 handleChange("apoderado_id", apoderadoID);
 
-                // Guardamos el texto del apoderado en observaciones
-                handleChange(
-                  "observaciones",
-                  `${n.observaciones || ""} ${n.apoderadoTexto || ""}`.trim()
-                );
+                // 🔥 Apoderado visible = nombre del apoderado
+                handleChange("apoderado_visible", n.apoderadoTexto || "");
+
+                // 🔥 Observaciones = solo observación real
+                handleChange("observaciones", n.observaciones || "");
               }}
             />
           </div>
@@ -194,13 +196,13 @@ export default function ModalNuevaCita({
             />
           </div>
 
-          {/* Apoderado */}
+          {/* Apoderado visible */}
           <div>
             <label className="block mb-1 text-gray-700">Apoderado</label>
             <input
               className="w-full border rounded px-2 py-1"
-              value={form.apoderado_id}
-              onChange={(e) => handleChange("apoderado_id", Number(e.target.value))}
+              value={form.apoderado_visible}
+              onChange={(e) => handleChange("apoderado_visible", e.target.value)}
             />
           </div>
 

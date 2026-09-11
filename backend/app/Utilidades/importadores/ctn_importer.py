@@ -2,7 +2,7 @@ from openpyxl import load_workbook
 from sqlalchemy.orm import Session
 from io import BytesIO
 
-from backend.app.ctn.models import Notaria   # ← ESTA ES LA RUTA CORRECTA
+from backend.app.ctn.models import Notaria   # ruta correcta
 
 HEADER_MAP = {
     "Código": "codigo",
@@ -22,13 +22,29 @@ HEADER_MAP = {
     "Observación": "observacion",
 }
 
+def normalizar_vc(vc: str) -> str:
+    if not vc:
+        return "Presencial"
+    vc = vc.strip().upper()
+    if vc == "SI":
+        return "VideoConferencia"
+    return "Presencial"  # NO y N.I. → presencial
+
+def limpiar_texto(v):
+    if v is None:
+        return ""
+    v = str(v).strip()
+    if v.lower() == "none":
+        return ""
+    return v
+
 def importar_ctn_desde_excel(db: Session, contenido: bytes) -> int:
     wb = load_workbook(BytesIO(contenido))
     ws = wb.active
 
     filas = list(ws.iter_rows(values_only=True))
 
-    # Buscar la fila que contiene las cabeceras
+    # Buscar cabecera
     header_row_index = None
     for i, fila in enumerate(filas):
         if fila and "Código" in fila:
@@ -53,9 +69,24 @@ def importar_ctn_desde_excel(db: Session, contenido: bytes) -> int:
             if header in HEADER_MAP:
                 campo = HEADER_MAP[header]
                 valor = row[idx] if idx < len(row) else None
-                datos[campo] = None if valor is None else str(valor)
+                datos[campo] = limpiar_texto(valor)
 
-        notaria = Notaria(**datos)  # ← ahora sí funciona
+        # Normalizar VC → tipo firma
+        datos["vc"] = normalizar_vc(datos.get("vc"))
+
+        # Normalizar apoderado
+        ap1 = limpiar_texto(datos.get("apoderado"))
+        ap2 = limpiar_texto(datos.get("apoderado_s"))
+        datos["apoderado"] = ap1
+        datos["apoderado_s"] = ap2
+
+        # Normalizar observación
+        datos["observacion"] = limpiar_texto(datos.get("observacion"))
+
+        # Dirección NOTARIA (si algún día la añades)
+        datos["direccion_notaria"] = limpiar_texto(datos.get("direccion_notaria")) if "direccion_notaria" in datos else ""
+
+        notaria = Notaria(**datos)
         db.add(notaria)
         insertados += 1
 

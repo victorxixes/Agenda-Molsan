@@ -175,7 +175,7 @@ export default function ModalNuevaCita({
 
           {/* Tipo firma */}
           <div>
-            <label className="block mb-1 text-gray-700">Firma por VC</label>
+            <label className="block mb-1 text-gray-700">Tipo firma</label>
             <input
               className="w-full border rounded px-2 py-1"
               value={form.tipo_firma}

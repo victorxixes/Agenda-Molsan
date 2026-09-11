@@ -19,7 +19,7 @@ export default function ModalNuevaCita({
     tipo_cita: "",
     notario_id: null,
     tipo_firma: "",
-    apoderado_id: null,
+    apoderado_id: 0,
     observaciones: "",
   });
 
@@ -38,7 +38,7 @@ export default function ModalNuevaCita({
         tipo_cita: cita.tipo_cita,
         notario_id: cita.notario_id,
         tipo_firma: cita.tipo_firma || "",
-        apoderado_id: cita.apoderado_id || null,
+        apoderado_id: cita.apoderado_id || 0,
         observaciones: cita.observaciones || "",
       });
 
@@ -50,16 +50,19 @@ export default function ModalNuevaCita({
             cita.notario.direccion ||
             cita.notario.direccion_completa ||
             "",
-          apoderado:
+          apoderadoTexto:
             cita.notario.apoderado ||
-            cita.notario.apoderado_nombre ||
-            cita.notario.apoderado_id ||
+            cita.notario.apoderado_s ||
             "",
           observaciones:
+            cita.notario.observacion ||
             cita.notario.observaciones ||
             cita.notario.obs ||
-            cita.notario.comentario ||
             "",
+          tipo_firma:
+            cita.notario.vc === "SI"
+              ? "VideoConferencia"
+              : "Presencial",
         });
       }
     }
@@ -142,9 +145,17 @@ export default function ModalNuevaCita({
                 setNotarioSeleccionado(n);
 
                 handleChange("notario_id", n.id);
-                handleChange("tipo_firma", n.tipo_firma || "");
-                handleChange("apoderado_id", n.apoderado || "");
-                handleChange("observaciones", n.observaciones || "");
+                handleChange("tipo_firma", n.tipo_firma);
+
+                // 🔥 apoderado_id debe ser número
+                const apoderadoID = n.apoderadoTexto ? 1 : 0;
+                handleChange("apoderado_id", apoderadoID);
+
+                // Guardamos el texto del apoderado en observaciones
+                handleChange(
+                  "observaciones",
+                  `${n.observaciones || ""} ${n.apoderadoTexto || ""}`.trim()
+                );
               }}
             />
           </div>
@@ -188,8 +199,8 @@ export default function ModalNuevaCita({
             <label className="block mb-1 text-gray-700">Apoderado</label>
             <input
               className="w-full border rounded px-2 py-1"
-              value={form.apoderado_id || ""}
-              onChange={(e) => handleChange("apoderado_id", e.target.value)}
+              value={form.apoderado_id}
+              onChange={(e) => handleChange("apoderado_id", Number(e.target.value))}
             />
           </div>
 

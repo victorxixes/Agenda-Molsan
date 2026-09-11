@@ -142,7 +142,7 @@ export default function ModalNuevaCita({
                 setNotarioSeleccionado(n);
 
                 handleChange("notario_id", n.id);
-                handleChange("tipo_firma", n.vc || "");
+                handleChange("tipo_firma", n.tipo_firma || "");
                 handleChange("apoderado_id", n.apoderado || "");
                 handleChange("observaciones", n.observaciones || "");
               }}

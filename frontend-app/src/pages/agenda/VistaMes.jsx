@@ -92,7 +92,7 @@ export default function VistaMes({ year, month, citas, onDiaClick, onCitaClick }
                         onCitaClick(c);
                       }}
                     >
-                      <div className="font-semibold">
+                      <div className="font-semibold truncate">
                         {c.tipo_cita} — {c.hora_inicio}
                       </div>
 
@@ -105,7 +105,7 @@ export default function VistaMes({ year, month, citas, onDiaClick, onCitaClick }
                       </div>
 
                       <div className="truncate">
-                        Apoderado: {c.apoderado_visible || c.apoderado_nombre || "—"}
+                        Apoderado: {c.apoderado_nombre || "—"}
                       </div>
                     </div>
                   ))}

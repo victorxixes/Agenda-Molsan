@@ -61,9 +61,20 @@ export default function VistaSemana({
                     )}`}
                     onClick={() => onCitaClick(c)}
                   >
-                    <div className="font-semibold">{c.tipo_cita}</div>
-                    <div>
-                      {c.hora_inicio} - {c.hora_fin}
+                    <div className="font-semibold truncate">
+                      {c.tipo_cita} — {c.hora_inicio}
+                    </div>
+
+                    <div className="truncate">
+                      Notario: {c.notario?.nombre} {c.notario?.apellidos}
+                    </div>
+
+                    <div className="truncate">
+                      Firma: {c.tipo_firma}
+                    </div>
+
+                    <div className="truncate">
+                      Apoderado: {c.apoderado_nombre || "—"}
                     </div>
                   </div>
                 ))}

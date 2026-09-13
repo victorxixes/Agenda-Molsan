@@ -1,15 +1,23 @@
-import { useState } from "react";
-import { useAgendaData } from "../../hooks/useAgendaData";
+import { useState, useEffect } from "react";
+import { useAgendaStore } from "../../store/agendaStore";
 
 import VistaMes from "./VistaMes";
 import ModalNuevaCita from "../../components/agenda/ModalNuevaCita.jsx";
 import AgendaToast from "../../components/agenda/AgendaToast.jsx";
 
-import { crearCita, editarCita, eliminarCita } from "../../api/agenda";
-
 const MESES = [
-  "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-  "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
+  "Enero",
+  "Febrero",
+  "Marzo",
+  "Abril",
+  "Mayo",
+  "Junio",
+  "Julio",
+  "Agosto",
+  "Septiembre",
+  "Octubre",
+  "Noviembre",
+  "Diciembre",
 ];
 
 export default function Agenda() {
@@ -17,14 +25,27 @@ export default function Agenda() {
   const [year, setYear] = useState(hoy.getFullYear());
   const [month, setMonth] = useState(hoy.getMonth() + 1);
 
-  // ⭐ IMPORTANTE: ahora sí usamos reload()
-  const { citas, reload } = useAgendaData(year, month);
+  const {
+    citas,
+    cargarMes,
+    crear,
+    editar,
+    eliminar,
+    marcarResaltada,
+    notify,
+  } = useAgendaStore();
 
   const [mostrarModal, setMostrarModal] = useState(false);
   const [modalModo, setModalModo] = useState("crear");
   const [fechaSeleccionada, setFechaSeleccionada] = useState(null);
   const [citaSeleccionada, setCitaSeleccionada] = useState(null);
 
+  // Cargar mes al entrar y cuando cambian año/mes
+  useEffect(() => {
+    cargarMes(year, month);
+  }, [year, month, cargarMes]);
+
+  // Crear cita
   const abrirCrear = (fecha) => {
     setModalModo("crear");
     setFechaSeleccionada(fecha);
@@ -32,6 +53,7 @@ export default function Agenda() {
     setMostrarModal(true);
   };
 
+  // Editar cita
   const abrirEditar = (cita) => {
     setModalModo("editar");
     setFechaSeleccionada(cita.fecha);
@@ -39,47 +61,63 @@ export default function Agenda() {
     setMostrarModal(true);
   };
 
-  // ⭐ Guardar cita con recarga automática
+  // Guardar cita (crear o editar)
   const guardarCita = async (payload) => {
-    if (modalModo === "crear") {
-      await crearCita(payload);
-    } else {
-      await editarCita(citaSeleccionada.id, payload);
+    try {
+      let creada;
+
+      if (modalModo === "crear") {
+        creada = await crear(payload);
+        if (creada?.id) {
+          marcarResaltada(creada.id);
+          notify("Cita creada correctamente.");
+        }
+      } else if (citaSeleccionada) {
+        const editada = await editar(citaSeleccionada.id, payload);
+        if (editada?.id) {
+          marcarResaltada(editada.id);
+          notify("Cita actualizada correctamente.");
+        }
+      }
+
+      setMostrarModal(false);
+    } catch (err) {
+      console.error("ERROR AL GUARDAR CITA:", err);
+      notify("Error al guardar la cita.");
     }
-
-    // 🔥 Recargar citas del mes actual
-    await reload();
-
-    setMostrarModal(false);
   };
 
+  // Eliminar cita
   const borrarCita = async () => {
-    await eliminarCita(citaSeleccionada.id);
+    if (!citaSeleccionada) return;
 
-    // 🔥 Recargar citas del mes actual
-    await reload();
-
-    setMostrarModal(false);
+    try {
+      await eliminar(citaSeleccionada.id);
+      notify("Cita eliminada.");
+      setMostrarModal(false);
+    } catch (err) {
+      console.error("ERROR AL ELIMINAR CITA:", err);
+      notify("Error al eliminar la cita.");
+    }
   };
 
-  const mesAnterior = async () => {
+  // Navegación meses
+  const mesAnterior = () => {
     if (month === 1) {
       setYear(year - 1);
       setMonth(12);
     } else {
       setMonth(month - 1);
     }
-    await reload();
   };
 
-  const mesSiguiente = async () => {
+  const mesSiguiente = () => {
     if (month === 12) {
       setYear(year + 1);
       setMonth(1);
     } else {
       setMonth(month + 1);
     }
-    await reload();
   };
 
   return (
@@ -89,38 +127,48 @@ export default function Agenda() {
         <p className="seg-desc">Calendario de citas SJ‑2026.</p>
       </div>
 
+      {/* Selector de año y mes */}
       <div className="seg-card flex items-center gap-4">
-        <button className="sj-btn px-3" onClick={mesAnterior}>←</button>
+        <button className="sj-btn px-3" onClick={mesAnterior}>
+          ←
+        </button>
 
         <select
           className="sj-input w-32"
           value={year}
-          onChange={async (e) => {
+          onChange={(e) => {
             setYear(parseInt(e.target.value));
-            await reload();
           }}
         >
-          {Array.from({ length: 10 }, (_, i) => hoy.getFullYear() - 5 + i).map((y) => (
-            <option key={y} value={y}>{y}</option>
-          ))}
+          {Array.from({ length: 10 }, (_, i) => hoy.getFullYear() - 5 + i).map(
+            (y) => (
+              <option key={y} value={y}>
+                {y}
+              </option>
+            )
+          )}
         </select>
 
         <select
           className="sj-input w-40"
           value={month}
-          onChange={async (e) => {
+          onChange={(e) => {
             setMonth(parseInt(e.target.value));
-            await reload();
           }}
         >
           {MESES.map((nombre, index) => (
-            <option key={index} value={index + 1}>{nombre}</option>
+            <option key={index} value={index + 1}>
+              {nombre}
+            </option>
           ))}
         </select>
 
-        <button className="sj-btn px-3" onClick={mesSiguiente}>→</button>
+        <button className="sj-btn px-3" onClick={mesSiguiente}>
+          →
+        </button>
       </div>
 
+      {/* Vista mensual */}
       <div className="seg-card">
         <VistaMes
           year={year}
@@ -131,6 +179,7 @@ export default function Agenda() {
         />
       </div>
 
+      {/* Modal */}
       {mostrarModal && (
         <ModalNuevaCita
           fecha={fechaSeleccionada}
@@ -142,6 +191,7 @@ export default function Agenda() {
         />
       )}
 
+      {/* Notificaciones flotantes */}
       <AgendaToast />
     </div>
   );

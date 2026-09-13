@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import axios from "../../api/axios";
 
 export default function AutocompleteNotario({ value, onSelect }) {
-  const [busqueda, setBusqueda] = useState(value ? `${value.nombre} ${value.apellidos}` : "");
+  const [busqueda, setBusqueda] = useState(value?.nombre || "");
   const [todos, setTodos] = useState([]);
   const [filtrados, setFiltrados] = useState([]);
   const [abierto, setAbierto] = useState(false);
@@ -10,7 +10,7 @@ export default function AutocompleteNotario({ value, onSelect }) {
 
   const ref = useRef(null);
 
-  // 🔥 Cargar TODOS los notarios una sola vez
+  // Cargar todos los notarios una sola vez
   useEffect(() => {
     const cargar = async () => {
       try {
@@ -28,14 +28,7 @@ export default function AutocompleteNotario({ value, onSelect }) {
     cargar();
   }, []);
 
-  // 🔄 Actualizar búsqueda si cambia el valor inicial (modo editar)
-  useEffect(() => {
-    if (value?.nombre) {
-      setBusqueda(`${value.nombre} ${value.apellidos}`);
-    }
-  }, [value]);
-
-  // 🔎 Filtrar por nombre + apellidos
+  // Filtrar por nombre + apellidos
   useEffect(() => {
     const q = busqueda.trim().toLowerCase();
 
@@ -44,20 +37,16 @@ export default function AutocompleteNotario({ value, onSelect }) {
       return;
     }
 
-    const lista = todos
-      .filter((n) =>
-        `${n.nombre} ${n.apellidos}`.toLowerCase().includes(q)
-      )
-      .sort((a, b) =>
-        a.nombre.toLowerCase().startsWith(q) ? -1 : 1
-      );
+    const lista = todos.filter((n) =>
+      `${n.nombre} ${n.apellidos}`.toLowerCase().includes(q)
+    );
 
     setFiltrados(lista);
     setAbierto(true);
     setIndexActivo(-1);
   }, [busqueda, todos]);
 
-  // 🎹 Navegación con teclado
+  // Navegación con teclado
   const manejarTeclas = (e) => {
     if (!abierto || filtrados.length === 0) return;
 
@@ -81,40 +70,36 @@ export default function AutocompleteNotario({ value, onSelect }) {
     }
   };
 
-  // ✔ Seleccionar notario
+  // Seleccionar notario
   const seleccionar = (n) => {
     setBusqueda(`${n.nombre} ${n.apellidos}`);
     setAbierto(false);
 
-    // 🔥 Dirección
     const direccion =
       n.direccion_notaria ||
       n.direccion ||
       n.direccion_completa ||
       "";
 
-    // 🔥 Apoderado texto
     const apoderadoTexto =
       n.apoderado ||
       n.apoderado_s ||
       "";
 
-    // 🔥 Observaciones
     const observaciones =
       n.observacion ||
       n.observaciones ||
       n.obs ||
       "";
 
-    // 🔥 Tipo firma (VC)
     let tipo_firma = "Presencial";
     if (n.vc === "SI") tipo_firma = "VideoConferencia";
 
-    // Enviar al modal con los campos ya preparados
     onSelect({
       ...n,
       direccion,
       apoderadoTexto,
+      apoderado_id: n.apoderado_id || null,
       observaciones,
       tipo_firma,
     });
@@ -153,18 +138,14 @@ export default function AutocompleteNotario({ value, onSelect }) {
               }`}
               onClick={() => seleccionar(n)}
             >
-              <strong>{n.nombre} {n.apellidos}</strong>
-              {n.municipio && (
-                <div className="text-xs text-gray-600">
-                  {n.municipio} ({n.provincia})
-                </div>
-              )}
+              <strong>
+                {n.nombre} {n.apellidos}
+              </strong>
             </div>
           ))}
         </div>
       )}
 
-      {/* 🗺️ Mapa de la notaría */}
       {value?.direccion && (
         <iframe
           className="w-full h-40 mt-3 rounded"

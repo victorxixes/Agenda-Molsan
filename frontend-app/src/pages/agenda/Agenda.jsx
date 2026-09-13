@@ -3,6 +3,7 @@ import { useAgendaData } from "../../hooks/useAgendaData";
 
 import VistaMes from "./VistaMes";
 import ModalNuevaCita from "../../components/agenda/ModalNuevaCita.jsx";
+import AgendaToast from "../../components/agenda/AgendaToast.jsx";
 
 import { crearCita, editarCita, eliminarCita } from "../../api/agenda";
 
@@ -27,7 +28,7 @@ export default function Agenda() {
   const [year, setYear] = useState(hoy.getFullYear());
   const [month, setMonth] = useState(hoy.getMonth() + 1);
 
-  const { citas, reload } = useAgendaData(year, month);
+  const { citas } = useAgendaData(year, month);
 
   const [mostrarModal, setMostrarModal] = useState(false);
   const [modalModo, setModalModo] = useState("crear");
@@ -58,36 +59,32 @@ export default function Agenda() {
       await editarCita(citaSeleccionada.id, payload);
     }
 
-    await reload();
     setMostrarModal(false);
   };
 
   // Eliminar cita
   const borrarCita = async () => {
     await eliminarCita(citaSeleccionada.id);
-    await reload();
     setMostrarModal(false);
   };
 
   // Navegación meses
-  const mesAnterior = async () => {
+  const mesAnterior = () => {
     if (month === 1) {
       setYear(year - 1);
       setMonth(12);
     } else {
       setMonth(month - 1);
     }
-    await reload();
   };
 
-  const mesSiguiente = async () => {
+  const mesSiguiente = () => {
     if (month === 12) {
       setYear(year + 1);
       setMonth(1);
     } else {
       setMonth(month + 1);
     }
-    await reload();
   };
 
   return (
@@ -105,9 +102,8 @@ export default function Agenda() {
         <select
           className="sj-input w-32"
           value={year}
-          onChange={async (e) => {
+          onChange={(e) => {
             setYear(parseInt(e.target.value));
-            await reload();
           }}
         >
           {Array.from({ length: 10 }, (_, i) => hoy.getFullYear() - 5 + i).map((y) => (
@@ -119,9 +115,8 @@ export default function Agenda() {
         <select
           className="sj-input w-40"
           value={month}
-          onChange={async (e) => {
+          onChange={(e) => {
             setMonth(parseInt(e.target.value));
-            await reload();
           }}
         >
           {MESES.map((nombre, index) => (
@@ -156,6 +151,9 @@ export default function Agenda() {
           onDelete={modalModo === "editar" ? borrarCita : null}
         />
       )}
+
+      {/* Notificaciones flotantes */}
+      <AgendaToast />
     </div>
   );
 }

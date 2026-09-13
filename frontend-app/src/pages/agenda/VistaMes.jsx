@@ -40,8 +40,6 @@ function colorPorTipo(tipo) {
 
 export default function VistaMes({ year, month, citas, onDiaClick, onCitaClick }) {
   const citasSeguras = Array.isArray(citas) ? citas : [];
-
-  // ⭐ Resaltado de cita recién creada
   const resaltadaId = useAgendaStore((s) => s.resaltadaId);
 
   const fechaBase = new Date(year, month - 1, 1).toISOString().slice(0, 10);
@@ -104,28 +102,18 @@ export default function VistaMes({ year, month, citas, onDiaClick, onCitaClick }
                         onCitaClick(c);
                       }}
                     >
-                      {/* Tipo de cita + horas */}
                       <div className="font-semibold truncate">
-                        {c.tipo_cita} — {c.hora_inicio} - {c.hora_fin}
+                        {c.tipo_cita} — {c.hora_inicio} {c.hora_fin ? `→ ${c.hora_fin}` : ""}
                       </div>
 
-                      {/* Notario */}
                       <div className="truncate">
-                        Notario:{" "}
-                        {c.notario_nombre ||
-                          c.notario?.nombre ||
-                          "—"}{" "}
-                        {c.notario_apellidos ||
-                          c.notario?.apellidos ||
-                          ""}
+                        Notario: {c.notario?.nombre} {c.notario?.apellidos}
                       </div>
 
-                      {/* Tipo firma */}
                       <div className="truncate">
                         Firma: {c.tipo_firma}
                       </div>
 
-                      {/* Apoderado */}
                       <div className="truncate">
                         Apoderado: {c.apoderado_nombre || "—"}
                       </div>

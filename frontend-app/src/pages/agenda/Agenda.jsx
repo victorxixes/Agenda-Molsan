@@ -58,19 +58,14 @@ export default function Agenda() {
       await editarCita(citaSeleccionada.id, payload);
     }
 
-    // 🔥 REFRESCAR CITAS DEL MES
     await reload();
-
     setMostrarModal(false);
   };
 
   // Eliminar cita
   const borrarCita = async () => {
     await eliminarCita(citaSeleccionada.id);
-
-    // 🔥 REFRESCAR CITAS DEL MES
     await reload();
-
     setMostrarModal(false);
   };
 

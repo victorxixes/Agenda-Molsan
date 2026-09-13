@@ -7,20 +7,9 @@ import AgendaToast from "../../components/agenda/AgendaToast.jsx";
 
 import { crearCita, editarCita, eliminarCita } from "../../api/agenda";
 
-// ⭐ MESES DEFINIDOS AQUÍ
 const MESES = [
-  "Enero",
-  "Febrero",
-  "Marzo",
-  "Abril",
-  "Mayo",
-  "Junio",
-  "Julio",
-  "Agosto",
-  "Septiembre",
-  "Octubre",
-  "Noviembre",
-  "Diciembre",
+  "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+  "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
 ];
 
 export default function Agenda() {
@@ -28,14 +17,14 @@ export default function Agenda() {
   const [year, setYear] = useState(hoy.getFullYear());
   const [month, setMonth] = useState(hoy.getMonth() + 1);
 
-  const { citas } = useAgendaData(year, month);
+  // ⭐ IMPORTANTE: ahora sí usamos reload()
+  const { citas, reload } = useAgendaData(year, month);
 
   const [mostrarModal, setMostrarModal] = useState(false);
   const [modalModo, setModalModo] = useState("crear");
   const [fechaSeleccionada, setFechaSeleccionada] = useState(null);
   const [citaSeleccionada, setCitaSeleccionada] = useState(null);
 
-  // Crear cita
   const abrirCrear = (fecha) => {
     setModalModo("crear");
     setFechaSeleccionada(fecha);
@@ -43,7 +32,6 @@ export default function Agenda() {
     setMostrarModal(true);
   };
 
-  // Editar cita
   const abrirEditar = (cita) => {
     setModalModo("editar");
     setFechaSeleccionada(cita.fecha);
@@ -51,7 +39,7 @@ export default function Agenda() {
     setMostrarModal(true);
   };
 
-  // Guardar cita (crear o editar)
+  // ⭐ Guardar cita con recarga automática
   const guardarCita = async (payload) => {
     if (modalModo === "crear") {
       await crearCita(payload);
@@ -59,32 +47,39 @@ export default function Agenda() {
       await editarCita(citaSeleccionada.id, payload);
     }
 
+    // 🔥 Recargar citas del mes actual
+    await reload();
+
     setMostrarModal(false);
   };
 
-  // Eliminar cita
   const borrarCita = async () => {
     await eliminarCita(citaSeleccionada.id);
+
+    // 🔥 Recargar citas del mes actual
+    await reload();
+
     setMostrarModal(false);
   };
 
-  // Navegación meses
-  const mesAnterior = () => {
+  const mesAnterior = async () => {
     if (month === 1) {
       setYear(year - 1);
       setMonth(12);
     } else {
       setMonth(month - 1);
     }
+    await reload();
   };
 
-  const mesSiguiente = () => {
+  const mesSiguiente = async () => {
     if (month === 12) {
       setYear(year + 1);
       setMonth(1);
     } else {
       setMonth(month + 1);
     }
+    await reload();
   };
 
   return (
@@ -94,16 +89,15 @@ export default function Agenda() {
         <p className="seg-desc">Calendario de citas SJ‑2026.</p>
       </div>
 
-      {/* Selector de año y mes */}
       <div className="seg-card flex items-center gap-4">
         <button className="sj-btn px-3" onClick={mesAnterior}>←</button>
 
-        {/* Año */}
         <select
           className="sj-input w-32"
           value={year}
-          onChange={(e) => {
+          onChange={async (e) => {
             setYear(parseInt(e.target.value));
+            await reload();
           }}
         >
           {Array.from({ length: 10 }, (_, i) => hoy.getFullYear() - 5 + i).map((y) => (
@@ -111,25 +105,22 @@ export default function Agenda() {
           ))}
         </select>
 
-        {/* Mes en texto */}
         <select
           className="sj-input w-40"
           value={month}
-          onChange={(e) => {
+          onChange={async (e) => {
             setMonth(parseInt(e.target.value));
+            await reload();
           }}
         >
           {MESES.map((nombre, index) => (
-            <option key={index} value={index + 1}>
-              {nombre}
-            </option>
+            <option key={index} value={index + 1}>{nombre}</option>
           ))}
         </select>
 
         <button className="sj-btn px-3" onClick={mesSiguiente}>→</button>
       </div>
 
-      {/* Vista mensual */}
       <div className="seg-card">
         <VistaMes
           year={year}
@@ -140,7 +131,6 @@ export default function Agenda() {
         />
       </div>
 
-      {/* Modal */}
       {mostrarModal && (
         <ModalNuevaCita
           fecha={fechaSeleccionada}
@@ -152,7 +142,6 @@ export default function Agenda() {
         />
       )}
 
-      {/* Notificaciones flotantes */}
       <AgendaToast />
     </div>
   );

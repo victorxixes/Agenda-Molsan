@@ -2,8 +2,6 @@ import { useEffect, useState } from "react";
 import AutocompleteNotario from "./AutocompleteNotario";
 
 const TIPOS_CITA = ["Firma notarial", "Reunión", "Visita", "Otros"];
-
-// 🔥 ID del empleado actual (apoderado real)
 const EMPLEADO_ACTUAL_ID = 1;
 
 export default function ModalNuevaCita({
@@ -22,8 +20,8 @@ export default function ModalNuevaCita({
     tipo_cita: "",
     notario_id: null,
     tipo_firma: "",
-    apoderado_id: EMPLEADO_ACTUAL_ID,   // 🔥 SIEMPRE el empleado actual
-    apoderado_visible: "",              // nombre del apoderado del notario
+    apoderado_id: EMPLEADO_ACTUAL_ID,
+    apoderado_visible: "",
     observaciones: "",
   });
 
@@ -83,12 +81,11 @@ export default function ModalNuevaCita({
       tipo_cita: form.tipo_cita,
       notario_id: form.notario_id,
       tipo_firma: form.tipo_firma,
-      apoderado_id: form.apoderado_id,     // 🔥 ID real del empleado
+      apoderado_id: form.apoderado_id,
       observaciones: form.observaciones,
     };
 
     try {
-      console.log("Payload enviado:", payload);
       await onGuardar(payload);
     } catch (err) {
       console.error("ERROR AL GUARDAR CITA:", err);
@@ -158,13 +155,8 @@ export default function ModalNuevaCita({
                 handleChange("notario_id", n.id);
                 handleChange("tipo_firma", n.tipo_firma);
 
-                // 🔥 apoderado_id = empleado actual
                 handleChange("apoderado_id", EMPLEADO_ACTUAL_ID);
-
-                // 🔥 Apoderado visible = nombre del apoderado del notario
                 handleChange("apoderado_visible", n.apoderadoTexto || "");
-
-                // 🔥 Observaciones = solo observación real
                 handleChange("observaciones", n.observaciones || "");
               }}
             />
@@ -210,7 +202,7 @@ export default function ModalNuevaCita({
             <input
               className="w-full border rounded px-2 py-1"
               value={form.apoderado_visible}
-              onChange={(e) => handleChange("apoderado_visible", e.target.value)}
+              disabled
             />
           </div>
 

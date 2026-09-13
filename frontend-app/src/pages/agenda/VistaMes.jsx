@@ -1,3 +1,5 @@
+import { useAgendaStore } from "../../store/agendaStore";
+
 const DIAS_SEMANA = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 
 function getMatrix(fechaBase) {
@@ -38,6 +40,9 @@ function colorPorTipo(tipo) {
 
 export default function VistaMes({ year, month, citas, onDiaClick, onCitaClick }) {
   const citasSeguras = Array.isArray(citas) ? citas : [];
+
+  // ⭐ Resaltado de cita recién creada
+  const resaltadaId = useAgendaStore((s) => s.resaltadaId);
 
   const fechaBase = new Date(year, month - 1, 1).toISOString().slice(0, 10);
   const matrix = getMatrix(fechaBase) || [[]];
@@ -84,9 +89,16 @@ export default function VistaMes({ year, month, citas, onDiaClick, onCitaClick }
                   {citasDia.slice(0, 3).map((c) => (
                     <div
                       key={c.id}
-                      className={`text-[11px] px-1 py-0.5 rounded border cursor-pointer truncate ${colorPorTipo(
-                        c.tipo_cita
-                      )}`}
+                      className={`
+                        text-[11px] px-1 py-0.5 rounded border cursor-pointer truncate
+                        ${colorPorTipo(c.tipo_cita)}
+                        transition-all duration-300
+                        ${
+                          resaltadaId === c.id
+                            ? "ring-2 ring-yellow-400 bg-yellow-50 shadow-md"
+                            : ""
+                        }
+                      `}
                       onClick={(e) => {
                         e.stopPropagation();
                         onCitaClick(c);

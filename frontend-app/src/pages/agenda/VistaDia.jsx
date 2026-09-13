@@ -1,3 +1,5 @@
+import { useAgendaStore } from "../../store/agendaStore";
+
 const HORAS = Array.from({ length: 12 }, (_, i) => `${9 + i}:00`);
 
 function colorPorTipo(tipo) {
@@ -14,8 +16,12 @@ function colorPorTipo(tipo) {
 export default function VistaDia({ citas = [], onCitaClick, onCrearCita }) {
   const citasSeguras = Array.isArray(citas) ? citas : [];
 
+  // ⭐ Resaltado de cita recién creada
+  const resaltadaId = useAgendaStore((s) => s.resaltadaId);
+
   return (
     <div className="grid grid-cols-[80px,1fr] gap-2">
+      {/* Columna de horas */}
       <div className="text-xs text-gray-500 flex flex-col">
         {HORAS.map((h) => (
           <div key={h} className="h-12 flex items-start justify-end pr-2">
@@ -24,6 +30,7 @@ export default function VistaDia({ citas = [], onCitaClick, onCrearCita }) {
         ))}
       </div>
 
+      {/* Columna de citas */}
       <div className="relative border rounded-lg bg-white">
         {HORAS.map((h) => (
           <div
@@ -38,15 +45,22 @@ export default function VistaDia({ citas = [], onCitaClick, onCrearCita }) {
         {citasSeguras.map((cita) => (
           <div
             key={cita.id}
-            className={`absolute left-4 right-4 mt-1 p-2 text-xs rounded border shadow-sm cursor-pointer ${colorPorTipo(
-              cita.tipo_cita
-            )}`}
+            className={`
+              absolute left-4 right-4 mt-1 p-2 text-xs rounded border shadow-sm cursor-pointer
+              ${colorPorTipo(cita.tipo_cita)}
+              transition-all duration-300
+              ${
+                resaltadaId === cita.id
+                  ? "ring-2 ring-yellow-400 bg-yellow-50 shadow-md"
+                  : ""
+              }
+            `}
             style={{
               top: (parseInt(cita.hora_inicio.split(":")[0], 10) - 9) * 48,
               height:
                 (parseInt(cita.hora_fin.split(":")[0], 10) -
                   parseInt(cita.hora_inicio.split(":")[0], 10)) *
-                48 -
+                  48 -
                 4,
             }}
             onClick={() => onCitaClick(cita)}

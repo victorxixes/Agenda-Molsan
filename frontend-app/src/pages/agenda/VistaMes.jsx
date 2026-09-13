@@ -4,7 +4,6 @@ function getMatrix(fechaBase) {
   const f = new Date(fechaBase);
 
   if (isNaN(f.getTime())) {
-    // Fecha inválida → devolvemos matriz vacía
     return [[]];
   }
 
@@ -40,9 +39,7 @@ function colorPorTipo(tipo) {
 export default function VistaMes({ year, month, citas, onDiaClick, onCitaClick }) {
   const citasSeguras = Array.isArray(citas) ? citas : [];
 
-  // Blindaje total de fechaBase
   const fechaBase = new Date(year, month - 1, 1).toISOString().slice(0, 10);
-
   const matrix = getMatrix(fechaBase) || [[]];
 
   return (
@@ -95,7 +92,21 @@ export default function VistaMes({ year, month, citas, onDiaClick, onCitaClick }
                         onCitaClick(c);
                       }}
                     >
-                      {c.tipo_cita} ({c.hora_inicio})
+                      <div className="font-semibold">
+                        {c.tipo_cita} — {c.hora_inicio}
+                      </div>
+
+                      <div className="truncate">
+                        Notario: {c.notario?.nombre} {c.notario?.apellidos}
+                      </div>
+
+                      <div className="truncate">
+                        Firma: {c.tipo_firma}
+                      </div>
+
+                      <div className="truncate">
+                        Apoderado: {c.apoderado_visible || c.apoderado_nombre || "—"}
+                      </div>
                     </div>
                   ))}
 

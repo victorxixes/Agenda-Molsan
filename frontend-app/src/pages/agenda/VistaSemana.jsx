@@ -1,4 +1,5 @@
 import React from "react";
+import { useAgendaStore } from "../../store/agendaStore";
 
 const DIAS = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 const HORAS = Array.from({ length: 12 }, (_, i) => `${9 + i}:00`);
@@ -20,6 +21,9 @@ export default function VistaSemana({
   onCrearCita,
 }) {
   const citasSeguras = Array.isArray(citas) ? citas : [];
+
+  // ⭐ Resaltado de cita recién creada
+  const resaltadaId = useAgendaStore((s) => s.resaltadaId);
 
   return (
     <div className="grid grid-cols-[80px,repeat(7,1fr)] gap-1 text-xs">
@@ -56,9 +60,16 @@ export default function VistaSemana({
                 .map((c) => (
                   <div
                     key={c.id}
-                    className={`m-0.5 p-1 rounded border shadow-sm cursor-pointer ${colorPorTipo(
-                      c.tipo_cita
-                    )}`}
+                    className={`
+                      m-0.5 p-1 rounded border shadow-sm cursor-pointer truncate
+                      ${colorPorTipo(c.tipo_cita)}
+                      transition-all duration-300
+                      ${
+                        resaltadaId === c.id
+                          ? "ring-2 ring-yellow-400 bg-yellow-50 shadow-md"
+                          : ""
+                      }
+                    `}
                     onClick={() => onCitaClick(c)}
                   >
                     <div className="font-semibold truncate">

@@ -4,8 +4,11 @@ import { useAgendaStore } from "../store/agendaStore";
 export function useAgendaWS(userId) {
   const wsRef = useRef(null);
 
-  const cargarMes = useAgendaStore((s) => s.cargarMes);
-  const fechaActual = useAgendaStore((s) => s.fechaActual);
+  const addCita = useAgendaStore((s) => s.addCita);
+  const updateCita = useAgendaStore((s) => s.updateCita);
+  const removeCita = useAgendaStore((s) => s.removeCita);
+
+  const marcarResaltada = useAgendaStore((s) => s.marcarResaltada);
 
   useEffect(() => {
     let ws;
@@ -21,20 +24,11 @@ export function useAgendaWS(userId) {
 
     ws.onopen = () => {
       console.log("WS Agenda conectado");
-      try {
-        ws.send(JSON.stringify({ tipo: "suscribir", userId }));
-      } catch (e) {
-        console.warn("WS: no se pudo enviar mensaje inicial");
-      }
+      ws.send(JSON.stringify({ tipo: "suscribir", userId }));
     };
 
-    ws.onerror = () => {
-      console.warn("WS Agenda error. Modo offline.");
-    };
-
-    ws.onclose = () => {
-      console.warn("WS Agenda cerrado. Modo offline.");
-    };
+    ws.onerror = () => console.warn("WS Agenda error. Modo offline.");
+    ws.onclose = () => console.warn("WS Agenda cerrado. Modo offline.");
 
     ws.onmessage = (msg) => {
       try {
@@ -43,10 +37,20 @@ export function useAgendaWS(userId) {
 
         console.log("WS evento:", data);
 
-        // 🔥 refresco universal del mes
-        const f = new Date(fechaActual);
-        cargarMes(f.getFullYear(), f.getMonth() + 1);
+        switch (data.tipo) {
+          case "crear":
+            addCita(data.cita);
+            marcarResaltada(data.cita.id);
+            break;
 
+          case "editar":
+            updateCita(data.cita);
+            break;
+
+          case "eliminar":
+            removeCita(data.id);
+            break;
+        }
       } catch (e) {
         console.warn("WS mensaje inválido");
       }
@@ -57,5 +61,5 @@ export function useAgendaWS(userId) {
         ws.close();
       } catch (e) {}
     };
-  }, [userId, fechaActual]);
+  }, [userId]);
 }

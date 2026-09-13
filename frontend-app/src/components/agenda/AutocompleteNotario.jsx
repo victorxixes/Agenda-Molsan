@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import axios from "../../api/axios";
 
 export default function AutocompleteNotario({ value, onSelect }) {
-  const [busqueda, setBusqueda] = useState(value?.nombre || "");
+  const [busqueda, setBusqueda] = useState(value ? `${value.nombre} ${value.apellidos}` : "");
   const [todos, setTodos] = useState([]);
   const [filtrados, setFiltrados] = useState([]);
   const [abierto, setAbierto] = useState(false);
@@ -28,6 +28,13 @@ export default function AutocompleteNotario({ value, onSelect }) {
     cargar();
   }, []);
 
+  // 🔄 Actualizar búsqueda si cambia el valor inicial (modo editar)
+  useEffect(() => {
+    if (value?.nombre) {
+      setBusqueda(`${value.nombre} ${value.apellidos}`);
+    }
+  }, [value]);
+
   // 🔎 Filtrar por nombre + apellidos
   useEffect(() => {
     const q = busqueda.trim().toLowerCase();
@@ -37,9 +44,13 @@ export default function AutocompleteNotario({ value, onSelect }) {
       return;
     }
 
-    const lista = todos.filter((n) =>
-      `${n.nombre} ${n.apellidos}`.toLowerCase().includes(q)
-    );
+    const lista = todos
+      .filter((n) =>
+        `${n.nombre} ${n.apellidos}`.toLowerCase().includes(q)
+      )
+      .sort((a, b) =>
+        a.nombre.toLowerCase().startsWith(q) ? -1 : 1
+      );
 
     setFiltrados(lista);
     setAbierto(true);
@@ -143,6 +154,11 @@ export default function AutocompleteNotario({ value, onSelect }) {
               onClick={() => seleccionar(n)}
             >
               <strong>{n.nombre} {n.apellidos}</strong>
+              {n.municipio && (
+                <div className="text-xs text-gray-600">
+                  {n.municipio} ({n.provincia})
+                </div>
+              )}
             </div>
           ))}
         </div>

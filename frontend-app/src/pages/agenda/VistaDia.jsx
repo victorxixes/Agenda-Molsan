@@ -51,12 +51,26 @@ export default function VistaDia({ citas = [], onCitaClick, onCrearCita }) {
             }}
             onClick={() => onCitaClick(cita)}
           >
-            <div className="font-semibold">{cita.tipo_cita}</div>
-            <div>
-              {cita.hora_inicio} - {cita.hora_fin}
+            <div className="font-semibold truncate">
+              {cita.tipo_cita} — {cita.hora_inicio} - {cita.hora_fin}
             </div>
-            {cita.apoderado_nombre && (
-              <div className="text-[11px] mt-1">{cita.apoderado_nombre}</div>
+
+            <div className="truncate">
+              Notario: {cita.notario?.nombre} {cita.notario?.apellidos}
+            </div>
+
+            <div className="truncate">
+              Firma: {cita.tipo_firma}
+            </div>
+
+            <div className="truncate">
+              Apoderado: {cita.apoderado_nombre || "—"}
+            </div>
+
+            {cita.observaciones && (
+              <div className="text-[11px] mt-1 truncate">
+                Obs: {cita.observaciones}
+              </div>
             )}
           </div>
         ))}

@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useAgendaStore } from "../store/agendaStore";
+import { useAgendaStore } from "../../store/agendaStore";
 
 export default function AgendaToast() {
   const notificaciones = useAgendaStore((s) => s.notificaciones);

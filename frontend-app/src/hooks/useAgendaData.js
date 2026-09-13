@@ -5,15 +5,23 @@ import { useNotariasStore } from "../store/notariasStore";
 import { useAgendaWS } from "./useAgendaWS";
 
 export function useAgendaData(year, month) {
-  const { citas, cargarMes } = useAgendaStore();
-  const { apoderados, cargarApoderados } = useEmpleadosStore();
-  const { notarias, cargarNotarias } = useNotariasStore();
+  const citas = useAgendaStore((s) => s.citas);
+  const cargarMes = useAgendaStore((s) => s.cargarMes);
 
-  // WebSocket blindado
+  const apoderados = useEmpleadosStore((s) => s.apoderados);
+  const cargarApoderados = useEmpleadosStore((s) => s.cargarApoderados);
+
+  const notarias = useNotariasStore((s) => s.notarias);
+  const cargarNotarias = useNotariasStore((s) => s.cargarNotarias);
+
+  // WebSocket con handlers reales (crear/editar/eliminar)
   useAgendaWS(1);
 
   useEffect(() => {
+    // Carga inicial del mes
     cargarMes(year, month);
+
+    // Cargar datos auxiliares
     cargarApoderados();
     cargarNotarias();
   }, [year, month]);

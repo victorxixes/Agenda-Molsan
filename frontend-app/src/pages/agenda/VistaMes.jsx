@@ -104,18 +104,28 @@ export default function VistaMes({ year, month, citas, onDiaClick, onCitaClick }
                         onCitaClick(c);
                       }}
                     >
+                      {/* Tipo de cita + horas */}
                       <div className="font-semibold truncate">
-                        {c.tipo_cita} — {c.hora_inicio}
+                        {c.tipo_cita} — {c.hora_inicio} - {c.hora_fin}
                       </div>
 
+                      {/* Notario */}
                       <div className="truncate">
-                        Notario: {c.notario?.nombre} {c.notario?.apellidos}
+                        Notario:{" "}
+                        {c.notario_nombre ||
+                          c.notario?.nombre ||
+                          "—"}{" "}
+                        {c.notario_apellidos ||
+                          c.notario?.apellidos ||
+                          ""}
                       </div>
 
+                      {/* Tipo firma */}
                       <div className="truncate">
                         Firma: {c.tipo_firma}
                       </div>
 
+                      {/* Apoderado */}
                       <div className="truncate">
                         Apoderado: {c.apoderado_nombre || "—"}
                       </div>

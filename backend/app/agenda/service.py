@@ -8,12 +8,12 @@ from backend.app.empleados.models import Empleado
 
 
 def cita_con_relaciones(db: Session, cita: Cita):
-    # Obtener notario
+    # Obtener notario desde CTN (tabla Notaria)
     notario = None
     if cita.notario_id:
-        notario = db.query(Empleado).filter(Empleado.id == cita.notario_id).first()
+        notario = db.query(Notaria).filter(Notaria.id == cita.notario_id).first()
 
-    # Obtener apoderado
+    # Obtener apoderado desde Empleado (esto sí está bien)
     apoderado = None
     if cita.apoderado_id:
         apoderado = db.query(Empleado).filter(Empleado.id == cita.apoderado_id).first()
@@ -27,22 +27,35 @@ def cita_con_relaciones(db: Session, cita: Cita):
         "tipo_firma": cita.tipo_firma,
         "observaciones": cita.observaciones,
 
+        # NOTARIO (CTN)
         "notario_id": cita.notario_id,
-        "notario_nombre": f"{notario.nombre} {notario.apellidos}" if notario else None,
+        "notario_nombre": (
+            f"{notario.nombre} {notario.apellidos}" if notario else None
+        ),
         "notario": {
             "id": notario.id,
             "nombre": notario.nombre,
-            "apellidos": notario.apellidos
+            "apellidos": notario.apellidos,
+            "telefono": notario.telefono,
+            "municipio": notario.municipio,
+            "provincia": notario.provincia,
+            "vc": notario.vc,
+            "apoderado": notario.apoderado,
+            "observacion": notario.observacion,
         } if notario else None,
 
+        # APODERADO (Empleado)
         "apoderado_id": cita.apoderado_id,
-        "apoderado_nombre": f"{apoderado.nombre} {apoderado.apellidos}" if apoderado else None,
+        "apoderado_nombre": (
+            f"{apoderado.nombre} {apoderado.apellidos}" if apoderado else None
+        ),
         "apoderado": {
             "id": apoderado.id,
             "nombre": apoderado.nombre,
-            "apellidos": apoderado.apellidos
+            "apellidos": apoderado.apellidos,
         } if apoderado else None,
     }
+
 
 
 def obtener_cita(db: Session, cita_id: int):

@@ -14,7 +14,7 @@ export default function AutocompleteNotario({ value, onSelect }) {
   useEffect(() => {
     const cargar = async () => {
       try {
-        const res = await axios.get("/agenda-notarios/notarios");
+        const res = await axios.get("/agenda/notarios");
         const items = Array.isArray(res.data) ? res.data : [];
         setTodos(items);
       } catch (e) {

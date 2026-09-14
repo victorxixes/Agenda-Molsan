@@ -17,7 +17,12 @@ function colorPorTipo(tipo) {
   }
 }
 
-export default function VistaSemana({ fechaBase, citas = [], onCitaClick, onCrearCita }) {
+export default function VistaSemana({
+  fechaBase,
+  citas = [],
+  onCitaClick,
+  onCrearCita,
+}) {
   const citasSeguras = Array.isArray(citas) ? citas : [];
   const resaltadaId = useAgendaStore((s) => s.resaltadaId);
 
@@ -40,30 +45,38 @@ export default function VistaSemana({ fechaBase, citas = [], onCitaClick, onCrea
 
       {HORAS.map((h) => (
         <React.Fragment key={h}>
+          {/* Columna de horas */}
           <div className="h-16 flex items-start justify-end pr-2 text-gray-500">
             {h}
           </div>
 
+          {/* Columnas de días */}
           {DIAS.map((_, idx) => (
             <div
               key={`${h}-${idx}`}
-              className="h-16 border border-gray-100 hover:bg-gray-50 cursor-pointer"
+              className="h-16 border border-gray-100 hover:bg-gray-50 cursor-pointer relative"
               onDoubleClick={() => onCrearCita(obtenerFechaDia(idx))}
             >
               {citasSeguras
                 .filter((c) => {
-                  const fechaCita = new Date(c.fecha);
+                  // ⭐ FIX DEFINITIVO: evitar UTC
+                  const fechaCita = new Date(`${c.fecha}T12:00:00`);
+
                   const diaSemana = fechaCita.getDay(); // 1=Lun, 2=Mar...
 
                   // ⭐ Ajuste: Lunes=1 → idx=0
                   return diaSemana === idx + 1;
                 })
-                .filter((c) => c.hora_inicio.split(":")[0] === h.split(":")[0])
+                .filter((c) => {
+                  const horaCita = c.hora_inicio.split(":")[0];
+                  const horaBloque = h.split(":")[0];
+                  return horaCita === horaBloque;
+                })
                 .map((c) => (
                   <div
                     key={c.id}
                     className={`
-                      m-0.5 p-1 rounded border shadow-sm cursor-pointer truncate
+                      absolute inset-0 m-0.5 p-1 rounded border shadow-sm cursor-pointer truncate
                       ${colorPorTipo(c.tipo_cita)}
                       transition-all duration-300
                       ${
@@ -87,7 +100,7 @@ export default function VistaSemana({ fechaBase, citas = [], onCitaClick, onCrea
                     </div>
 
                     <div className="truncate">
-                      Apoderado: {c.apoderado_nombre || "—"}
+                      Apoderado: {c.apoderado || "—"}
                     </div>
                   </div>
                 ))}

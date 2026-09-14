@@ -4,7 +4,7 @@ export const getCitasMes = (year, month) =>
   axios.get(`/agenda/mes/${year}/${month}`);
 
 export const getCitasDia = (fecha) =>
-  axios.get(`/api/agenda/dia/${fecha}`);
+  axios.get(`/agenda/dia/${fecha}`);
 
 export const getCitasSemana = (fecha) =>
   axios.get(`/agenda/semana/${fecha}`);

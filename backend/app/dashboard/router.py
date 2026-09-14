@@ -14,10 +14,17 @@ from backend.app.agenda.service import (
 
 router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
 
+# ---------------------------------------------------------
+# DASHBOARD EXTENDIDO (usa los schemas y el service limpio)
+# ---------------------------------------------------------
 @router.get("/extendido", response_model=DashboardResponse)
 def dashboard_extendido(db: Session = Depends(get_db)):
     return obtener_dashboard(db)
-    
+
+
+# ---------------------------------------------------------
+# DASHBOARD SIMPLE (sin rutas, sin km, sin geocode)
+# ---------------------------------------------------------
 @router.get("/")
 def dashboard(db: Session = Depends(get_db)):
     hoy = date.today()

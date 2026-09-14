@@ -7,10 +7,11 @@ export default function AutocompleteNotario({ value, onSelect }) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    listarNotarias().then((res) => {
-      setNotarios(res.data.data);
-    });
-  }, []);
+  listarNotarias().then((res) => {
+    const lista = Array.isArray(res.data) ? res.data : [];
+    setNotarios(lista);
+  });
+}, []);
 
   const filtrados = notarios.filter((n) =>
     `${n.nombre} ${n.apellidos} ${n.municipio} ${n.provincia}`

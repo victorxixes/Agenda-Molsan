@@ -1,23 +1,76 @@
+import requests
+import math
+from backend.app.database import get_db
+from sqlalchemy.orm import Session
+
 # =========================================================
-# GEOCODIFICACIÓN OPTIMIZADA (con cache y sin 429)
+# COORDENADAS DE MOLSAN
+# =========================================================
+MOLSAN_LAT = 41.2230
+MOLSAN_LNG = 1.7250
+
+
+# =========================================================
+# DISTANCIA ENTRE DOS COORDENADAS (HAVERSINE)
+# =========================================================
+def distancia_km(lat1, lon1, lat2, lon2):
+    lat1, lon1, lat2, lon2 = map(math.radians, [
+        float(lat1), float(lon1), float(lat2), float(lon2)
+    ])
+
+    dlat = lat2 - lat1
+    dlon = lon2 - lon1
+
+    a = math.sin(dlat/2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon/2)**2
+    c = 2 * math.asin(math.sqrt(a))
+
+    return 6371 * c
+
+
+def distancia_molsan(lat, lng):
+    return distancia_km(MOLSAN_LAT, MOLSAN_LNG, lat, lng)
+
+
+# =========================================================
+# GEOCODE CON CACHE EN BD (VERSIÓN OPTIMIZADA)
 # =========================================================
 def geocode_cp(cp: str, municipio: str | None = None, provincia: str | None = None):
     """
     Optimización:
-    - Evita llamadas repetidas a Nominatim (429).
-    - No rompe el endpoint si Nominatim falla.
-    - Devuelve siempre un dict válido o None.
+    - Busca lat/lng/dirección en la BD (tabla CTN).
+    - Si existe → devuelve cache.
+    - Si no existe → llama a Nominatim UNA sola vez.
+    - Guarda el resultado en BD.
+    - Maneja errores 429 sin romper nada.
     """
 
     if not cp:
         return None
 
-    # Construcción de query
-    query = cp
-    if municipio:
-        query += f" {municipio}"
-    if provincia:
-        query += f" {provincia}"
+    db: Session = next(get_db())
+
+    # Import del modelo CTN
+    from backend.app.ctn.models import Notaria
+
+    # Buscar notaría en BD
+    notaria = (
+        db.query(Notaria)
+        .filter(Notaria.cp == cp,
+                Notaria.municipio == municipio,
+                Notaria.provincia == provincia)
+        .first()
+    )
+
+    # ✔ Si ya tiene coordenadas → devolver cache
+    if notaria and notaria.lat and notaria.lng and notaria.direccion_real:
+        return {
+            "lat": notaria.lat,
+            "lng": notaria.lng,
+            "direccion_real": notaria.direccion_real,
+        }
+
+    # ✔ Si no hay cache → geocodificar UNA vez
+    query = f"{cp} {municipio or ''} {provincia or ''}".strip()
 
     url = "https://nominatim.openstreetmap.org/search"
     params = {
@@ -34,7 +87,7 @@ def geocode_cp(cp: str, municipio: str | None = None, provincia: str | None = No
     try:
         res = requests.get(url, params=params, headers=headers, timeout=5)
 
-        # Si Nominatim devuelve 429 → no romper nada
+        # Manejo explícito del error 429
         if res.status_code == 429:
             print("Geocode error: 429 (rate limit exceeded)")
             return None
@@ -47,10 +100,21 @@ def geocode_cp(cp: str, municipio: str | None = None, provincia: str | None = No
         if not data:
             return None
 
+        lat = float(data[0]["lat"])
+        lng = float(data[0]["lon"])
+        direccion_real = data[0]["display_name"]
+
+        # ✔ Guardar en BD para cache permanente
+        if notaria:
+            notaria.lat = lat
+            notaria.lng = lng
+            notaria.direccion_real = direccion_real
+            db.commit()
+
         return {
-            "direccion_real": data[0]["display_name"],
-            "lat": float(data[0]["lat"]),
-            "lng": float(data[0]["lon"])
+            "lat": lat,
+            "lng": lng,
+            "direccion_real": direccion_real,
         }
 
     except Exception as e:

@@ -13,13 +13,14 @@ function colorPorTipo(tipo) {
   }
 }
 
-export default function VistaDia({ citas = [], onCitaClick, onCrearCita }) {
+export default function VistaDia({ fechaDia, citas = [], onCitaClick, onCrearCita }) {
   const citasSeguras = Array.isArray(citas) ? citas : [];
   const resaltadaId = useAgendaStore((s) => s.resaltadaId);
 
+  const fechaNormalizada = fechaDia.toLocaleDateString("sv-SE");
+
   return (
     <div className="grid grid-cols-[80px,1fr] gap-2">
-      {/* Columna de horas */}
       <div className="text-xs text-gray-500 flex flex-col">
         {HORAS.map((h) => (
           <div key={h} className="h-12 flex items-start justify-end pr-2">
@@ -28,15 +29,12 @@ export default function VistaDia({ citas = [], onCitaClick, onCrearCita }) {
         ))}
       </div>
 
-      {/* Columna de citas */}
       <div className="relative border rounded-lg bg-white">
         {HORAS.map((h) => (
           <div
             key={h}
             className="h-12 border-b border-gray-100 hover:bg-gray-50 cursor-pointer"
-            onDoubleClick={() =>
-              onCrearCita(new Date().toISOString().slice(0, 10))
-            }
+            onDoubleClick={() => onCrearCita(fechaNormalizada)}
           />
         ))}
 

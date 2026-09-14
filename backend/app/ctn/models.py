@@ -35,10 +35,6 @@ class Notaria(Base):
     # Observaciones
     observacion = Column(Text, nullable=True)
 
-    # ⭐ Coordenadas cacheadas (nuevo)
-    lat = Column(String(50), nullable=True)
-    lng = Column(String(50), nullable=True)
-    direccion_real = Column(Text, nullable=True)
 
     # Relación opcional con tabla de apoderados
     apoderado_id = Column(Integer, ForeignKey("apoderados.id"), nullable=True)

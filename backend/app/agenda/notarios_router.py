@@ -16,15 +16,29 @@ def obtener_notarios(db: Session = Depends(get_db)):
     notarias = listar_notarias(db)
 
     resultado = []
+
     for n in notarias:
 
-        # Geolocalización real
-        geo = geocode_cp(n.cp, n.municipio, n.provincia)
+        # -----------------------------
+        # Geolocalización segura (sin 429)
+        # -----------------------------
+        geo = None
+        try:
+            geo = geocode_cp(n.cp, n.municipio, n.provincia)
+        except Exception as e:
+            print("Geocode error:", e)
+            geo = None
 
         lat = geo["lat"] if geo else None
         lng = geo["lng"] if geo else None
 
-        distancia_km = distancia_molsan(lat, lng) if geo else None
+        # -----------------------------
+        # Distancia segura
+        # -----------------------------
+        try:
+            distancia_km = distancia_molsan(lat, lng) if lat and lng else None
+        except Exception:
+            distancia_km = None
 
         resultado.append({
             "id": n.id,
@@ -74,7 +88,11 @@ def obtener_ruta_notarios(db: Session = Depends(get_db)):
     lista_geo = []
 
     for n in notarias:
-        geo = geocode_cp(n.cp, n.municipio, n.provincia)
+        geo = None
+        try:
+            geo = geocode_cp(n.cp, n.municipio, n.provincia)
+        except Exception:
+            geo = None
 
         if geo:
             lista_geo.append({
@@ -83,7 +101,5 @@ def obtener_ruta_notarios(db: Session = Depends(get_db)):
                 "lng": geo["lng"]
             })
 
-    # Cálculo de ruta completa
     ruta = ruta_molsan(lista_geo)
-
     return ruta

@@ -49,6 +49,8 @@ from backend.app.seguridad.obtener_ficha_empleado import router as ficha_emplead
 from backend.app.seguridad.auditoria.router import router as seguridad_auditoria_router
 from backend.app.seguridad.logs.router import router as seguridad_logs_router
 from backend.app.seguridad.admin_router import router as admin_router
+from backend.app.agenda.notarios_router import router as agenda_notarios_router
+
 
 from backend.app.empleados.router import router as empleados_router
 from backend.app.maestros.router import router as maestros_router
@@ -90,6 +92,8 @@ app.include_router(ficha_empleado_router, prefix="/api")
 app.include_router(seguridad_auditoria_router, prefix="/api")
 app.include_router(seguridad_logs_router, prefix="/api")
 app.include_router(admin_router, prefix="/api")
+app.include_router(agenda_notarios_router, prefix="/api")
+
 
 app.include_router(empleados_router, prefix="/api")
 app.include_router(maestros_router, prefix="/api")

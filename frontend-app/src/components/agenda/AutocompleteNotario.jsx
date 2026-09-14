@@ -24,13 +24,16 @@ export default function AutocompleteNotario({ value, onSelect }) {
 
     const notarioCompleto = {
       id: n.id,
-      nombre: n.nombre,
-      apellidos: n.apellidos,
+      codigo: n.codigo || "",
+      nombre: n.nombre || "",
+      apellidos: n.apellidos || "",
+      nif: n.nif || "",
       telefono: n.telefono || "",
-      direccion: `${n.municipio}, ${n.provincia}`,
-      vc: n.vc,
-      apoderado_id: n.apoderado_id || null,
-      apoderado_s: n.apoderado || n.apoderado_s || "",
+      provincia: n.provincia || "",
+      municipio: n.municipio || "",
+      direccion: n.direccion || "",
+      vc: n.vc || "",
+      apoderado: n.apoderado_s || n.apoderado || "",
       observacion: n.observacion || "",
       tipo_firma: n.vc === "SI" ? "VideoConferencia" : "Presencial",
     };

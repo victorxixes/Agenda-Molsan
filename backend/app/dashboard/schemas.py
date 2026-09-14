@@ -1,7 +1,6 @@
 from pydantic import BaseModel
 from typing import List, Optional
 
-
 # =========================================================
 # AGENDA — Próximas citas
 # =========================================================
@@ -9,37 +8,21 @@ class CitaProxima(BaseModel):
     fecha: str
     notario: Optional[str]
     apoderado: Optional[str]
-    tipo_firma: str          # ✔ siempre existe en tu service
+    tipo_firma: str
     hora_inicio: str
     hora_fin: str
 
 
 # =========================================================
-# RUTAS — Tramos y ruta completa
-# =========================================================
-class TramoRuta(BaseModel):
-    desde: str
-    hasta: str
-    km: float
-
-
-class RutaCompleta(BaseModel):
-    distancia_total_km: float
-    tramos: List[TramoRuta]
-
-    class Config:
-        extra = "allow"
-
-# =========================================================
-# APODERADOS — Ranking
+# APODERADOS — Ranking (SIN KM, SIN RUTAS)
 # =========================================================
 class ApoderadoRanking(BaseModel):
     apoderado_id: int
     nombre: str
     firmas_presencial: int
-    km_por_cita: List[float]
-    km_total: float
-    ruta_completa: Optional[RutaCompleta]
+    km_por_cita: List[float]     # ahora siempre []
+    km_total: float              # ahora siempre 0
+    ruta_completa: Optional[dict] = None  # ahora siempre None
 
 
 # =========================================================

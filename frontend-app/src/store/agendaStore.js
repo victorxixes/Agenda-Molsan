@@ -12,11 +12,15 @@ function normalizarCita(c) {
     hora_fin: c.hora_fin,
     tipo_cita: c.tipo_cita,
     tipo_firma: c.tipo_firma,
-    notario_id: c.notario_id,
-    notario_nombre: c.notario_nombre,
-    apoderado_id: c.apoderado_id ?? null,
-    apoderado_nombre: c.apoderado_nombre ?? "",
     observaciones: c.observaciones ?? "",
+
+    notario_id: c.notario_id,
+    notario_nombre: c.notario_nombre ?? "",
+    notario: c.notario ?? null,
+
+    apoderado_id: c.apoderado_id,
+    apoderado_nombre: c.apoderado_nombre ?? "",
+    apoderado: c.apoderado ?? null,
   };
 }
 
@@ -34,11 +38,7 @@ export const useAgendaStore = create((set, get) => ({
 
     const res = await api.getCitasMes(year, month);
 
-    console.log("📡 RAW /agenda/mes:", res.data);
-
     const lista = res?.data?.citas ?? res?.data ?? [];
-
-    console.log("📡 lista normalizada:", lista);
 
     set({
       citas: Array.isArray(lista) ? lista.map(normalizarCita) : [],

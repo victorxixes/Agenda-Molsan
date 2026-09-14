@@ -25,7 +25,7 @@ class Notaria(Base):
     provincia = Column(String(100), nullable=True, index=True)
     municipio = Column(String(100), nullable=True, index=True)
 
-    # VC (valor catastral o código interno)
+    # VC
     vc = Column(String(50), nullable=True, index=True)
 
     # Apoderados
@@ -35,7 +35,12 @@ class Notaria(Base):
     # Observaciones
     observacion = Column(Text, nullable=True)
 
-    # Relación opcional con tabla de apoderados (si existe)
+    # ⭐ Coordenadas cacheadas (nuevo)
+    lat = Column(String(50), nullable=True)
+    lng = Column(String(50), nullable=True)
+    direccion_real = Column(Text, nullable=True)
+
+    # Relación opcional con tabla de apoderados
     apoderado_id = Column(Integer, ForeignKey("apoderados.id"), nullable=True)
 
     # Relación con Agenda
@@ -45,7 +50,7 @@ class Notaria(Base):
         lazy="selectin"
     )
 
-# Índices adicionales para acelerar búsquedas
+# Índices adicionales
 Index("idx_notaria_nombre", Notaria.nombre)
 Index("idx_notaria_apellidos", Notaria.apellidos)
 Index("idx_notaria_apoderado", Notaria.apoderado)

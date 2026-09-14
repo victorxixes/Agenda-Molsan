@@ -10,15 +10,12 @@ export default function AutocompleteNotario({ value, onSelect }) {
 
   const ref = useRef(null);
 
-  // Cargar todos los notarios una sola vez
+  // Cargar notarios desde backend real
   useEffect(() => {
     const cargar = async () => {
       try {
-        const res = await axios.get("/ctn/notarias", {
-          params: { page_size: 5000 },
-        });
-
-        const items = Array.isArray(res.data?.items) ? res.data.items : [];
+        const res = await axios.get("/agenda/notarios");
+        const items = Array.isArray(res.data) ? res.data : [];
         setTodos(items);
       } catch (e) {
         console.error("Error cargando notarios:", e);
@@ -75,33 +72,17 @@ export default function AutocompleteNotario({ value, onSelect }) {
     setBusqueda(`${n.nombre} ${n.apellidos}`);
     setAbierto(false);
 
-    const direccion =
-      n.direccion_notaria ||
-      n.direccion ||
-      n.direccion_completa ||
-      "";
-
-    const apoderadoTexto =
-      n.apoderado ||
-      n.apoderado_s ||
-      "";
-
-    const observaciones =
-      n.observacion ||
-      n.observaciones ||
-      n.obs ||
-      "";
-
-    let tipo_firma = "Presencial";
-    if (n.vc === "SI") tipo_firma = "VideoConferencia";
+    const tipo_firma =
+      n.vc === "SI" ? "VideoConferencia" : "Presencial";
 
     onSelect({
-      ...n,
-      direccion,
-      apoderadoTexto,
-      apoderado_id: n.apoderado_id || null,
-      observaciones,
+      id: n.id,
+      nombre: n.nombre,
+      apellidos: n.apellidos,
+      direccion: n.direccion,
       tipo_firma,
+      apoderado_id: n.apoderado_id || null,
+      observaciones: n.observacion || "",
     });
   };
 
@@ -141,6 +122,9 @@ export default function AutocompleteNotario({ value, onSelect }) {
               <strong>
                 {n.nombre} {n.apellidos}
               </strong>
+              <div className="text-xs text-gray-500">
+                {n.municipio} ({n.provincia})
+              </div>
             </div>
           ))}
         </div>

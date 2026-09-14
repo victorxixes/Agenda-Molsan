@@ -33,16 +33,20 @@ def cita_con_relaciones(db: Session, cita: Cita):
             f"{notario.nombre} {notario.apellidos}" if notario else None
         ),
         "notario": {
-            "id": notario.id,
-            "nombre": notario.nombre,
-            "apellidos": notario.apellidos,
-            "telefono": notario.telefono,
-            "municipio": notario.municipio,
-            "provincia": notario.provincia,
-            "vc": notario.vc,
-            "apoderado": notario.apoderado,
-            "observacion": notario.observacion,
-        } if notario else None,
+           "id": notario.id,
+           "codigo": getattr(notario, "codigo", None),
+           "nif": getattr(notario, "nif", None),
+           "nombre": notario.nombre,
+           "apellidos": notario.apellidos,
+           "telefono": notario.telefono,
+           "provincia": notario.provincia,
+           "municipio": notario.municipio,
+           "direccion": getattr(notario, "direccion", None),
+           "vc": notario.vc,
+           "apoderado": getattr(notario, "apoderado", None),
+           "observacion": getattr(notario, "observacion", None),
+}
+if notario else None,
 
         # Apoderado (texto del Excel o texto de la cita)
         "apoderado_id": cita.apoderado_id,

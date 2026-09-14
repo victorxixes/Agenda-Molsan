@@ -1,5 +1,6 @@
 import { useAgendaStore } from "../../store/agendaStore";
 
+// ⭐ Solo días laborales
 const DIAS_SEMANA = ["Lun", "Mar", "Mié", "Jue", "Vie"];
 
 function getMatrix(fechaBase) {
@@ -10,18 +11,23 @@ function getMatrix(fechaBase) {
   const month = f.getMonth();
   const firstDay = new Date(year, month, 1);
 
+  // Lunes = 0, Domingo = 6
   const start = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1;
+
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
   const cells = [];
   for (let i = 0; i < start; i++) cells.push(null);
   for (let d = 1; d <= daysInMonth; d++) cells.push(new Date(year, month, d));
-  while (cells.length % 7 !== 0) cells.push(null);
 
+  // ⭐ Ajustar matriz a semanas laborales (5 columnas)
   const weeks = [];
   for (let i = 0; i < cells.length; i += 7) {
-    weeks.push(cells.slice(i, i + 7));
+    const semanaCompleta = cells.slice(i, i + 7);
+    const soloLaborales = semanaCompleta.slice(0, 5); // Lunes a Viernes
+    weeks.push(soloLaborales);
   }
+
   return weeks;
 }
 
@@ -40,14 +46,14 @@ export default function VistaMes({ year, month, citas, onDiaClick, onCitaClick }
   const citasSeguras = Array.isArray(citas) ? citas : [];
   const resaltadaId = useAgendaStore((s) => s.resaltadaId);
 
-  // ⭐ FIX DEFINITIVO: NO usar toISOString()
+  // ⭐ FIX definitivo: NO usar toISOString()
   const fechaBase = `${year}-${String(month).padStart(2, "0")}-01`;
 
   const matrix = getMatrix(fechaBase);
 
   return (
     <div className="text-xs">
-      <div className="grid grid-cols-7 mb-2">
+      <div className="grid grid-cols-5 mb-2">
         {DIAS_SEMANA.map((d) => (
           <div key={d} className="text-center font-semibold text-gray-700">
             {d}
@@ -55,7 +61,7 @@ export default function VistaMes({ year, month, citas, onDiaClick, onCitaClick }
         ))}
       </div>
 
-      <div className="grid grid-cols-7 gap-1">
+      <div className="grid grid-cols-5 gap-1">
         {matrix.map((week, wi) =>
           week.map((day, di) => {
             if (!day) {
@@ -134,6 +140,4 @@ export default function VistaMes({ year, month, citas, onDiaClick, onCitaClick }
       </div>
     </div>
   );
-}
-
 }

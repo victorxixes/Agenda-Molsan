@@ -14,7 +14,7 @@ export default function AutocompleteNotario({ value, onSelect }) {
   useEffect(() => {
     const cargar = async () => {
       try {
-        // 🔥 Ruta correcta con /api
+        // 🔥 RUTA CORRECTA
         const res = await axios.get("/agenda-notarios/notarios");
         const items = Array.isArray(res.data) ? res.data : [];
         setTodos(items);
@@ -73,7 +73,8 @@ export default function AutocompleteNotario({ value, onSelect }) {
     setBusqueda(`${n.nombre} ${n.apellidos}`);
     setAbierto(false);
 
-    const tipo_firma = n.vc === "SI" ? "VideoConferencia" : "Presencial";
+    const tipo_firma =
+      n.vc === "SI" ? "VideoConferencia" : "Presencial";
 
     onSelect({
       id: n.id,

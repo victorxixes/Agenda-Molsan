@@ -37,7 +37,7 @@ class Notaria(Base):
 
 
     # Relación opcional con tabla de apoderados
-    apoderado_id = Column(Integer, ForeignKey("apoderados.id"), nullable=True)
+    apoderado_id = Column(Integer, ForeignKey("empleados.id"), nullable=True)
 
     # Relación con Agenda
     citas = relationship(

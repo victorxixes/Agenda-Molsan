@@ -30,7 +30,9 @@ export default function ModalNuevaCita({
     setForm((f) => ({ ...f, [campo]: valor }));
   };
 
+  // ============================
   // Rellenar datos si estamos editando
+  // ============================
   useEffect(() => {
     if (modo === "editar" && cita) {
       setForm({
@@ -61,6 +63,16 @@ export default function ModalNuevaCita({
       }
     }
   }, [modo, cita]);
+
+  // ============================
+  // Rellenar apoderado al seleccionar notario
+  // ============================
+  useEffect(() => {
+    if (notarioSeleccionado) {
+      handleChange("apoderado_id", notarioSeleccionado.apoderado_id || null);
+      handleChange("apoderado_visible", notarioSeleccionado.apoderado_s || "");
+    }
+  }, [notarioSeleccionado]);
 
   const guardar = async () => {
     setLoading(true);
@@ -146,8 +158,6 @@ export default function ModalNuevaCita({
 
                 handleChange("notario_id", n.id);
                 handleChange("tipo_firma", n.tipo_firma);
-                handleChange("apoderado_id", n.apoderado_id || null);
-                handleChange("apoderado_visible", n.apoderado_s || "");
                 handleChange("observaciones", n.observacion || "");
               }}
             />

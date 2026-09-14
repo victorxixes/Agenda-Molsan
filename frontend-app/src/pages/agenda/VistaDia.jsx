@@ -16,7 +16,6 @@ function colorPorTipo(tipo) {
 export default function VistaDia({ citas = [], onCitaClick, onCrearCita }) {
   const citasSeguras = Array.isArray(citas) ? citas : [];
 
-  // ⭐ Resaltado de cita recién creada
   const resaltadaId = useAgendaStore((s) => s.resaltadaId);
 
   return (
@@ -49,11 +48,7 @@ export default function VistaDia({ citas = [], onCitaClick, onCrearCita }) {
               absolute left-4 right-4 mt-1 p-2 text-xs rounded border shadow-sm cursor-pointer
               ${colorPorTipo(cita.tipo_cita)}
               transition-all duration-300
-              ${
-                resaltadaId === cita.id
-                  ? "ring-2 ring-yellow-400 bg-yellow-50 shadow-md"
-                  : ""
-              }
+              ${resaltadaId === cita.id ? "ring-2 ring-yellow-400 bg-yellow-50 shadow-md" : ""}
             `}
             style={{
               top: (parseInt(cita.hora_inicio.split(":")[0], 10) - 9) * 48,
@@ -70,7 +65,7 @@ export default function VistaDia({ citas = [], onCitaClick, onCrearCita }) {
             </div>
 
             <div className="truncate">
-              Notario: {cita.notario?.nombre} {cita.notario?.apellidos}
+              Notario: {cita.notario_nombre || "—"}
             </div>
 
             <div className="truncate">

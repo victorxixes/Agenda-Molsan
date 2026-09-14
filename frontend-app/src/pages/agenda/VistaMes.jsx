@@ -9,6 +9,8 @@ function getMatrix(fechaBase) {
   const year = f.getFullYear();
   const month = f.getMonth();
   const firstDay = new Date(year, month, 1);
+
+  // Lunes = 0, Domingo = 6
   const start = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1;
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
@@ -65,7 +67,12 @@ export default function VistaMes({ year, month, citas, onDiaClick, onCitaClick }
             }
 
             const fechaStr = day.toISOString().slice(0, 10);
-            const citasDia = citasSeguras.filter((c) => c.fecha === fechaStr);
+
+            // ⭐ CORRECCIÓN CRÍTICA: normalizar fecha del backend
+            const citasDia = citasSeguras.filter((c) => {
+              const fechaCita = (c.fecha || "").slice(0, 10);
+              return fechaCita === fechaStr;
+            });
 
             return (
               <div

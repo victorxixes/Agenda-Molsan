@@ -45,7 +45,8 @@ export default function VistaSemana({ citas = [], onCitaClick, onCrearCita }) {
             >
               {citasSeguras
                 .filter((c) => {
-                  const fecha = new Date(c.fecha);
+                  const fechaCita = (c.fecha || "").slice(0, 10);
+                  const fecha = new Date(fechaCita);
                   const diaSemana = fecha.getDay(); // 0=Dom,1=Lun...
                   const columna = idx + 1; // 1=Lun,...7=Dom
 

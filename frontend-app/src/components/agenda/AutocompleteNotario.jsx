@@ -14,7 +14,8 @@ export default function AutocompleteNotario({ value, onSelect }) {
   useEffect(() => {
     const cargar = async () => {
       try {
-        const res = await axios.get("/agenda/notarios");
+        // 🔥 Ruta correcta con /api
+        const res = await axios.get("/api/agenda/notarios");
         const items = Array.isArray(res.data) ? res.data : [];
         setTodos(items);
       } catch (e) {
@@ -72,8 +73,7 @@ export default function AutocompleteNotario({ value, onSelect }) {
     setBusqueda(`${n.nombre} ${n.apellidos}`);
     setAbierto(false);
 
-    const tipo_firma =
-      n.vc === "SI" ? "VideoConferencia" : "Presencial";
+    const tipo_firma = n.vc === "SI" ? "VideoConferencia" : "Presencial";
 
     onSelect({
       id: n.id,
@@ -82,6 +82,7 @@ export default function AutocompleteNotario({ value, onSelect }) {
       direccion: n.direccion,
       tipo_firma,
       apoderado_id: n.apoderado_id || null,
+      apoderado_s: n.apoderado_s || "",
       observaciones: n.observacion || "",
     });
   };

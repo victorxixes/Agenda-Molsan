@@ -15,7 +15,6 @@ function colorPorTipo(tipo) {
 
 export default function VistaDia({ citas = [], onCitaClick, onCrearCita }) {
   const citasSeguras = Array.isArray(citas) ? citas : [];
-
   const resaltadaId = useAgendaStore((s) => s.resaltadaId);
 
   return (
@@ -41,48 +40,49 @@ export default function VistaDia({ citas = [], onCitaClick, onCrearCita }) {
           />
         ))}
 
-        {citasSeguras.map((cita) => (
-          <div
-            key={cita.id}
-            className={`
-              absolute left-4 right-4 mt-1 p-2 text-xs rounded border shadow-sm cursor-pointer
-              ${colorPorTipo(cita.tipo_cita)}
-              transition-all duration-300
-              ${resaltadaId === cita.id ? "ring-2 ring-yellow-400 bg-yellow-50 shadow-md" : ""}
-            `}
-            style={{
-              top: (parseInt(cita.hora_inicio.split(":")[0], 10) - 9) * 48,
-              height:
-                (parseInt(cita.hora_fin.split(":")[0], 10) -
-                  parseInt(cita.hora_inicio.split(":")[0], 10)) *
-                  48 -
-                4,
-            }}
-            onClick={() => onCitaClick(cita)}
-          >
-            <div className="font-semibold truncate">
-              {cita.tipo_cita} — {cita.hora_inicio} - {cita.hora_fin}
-            </div>
+        {citasSeguras.map((cita) => {
+          const inicioHora = parseInt(cita.hora_inicio.split(":")[0], 10);
+          const finHora = parseInt(cita.hora_fin.split(":")[0], 10);
 
-            <div className="truncate">
-              Notario: {cita.notario_nombre || "—"}
-            </div>
-
-            <div className="truncate">
-              Firma: {cita.tipo_firma}
-            </div>
-
-            <div className="truncate">
-              Apoderado: {cita.apoderado_nombre || "—"}
-            </div>
-
-            {cita.observaciones && (
-              <div className="text-[11px] mt-1 truncate">
-                Obs: {cita.observaciones}
+          return (
+            <div
+              key={cita.id}
+              className={`
+                absolute left-4 right-4 mt-1 p-2 text-xs rounded border shadow-sm cursor-pointer
+                ${colorPorTipo(cita.tipo_cita)}
+                transition-all duration-300
+                ${resaltadaId === cita.id ? "ring-2 ring-yellow-400 bg-yellow-50 shadow-md" : ""}
+              `}
+              style={{
+                top: (inicioHora - 9) * 48,
+                height: (finHora - inicioHora) * 48 - 4,
+              }}
+              onClick={() => onCitaClick(cita)}
+            >
+              <div className="font-semibold truncate">
+                {cita.tipo_cita} — {cita.hora_inicio} - {cita.hora_fin}
               </div>
-            )}
-          </div>
-        ))}
+
+              <div className="truncate">
+                Notario: {cita.notario_nombre || "—"}
+              </div>
+
+              <div className="truncate">
+                Firma: {cita.tipo_firma}
+              </div>
+
+              <div className="truncate">
+                Apoderado: {cita.apoderado_nombre || "—"}
+              </div>
+
+              {cita.observaciones && (
+                <div className="text-[11px] mt-1 truncate">
+                  Obs: {cita.observaciones}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

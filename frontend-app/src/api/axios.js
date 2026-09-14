@@ -1,13 +1,8 @@
 import axios from "axios";
 
-const base = import.meta.env.VITE_API_URL;
-
-// 🔥 Elimina /api si el usuario lo puso por error
-const cleanBase = base.replace(/\/api$/, "");
-
 const instance = axios.create({
-  baseURL: cleanBase,      // 🔥 sin /api
-  withCredentials: false,  // 🔥 Render bloquea cookies cross-domain
+  baseURL: import.meta.env.VITE_API_URL, // 🔥 incluye /api
+  withCredentials: false,               // 🔥 Render bloquea cookies cross-domain
 });
 
 // Interceptor de request

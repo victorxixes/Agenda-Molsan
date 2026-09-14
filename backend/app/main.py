@@ -34,6 +34,10 @@ app.add_middleware(
     allow_headers=["*"],     # Authorization, Content-Type, etc.
 )
 
+# Ejecutar fix de schema
+from backend.app.agenda.fix_schema import fix_agenda_schema
+fix_agenda_schema()
+
 # ---------------------------------------------------------
 # STATIC FILES
 # ---------------------------------------------------------
@@ -60,6 +64,7 @@ from backend.app.seguridad.logs.router import router as seguridad_logs_router
 from backend.app.seguridad.admin_router import router as admin_router
 
 # ⭐ Agenda simple (sin geocode)
+
 from backend.app.agenda.notarios_router import router as agenda_notarios_router
 from backend.app.agenda.router import router as agenda_router
 

@@ -2,7 +2,24 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import os
- 
+
+from sqlalchemy import inspect
+from backend.app.database import engine
+
+def auto_migrate_ctn():
+    inspector = inspect(engine)
+    columns = [col["name"] for col in inspector.get_columns("ctn_notarios")]
+
+    with engine.connect() as conn:
+        if "lat" not in columns:
+            conn.execute("ALTER TABLE ctn_notarios ADD COLUMN lat VARCHAR(50);")
+        if "lng" not in columns:
+            conn.execute("ALTER TABLE ctn_notarios ADD COLUMN lng VARCHAR(50);")
+        if "direccion_real" not in columns:
+            conn.execute("ALTER TABLE ctn_notarios ADD COLUMN direccion_real TEXT;")
+
+auto_migrate_ctn()
+
 # ---------------------------------------------------------
 # APP
 # ---------------------------------------------------------

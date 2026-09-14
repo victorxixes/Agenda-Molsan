@@ -20,8 +20,6 @@ export default function ModalNuevaCita({
     notario_id: null,
     tipo_firma: "",
     apoderado_id: null,
-    apoderado_visible: "",
-    apoderado_nombre: "",
     observaciones: "",
   });
 
@@ -41,31 +39,20 @@ export default function ModalNuevaCita({
         notario_id: cita.notario_id || null,
         tipo_firma: cita.tipo_firma || "",
         apoderado_id: cita.apoderado_id || null,
-        apoderado_visible: cita.apoderado_nombre || "",
-        apoderado_nombre: cita.apoderado_nombre || "",
         observaciones: cita.observaciones || "",
       });
 
       if (cita.notario) {
         setNotarioSeleccionado({
-          ...cita.notario,
-          direccion:
-            cita.notario.direccion_notaria ||
-            cita.notario.direccion ||
-            cita.notario.direccion_completa ||
-            "",
-          apoderadoTexto:
-            cita.notario.apoderado ||
-            cita.notario.apoderado_s ||
-            "",
-          apoderado_id: cita.notario.apoderado_id || null,
-          observaciones:
-            cita.notario.observacion ||
-            cita.notario.observaciones ||
-            cita.notario.obs ||
-            "",
+          id: cita.notario.id,
+          nombre: cita.notario.nombre,
+          apellidos: cita.notario.apellidos,
+          direccion: cita.notario.direccion || "",
+          apoderado_id: cita.apoderado_id || null,
+          observaciones: cita.observaciones || "",
           tipo_firma:
-            cita.notario.vc === "SI" ? "VideoConferencia" : "Presencial",
+            cita.tipo_firma ||
+            (cita.notario.vc === "SI" ? "VideoConferencia" : "Presencial"),
         });
       }
     }
@@ -82,12 +69,10 @@ export default function ModalNuevaCita({
       notario_id: form.notario_id,
       tipo_firma: form.tipo_firma,
       apoderado_id: form.apoderado_id,
-      apoderado_nombre: form.apoderado_nombre,
       observaciones: form.observaciones,
     };
 
     try {
-      console.log("Payload enviado:", payload);
       await onGuardar(payload);
     } catch (err) {
       console.error("ERROR AL GUARDAR CITA:", err);
@@ -154,18 +139,9 @@ export default function ModalNuevaCita({
               onSelect={(n) => {
                 setNotarioSeleccionado(n);
 
-                // ID del notario
                 handleChange("notario_id", n.id);
-
-                // Tipo firma (VC / presencial)
                 handleChange("tipo_firma", n.tipo_firma);
-
-                // Apoderado: el de la notaría, no tú
                 handleChange("apoderado_id", n.apoderado_id || null);
-                handleChange("apoderado_visible", n.apoderadoTexto || "");
-                handleChange("apoderado_nombre", n.apoderadoTexto || "");
-
-                // Observaciones del notario
                 handleChange("observaciones", n.observaciones || "");
               }}
             />
@@ -202,19 +178,6 @@ export default function ModalNuevaCita({
               className="w-full border rounded px-2 py-1"
               value={form.tipo_firma}
               onChange={(e) => handleChange("tipo_firma", e.target.value)}
-            />
-          </div>
-
-          {/* Apoderado visible (solo lectura) */}
-          <div>
-            <label className="block mb-1 text-gray-700">Apoderado</label>
-            <input
-              className="w-full border rounded px-2 py-1"
-              value={form.apoderado_visible}
-              onChange={(e) =>
-                handleChange("apoderado_visible", e.target.value)
-              }
-              disabled
             />
           </div>
 

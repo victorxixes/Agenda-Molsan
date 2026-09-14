@@ -85,11 +85,10 @@ export const useAgendaStore = create((set, get) => ({
   // ============================
   // REFRESCAR VISTA ACTUAL
   // ============================
-  refrescarVista: async () => {
-    const fecha = get().fechaActual;
-    const d = new Date(fecha);
-    return get().cargarMes(d.getFullYear(), d.getMonth() + 1);
-  },
+  refrescarVista: async (year, month) => {
+  return get().cargarMes(year, month);
+},
+
 
   // ============================
   // WS: AÑADIR / EDITAR / ELIMINAR

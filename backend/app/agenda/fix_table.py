@@ -13,7 +13,7 @@ def fix_table():
             DROP TABLE IF EXISTS citas CASCADE;
         """))
 
-        # Crear tabla nueva correcta SIN estado
+        # Crear tabla nueva correcta CON apoderado (texto del Excel)
         conn.execute(text("""
             CREATE TABLE agenda_citas (
                 id SERIAL PRIMARY KEY,
@@ -23,7 +23,8 @@ def fix_table():
                 tipo_cita VARCHAR NOT NULL,
                 notario_id INTEGER,
                 tipo_firma VARCHAR,
-                apoderado_id INTEGER,
+                apoderado VARCHAR(150),      -- ⭐ TEXTO DEL EXCEL
+                apoderado_id INTEGER,        -- ⭐ RELACIÓN OPCIONAL CON EMPLEADOS
                 observaciones VARCHAR
             );
         """))

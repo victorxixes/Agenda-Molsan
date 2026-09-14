@@ -50,6 +50,7 @@ export default function ModalNuevaCita({
           nombre: cita.notario.nombre,
           apellidos: cita.notario.apellidos,
           direccion: cita.notario.direccion || "",
+          telefono: cita.notario.telefono || "",
           apoderado_id: cita.apoderado_id || null,
           apoderado_s: cita.apoderado_nombre || "",
           observaciones: cita.observaciones || "",
@@ -145,10 +146,16 @@ export default function ModalNuevaCita({
                 setNotarioSeleccionado(n);
 
                 handleChange("notario_id", n.id);
-                handleChange("tipo_firma", n.tipo_firma);
+
+                // Relleno automático simple
+                handleChange(
+                  "tipo_firma",
+                  n.vc === "SI" ? "VideoConferencia" : "Presencial"
+                );
+
                 handleChange("apoderado_id", n.apoderado_id || null);
                 handleChange("apoderado_visible", n.apoderado_s || "");
-                handleChange("observaciones", n.observaciones || "");
+                handleChange("observaciones", n.observacion || "");
               }}
             />
           </div>
@@ -160,20 +167,20 @@ export default function ModalNuevaCita({
                 {notarioSeleccionado.nombre} {notarioSeleccionado.apellidos}
               </h4>
 
-              {notarioSeleccionado.direccion && (
-                <>
-                  <p className="text-xs text-gray-700">
-                    Dirección: {notarioSeleccionado.direccion}
-                  </p>
+              <p className="text-xs text-gray-700">
+                Teléfono: {notarioSeleccionado.telefono}
+              </p>
 
-                  <iframe
-                    className="w-full h-40 mt-2 rounded"
-                    src={`https://www.google.com/maps?q=${encodeURIComponent(
-                      notarioSeleccionado.direccion
-                    )}&output=embed`}
-                  ></iframe>
-                </>
-              )}
+              <p className="text-xs text-gray-700">
+                Dirección: {notarioSeleccionado.direccion}
+              </p>
+
+              <iframe
+                className="w-full h-40 mt-2 rounded"
+                src={`https://www.google.com/maps?q=${encodeURIComponent(
+                  notarioSeleccionado.direccion
+                )}&output=embed`}
+              ></iframe>
             </div>
           )}
 

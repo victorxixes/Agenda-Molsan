@@ -19,7 +19,6 @@ export default function ModalNuevaCita({
     tipo_cita: "",
     notario_id: null,
     tipo_firma: "",
-    apoderado_id: null,
     apoderado_visible: "",
     observaciones: "",
   });
@@ -41,8 +40,7 @@ export default function ModalNuevaCita({
         tipo_cita: cita.tipo_cita || "",
         notario_id: cita.notario_id || null,
         tipo_firma: cita.tipo_firma || "",
-        apoderado_id: cita.apoderado_id || null,
-        apoderado_visible: cita.apoderado_nombre || "",
+        apoderado_visible: cita.apoderado || "",
         observaciones: cita.observaciones || "",
       });
 
@@ -53,9 +51,8 @@ export default function ModalNuevaCita({
           apellidos: cita.notario.apellidos,
           telefono: cita.notario.telefono || "",
           direccion: cita.notario.direccion || "",
-          apoderado_id: cita.apoderado_id || null,
-          apoderado_s: cita.apoderado_nombre || "",
-          observacion: cita.observaciones || "",
+          apoderado: cita.notario.apoderado || "",
+          observacion: cita.notario.observacion || "",
           tipo_firma:
             cita.tipo_firma ||
             (cita.notario.vc === "SI" ? "VideoConferencia" : "Presencial"),
@@ -67,21 +64,19 @@ export default function ModalNuevaCita({
   // ============================
   // Rellenar apoderado al seleccionar notario
   // ============================
-useEffect(() => {
-  if (notarioSeleccionado) {
-    // ⭐ El apoderado viene del Excel → texto libre
-    handleChange("apoderado_visible", notarioSeleccionado.apoderado || "");
-  }
-}, [notarioSeleccionado]);
+  useEffect(() => {
+    if (notarioSeleccionado) {
+      handleChange("apoderado_visible", notarioSeleccionado.apoderado || "");
+    }
+  }, [notarioSeleccionado]);
 
   const guardar = async () => {
     setLoading(true);
 
-    // ⭐ FIX DEFINITIVO: evitar UTC y evitar que se reste un día
     const fechaNormalizada =
       typeof fecha === "string"
         ? fecha
-        : fecha.toLocaleDateString("sv-SE"); // YYYY-MM-DD sin UTC
+        : fecha.toLocaleDateString("sv-SE");
 
     const payload = {
       fecha: fechaNormalizada,
@@ -90,7 +85,10 @@ useEffect(() => {
       tipo_cita: form.tipo_cita || "",
       notario_id: form.notario_id || null,
       tipo_firma: form.tipo_firma || null,
+
+      // ⭐ Apoderado como texto libre
       apoderado: form.apoderado_visible || "",
+
       observaciones: form.observaciones || "",
     };
 

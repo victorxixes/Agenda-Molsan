@@ -15,8 +15,10 @@ export const useAgendaStore = create((set, get) => ({
 
     const res = await api.getCitasMes(year, month);
 
+    // 🔥 CORRECCIÓN CRÍTICA: citas SIEMPRE es array
+    const lista = res?.data?.citas ?? res?.data ?? [];
     set({
-      citas: Array.isArray(res.data) ? res.data : [],
+      citas: Array.isArray(lista) ? lista : [],
       vista: "mes",
       fechaActual: `${year}-${String(month).padStart(2, "0")}-01`,
       cargando: false,
@@ -29,7 +31,12 @@ export const useAgendaStore = create((set, get) => ({
   buscar: async (params) => {
     set({ cargando: true });
     const res = await api.buscarCitas(params);
-    set({ citas: Array.isArray(res.data) ? res.data : [], cargando: false });
+
+    const lista = res?.data?.citas ?? res?.data ?? [];
+    set({
+      citas: Array.isArray(lista) ? lista : [],
+      cargando: false,
+    });
   },
 
   // ============================
@@ -89,17 +96,23 @@ export const useAgendaStore = create((set, get) => ({
   // ============================
   addCita: (cita) =>
     set((state) => ({
-      citas: [...state.citas, cita],
+      citas: Array.isArray(state.citas)
+        ? [...state.citas, cita]
+        : [cita],
     })),
 
   updateCita: (cita) =>
     set((state) => ({
-      citas: state.citas.map((c) => (c.id === cita.id ? cita : c)),
+      citas: Array.isArray(state.citas)
+        ? state.citas.map((c) => (c.id === cita.id ? cita : c))
+        : [cita],
     })),
 
   removeCita: (id) =>
     set((state) => ({
-      citas: state.citas.filter((c) => c.id !== id),
+      citas: Array.isArray(state.citas)
+        ? state.citas.filter((c) => c.id !== id)
+        : [],
     })),
 
   // ============================

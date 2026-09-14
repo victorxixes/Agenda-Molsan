@@ -1,34 +1,52 @@
 import { create } from "zustand";
 import * as api from "../api/agenda";
 
+// ============================
+// NORMALIZADOR DE CITAS
+// ============================
+function normalizarCita(c) {
+  return {
+    id: c.id,
+    fecha: c.fecha,
+    hora_inicio: c.hora_inicio,
+    hora_fin: c.hora_fin,
+    tipo_cita: c.tipo_cita,
+    tipo_firma: c.tipo_firma,
+    notario_id: c.notario_id,
+    notario_nombre: c.notario_nombre,
+    apoderado_id: c.apoderado_id ?? null,
+    apoderado_nombre: c.apoderado_nombre ?? "",
+    observaciones: c.observaciones ?? "",
+  };
+}
+
 export const useAgendaStore = create((set, get) => ({
   citas: [],
   cargando: false,
   vista: "mes",
-  fechaActual: new Date().toISOString().slice(0, 10),
+  fechaActual: new Date().toLocaleDateString("sv-SE"),
 
   // ============================
   // CARGA DE MES
   // ============================
   cargarMes: async (year, month) => {
-  set({ cargando: true });
+    set({ cargando: true });
 
-  const res = await api.getCitasMes(year, month);
+    const res = await api.getCitasMes(year, month);
 
-  console.log("📡 RAW /agenda/mes:", res.data);
+    console.log("📡 RAW /agenda/mes:", res.data);
 
-  const lista = res?.data?.citas ?? res?.data ?? [];
+    const lista = res?.data?.citas ?? res?.data ?? [];
 
-  console.log("📡 lista normalizada:", lista);
+    console.log("📡 lista normalizada:", lista);
 
-  set({
-    citas: Array.isArray(lista) ? lista : [],
-    vista: "mes",
-    fechaActual: `${year}-${String(month).padStart(2, "0")}-01`,
-    cargando: false,
-  });
-},
-
+    set({
+      citas: Array.isArray(lista) ? lista.map(normalizarCita) : [],
+      vista: "mes",
+      fechaActual: `${year}-${String(month).padStart(2, "0")}-01`,
+      cargando: false,
+    });
+  },
 
   // ============================
   // CREAR
@@ -36,7 +54,7 @@ export const useAgendaStore = create((set, get) => ({
   crear: async (data, year, month) => {
     const res = await api.crearCita(data);
     await get().refrescarVista(year, month);
-    return res.data;
+    return normalizarCita(res.data);
   },
 
   // ============================
@@ -45,7 +63,7 @@ export const useAgendaStore = create((set, get) => ({
   editar: async (id, data, year, month) => {
     const res = await api.editarCita(id, data);
     await get().refrescarVista(year, month);
-    return res.data;
+    return normalizarCita(res.data);
   },
 
   // ============================
@@ -68,12 +86,14 @@ export const useAgendaStore = create((set, get) => ({
   // ============================
   addCita: (cita) =>
     set((state) => ({
-      citas: [...state.citas, cita],
+      citas: [...state.citas, normalizarCita(cita)],
     })),
 
   updateCita: (cita) =>
     set((state) => ({
-      citas: state.citas.map((c) => (c.id === cita.id ? cita : c)),
+      citas: state.citas.map((c) =>
+        c.id === cita.id ? normalizarCita(cita) : c
+      ),
     })),
 
   removeCita: (id) =>

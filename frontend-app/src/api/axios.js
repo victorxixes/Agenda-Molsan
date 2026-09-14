@@ -5,6 +5,7 @@ const instance = axios.create({
   withCredentials: false,
 });
 
+// Interceptor de request
 instance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
@@ -14,6 +15,7 @@ instance.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+// Interceptor de respuesta
 instance.interceptors.response.use(
   (response) => response,
   (error) => {

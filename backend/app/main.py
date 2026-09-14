@@ -3,23 +3,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import os
 
-from sqlalchemy import inspect
-from backend.app.database import engine
-
-def auto_migrate_ctn():
-    inspector = inspect(engine)
-    columns = [col["name"] for col in inspector.get_columns("ctn_notarios")]
-
-    with engine.connect() as conn:
-        if "lat" not in columns:
-            conn.execute("ALTER TABLE ctn_notarios ADD COLUMN lat VARCHAR(50);")
-        if "lng" not in columns:
-            conn.execute("ALTER TABLE ctn_notarios ADD COLUMN lng VARCHAR(50);")
-        if "direccion_real" not in columns:
-            conn.execute("ALTER TABLE ctn_notarios ADD COLUMN direccion_real TEXT;")
-
-auto_migrate_ctn()
-
 # ---------------------------------------------------------
 # APP
 # ---------------------------------------------------------
@@ -36,7 +19,7 @@ FRONTEND = "https://agenda-intranet-f.onrender.com"
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[FRONTEND],      # SOLO el front, nunca "*"
+    allow_origins=[FRONTEND],      # SOLO el front
     allow_credentials=True,        # axios.withCredentials = true
     allow_methods=["*"],
     allow_headers=["*"],
@@ -66,8 +49,10 @@ from backend.app.seguridad.obtener_ficha_empleado import router as ficha_emplead
 from backend.app.seguridad.auditoria.router import router as seguridad_auditoria_router
 from backend.app.seguridad.logs.router import router as seguridad_logs_router
 from backend.app.seguridad.admin_router import router as admin_router
-from backend.app.agenda.notarios_router import router as agenda_notarios_router
 
+# ⭐ Agenda simple (sin geocode)
+from backend.app.agenda.notarios_router import router as agenda_notarios_router
+from backend.app.agenda.router import router as agenda_router
 
 from backend.app.empleados.router import router as empleados_router
 from backend.app.maestros.router import router as maestros_router
@@ -75,8 +60,6 @@ from backend.app.maestros.router import router as maestros_router
 from backend.app.intranet.documentos.router import router as documentos_router
 from backend.app.intranet.noticias.router import router as noticias_router
 from backend.app.websockets.intranet_ws import router as intranet_ws_router
-
-from backend.app.agenda.router import router as agenda_router
 
 from backend.app.websockets.empleados_ws import router as empleados_ws_router
 from backend.app.websockets.agenda_ws import router as agenda_ws_router
@@ -109,8 +92,10 @@ app.include_router(ficha_empleado_router, prefix="/api")
 app.include_router(seguridad_auditoria_router, prefix="/api")
 app.include_router(seguridad_logs_router, prefix="/api")
 app.include_router(admin_router, prefix="/api")
-app.include_router(agenda_notarios_router, prefix="/api")
 
+# ⭐ Agenda simple
+app.include_router(agenda_notarios_router, prefix="/api")
+app.include_router(agenda_router, prefix="/api")
 
 app.include_router(empleados_router, prefix="/api")
 app.include_router(maestros_router, prefix="/api")
@@ -118,8 +103,6 @@ app.include_router(maestros_router, prefix="/api")
 app.include_router(intranet_ws_router)
 app.include_router(documentos_router, prefix="/api")
 app.include_router(noticias_router, prefix="/api")
-
-app.include_router(agenda_router, prefix="/api")
 
 app.include_router(empleados_ws_router)
 app.include_router(agenda_ws_router)

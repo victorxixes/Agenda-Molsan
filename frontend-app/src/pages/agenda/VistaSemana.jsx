@@ -15,9 +15,15 @@ function colorPorTipo(tipo) {
   }
 }
 
-export default function VistaSemana({ citas = [], onCitaClick, onCrearCita }) {
+export default function VistaSemana({ fechaBase, citas = [], onCitaClick, onCrearCita }) {
   const citasSeguras = Array.isArray(citas) ? citas : [];
   const resaltadaId = useAgendaStore((s) => s.resaltadaId);
+
+  const obtenerFechaDia = (idx) => {
+    const fecha = new Date(fechaBase);
+    fecha.setDate(fecha.getDate() + idx); // Lunes + idx
+    return fecha.toLocaleDateString("sv-SE"); // YYYY-MM-DD sin UTC
+  };
 
   return (
     <div className="grid grid-cols-[80px,repeat(7,1fr)] gap-1 text-xs">
@@ -39,17 +45,13 @@ export default function VistaSemana({ citas = [], onCitaClick, onCrearCita }) {
             <div
               key={`${h}-${idx}`}
               className="h-16 border border-gray-100 hover:bg-gray-50 cursor-pointer"
-              onDoubleClick={() =>
-                onCrearCita(new Date().toISOString().slice(0, 10))
-              }
+              onDoubleClick={() => onCrearCita(obtenerFechaDia(idx))}
             >
               {citasSeguras
                 .filter((c) => {
-                  const fechaCita = (c.fecha || "").slice(0, 10);
-                  const fecha = new Date(fechaCita);
-                  const diaSemana = fecha.getDay(); // 0=Dom,1=Lun...
-                  const columna = idx + 1; // 1=Lun,...7=Dom
-
+                  const fechaCita = new Date(c.fecha);
+                  const diaSemana = fechaCita.getDay();
+                  const columna = idx + 1;
                   return diaSemana === (columna % 7);
                 })
                 .filter((c) => c.hora_inicio.split(":")[0] === h.split(":")[0])
@@ -60,11 +62,7 @@ export default function VistaSemana({ citas = [], onCitaClick, onCrearCita }) {
                       m-0.5 p-1 rounded border shadow-sm cursor-pointer truncate
                       ${colorPorTipo(c.tipo_cita)}
                       transition-all duration-300
-                      ${
-                        resaltadaId === c.id
-                          ? "ring-2 ring-yellow-400 bg-yellow-50 shadow-md"
-                          : ""
-                      }
+                      ${resaltadaId === c.id ? "ring-2 ring-yellow-400 bg-yellow-50 shadow-md" : ""}
                     `}
                     onClick={() => onCitaClick(c)}
                   >

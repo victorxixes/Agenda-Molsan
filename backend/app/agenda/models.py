@@ -2,7 +2,6 @@ from sqlalchemy import Column, Integer, String, Date, Time, ForeignKey
 from sqlalchemy.orm import relationship
 from backend.app.database import Base
 
-
 class Cita(Base):
     __tablename__ = "agenda_citas"
 
@@ -16,17 +15,21 @@ class Cita(Base):
     notario_id = Column(Integer, ForeignKey("ctn_notarios.id"), nullable=True)
     tipo_firma = Column(String, nullable=True)
 
-    apoderado_id = Column(Integer, ForeignKey("empleados.id"), nullable=True)
-    observaciones = Column(String, nullable=True)
+    # Apoderado como texto (del Excel)
+    apoderado = Column(String(150), nullable=True)
 
-    notario = relationship(
-        "Notaria",
+    # Apoderado como relación opcional con empleados
+    apoderado_id = Column(Integer, ForeignKey("empleados.id"), nullable=True)
+    apoderado_rel = relationship(
+        "Empleado",
         back_populates="citas",
         lazy="joined",
     )
 
-    apoderado = relationship(
-        "Empleado",
+    observaciones = Column(String, nullable=True)
+
+    notario = relationship(
+        "Notaria",
         back_populates="citas",
         lazy="joined",
     )

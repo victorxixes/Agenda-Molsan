@@ -8,7 +8,7 @@ export default function AutocompleteNotario({ value, onSelect }) {
 
   useEffect(() => {
   listarNotarias().then((res) => {
-    const lista = Array.isArray(res.data) ? res.data : [];
+    const lista = Array.isArray(res.data?.items) ? res.data.items : [];
     setNotarios(lista);
   });
 }, []);

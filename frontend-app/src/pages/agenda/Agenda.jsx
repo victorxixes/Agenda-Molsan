@@ -35,3 +35,5 @@ const borrarCita = async () => {
     notify("Error al eliminar la cita.");
   }
 };
+
+export default Agenda;

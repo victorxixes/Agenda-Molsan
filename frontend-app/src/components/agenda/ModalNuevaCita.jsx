@@ -67,12 +67,12 @@ export default function ModalNuevaCita({
   // ============================
   // Rellenar apoderado al seleccionar notario
   // ============================
-  useEffect(() => {
-    if (notarioSeleccionado) {
-      handleChange("apoderado_id", notarioSeleccionado.apoderado_id || null);
-      handleChange("apoderado_visible", notarioSeleccionado.apoderado_s || "");
-    }
-  }, [notarioSeleccionado]);
+useEffect(() => {
+  if (notarioSeleccionado) {
+    // ⭐ El apoderado viene del Excel → texto libre
+    handleChange("apoderado_visible", notarioSeleccionado.apoderado || "");
+  }
+}, [notarioSeleccionado]);
 
   const guardar = async () => {
     setLoading(true);
@@ -90,7 +90,7 @@ export default function ModalNuevaCita({
       tipo_cita: form.tipo_cita || "",
       notario_id: form.notario_id || null,
       tipo_firma: form.tipo_firma || null,
-      apoderado_id: form.apoderado_id || null,
+      apoderado: form.apoderado_visible || "",
       observaciones: form.observaciones || "",
     };
 

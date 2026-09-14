@@ -6,7 +6,6 @@ export default function AutocompleteNotario({ value, onSelect }) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
 
-  // 🔥 Búsqueda real en CTN usando el parámetro q
   useEffect(() => {
     if (!query || query.length < 2) {
       setNotarios([]);

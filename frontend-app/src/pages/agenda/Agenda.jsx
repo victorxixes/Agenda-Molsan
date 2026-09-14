@@ -47,7 +47,7 @@ export default function Agenda() {
   const abrirEditar = async (cita) => {
   try {
     // 1️⃣ Obtener la cita completa del backend
-    const res = await fetch(`/api/agenda/${cita.id}`);
+    const res = await fetch(`https://agenda-intranet-b.onrender.com/api/agenda/${cita.id}`);
     const citaCompleta = await res.json();
 
     // 2️⃣ Guardar la cita completa

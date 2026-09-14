@@ -4,10 +4,7 @@ const DIAS_SEMANA = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 
 function getMatrix(fechaBase) {
   const f = new Date(fechaBase);
-
-  if (isNaN(f.getTime())) {
-    return [[]];
-  }
+  if (isNaN(f.getTime())) return [[]];
 
   const year = f.getFullYear();
   const month = f.getMonth();
@@ -43,7 +40,7 @@ export default function VistaMes({ year, month, citas, onDiaClick, onCitaClick }
   const resaltadaId = useAgendaStore((s) => s.resaltadaId);
 
   const fechaBase = new Date(year, month - 1, 1).toISOString().slice(0, 10);
-  const matrix = getMatrix(fechaBase) || [[]];
+  const matrix = getMatrix(fechaBase);
 
   return (
     <div className="text-xs">
@@ -56,8 +53,8 @@ export default function VistaMes({ year, month, citas, onDiaClick, onCitaClick }
       </div>
 
       <div className="grid grid-cols-7 gap-1">
-        {(matrix || [[]]).map((week, wi) =>
-          (week || []).map((day, di) => {
+        {matrix.map((week, wi) =>
+          week.map((day, di) => {
             if (!day) {
               return (
                 <div
@@ -68,10 +65,7 @@ export default function VistaMes({ year, month, citas, onDiaClick, onCitaClick }
             }
 
             const fechaStr = day.toISOString().slice(0, 10);
-
-            const citasDia = Array.isArray(citasSeguras)
-              ? citasSeguras.filter((c) => c.fecha === fechaStr)
-              : [];
+            const citasDia = citasSeguras.filter((c) => c.fecha === fechaStr);
 
             return (
               <div
@@ -103,11 +97,11 @@ export default function VistaMes({ year, month, citas, onDiaClick, onCitaClick }
                       }}
                     >
                       <div className="font-semibold truncate">
-                        {c.tipo_cita} — {c.hora_inicio} {c.hora_fin ? `→ ${c.hora_fin}` : ""}
+                        {c.tipo_cita} — {c.hora_inicio} → {c.hora_fin}
                       </div>
 
                       <div className="truncate">
-                        Notario: {c.notario?.nombre} {c.notario?.apellidos}
+                        Notario: {c.notario_nombre || "—"}
                       </div>
 
                       <div className="truncate">

@@ -6,18 +6,18 @@ export default function AutocompleteNotario({ value, onSelect }) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
 
+  // 🔥 Búsqueda real en CTN usando el parámetro q
   useEffect(() => {
-  listarNotarias().then((res) => {
-    const lista = Array.isArray(res.data?.items) ? res.data.items : [];
-    setNotarios(lista);
-  });
-}, []);
+    if (!query || query.length < 2) {
+      setNotarios([]);
+      return;
+    }
 
-  const filtrados = notarios.filter((n) =>
-    `${n.nombre} ${n.apellidos} ${n.municipio} ${n.provincia}`
-      .toLowerCase()
-      .includes(query.toLowerCase())
-  );
+    listarNotarias({ q: query }).then((res) => {
+      const lista = Array.isArray(res.data?.items) ? res.data.items : [];
+      setNotarios(lista);
+    });
+  }, [query]);
 
   const seleccionar = (n) => {
     setQuery(`${n.nombre} ${n.apellidos}`);
@@ -54,12 +54,12 @@ export default function AutocompleteNotario({ value, onSelect }) {
 
       {open && (
         <div className="absolute left-0 right-0 bg-white border rounded shadow max-h-60 overflow-auto z-10">
-          {filtrados.length === 0 ? (
+          {notarios.length === 0 ? (
             <div className="px-3 py-2 text-sm text-gray-500">
               No hay resultados
             </div>
           ) : (
-            filtrados.map((n) => (
+            notarios.map((n) => (
               <div
                 key={n.id}
                 onClick={() => seleccionar(n)}

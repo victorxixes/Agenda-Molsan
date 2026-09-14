@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { listarNotarios } from "../../api/notarios";
+import { listarNotarias } from "../../api/ctn";
 
 export default function AutocompleteNotario({ value, onSelect }) {
   const [notarios, setNotarios] = useState([]);
@@ -7,7 +7,7 @@ export default function AutocompleteNotario({ value, onSelect }) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    listarNotarios().then((res) => {
+    listarNotarias().then((res) => {
       setNotarios(res.data);
     });
   }, []);
@@ -22,7 +22,6 @@ export default function AutocompleteNotario({ value, onSelect }) {
     setQuery(`${n.nombre} ${n.apellidos}`);
     setOpen(false);
 
-    // Construcción del notario para ModalNuevaCita
     const notarioCompleto = {
       id: n.id,
       nombre: n.nombre,

@@ -57,7 +57,7 @@ export default function Agenda() {
       let creada;
 
       if (modalModo === "crear") {
-        creada = await crear(payload);
+        creada = await crear(payload, year, month);
         if (creada?.id) {
           marcarResaltada(creada.id);
           notify("Cita creada correctamente.");

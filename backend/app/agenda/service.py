@@ -7,14 +7,13 @@ from backend.app.agenda.models import Cita
 from backend.app.ctn.models import Notaria
 from backend.app.empleados.models import Empleado
 
-
 def cita_con_relaciones(db: Session, cita: Cita):
-    # Obtener notario desde CTN (tabla Notaria)
+    # Notario
     notario = None
     if cita.notario_id:
         notario = db.query(Notaria).filter(Notaria.id == cita.notario_id).first()
 
-    # Obtener apoderado desde Empleado
+    # Apoderado (empleado opcional)
     apoderado = None
     if cita.apoderado_id:
         apoderado = db.query(Empleado).filter(Empleado.id == cita.apoderado_id).first()
@@ -28,7 +27,7 @@ def cita_con_relaciones(db: Session, cita: Cita):
         "tipo_firma": cita.tipo_firma,
         "observaciones": cita.observaciones,
 
-        # NOTARIO (CTN)
+        # Notario
         "notario_id": cita.notario_id,
         "notario_nombre": (
             f"{notario.nombre} {notario.apellidos}" if notario else None
@@ -45,25 +44,17 @@ def cita_con_relaciones(db: Session, cita: Cita):
             "observacion": notario.observacion,
         } if notario else None,
 
-        # APODERADO (Empleado)
+        # Apoderado (texto del Excel o texto de la cita)
         "apoderado_id": cita.apoderado_id,
-        "apoderado_nombre": (
-            f"{apoderado.nombre} {apoderado.apellidos}" if apoderado else None
-        ),
-        "apoderado": {
-            "id": apoderado.id,
-            "nombre": apoderado.nombre,
-            "apellidos": apoderado.apellidos,
-        } if apoderado else None,
+        "apoderado_nombre": cita.apoderado or (notario.apoderado if notario else None),
+        "apoderado": cita.apoderado,
     }
-
 
 def obtener_cita(db: Session, cita_id: int):
     cita = db.query(Cita).filter(Cita.id == cita_id).first()
     if not cita:
         return None
     return cita_con_relaciones(db, cita)
-
 
 def listar_citas_dia(db: Session, fecha: date):
     citas = (
@@ -73,7 +64,6 @@ def listar_citas_dia(db: Session, fecha: date):
         .all()
     )
     return [cita_con_relaciones(db, c) for c in citas]
-
 
 def listar_citas_semana(db: Session, fecha: date):
     inicio_semana = fecha
@@ -87,7 +77,6 @@ def listar_citas_semana(db: Session, fecha: date):
         .all()
     )
     return [cita_con_relaciones(db, c) for c in citas]
-
 
 def listar_citas_mes(db: Session, year: int, month: int):
     last_day = monthrange(year, month)[1]
@@ -104,7 +93,6 @@ def listar_citas_mes(db: Session, year: int, month: int):
     )
     return [cita_con_relaciones(db, c) for c in citas]
 
-
 def _rellenar_desde_notario(db: Session, cita: Cita):
     if not cita.notario_id:
         return
@@ -113,11 +101,11 @@ def _rellenar_desde_notario(db: Session, cita: Cita):
     if not notaria:
         return
 
-    # Tipo de firma desde vc
+    # Tipo firma desde VC
     if not cita.tipo_firma and notaria.vc:
         cita.tipo_firma = notaria.vc
 
-    # Apoderado desde notario
+    # Apoderado_id opcional
     if not cita.apoderado_id and notaria.apoderado_id:
         cita.apoderado_id = notaria.apoderado_id
 
@@ -125,17 +113,13 @@ def _rellenar_desde_notario(db: Session, cita: Cita):
     if not cita.observaciones and notaria.observacion:
         cita.observaciones = notaria.observacion
 
-
 def crear_cita(db: Session, data):
     cita = Cita(**data.dict())
-
     _rellenar_desde_notario(db, cita)
-
     db.add(cita)
     db.commit()
     db.refresh(cita)
     return cita_con_relaciones(db, cita)
-
 
 def editar_cita(db: Session, cita_id: int, data):
     cita = db.query(Cita).filter(Cita.id == cita_id).first()
@@ -151,7 +135,6 @@ def editar_cita(db: Session, cita_id: int, data):
     db.refresh(cita)
     return cita_con_relaciones(db, cita)
 
-
 def eliminar_cita(db: Session, cita_id: int):
     cita = db.query(Cita).filter(Cita.id == cita_id).first()
     if not cita:
@@ -160,7 +143,6 @@ def eliminar_cita(db: Session, cita_id: int):
     db.delete(cita)
     db.commit()
     return True
-
 
 def mover_cita(db: Session, cita_id: int, nueva_fecha: date, nueva_hora_inicio: time, nueva_hora_fin: time):
     cita = db.query(Cita).filter(Cita.id == cita_id).first()

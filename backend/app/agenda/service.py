@@ -20,7 +20,7 @@ def cita_con_relaciones(db: Session, cita: Cita):
 
     return {
         "id": cita.id,
-        "fecha": str(cita.fecha),
+        "fecha": cita.fecha.strftime("%Y-%m-%d"),
         "hora_inicio": str(cita.hora_inicio),
         "hora_fin": str(cita.hora_fin),
         "tipo_cita": cita.tipo_cita,

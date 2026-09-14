@@ -59,27 +59,34 @@ export default function ModalNuevaCita({
   }, [modo, cita]);
 
   const guardar = async () => {
-    setLoading(true);
+  setLoading(true);
 
-    const payload = {
-      fecha,
-      hora_inicio: form.hora_inicio,
-      hora_fin: form.hora_fin,
-      tipo_cita: form.tipo_cita,
-      notario_id: form.notario_id,
-      tipo_firma: form.tipo_firma,
-      apoderado_id: form.apoderado_id,
-      observaciones: form.observaciones,
-    };
+  const payload = {
+    // fecha en formato ISO (el backend espera date)
+    fecha,
 
-    try {
-      await onGuardar(payload);
-    } catch (err) {
-      console.error("ERROR AL GUARDAR CITA:", err);
-    }
+    // campos obligatorios
+    hora_inicio: form.hora_inicio || null,
+    hora_fin: form.hora_fin || null,
+    tipo_cita: form.tipo_cita || "",
 
-    setLoading(false);
+    // opcionales pero existentes en el modelo
+    notario_id: form.notario_id || null,
+    tipo_firma: form.tipo_firma || null,
+    apoderado_id: form.apoderado_id || null,
+    observaciones: form.observaciones || "",
   };
+
+  try {
+    console.log("Payload enviado:", payload);
+    await onGuardar(payload);
+  } catch (err) {
+    console.error("ERROR AL GUARDAR CITA:", err);
+    console.log("DETALLE 422:", err.response?.data);
+  }
+
+  setLoading(false);
+};
 
   if (!fecha) return null;
 

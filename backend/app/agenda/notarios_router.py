@@ -5,7 +5,7 @@ from backend.app.database import get_db
 from backend.app.ctn.service import listar_notarias
 from backend.app.agenda.geocode import geocode_cp, distancia_molsan, ruta_molsan
 
-router = APIRouter(prefix="/agenda", tags=["Agenda"])
+router = APIRouter(prefix="/agenda-notarios", tags=["Agenda"])
 
 
 # =========================================================

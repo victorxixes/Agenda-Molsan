@@ -11,18 +11,24 @@ export const useAgendaStore = create((set, get) => ({
   // CARGA DE MES
   // ============================
   cargarMes: async (year, month) => {
-    set({ cargando: true });
+  set({ cargando: true });
 
-    const res = await api.getCitasMes(year, month);
-    const lista = res?.data?.citas ?? res?.data ?? [];
+  const res = await api.getCitasMes(year, month);
 
-    set({
-      citas: Array.isArray(lista) ? lista : [],
-      vista: "mes",
-      fechaActual: `${year}-${String(month).padStart(2, "0")}-01`,
-      cargando: false,
-    });
-  },
+  console.log("📡 RAW /agenda/mes:", res.data);
+
+  const lista = res?.data?.citas ?? res?.data ?? [];
+
+  console.log("📡 lista normalizada:", lista);
+
+  set({
+    citas: Array.isArray(lista) ? lista : [],
+    vista: "mes",
+    fechaActual: `${year}-${String(month).padStart(2, "0")}-01`,
+    cargando: false,
+  });
+},
+
 
   // ============================
   // CREAR

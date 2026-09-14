@@ -15,12 +15,18 @@ def root():
 # ---------------------------------------------------------
 # CORS — CONFIGURACIÓN FINAL PARA RENDER
 # ---------------------------------------------------------
-FRONTEND = "https://agenda-intranet-f.onrender.com"
+origins = [
+    "https://agenda-intranet-f.onrender.com",   # tu frontend
+    "https://agenda-intranet-b.onrender.com",   # tu backend
+    "https://agenda-intranet-f.onrender.com",   # health check
+    "https://agenda-intranet-b.onrender.com",   # balanceador
+    "http://localhost:5173",                    # desarrollo
+]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[FRONTEND],      # SOLO el front
-    allow_credentials=True,        # axios.withCredentials = true
+    allow_origins=origins,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )

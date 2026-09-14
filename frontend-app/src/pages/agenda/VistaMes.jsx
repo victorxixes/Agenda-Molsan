@@ -46,9 +46,7 @@ export default function VistaMes({ year, month, citas, onDiaClick, onCitaClick }
   const citasSeguras = Array.isArray(citas) ? citas : [];
   const resaltadaId = useAgendaStore((s) => s.resaltadaId);
 
-  // ⭐ FIX definitivo: NO usar toISOString()
   const fechaBase = `${year}-${String(month).padStart(2, "0")}-01`;
-
   const matrix = getMatrix(fechaBase);
 
   return (
@@ -90,8 +88,9 @@ export default function VistaMes({ year, month, citas, onDiaClick, onCitaClick }
                   {day.getDate()}
                 </div>
 
-                <div className="mt-1 space-y-1 overflow-hidden">
-                  {citasDia.slice(0, 3).map((c) => (
+                {/* ⭐ Mostrar TODAS las citas del día */}
+                <div className="mt-1 space-y-1 overflow-y-auto max-h-20 pr-1">
+                  {citasDia.map((c) => (
                     <div
                       key={c.id}
                       className={`
@@ -122,16 +121,10 @@ export default function VistaMes({ year, month, citas, onDiaClick, onCitaClick }
                       </div>
 
                       <div className="truncate">
-                        Apoderado: {c.apoderado_nombre || "—"}
+                        Apoderado: {c.apoderado || "—"}
                       </div>
                     </div>
                   ))}
-
-                  {citasDia.length > 3 && (
-                    <div className="text-[10px] text-gray-500">
-                      +{citasDia.length - 3} más…
-                    </div>
-                  )}
                 </div>
               </div>
             );

@@ -20,6 +20,7 @@ export default function ModalNuevaCita({
     notario_id: null,
     tipo_firma: "",
     apoderado_id: null,
+    apoderado_visible: "",
     observaciones: "",
   });
 
@@ -39,6 +40,7 @@ export default function ModalNuevaCita({
         notario_id: cita.notario_id || null,
         tipo_firma: cita.tipo_firma || "",
         apoderado_id: cita.apoderado_id || null,
+        apoderado_visible: cita.apoderado_nombre || "",
         observaciones: cita.observaciones || "",
       });
 
@@ -49,6 +51,7 @@ export default function ModalNuevaCita({
           apellidos: cita.notario.apellidos,
           direccion: cita.notario.direccion || "",
           apoderado_id: cita.apoderado_id || null,
+          apoderado_s: cita.apoderado_nombre || "",
           observaciones: cita.observaciones || "",
           tipo_firma:
             cita.tipo_firma ||
@@ -59,34 +62,29 @@ export default function ModalNuevaCita({
   }, [modo, cita]);
 
   const guardar = async () => {
-  setLoading(true);
+    setLoading(true);
 
-  const payload = {
-    // fecha en formato ISO (el backend espera date)
-    fecha,
+    const payload = {
+      fecha,
+      hora_inicio: form.hora_inicio || null,
+      hora_fin: form.hora_fin || null,
+      tipo_cita: form.tipo_cita || "",
+      notario_id: form.notario_id || null,
+      tipo_firma: form.tipo_firma || null,
+      apoderado_id: form.apoderado_id || null,
+      observaciones: form.observaciones || "",
+    };
 
-    // campos obligatorios
-    hora_inicio: form.hora_inicio || null,
-    hora_fin: form.hora_fin || null,
-    tipo_cita: form.tipo_cita || "",
+    try {
+      console.log("Payload enviado:", payload);
+      await onGuardar(payload);
+    } catch (err) {
+      console.error("ERROR AL GUARDAR CITA:", err);
+      console.log("DETALLE 422:", err.response?.data);
+    }
 
-    // opcionales pero existentes en el modelo
-    notario_id: form.notario_id || null,
-    tipo_firma: form.tipo_firma || null,
-    apoderado_id: form.apoderado_id || null,
-    observaciones: form.observaciones || "",
+    setLoading(false);
   };
-
-  try {
-    console.log("Payload enviado:", payload);
-    await onGuardar(payload);
-  } catch (err) {
-    console.error("ERROR AL GUARDAR CITA:", err);
-    console.log("DETALLE 422:", err.response?.data);
-  }
-
-  setLoading(false);
-};
 
   if (!fecha) return null;
 
@@ -149,6 +147,7 @@ export default function ModalNuevaCita({
                 handleChange("notario_id", n.id);
                 handleChange("tipo_firma", n.tipo_firma);
                 handleChange("apoderado_id", n.apoderado_id || null);
+                handleChange("apoderado_visible", n.apoderado_s || "");
                 handleChange("observaciones", n.observaciones || "");
               }}
             />
@@ -189,18 +188,14 @@ export default function ModalNuevaCita({
           </div>
 
           {/* Apoderado */}
-<div>
-  <label className="block mb-1 text-gray-700">Apoderado</label>
-  <input
-    className="w-full border rounded px-2 py-1"
-    value={
-      notarioSeleccionado?.apoderado_s ||
-      form.apoderado_visible ||
-      ""
-    }
-    disabled
-  />
-</div>
+          <div>
+            <label className="block mb-1 text-gray-700">Apoderado</label>
+            <input
+              className="w-full border rounded px-2 py-1"
+              value={form.apoderado_visible || ""}
+              disabled
+            />
+          </div>
 
           {/* Observaciones */}
           <div className="col-span-2">

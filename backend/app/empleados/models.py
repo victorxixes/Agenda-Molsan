@@ -52,6 +52,6 @@ class Empleado(Base):
     # Relación con Agenda
     citas = relationship(
         "Cita",
-        back_populates="apoderado",
+        back_populates="apoderado_rel",
         lazy="selectin"
     )

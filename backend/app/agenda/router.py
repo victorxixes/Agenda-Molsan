@@ -157,3 +157,13 @@ from backend.app.agenda.fix_table import fix_table
 def ejecutar_fix_table():
     fix_table()
     return {"status": "ok", "message": "agenda_citas recreada correctamente"}
+
+
+@router.get("/debug/{id}")
+def debug_cita(id: int, db: Session = Depends(get_db)):
+    cita = db.query(Cita).filter(Cita.id == id).first()
+    return {
+        "id": cita.id,
+        "fecha_raw": cita.fecha,   # <-- sin formatear
+        "type": str(type(cita.fecha)),
+    }

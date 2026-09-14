@@ -77,8 +77,14 @@ export default function ModalNuevaCita({
   const guardar = async () => {
     setLoading(true);
 
+    // ⭐ FIX DEFINITIVO: evitar UTC y evitar que se reste un día
+    const fechaNormalizada =
+      typeof fecha === "string"
+        ? fecha
+        : fecha.toLocaleDateString("sv-SE"); // YYYY-MM-DD sin UTC
+
     const payload = {
-      fecha,
+      fecha: fechaNormalizada,
       hora_inicio: form.hora_inicio || null,
       hora_fin: form.hora_fin || null,
       tipo_cita: form.tipo_cita || "",

@@ -2,25 +2,16 @@ import { create } from "zustand";
 import * as api from "../api/agenda";
 
 export const useAgendaStore = create((set, get) => ({
-  // -----------------------------
-  // ESTADO PRINCIPAL
-  // -----------------------------
   citas: [],
   cargando: false,
   vista: "mes",
   fechaActual: new Date().toISOString().slice(0, 10),
 
-  // -----------------------------
-  // CARGA DE DATOS
-  // -----------------------------
   cargarMes: async (year, month) => {
     set({ cargando: true });
-
     const res = await api.getCitasMes(year, month);
-    const citas = Array.isArray(res.data) ? res.data : [];
-
     set({
-      citas,
+      citas: Array.isArray(res.data) ? res.data : [],
       vista: "mes",
       fechaActual: `${year}-${String(month).padStart(2, "0")}-01`,
       cargando: false,
@@ -29,11 +20,8 @@ export const useAgendaStore = create((set, get) => ({
 
   buscar: async (params) => {
     set({ cargando: true });
-
     const res = await api.buscarCitas(params);
-    const citas = Array.isArray(res.data) ? res.data : [];
-
-    set({ citas, cargando: false });
+    set({ citas: Array.isArray(res.data) ? res.data : [], cargando: false });
   },
 
   obtener: async (id) => {
@@ -41,9 +29,6 @@ export const useAgendaStore = create((set, get) => ({
     return res.data;
   },
 
-  // -----------------------------
-  // CRUD API (manual)
-  // -----------------------------
   crear: async (data) => {
     const res = await api.crearCita(data);
     await get().refrescarVista();
@@ -73,9 +58,6 @@ export const useAgendaStore = create((set, get) => ({
     return get().cargarMes(d.getFullYear(), d.getMonth() + 1);
   },
 
-  // -----------------------------
-  // WS: ACTUALIZACIÓN INSTANTÁNEA
-  // -----------------------------
   addCita: (cita) =>
     set((state) => ({
       citas: [...state.citas, cita],
@@ -91,31 +73,14 @@ export const useAgendaStore = create((set, get) => ({
       citas: state.citas.filter((c) => c.id !== id),
     })),
 
-  // -----------------------------
-  // RESALTADO DE CITA RECIÉN CREADA
-  // -----------------------------
   resaltadaId: null,
 
-  marcarResaltada: (id) =>
-    set({
-      resaltadaId: id,
-    }),
+  marcarResaltada: (id) => set({ resaltadaId: id }),
+  limpiarResaltada: () => set({ resaltadaId: null }),
 
-  limpiarResaltada: () =>
-    set({
-      resaltadaId: null,
-    }),
-
-  // -----------------------------
-  // NOTIFICACIONES EN TIEMPO REAL
-  // -----------------------------
   notificaciones: [],
-
   notify: (msg) =>
     set((state) => ({
-      notificaciones: [
-        ...state.notificaciones,
-        { id: Date.now(), msg },
-      ],
+      notificaciones: [...state.notificaciones, { id: Date.now(), msg }],
     })),
 }));

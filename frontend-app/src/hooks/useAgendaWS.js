@@ -1,23 +1,23 @@
 import { useEffect, useRef } from "react";
 import { useAgendaStore } from "../store/agendaStore";
 
-export function useAgendaWS(userId) {
+export function useAgendaWS() {
   const wsRef = useRef(null);
 
-  // Acceso al store
   const addCita = useAgendaStore((s) => s.addCita);
   const updateCita = useAgendaStore((s) => s.updateCita);
   const removeCita = useAgendaStore((s) => s.removeCita);
 
   const marcarResaltada = useAgendaStore((s) => s.marcarResaltada);
   const notify = useAgendaStore((s) => s.notify);
+  const refrescarVista = useAgendaStore((s) => s.refrescarVista);
 
   useEffect(() => {
     let ws;
 
     try {
       ws = new WebSocket(import.meta.env.VITE_WS_URL + "/ws/agenda");
-    } catch (e) {
+    } catch {
       console.warn("WS no disponible (Render). Modo offline.");
       return;
     }
@@ -26,11 +26,6 @@ export function useAgendaWS(userId) {
 
     ws.onopen = () => {
       console.log("WS Agenda conectado");
-      try {
-        ws.send(JSON.stringify({ tipo: "suscribir", userId }));
-      } catch (e) {
-        console.warn("WS: no se pudo enviar mensaje inicial");
-      }
     };
 
     ws.onerror = () => {
@@ -41,7 +36,7 @@ export function useAgendaWS(userId) {
       console.warn("WS Agenda cerrado. Modo offline.");
     };
 
-    ws.onmessage = (msg) => {
+    ws.onmessage = async (msg) => {
       try {
         const data = JSON.parse(msg.data);
         if (!data || !data.tipo) return;
@@ -49,33 +44,27 @@ export function useAgendaWS(userId) {
         console.log("WS evento:", data);
 
         switch (data.tipo) {
-          // -----------------------------
-          // CREAR CITA
-          // -----------------------------
           case "crear":
             addCita(data.cita);
             marcarResaltada(data.cita.id);
             notify(`Nueva cita creada: ${data.cita.tipo_cita} — ${data.cita.hora_inicio}`);
+            await refrescarVista();
             break;
 
-          // -----------------------------
-          // EDITAR CITA
-          // -----------------------------
           case "editar":
             updateCita(data.cita);
             notify(`Cita actualizada: ${data.cita.tipo_cita} — ${data.cita.hora_inicio}`);
+            await refrescarVista();
             break;
 
-          // -----------------------------
-          // ELIMINAR CITA
-          // -----------------------------
           case "eliminar":
             removeCita(data.id);
             notify(`Cita eliminada`);
+            await refrescarVista();
             break;
         }
 
-      } catch (e) {
+      } catch {
         console.warn("WS mensaje inválido");
       }
     };
@@ -83,7 +72,7 @@ export function useAgendaWS(userId) {
     return () => {
       try {
         ws.close();
-      } catch (e) {}
+      } catch {}
     };
-  }, [userId]);
+  }, []);
 }

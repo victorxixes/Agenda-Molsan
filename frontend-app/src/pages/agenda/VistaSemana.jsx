@@ -1,7 +1,9 @@
 import React from "react";
 import { useAgendaStore } from "../../store/agendaStore";
 
-const DIAS = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
+// ⭐ Solo días laborales
+const DIAS = ["Lun", "Mar", "Mié", "Jue", "Vie"];
+
 const HORAS = Array.from({ length: 12 }, (_, i) => `${9 + i}:00`);
 
 function colorPorTipo(tipo) {
@@ -19,6 +21,7 @@ export default function VistaSemana({ fechaBase, citas = [], onCitaClick, onCrea
   const citasSeguras = Array.isArray(citas) ? citas : [];
   const resaltadaId = useAgendaStore((s) => s.resaltadaId);
 
+  // ⭐ Obtener fecha real de cada día laboral de la semana
   const obtenerFechaDia = (idx) => {
     const fecha = new Date(fechaBase);
     fecha.setDate(fecha.getDate() + idx); // Lunes + idx
@@ -26,7 +29,7 @@ export default function VistaSemana({ fechaBase, citas = [], onCitaClick, onCrea
   };
 
   return (
-    <div className="grid grid-cols-[80px,repeat(7,1fr)] gap-1 text-xs">
+    <div className="grid grid-cols-[80px,repeat(5,1fr)] gap-1 text-xs">
       <div />
 
       {DIAS.map((d) => (
@@ -50,9 +53,10 @@ export default function VistaSemana({ fechaBase, citas = [], onCitaClick, onCrea
               {citasSeguras
                 .filter((c) => {
                   const fechaCita = new Date(c.fecha);
-                  const diaSemana = fechaCita.getDay();
-                  const columna = idx + 1;
-                  return diaSemana === (columna % 7);
+                  const diaSemana = fechaCita.getDay(); // 1=Lun, 2=Mar...
+
+                  // ⭐ Ajuste: Lunes=1 → idx=0
+                  return diaSemana === idx + 1;
                 })
                 .filter((c) => c.hora_inicio.split(":")[0] === h.split(":")[0])
                 .map((c) => (
@@ -62,7 +66,11 @@ export default function VistaSemana({ fechaBase, citas = [], onCitaClick, onCrea
                       m-0.5 p-1 rounded border shadow-sm cursor-pointer truncate
                       ${colorPorTipo(c.tipo_cita)}
                       transition-all duration-300
-                      ${resaltadaId === c.id ? "ring-2 ring-yellow-400 bg-yellow-50 shadow-md" : ""}
+                      ${
+                        resaltadaId === c.id
+                          ? "ring-2 ring-yellow-400 bg-yellow-50 shadow-md"
+                          : ""
+                      }
                     `}
                     onClick={() => onCitaClick(c)}
                   >

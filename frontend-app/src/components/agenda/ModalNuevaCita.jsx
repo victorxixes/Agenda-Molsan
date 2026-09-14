@@ -34,7 +34,6 @@ export default function ModalNuevaCita({
   // ============================
   useEffect(() => {
     if (modo === "editar" && cita) {
-      // Rellenar campos de la cita
       setForm({
         hora_inicio: cita.hora_inicio || "",
         hora_fin: cita.hora_fin || "",
@@ -45,34 +44,24 @@ export default function ModalNuevaCita({
         observaciones: cita.observaciones || "",
       });
 
-      // ⭐ FIX: cargar notario completo desde CTN
-      if (cita.notario_id) {
-        fetch(`/api/ctn/notarias/${cita.notario_id}`)
-          .then((r) => r.json())
-          .then((n) => {
-            const notarioCompleto = {
-              id: n.id,
-              codigo: n.codigo,
-              nombre: n.nombre,
-              apellidos: n.apellidos,
-              nif: n.nif,
-              telefono: n.telefono,
-              provincia: n.provincia,
-              municipio: n.municipio,
-              direccion: n.direccion,
-              vc: n.vc,
-              apoderado: n.apoderado_s || n.apoderado || "",
-              observacion: n.observacion || "",
-              tipo_firma: n.vc === "SI" ? "VideoConferencia" : "Presencial",
-            };
-
-            setNotarioSeleccionado(notarioCompleto);
-
-            // Autorrellenar campos
-            handleChange("tipo_firma", notarioCompleto.tipo_firma);
-            handleChange("apoderado_visible", notarioCompleto.apoderado);
-            handleChange("observaciones", notarioCompleto.observacion);
-          });
+      if (cita.notario) {
+        setNotarioSeleccionado({
+          id: cita.notario.id,
+          codigo: cita.notario.codigo,
+          nombre: cita.notario.nombre,
+          apellidos: cita.notario.apellidos,
+          nif: cita.notario.nif,
+          telefono: cita.notario.telefono || "",
+          provincia: cita.notario.provincia || "",
+          municipio: cita.notario.municipio || "",
+          direccion: cita.notario.direccion || "",
+          vc: cita.notario.vc,
+          apoderado: cita.notario.apoderado || "",
+          observacion: cita.notario.observacion || "",
+          tipo_firma:
+            cita.tipo_firma ||
+            (cita.notario.vc === "SI" ? "VideoConferencia" : "Presencial"),
+        });
       }
     }
   }, [modo, cita]);
@@ -193,9 +182,15 @@ export default function ModalNuevaCita({
                 setNotarioSeleccionado(notarioCompleto);
 
                 handleChange("notario_id", n.id);
-                handleChange("tipo_firma", notarioCompleto.tipo_firma);
-                handleChange("apoderado_visible", notarioCompleto.apoderado);
-                handleChange("observaciones", notarioCompleto.observacion);
+                handleChange(
+                  "tipo_firma",
+                  n.vc === "SI" ? "VideoConferencia" : "Presencial"
+                );
+                handleChange(
+                  "apoderado_visible",
+                  n.apoderado_s || n.apoderado || ""
+                );
+                handleChange("observaciones", n.observacion || "");
               }}
             />
           </div>

@@ -47,10 +47,15 @@ export default function ModalNuevaCita({
       if (cita.notario) {
         setNotarioSeleccionado({
           id: cita.notario.id,
+          codigo: cita.notario.codigo,
           nombre: cita.notario.nombre,
           apellidos: cita.notario.apellidos,
+          nif: cita.notario.nif,
           telefono: cita.notario.telefono || "",
+          provincia: cita.notario.provincia || "",
+          municipio: cita.notario.municipio || "",
           direccion: cita.notario.direccion || "",
+          vc: cita.notario.vc,
           apoderado: cita.notario.apoderado || "",
           observacion: cita.notario.observacion || "",
           tipo_firma:
@@ -70,6 +75,9 @@ export default function ModalNuevaCita({
     }
   }, [notarioSeleccionado]);
 
+  // ============================
+  // Guardar cita
+  // ============================
   const guardar = async () => {
     setLoading(true);
 
@@ -85,10 +93,7 @@ export default function ModalNuevaCita({
       tipo_cita: form.tipo_cita || "",
       notario_id: form.notario_id || null,
       tipo_firma: form.tipo_firma || null,
-
-      // ⭐ Apoderado como texto libre
       apoderado: form.apoderado_visible || "",
-
       observaciones: form.observaciones || "",
     };
 
@@ -158,16 +163,39 @@ export default function ModalNuevaCita({
             <AutocompleteNotario
               value={notarioSeleccionado}
               onSelect={(n) => {
-                setNotarioSeleccionado(n);
+                const notarioCompleto = {
+                  id: n.id,
+                  codigo: n.codigo,
+                  nombre: n.nombre,
+                  apellidos: n.apellidos,
+                  nif: n.nif,
+                  telefono: n.telefono,
+                  provincia: n.provincia,
+                  municipio: n.municipio,
+                  direccion: n.direccion || "",
+                  vc: n.vc,
+                  apoderado: n.apoderado_s || n.apoderado || "",
+                  observacion: n.observacion || "",
+                  tipo_firma: n.vc === "SI" ? "VideoConferencia" : "Presencial",
+                };
+
+                setNotarioSeleccionado(notarioCompleto);
 
                 handleChange("notario_id", n.id);
-                handleChange("tipo_firma", n.tipo_firma);
+                handleChange(
+                  "tipo_firma",
+                  n.vc === "SI" ? "VideoConferencia" : "Presencial"
+                );
+                handleChange(
+                  "apoderado_visible",
+                  n.apoderado_s || n.apoderado || ""
+                );
                 handleChange("observaciones", n.observacion || "");
               }}
             />
           </div>
 
-          {/* Datos del notario */}
+          {/* Tarjeta del notario */}
           {notarioSeleccionado && (
             <div className="col-span-2 border rounded p-3 bg-gray-50">
               <h4 className="font-semibold text-sm mb-2">
@@ -175,11 +203,39 @@ export default function ModalNuevaCita({
               </h4>
 
               <p className="text-xs text-gray-700">
+                Código: {notarioSeleccionado.codigo}
+              </p>
+
+              <p className="text-xs text-gray-700">
+                NIF: {notarioSeleccionado.nif}
+              </p>
+
+              <p className="text-xs text-gray-700">
                 Teléfono: {notarioSeleccionado.telefono}
               </p>
 
               <p className="text-xs text-gray-700">
+                Provincia: {notarioSeleccionado.provincia}
+              </p>
+
+              <p className="text-xs text-gray-700">
+                Municipio: {notarioSeleccionado.municipio}
+              </p>
+
+              <p className="text-xs text-gray-700">
                 Dirección: {notarioSeleccionado.direccion}
+              </p>
+
+              <p className="text-xs text-gray-700">
+                VC: {notarioSeleccionado.vc}
+              </p>
+
+              <p className="text-xs text-gray-700">
+                Apoderado: {notarioSeleccionado.apoderado}
+              </p>
+
+              <p className="text-xs text-gray-700">
+                Observación: {notarioSeleccionado.observacion}
               </p>
 
               <iframe

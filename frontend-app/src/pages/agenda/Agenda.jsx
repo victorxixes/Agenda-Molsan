@@ -6,18 +6,8 @@ import ModalNuevaCita from "../../components/agenda/ModalNuevaCita.jsx";
 import AgendaToast from "../../components/agenda/AgendaToast.jsx";
 
 const MESES = [
-  "Enero",
-  "Febrero",
-  "Marzo",
-  "Abril",
-  "Mayo",
-  "Junio",
-  "Julio",
-  "Agosto",
-  "Septiembre",
-  "Octubre",
-  "Noviembre",
-  "Diciembre",
+  "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+  "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
 ];
 
 export default function Agenda() {
@@ -43,7 +33,7 @@ export default function Agenda() {
   // Cargar mes al entrar y cuando cambian año/mes
   useEffect(() => {
     cargarMes(year, month);
-  }, [year, month, cargarMes]);
+  }, [year, month]);
 
   // Crear cita
   const abrirCrear = (fecha) => {
@@ -129,43 +119,29 @@ export default function Agenda() {
 
       {/* Selector de año y mes */}
       <div className="seg-card flex items-center gap-4">
-        <button className="sj-btn px-3" onClick={mesAnterior}>
-          ←
-        </button>
+        <button className="sj-btn px-3" onClick={mesAnterior}>←</button>
 
         <select
           className="sj-input w-32"
           value={year}
-          onChange={(e) => {
-            setYear(parseInt(e.target.value));
-          }}
+          onChange={(e) => setYear(parseInt(e.target.value))}
         >
-          {Array.from({ length: 10 }, (_, i) => hoy.getFullYear() - 5 + i).map(
-            (y) => (
-              <option key={y} value={y}>
-                {y}
-              </option>
-            )
-          )}
+          {Array.from({ length: 10 }, (_, i) => hoy.getFullYear() - 5 + i).map((y) => (
+            <option key={y} value={y}>{y}</option>
+          ))}
         </select>
 
         <select
           className="sj-input w-40"
           value={month}
-          onChange={(e) => {
-            setMonth(parseInt(e.target.value));
-          }}
+          onChange={(e) => setMonth(parseInt(e.target.value))}
         >
           {MESES.map((nombre, index) => (
-            <option key={index} value={index + 1}>
-              {nombre}
-            </option>
+            <option key={index} value={index + 1}>{nombre}</option>
           ))}
         </select>
 
-        <button className="sj-btn px-3" onClick={mesSiguiente}>
-          →
-        </button>
+        <button className="sj-btn px-3" onClick={mesSiguiente}>→</button>
       </div>
 
       {/* Vista mensual */}

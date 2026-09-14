@@ -44,12 +44,25 @@ export default function Agenda() {
   };
 
   // Editar cita
-  const abrirEditar = (cita) => {
+  const abrirEditar = async (cita) => {
+  try {
+    // 1️⃣ Obtener la cita completa del backend
+    const res = await fetch(`/api/agenda/${cita.id}`);
+    const citaCompleta = await res.json();
+
+    // 2️⃣ Guardar la cita completa
     setModalModo("editar");
-    setFechaSeleccionada(cita.fecha);
-    setCitaSeleccionada(cita);
+    setFechaSeleccionada(citaCompleta.fecha);
+    setCitaSeleccionada(citaCompleta);
+
+    // 3️⃣ Abrir modal
     setMostrarModal(true);
-  };
+  } catch (err) {
+    console.error("Error cargando cita completa:", err);
+    notify("Error al cargar la cita.");
+  }
+};
+
 
   // Guardar cita (crear o editar)
   const guardarCita = async (payload) => {

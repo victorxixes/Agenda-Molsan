@@ -19,6 +19,7 @@ class CitaBase(BaseModel):
     tipo_firma: Optional[str] = None
 
     apoderado_id: Optional[int] = None
+    apoderado: Optional[str] = None
     observaciones: Optional[str] = None
     
 
@@ -40,6 +41,7 @@ class CitaBase(BaseModel):
 # =========================================================
 class CitaCreate(CitaBase):
     pass
+apoderado: Optional[str] = None
 
 
 # =========================================================
@@ -55,6 +57,7 @@ class CitaUpdate(BaseModel):
     tipo_firma: Optional[str] = None
 
     apoderado_id: Optional[int] = None
+    apoderado: Optional[str] = None
     observaciones: Optional[str] = None
     
 
@@ -80,7 +83,7 @@ class CitaResponse(BaseModel):
     # --- Apoderado ---
     apoderado_id: Optional[int] = None
     apoderado_nombre: Optional[str] = None
-    apoderado: Optional[Empleado] = None
+    apoderado: Optional[str] = None
 
     class Config:
         orm_mode = True

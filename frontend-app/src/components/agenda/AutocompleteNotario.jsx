@@ -23,7 +23,7 @@ export default function AutocompleteNotario({ value, onSelect }) {
     setOpen(false);
 
     const notarioCompleto = {
-      id: n.id,
+      id: n.codigo,                     // ← ID REAL DEL CTN
       codigo: n.codigo || "",
       nombre: n.nombre || "",
       apellidos: n.apellidos || "",
@@ -63,7 +63,7 @@ export default function AutocompleteNotario({ value, onSelect }) {
           ) : (
             notarios.map((n) => (
               <div
-                key={n.id}
+                key={n.codigo}   // ← USAR CÓDIGO COMO ID
                 onClick={() => seleccionar(n)}
                 className="px-3 py-2 cursor-pointer hover:bg-gray-100 text-sm"
               >

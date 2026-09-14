@@ -1,6 +1,6 @@
 import { useAgendaStore } from "../../store/agendaStore";
 
-const DIAS_SEMANA = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
+const DIAS_SEMANA = ["Lun", "Mar", "Mié", "Jue", "Vie"];
 
 function getMatrix(fechaBase) {
   const f = new Date(fechaBase);
@@ -10,7 +10,6 @@ function getMatrix(fechaBase) {
   const month = f.getMonth();
   const firstDay = new Date(year, month, 1);
 
-  // Lunes = 0, Domingo = 6
   const start = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1;
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
@@ -41,7 +40,9 @@ export default function VistaMes({ year, month, citas, onDiaClick, onCitaClick }
   const citasSeguras = Array.isArray(citas) ? citas : [];
   const resaltadaId = useAgendaStore((s) => s.resaltadaId);
 
-  const fechaBase = new Date(year, month - 1, 1).toISOString().slice(0, 10);
+  // ⭐ FIX DEFINITIVO: NO usar toISOString()
+  const fechaBase = `${year}-${String(month).padStart(2, "0")}-01`;
+
   const matrix = getMatrix(fechaBase);
 
   return (
@@ -66,9 +67,8 @@ export default function VistaMes({ year, month, citas, onDiaClick, onCitaClick }
               );
             }
 
-            const fechaStr = day.toISOString().slice(0, 10);
+            const fechaStr = day.toLocaleDateString("sv-SE");
 
-            // ⭐ CORRECCIÓN CRÍTICA: normalizar fecha del backend
             const citasDia = citasSeguras.filter((c) => {
               const fechaCita = (c.fecha || "").slice(0, 10);
               return fechaCita === fechaStr;
@@ -134,4 +134,6 @@ export default function VistaMes({ year, month, citas, onDiaClick, onCitaClick }
       </div>
     </div>
   );
+}
+
 }

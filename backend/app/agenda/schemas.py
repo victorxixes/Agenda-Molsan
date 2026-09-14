@@ -4,7 +4,6 @@ from typing import Optional
 
 from backend.app.empleados.schemas import Empleado
 
-
 # =========================================================
 # BASE
 # =========================================================
@@ -21,7 +20,6 @@ class CitaBase(BaseModel):
     apoderado_id: Optional[int] = None
     apoderado: Optional[str] = None
     observaciones: Optional[str] = None
-    
 
     @validator("tipo_cita")
     def validar_tipo_cita(cls, v):
@@ -35,14 +33,11 @@ class CitaBase(BaseModel):
             raise ValueError("notario_id es obligatorio para tipo_cita = Firma notarial")
         return v
 
-
 # =========================================================
 # CREATE
 # =========================================================
 class CitaCreate(CitaBase):
-    pass
-apoderado: Optional[str] = None
-
+    apoderado: Optional[str] = None
 
 # =========================================================
 # UPDATE
@@ -59,11 +54,9 @@ class CitaUpdate(BaseModel):
     apoderado_id: Optional[int] = None
     apoderado: Optional[str] = None
     observaciones: Optional[str] = None
-    
-
 
 # =========================================================
-# RESPONSE (incluye relaciones completas)
+# RESPONSE
 # =========================================================
 class CitaResponse(BaseModel):
     id: int
@@ -73,14 +66,13 @@ class CitaResponse(BaseModel):
     tipo_cita: str
     tipo_firma: Optional[str] = None
     observaciones: Optional[str] = None
-    
 
-    # --- Notario ---
+    # Notario
     notario_id: Optional[int] = None
     notario_nombre: Optional[str] = None
     notario: Optional[Empleado] = None
 
-    # --- Apoderado ---
+    # Apoderado
     apoderado_id: Optional[int] = None
     apoderado_nombre: Optional[str] = None
     apoderado: Optional[str] = None

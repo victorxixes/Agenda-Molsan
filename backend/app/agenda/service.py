@@ -1,3 +1,4 @@
+from sqlalchemy import cast, Date
 from sqlalchemy.orm import Session
 from datetime import date, timedelta, time
 from calendar import monthrange
@@ -13,7 +14,7 @@ def cita_con_relaciones(db: Session, cita: Cita):
     if cita.notario_id:
         notario = db.query(Notaria).filter(Notaria.id == cita.notario_id).first()
 
-    # Obtener apoderado desde Empleado (esto sí está bien)
+    # Obtener apoderado desde Empleado
     apoderado = None
     if cita.apoderado_id:
         apoderado = db.query(Empleado).filter(Empleado.id == cita.apoderado_id).first()
@@ -57,7 +58,6 @@ def cita_con_relaciones(db: Session, cita: Cita):
     }
 
 
-
 def obtener_cita(db: Session, cita_id: int):
     cita = db.query(Cita).filter(Cita.id == cita_id).first()
     if not cita:
@@ -68,7 +68,7 @@ def obtener_cita(db: Session, cita_id: int):
 def listar_citas_dia(db: Session, fecha: date):
     citas = (
         db.query(Cita)
-        .filter(Cita.fecha == fecha)
+        .filter(cast(Cita.fecha, Date) == fecha)
         .order_by(Cita.hora_inicio.asc())
         .all()
     )
@@ -81,8 +81,8 @@ def listar_citas_semana(db: Session, fecha: date):
 
     citas = (
         db.query(Cita)
-        .filter(Cita.fecha >= inicio_semana)
-        .filter(Cita.fecha <= fin_semana)
+        .filter(cast(Cita.fecha, Date) >= inicio_semana)
+        .filter(cast(Cita.fecha, Date) <= fin_semana)
         .order_by(Cita.fecha.asc(), Cita.hora_inicio.asc())
         .all()
     )
@@ -97,8 +97,8 @@ def listar_citas_mes(db: Session, year: int, month: int):
 
     citas = (
         db.query(Cita)
-        .filter(Cita.fecha >= inicio)
-        .filter(Cita.fecha <= fin)
+        .filter(cast(Cita.fecha, Date) >= inicio)
+        .filter(cast(Cita.fecha, Date) <= fin)
         .order_by(Cita.fecha.asc(), Cita.hora_inicio.asc())
         .all()
     )

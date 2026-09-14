@@ -15,14 +15,8 @@ function colorPorTipo(tipo) {
   }
 }
 
-export default function VistaSemana({
-  citas = [],
-  onCitaClick,
-  onCrearCita,
-}) {
+export default function VistaSemana({ citas = [], onCitaClick, onCrearCita }) {
   const citasSeguras = Array.isArray(citas) ? citas : [];
-
-  // ⭐ Resaltado de cita recién creada
   const resaltadaId = useAgendaStore((s) => s.resaltadaId);
 
   return (
@@ -41,9 +35,9 @@ export default function VistaSemana({
             {h}
           </div>
 
-          {DIAS.map((d, idx) => (
+          {DIAS.map((_, idx) => (
             <div
-              key={`${h}-${d}`}
+              key={`${h}-${idx}`}
               className="h-16 border border-gray-100 hover:bg-gray-50 cursor-pointer"
               onDoubleClick={() =>
                 onCrearCita(new Date().toISOString().slice(0, 10))
@@ -52,11 +46,12 @@ export default function VistaSemana({
               {citasSeguras
                 .filter((c) => {
                   const fecha = new Date(c.fecha);
-                  return fecha.getDay() === ((idx + 1) % 7);
+                  const diaSemana = fecha.getDay(); // 0=Dom,1=Lun...
+                  const columna = idx + 1; // 1=Lun,...7=Dom
+
+                  return diaSemana === (columna % 7);
                 })
-                .filter(
-                  (c) => c.hora_inicio.split(":")[0] === h.split(":")[0]
-                )
+                .filter((c) => c.hora_inicio.split(":")[0] === h.split(":")[0])
                 .map((c) => (
                   <div
                     key={c.id}
@@ -77,7 +72,7 @@ export default function VistaSemana({
                     </div>
 
                     <div className="truncate">
-                      Notario: {c.notario?.nombre} {c.notario?.apellidos}
+                      Notario: {c.notario_nombre || "—"}
                     </div>
 
                     <div className="truncate">

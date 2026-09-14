@@ -1,20 +1,20 @@
 import axios from "axios";
- 
+
+const base = import.meta.env.VITE_API_URL;
+
+// 🔥 Elimina /api si el usuario lo puso por error
+const cleanBase = base.replace(/\/api$/, "");
+
 const instance = axios.create({
-  // ✔ baseURL correcta: tu backend expone /api, aquí lo añadimos una sola vez
-  baseURL: import.meta.env.VITE_API_URL,
-  withCredentials: true,
+  baseURL: cleanBase,      // 🔥 sin /api
+  withCredentials: false,  // 🔥 Render bloquea cookies cross-domain
 });
 
 // Interceptor de request
 instance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
-
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-
+    if (token) config.headers.Authorization = `Bearer ${token}`;
     return config;
   },
   (error) => Promise.reject(error)
@@ -24,7 +24,6 @@ instance.interceptors.request.use(
 instance.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Blindaje total: nunca rompe el frontend
     if (!error.response) {
       return Promise.reject({
         status: 500,
@@ -32,7 +31,6 @@ instance.interceptors.response.use(
         message: "Error de red o servidor no disponible",
       });
     }
-
     return Promise.reject(error);
   }
 );

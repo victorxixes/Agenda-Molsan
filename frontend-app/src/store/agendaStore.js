@@ -14,9 +14,8 @@ export const useAgendaStore = create((set, get) => ({
     set({ cargando: true });
 
     const res = await api.getCitasMes(year, month);
-
-    // 🔥 CORRECCIÓN CRÍTICA: citas SIEMPRE es array
     const lista = res?.data?.citas ?? res?.data ?? [];
+
     set({
       citas: Array.isArray(lista) ? lista : [],
       vista: "mes",
@@ -26,92 +25,54 @@ export const useAgendaStore = create((set, get) => ({
   },
 
   // ============================
-  // BÚSQUEDA
-  // ============================
-  buscar: async (params) => {
-    set({ cargando: true });
-    const res = await api.buscarCitas(params);
-
-    const lista = res?.data?.citas ?? res?.data ?? [];
-    set({
-      citas: Array.isArray(lista) ? lista : [],
-      cargando: false,
-    });
-  },
-
-  // ============================
-  // OBTENER CITA
-  // ============================
-  obtener: async (id) => {
-    const res = await api.obtenerCita(id);
-    return res.data;
-  },
-
-  // ============================
   // CREAR
   // ============================
-  crear: async (data) => {
+  crear: async (data, year, month) => {
     const res = await api.crearCita(data);
-    await get().refrescarVista();
+    await get().refrescarVista(year, month);
     return res.data;
   },
 
   // ============================
   // EDITAR
   // ============================
-  editar: async (id, data) => {
+  editar: async (id, data, year, month) => {
     const res = await api.editarCita(id, data);
-    await get().refrescarVista();
+    await get().refrescarVista(year, month);
     return res.data;
   },
 
   // ============================
   // ELIMINAR
   // ============================
-  eliminar: async (id) => {
+  eliminar: async (id, year, month) => {
     await api.eliminarCita(id);
-    await get().refrescarVista();
-  },
-
-  // ============================
-  // MOVER
-  // ============================
-  mover: async (id, fecha, inicio, fin) => {
-    const res = await api.moverCita(id, fecha, inicio, fin);
-    await get().refrescarVista();
-    return res.data;
+    await get().refrescarVista(year, month);
   },
 
   // ============================
   // REFRESCAR VISTA ACTUAL
   // ============================
   refrescarVista: async (year, month) => {
-  return get().cargarMes(year, month);
-},
-
+    return get().cargarMes(year, month);
+  },
 
   // ============================
   // WS: AÑADIR / EDITAR / ELIMINAR
   // ============================
   addCita: (cita) =>
     set((state) => ({
-      citas: Array.isArray(state.citas)
-        ? [...state.citas, cita]
-        : [cita],
+      citas: [...state.citas, cita],
     })),
 
   updateCita: (cita) =>
     set((state) => ({
-      citas: Array.isArray(state.citas)
-        ? state.citas.map((c) => (c.id === cita.id ? cita : c))
-        : [cita],
+      citas: state.citas.map((c) => (c.id === cita.id ? cita : c)),
     })),
 
   removeCita: (id) =>
     set((state) => ({
-      citas: Array.isArray(state.citas)
-        ? state.citas.filter((c) => c.id !== id)
-        : [],
+      citas: state.citas.filter((c) => c.id !== id),
     })),
 
   // ============================

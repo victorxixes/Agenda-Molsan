@@ -1,11 +1,10 @@
 import axios from "axios";
 
 const instance = axios.create({
-  baseURL: import.meta.env.VITE_API_URL, // 🔥 incluye /api
-  withCredentials: false,               // 🔥 Render bloquea cookies cross-domain
+  baseURL: import.meta.env.VITE_API_URL, // 🔥 debe ser https://agenda-intranet-b.onrender.com/api
+  withCredentials: false,
 });
 
-// Interceptor de request
 instance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
@@ -15,7 +14,6 @@ instance.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Interceptor de respuesta
 instance.interceptors.response.use(
   (response) => response,
   (error) => {

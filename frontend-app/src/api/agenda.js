@@ -1,31 +1,31 @@
 import axios from "./axios";
 
 export const getCitasMes = (year, month) =>
-  axios.get(`/agenda/mes/${year}/${month}`);
+  axios.get(`/api/agenda/mes/${year}/${month}`);
 
 export const getCitasDia = (fecha) =>
-  axios.get(`/agenda/dia/${fecha}`);
+  axios.get(`/api/agenda/dia/${fecha}`);
 
 export const getCitasSemana = (fecha) =>
-  axios.get(`/agenda/semana/${fecha}`);
+  axios.get(`/api/agenda/semana/${fecha}`);
 
 export const buscarCitas = (params) =>
-  axios.get(`/agenda/search`, { params });
+  axios.get(`/api/agenda/search`, { params });
 
 export const obtenerCita = (id) =>
-  axios.get(`/agenda/${id}`);
+  axios.get(`/api/agenda/${id}`);
 
 export const crearCita = (data) =>
-  axios.post(`/agenda/`, data);
+  axios.post(`/api/agenda/`, data);
 
 export const editarCita = (id, data) =>
-  axios.put(`/agenda/${id}`, data);
+  axios.put(`/api/agenda/${id}`, data);
 
 export const eliminarCita = (id) =>
-  axios.delete(`/agenda/${id}`);
+  axios.delete(`/api/agenda/${id}`);
 
 export const moverCita = (id, fecha, inicio, fin) =>
-  axios.put(`/agenda/mover/${id}`, null, {
+  axios.put(`/api/agenda/mover/${id}`, null, {
     params: {
       nueva_fecha: fecha,
       nueva_hora_inicio: inicio,

@@ -40,8 +40,8 @@ export default function ModalNuevaCita({
         tipo_cita: cita.tipo_cita || "",
         notario_id: cita.notario_id || null,
         tipo_firma: cita.tipo_firma || "",
-        apoderado_visible: cita.apoderado || "",
-        observaciones: cita.observaciones || "",
+        apoderado_visible: cita.notario?.apoderado || "",
+        observaciones: cita.notario?.observacion || "",
       });
 
       if (cita.notario) {

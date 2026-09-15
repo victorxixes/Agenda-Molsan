@@ -81,6 +81,7 @@ export default function EmpleadosListado({ onSeleccionar }) {
             <div className="mt-3 text-xs text-gray-700 space-y-1">
               <div><strong>Tel:</strong> {e.telefono || "-"}</div>
               <div><strong>Email:</strong> {e.email_empresa || "-"}</div>
+              <div><strong>Extensión:</strong> {e.extension || "-"}</div>
               <div><strong>Departamento:</strong> {e.departamento_nombre || "-"}</div>
               <div><strong>Sección:</strong> {e.seccion_nombre || "-"}</div>
               <div><strong>Cargo:</strong> {e.cargo_nombre || "-"}</div>

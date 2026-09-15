@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import EmpleadoFicha from "../pages/empleados/EmpleadoFicha";
-import { useAuthStore } from "../store/authStore";
 
 export default function EmpleadoPerfilModal({ id, onClose }) {
 
@@ -34,7 +33,7 @@ export default function EmpleadoPerfilModal({ id, onClose }) {
           ✕
         </button>
 
-        {/* Ficha del empleado */}
+        {/* ⭐ AQUÍ SE CARGA LA FICHA DEL EMPLEADO */}
         <EmpleadoFicha id={id} />
       </div>
     </div>

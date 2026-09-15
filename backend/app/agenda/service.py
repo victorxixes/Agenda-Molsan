@@ -21,7 +21,12 @@ def cita_con_relaciones(db: Session, cita: Cita):
 
     # Tipo de firma correcto según VC del notario
     if notario:
-        tipo_firma = "Videoconferencia" if notario.vc == "SI" else "Presencial"
+        vc_val = (notario.vc or "").strip().upper()
+
+        if vc_val in ["SI", "VC", "VIDEOCONFERENCIA"]:
+            tipo_firma = "Videoconferencia"
+        else:
+            tipo_firma = "Presencial"
     else:
         tipo_firma = cita.tipo_firma or "Presencial"
 
@@ -121,7 +126,12 @@ def _rellenar_desde_notario(db: Session, cita: Cita):
         return
 
     # Tipo firma desde VC
-    cita.tipo_firma = "Videoconferencia" if notario.vc == "SI" else "Presencial"
+    vc_val = (notario.vc or "").strip().upper()
+
+    if vc_val in ["SI", "VC", "VIDEOCONFERENCIA"]:
+        cita.tipo_firma = "Videoconferencia"
+    else:
+        cita.tipo_firma = "Presencial"
 
     # Apoderado_id opcional
     if not cita.apoderado_id and getattr(notario, "apoderado_id", None):

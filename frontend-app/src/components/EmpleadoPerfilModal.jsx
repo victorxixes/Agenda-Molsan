@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import EmpleadoFicha from "../pages/empleados/EmpleadoFicha";
+import EmpleadoPerfil from "../pages/empleados/EmpleadoPerfil";
 
 export default function EmpleadoPerfilModal({ id, onClose }) {
 
@@ -30,8 +30,8 @@ export default function EmpleadoPerfilModal({ id, onClose }) {
           ✕
         </button>
 
-        {/* ⭐ CARGA LA FICHA DEL EMPLEADO CONECTADO */}
-        <EmpleadoFicha id={id} />
+        {/* ⭐ CARGA EL PERFIL DEL EMPLEADO CONECTADO */}
+        <EmpleadoPerfil id={id} />
       </div>
     </div>
   );

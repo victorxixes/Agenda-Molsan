@@ -11,6 +11,7 @@ export default function EmpleadoFicha({ empleadoId }) {
   const [data, setData] = useState(null);
   const [modulos, setModulos] = useState([]);
   const [permisos, setPermisos] = useState({});
+  const [rolId, setRolId] = useState(null);
 
   useEffect(() => {
     if (!empleadoId) return;
@@ -18,15 +19,15 @@ export default function EmpleadoFicha({ empleadoId }) {
       setData(res.data);
       setModulos(res.data.modulos_visibles || []);
       setPermisos(res.data.permisos_modulo || {});
+      setRolId(res.data.empleado?.rol?.id || null);
     });
   }, [empleadoId]);
 
   if (!empleadoId) return <div>Selecciona un empleado.</div>;
   if (!data) return <div>Cargando ficha...</div>;
 
-const empleado = data?.empleado ?? {};
-const rol = empleado?.rol ?? {};
-
+  const empleado = data?.empleado ?? {};
+  const rol = empleado?.rol ?? {};
 
   const handleFoto = async (e) => {
     const file = e.target.files[0];
@@ -38,19 +39,46 @@ const rol = empleado?.rol ?? {};
 
   const guardarModulos = async () => {
     await actualizarModulosVisibles(empleado.id, modulos);
+    alert("Módulos visibles guardados");
   };
 
   const guardarPermisos = async () => {
     await actualizarPermisosModulo(empleado.id, permisos);
+    alert("Permisos guardados");
+  };
+
+  /* ⭐ NUEVO: Guardar rol del empleado */
+  const guardarRol = async () => {
+    try {
+      await fetch(`${API_BASE}/seguridad/permisos/asignar-rol`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          empleado_id: empleado.id,
+          rol_id: rolId,
+        }),
+      });
+
+      alert("Rol actualizado correctamente");
+
+      // Recargar ficha
+      const res = await obtenerFichaCompleta(empleado.id);
+      setData(res.data);
+      setRolId(res.data.empleado?.rol?.id || null);
+
+    } catch (err) {
+      console.error(err);
+      alert("Error al actualizar el rol");
+    }
   };
 
   return (
     <div className="space-y-6">
+
       {/* Datos básicos */}
       <section className="border p-4 rounded bg-white shadow">
-        <h2 className="text-lg font-semibold mb-3">
-          Datos básicos
-        </h2>
+        <h2 className="text-lg font-semibold mb-3">Datos básicos</h2>
+
         <div className="grid grid-cols-2 gap-2 text-sm">
           <div><strong>Nombre:</strong> {empleado.nombre}</div>
           <div><strong>Apellidos:</strong> {empleado.apellidos}</div>
@@ -59,16 +87,16 @@ const rol = empleado?.rol ?? {};
           <div><strong>Email personal:</strong> {empleado.email_personal}</div>
           <div><strong>Email empresa:</strong> {empleado.email_empresa}</div>
           <div><strong>Usuario:</strong> {empleado.usuario}</div>
-          <div><strong>Rol:</strong> {rol?.nombre}</div>
+          <div><strong>Rol actual:</strong> {rol?.nombre}</div>
         </div>
 
         <div className="mt-4 flex items-center gap-4">
           {empleado.foto && (
-<img
-  src={`${API_BASE}${empleado.foto}`}
-  alt="Foto empleado"
-  className="w-24 h-24 rounded object-cover border"
-/>
+            <img
+              src={`${API_BASE}${empleado.foto}`}
+              alt="Foto empleado"
+              className="w-24 h-24 rounded object-cover border"
+            />
           )}
           <label className="text-sm">
             Subir nueva foto:
@@ -81,11 +109,36 @@ const rol = empleado?.rol ?? {};
         </div>
       </section>
 
+      {/* ⭐ NUEVO: Seguridad → Rol del empleado */}
+      <section className="border p-4 rounded bg-white shadow">
+        <h2 className="text-lg font-semibold mb-3">Rol del empleado</h2>
+
+        <div className="flex items-center gap-4">
+
+          <select
+            className="border rounded p-2 text-sm"
+            value={rolId || ""}
+            onChange={(e) => setRolId(Number(e.target.value))}
+          >
+            <option value="">Selecciona rol</option>
+            <option value={1}>admin</option>
+            <option value={2}>tecnico</option>
+            <option value={3}>usuario</option>
+          </select>
+
+          <button
+            className="px-3 py-1 bg-blue-600 text-white rounded text-sm"
+            onClick={guardarRol}
+          >
+            Guardar rol
+          </button>
+        </div>
+      </section>
+
       {/* Seguridad: módulos visibles */}
       <section className="border p-4 rounded bg-white shadow">
-        <h2 className="text-lg font-semibold mb-3">
-          Módulos visibles
-        </h2>
+        <h2 className="text-lg font-semibold mb-3">Módulos visibles</h2>
+
         <textarea
           className="w-full border rounded p-2 text-xs"
           rows={4}
@@ -93,11 +146,10 @@ const rol = empleado?.rol ?? {};
           onChange={(e) => {
             try {
               setModulos(JSON.parse(e.target.value));
-            } catch {
-              // ignorar parse error
-            }
+            } catch {}
           }}
         />
+
         <button
           className="mt-2 px-3 py-1 bg-blue-600 text-white rounded text-sm"
           onClick={guardarModulos}
@@ -108,9 +160,8 @@ const rol = empleado?.rol ?? {};
 
       {/* Seguridad: permisos por módulo */}
       <section className="border p-4 rounded bg-white shadow">
-        <h2 className="text-lg font-semibold mb-3">
-          Permisos por módulo
-        </h2>
+        <h2 className="text-lg font-semibold mb-3">Permisos por módulo</h2>
+
         <textarea
           className="w-full border rounded p-2 text-xs"
           rows={6}
@@ -118,11 +169,10 @@ const rol = empleado?.rol ?? {};
           onChange={(e) => {
             try {
               setPermisos(JSON.parse(e.target.value));
-            } catch {
-              // ignorar
-            }
+            } catch {}
           }}
         />
+
         <button
           className="mt-2 px-3 py-1 bg-blue-600 text-white rounded text-sm"
           onClick={guardarPermisos}
@@ -130,6 +180,7 @@ const rol = empleado?.rol ?? {};
           Guardar permisos
         </button>
       </section>
+
     </div>
   );
 }

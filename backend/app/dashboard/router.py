@@ -12,7 +12,7 @@ from backend.app.agenda.service import (
     listar_citas_mes
 )
 
-router = APIRouter(prefix="/api/dashboard", tags=["Dashboard"])
+router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
 
 # ---------------------------------------------------------
 # DASHBOARD EXTENDIDO (usa los schemas y el service limpio)

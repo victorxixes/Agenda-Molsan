@@ -63,7 +63,9 @@ useEffect(() => {
           observacion: n.observacion || "",
           tipo_firma:
             cita.tipo_firma ||
-            (n.vc === "SI" ? "Videoconferencia" : "Presencial"),
+            (n.vc?.toUpperCase() === "SI" || n.vc?.toUpperCase() === "VIDEOCONFERENCIA"
+              ? "Videoconferencia"
+              : "Presencial"),   
         };
 
         setNotarioSeleccionado(notarioCompleto);
@@ -138,187 +140,182 @@ useEffect(() => {
             />
           </div>
 
-          {/* Hora fin */}
-          <div>
-            <label className="block mb-1 text-gray-700">Hora fin</label>
-            <input
-              type="time"
-              className="w-full border rounded px-2 py-1"
-              value={form.hora_fin}
-              onChange={(e) => handleChange("hora_fin", e.target.value)}
-            />
-          </div>
+         {/* Hora fin */}
+<div>
+  <label className="block mb-1 text-gray-700">Hora fin</label>
+  <input
+    type="time"
+    className="w-full border rounded px-2 py-1"
+    value={form.hora_fin}
+    onChange={(e) => handleChange("hora_fin", e.target.value)}
+  />
+</div>
 
-          {/* Tipo de cita */}
-          <div className="col-span-2">
-            <label className="block mb-1 text-gray-700">Tipo de cita</label>
-            <select
-              className="w-full border rounded px-2 py-1"
-              value={form.tipo_cita}
-              onChange={(e) => handleChange("tipo_cita", e.target.value)}
-            >
-              <option value="">Seleccionar tipo</option>
-              {TIPOS_CITA.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
-            </select>
-          </div>
+{/* Tipo de cita */}
+<div className="col-span-2">
+  <label className="block mb-1 text-gray-700">Tipo de cita</label>
+  <select
+    className="w-full border rounded px-2 py-1"
+    value={form.tipo_cita}
+    onChange={(e) => handleChange("tipo_cita", e.target.value)}
+  >
+    <option value="">Seleccionar tipo</option>
+    {TIPOS_CITA.map((t) => (
+      <option key={t} value={t}>
+        {t}
+      </option>
+    ))}
+  </select>
+</div>
 
-          {/* Autocomplete Notario */}
-          <div className="col-span-2">
-            <label className="block mb-1 text-gray-700">Buscar notario</label>
+{/* Autocomplete Notario */}
+<div className="col-span-2">
+  <label className="block mb-1 text-gray-700">Buscar notario</label>
 
-            <AutocompleteNotario
-              value={notarioSeleccionado}
-              onSelect={(n) => {
-                const notarioCompleto = {
-                  id: n.id,
-                  codigo: n.codigo,
-                  nombre: n.nombre,
-                  apellidos: n.apellidos,
-                  nif: n.nif,
-                  telefono: n.telefono,
-                  provincia: n.provincia,
-                  municipio: n.municipio,
-                  cp: n.cp || "",
-                  direccion: n.direccion || "",
-                  vc: n.vc,
-                  apoderado: n.apoderado_s || n.apoderado || "",
-                  observacion: n.observacion || "",
-                  tipo_firma: n.vc === "SI" ? "VideoConferencia" : "Presencial",
-                };
+  <AutocompleteNotario
+    value={notarioSeleccionado}
+    onSelect={(n) => {
+      // Normalizar VC correctamente
+      const tipoFirmaNormalizada =
+        n.vc?.toUpperCase() === "SI" ||
+        n.vc?.toUpperCase() === "VC" ||
+        n.vc?.toUpperCase() === "VIDEOCONFERENCIA"
+          ? "Videoconferencia"
+          : "Presencial";
 
-                setNotarioSeleccionado(notarioCompleto);
+      const notarioCompleto = {
+        id: n.id,
+        codigo: n.codigo,
+        nombre: n.nombre,
+        apellidos: n.apellidos,
+        nif: n.nif,
+        telefono: n.telefono,
+        provincia: n.provincia,
+        municipio: n.municipio,
+        cp: n.cp || "",
+        direccion: n.direccion || "",
+        vc: n.vc,
+        apoderado: n.apoderado || "",
+        observacion: n.observacion || "",
+        tipo_firma: tipoFirmaNormalizada,
+      };
 
-                handleChange("notario_id", n.id);
-                handleChange(
-                  "tipo_firma",
-                  n.vc === "SI" ? "VideoConferencia" : "Presencial"
-                );
-                handleChange(
-                  "apoderado_visible",
-                  n.apoderado_s || n.apoderado || ""
-                );
-                handleChange("observaciones", n.observacion || "");
-              }}
-            />
-          </div>
+      setNotarioSeleccionado(notarioCompleto);
 
-          {/* Tarjeta del notario */}
-          {notarioSeleccionado && (
-            <div className="col-span-2 border rounded p-3 bg-gray-50">
-              <h4 className="font-semibold text-sm mb-2">
-                {notarioSeleccionado.nombre} {notarioSeleccionado.apellidos}
-              </h4>
+      handleChange("notario_id", n.id);
+      handleChange("tipo_firma", tipoFirmaNormalizada);
+      handleChange("apoderado_visible", n.apoderado || "");
+      handleChange("observaciones", n.observacion || "");
+    }}
+  />
+</div>
 
-              <p className="text-xs text-gray-700">
-                Código: {notarioSeleccionado.codigo}
-              </p>
+{/* Tarjeta del notario */}
+{notarioSeleccionado && (
+  <div className="col-span-2 border rounded p-3 bg-gray-50">
+    <h4 className="font-semibold text-sm mb-2">
+      {notarioSeleccionado.nombre} {notarioSeleccionado.apellidos}
+    </h4>
 
-              <p className="text-xs text-gray-700">
-                NIF: {notarioSeleccionado.nif}
-              </p>
+    <p className="text-xs text-gray-700">
+      Código: {notarioSeleccionado.codigo}
+    </p>
 
-              <p className="text-xs text-gray-700">
-                Teléfono: {notarioSeleccionado.telefono}
-              </p>
+    <p className="text-xs text-gray-700">
+      NIF: {notarioSeleccionado.nif}
+    </p>
 
-              <p className="text-xs text-gray-700">
-                Provincia: {notarioSeleccionado.provincia}
-              </p>
+    <p className="text-xs text-gray-700">
+      Teléfono: {notarioSeleccionado.telefono}
+    </p>
 
-              <p className="text-xs text-gray-700">
-                Municipio: {notarioSeleccionado.municipio}
-              </p>
+    <p className="text-xs text-gray-700">
+      Provincia: {notarioSeleccionado.provincia}
+    </p>
 
-              <p className="text-xs text-gray-700">
-                CP: {notarioSeleccionado.cp}
-              </p>
+    <p className="text-xs text-gray-700">
+      Municipio: {notarioSeleccionado.municipio}
+    </p>
 
-              <p className="text-xs text-gray-700">
-                Dirección: {notarioSeleccionado.direccion}
-              </p>
+    <p className="text-xs text-gray-700">
+      CP: {notarioSeleccionado.cp}
+    </p>
 
-              <p className="text-xs text-gray-700">
-                VC: {notarioSeleccionado.vc}
-              </p>
+    <p className="text-xs text-gray-700">
+      Dirección: {notarioSeleccionado.direccion}
+    </p>
 
-              <p className="text-xs text-gray-700">
-                Apoderado: {notarioSeleccionado.apoderado}
-              </p>
+    <p className="text-xs text-gray-700">
+      VC: {notarioSeleccionado.tipo_firma}
+    </p>
 
-              <p className="text-xs text-gray-700">
-                Observación: {notarioSeleccionado.observacion}
-              </p>
+    <p className="text-xs text-gray-700">
+      Apoderado: {notarioSeleccionado.apoderado}
+    </p>
 
-            <iframe
-  className="w-full h-40 mt-2 rounded"
-  src={`https://www.google.com/maps?q=${encodeURIComponent(
-    `${notarioSeleccionado.direccion}, ${notarioSeleccionado.cp} ${notarioSeleccionado.municipio}`
-  )}&output=embed`}
-></iframe>
-            </div>
-          )}
+    <p className="text-xs text-gray-700">
+      Observación: {notarioSeleccionado.observacion}
+    </p>
 
-          {/* Tipo firma */}
-          <div>
-            <label className="block mb-1 text-gray-700">Tipo firma</label>
-            <input
-              className="w-full border rounded px-2 py-1"
-              value={form.tipo_firma}
-              onChange={(e) => handleChange("tipo_firma", e.target.value)}
-            />
-          </div>
+    <iframe
+      className="w-full h-40 mt-2 rounded"
+      src={`https://www.google.com/maps?q=${encodeURIComponent(
+        `${notarioSeleccionado.direccion}, ${notarioSeleccionado.cp} ${notarioSeleccionado.municipio}`
+      )}&output=embed`}
+    ></iframe>
+  </div>
+)}
 
-          {/* Apoderado */}
-          <div>
-            <label className="block mb-1 text-gray-700">Apoderado</label>
-            <input
-              className="w-full border rounded px-2 py-1"
-              value={form.apoderado_visible || ""}
-              disabled
-            />
-          </div>
+{/* Tipo firma */}
+<div>
+  <label className="block mb-1 text-gray-700">Tipo firma</label>
+  <input
+    className="w-full border rounded px-2 py-1"
+    value={form.tipo_firma}
+    onChange={(e) => handleChange("tipo_firma", e.target.value)}
+  />
+</div>
 
-          {/* Observaciones */}
-          <div className="col-span-2">
-            <label className="block mb-1 text-gray-700">Observaciones</label>
-            <textarea
-              className="w-full border rounded px-2 py-1"
-              rows={3}
-              value={form.observaciones}
-              onChange={(e) =>
-                handleChange("observaciones", e.target.value)
-              }
-            />
-          </div>
-        </div>
+{/* Apoderado */}
+<div>
+  <label className="block mb-1 text-gray-700">Apoderado</label>
+  <input
+    className="w-full border rounded px-2 py-1"
+    value={form.apoderado_visible || ""}
+    disabled
+  />
+</div>
 
-        <div className="mt-6 flex justify-end gap-3">
-          {modo === "editar" && onDelete && (
-            <button
-              className="px-3 py-1 bg-red-600 text-white rounded"
-              onClick={onDelete}
-            >
-              Eliminar
-            </button>
-          )}
+{/* Observaciones */}
+<div className="col-span-2">
+  <label className="block mb-1 text-gray-700">Observaciones</label>
+  <textarea
+    className="w-full border rounded px-2 py-1"
+    rows={3}
+    value={form.observaciones}
+    onChange={(e) => handleChange("observaciones", e.target.value)}
+  />
+</div>
 
-          <button className="px-3 py-1 bg-gray-200 rounded" onClick={onClose}>
-            Cancelar
-          </button>
+<div className="mt-6 flex justify-end gap-3">
+  {modo === "editar" && onDelete && (
+    <button
+      className="px-3 py-1 bg-red-600 text-white rounded"
+      onClick={onDelete}
+    >
+      Eliminar
+    </button>
+  )}
 
-          <button
-            className="px-3 py-1 bg-blue-600 text-white rounded"
-            onClick={guardar}
-            disabled={loading}
-          >
-            {modo === "crear" ? "Crear cita" : "Guardar cambios"}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
+  <button className="px-3 py-1 bg-gray-200 rounded" onClick={onClose}>
+    Cancelar
+  </button>
+
+  <button
+    className="px-3 py-1 bg-blue-600 text-white rounded"
+    onClick={guardar}
+    disabled={loading}
+  >
+    {modo === "crear" ? "Crear cita" : "Guardar cambios"}
+  </button>
+</div>

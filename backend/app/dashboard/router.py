@@ -39,7 +39,19 @@ def dashboard(db: Session = Depends(get_db)):
     total_vc = len([c for c in citas_mes if c.vc == "SI"])
     total_presencial = len([c for c in citas_mes if c.vc == "NO"])
 
-    proximas = sorted(citas_hoy, key=lambda c: c.hora_inicio)[:5]
+    # ⭐ Convertir citas a dicts serializables
+    proximas_raw = sorted(citas_hoy, key=lambda c: c.hora_inicio)[:5]
+
+    proximas = []
+    for c in proximas_raw:
+        proximas.append({
+            "fecha": str(c.fecha),
+            "notario": c.notario.nombre if c.notario else None,
+            "apoderado": c.apoderado_s,
+            "tipo_firma": "VC" if c.vc == "SI" else "Presencial",
+            "hora_inicio": str(c.hora_inicio),
+            "hora_fin": str(c.hora_fin)
+        })
 
     return {
         "hoy": len(citas_hoy),
@@ -52,3 +64,4 @@ def dashboard(db: Session = Depends(get_db)):
 
         "proximas": proximas
     }
+

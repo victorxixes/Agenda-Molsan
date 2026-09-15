@@ -1,9 +1,8 @@
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { useState } from "react";
 import { puedeVerModulo } from "../utils/permisos";
 import { useAuthStore } from "../store/authStore";
 
-// Iconos desde sprite SVG
 const Icon = ({ name }) => (
   <svg className="w-5 h-5 min-w-[20px]">
     <use href={`/icons/icons.svg#${name}`} />
@@ -14,12 +13,9 @@ export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(true);
   const [fixed, setFixed] = useState(false);
 
-  const navigate = useNavigate();
-
-  // ✔ USAMOS SOLO "empleado" (usuario conectado)
   const empleado = useAuthStore((s) => s.empleado);
+  const setPerfilModal = useAuthStore((s) => s.setPerfilModal);
 
-  // ✔ safeUser basado en empleado
   const safeUser = empleado || {
     nombre: "Usuario",
     foto: "/icons/user-default.png",
@@ -50,95 +46,45 @@ export default function Sidebar() {
       onMouseEnter={() => !fixed && setCollapsed(false)}
       onMouseLeave={() => !fixed && setCollapsed(true)}
     >
-      {/* Botón fijar */}
       <div className="flex items-center justify-between mb-4">
-        {!collapsed && (
-          <h2 className="text-xl font-bold">Agenda Molsan</h2>
-        )}
+        {!collapsed && <h2 className="text-xl font-bold">Agenda Molsan</h2>}
 
         <button
           onClick={() => setFixed(!fixed)}
           className="p-2 rounded hover:bg-gray-200 transition"
-          title={fixed ? "Desfijar sidebar" : "Fijar sidebar"}
         >
           <Icon name={fixed ? "pin-off" : "pin"} />
         </button>
       </div>
 
       <nav className="space-y-2">
-
-        {!collapsed && (
-          <p className="text-xs text-gray-400 uppercase tracking-wide px-2">
-            General
-          </p>
-        )}
-
         {item("/dashboard", "Dashboard", "home")}
-
-        {!collapsed && (
-          <p className="text-xs text-gray-400 uppercase tracking-wide px-2 mt-4">
-            Agenda
-          </p>
-        )}
-
         {puedeVerModulo("agenda") && item("/agenda", "Agenda", "calendar")}
-        {puedeVerModulo("mis-visitas") && item("/agenda/mis-visitas", "Mis visitas", "visit")}
-
-        {!collapsed && (
-          <p className="text-xs text-gray-400 uppercase tracking-wide px-2 mt-4">
-            Gestión
-          </p>
-        )}
-
         {puedeVerModulo("empleados") && item("/panel/empleados", "Empleados", "user-group")}
-        {puedeVerModulo("ctn") && item("/ctn", "CTN", "globe")}
-
         {puedeVerModulo("intranet") && item("/intranet", "Intranet", "globe")}
-
-        {!collapsed && (
-          <p className="text-xs text-gray-400 uppercase tracking-wide px-2 mt-4">
-            Comunicación
-          </p>
-        )}
-
         {puedeVerModulo("mensajes") && item("/mensajes", "Mensajes", "chat")}
-
-        {!collapsed && (
-          <p className="text-xs text-gray-400 uppercase tracking-wide px-2 mt-4">
-            Sistema
-          </p>
-        )}
-
         {puedeVerModulo("logs") && item("/logs", "Logs", "clipboard")}
         {puedeVerModulo("seguridad") && item("/seguridad", "Seguridad", "shield")}
-        {puedeVerModulo("utilidades") && item("/herramientas/utilidades", "Utilidades", "cog")}
-        {puedeVerModulo("inicializacion") &&
-          item("/utilidades/inicializacion", "Inicialización", "refresh")}
       </nav>
 
-      {/* ⭐ PERFIL DEL USUARIO */}
+      {/* PERFIL */}
       <div className="mt-auto pt-4 border-t border-gray-200">
         <button
-          onClick={() => navigate(`/panel/empleados/${safeUser.id}`)}  // ✔ Ruta correcta
+          onClick={() => setPerfilModal(safeUser.id)}
           className={`
             flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200
             text-gray-700 hover:bg-gray-100 w-full
             ${collapsed ? "justify-center" : ""}
           `}
         >
-          {/* FOTO DEL USUARIO */}
           <img
             src={safeUser.foto || "/icons/user-default.png"}
-            alt="Foto usuario"
             className="w-8 h-8 rounded-full object-cover border border-gray-300"
           />
 
           {!collapsed && (
             <div className="flex flex-col">
-              <span className="whitespace-nowrap font-medium">
-                {safeUser.nombre}
-              </span>
-
+              <span className="whitespace-nowrap font-medium">{safeUser.nombre}</span>
               <span className="text-xs flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full bg-green-500"></span>
                 Online
@@ -147,7 +93,6 @@ export default function Sidebar() {
           )}
         </button>
       </div>
-
     </aside>
   );
 }

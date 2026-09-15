@@ -45,10 +45,14 @@ export const useSeguridadStore = create((set, get) => ({
   },
 
   // ---------------------------------------------------------
-  // ASIGNAR ROL
+  // ⭐ ASIGNAR ROL (CORREGIDO)
   // ---------------------------------------------------------
   asignarRol: async (empleadoId, rolId) => {
-    await axios.post(`${API}/seguridad/asignar/empleado/${empleadoId}/rol/${rolId}`);
+    await axios.post(`${API}/seguridad/permisos/asignar-rol`, {
+      empleado_id: empleadoId,
+      rol_id: rolId
+    });
+
     await get().cargarFicha(empleadoId);
   },
 

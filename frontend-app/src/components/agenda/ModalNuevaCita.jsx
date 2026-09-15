@@ -38,7 +38,7 @@ useEffect(() => {
       tipo_cita: cita.tipo_cita || "",
       notario_id: cita.notario_id || null,
       tipo_firma: cita.tipo_firma || "",
-      apoderado_visible: cita.apoderado || "",
+      apoderado_visible: cita.apoderado_nombre || "",
       observaciones: cita.observaciones || "",
     });
 
@@ -59,11 +59,11 @@ useEffect(() => {
           cp: n.cp || "",
           direccion: n.direccion || "",
           vc: n.vc,
-          apoderado: n.apoderado_s || n.apoderado || "",
+          apoderado: n.apoderado || "",
           observacion: n.observacion || "",
           tipo_firma:
             cita.tipo_firma ||
-            (n.vc === "SI" ? "VideoConferencia" : "Presencial"),
+            (n.vc === "SI" ? "Videoconferencia" : "Presencial"),
         };
 
         setNotarioSeleccionado(notarioCompleto);

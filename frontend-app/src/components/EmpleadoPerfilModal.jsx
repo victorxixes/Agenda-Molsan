@@ -17,11 +17,11 @@ export default function EmpleadoPerfilModal({ id, onClose }) {
 
   return (
     <div
-      className="modal-overlay fade-in fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50"
+      className="modal-overlay fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50"
       onClick={handleOverlayClick}
     >
       <div
-        className="modal-content bg-white rounded-xl shadow-xl p-6 w-[900px] max-h-[90vh] overflow-auto relative animate-fade-in"
+        className="modal-content bg-white rounded-xl shadow-xl p-6 w-[900px] max-h-[90vh] overflow-auto relative"
       >
         <button
           className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition"
@@ -30,7 +30,7 @@ export default function EmpleadoPerfilModal({ id, onClose }) {
           ✕
         </button>
 
-        {/* ⭐ AQUÍ SE CARGA TU FICHA */}
+        {/* ⭐ CARGA LA FICHA DEL EMPLEADO CONECTADO */}
         <EmpleadoFicha id={id} />
       </div>
     </div>

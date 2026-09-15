@@ -1,6 +1,7 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { puedeVerModulo } from "../utils/permisos";
+import { useAuthStore } from "../store/authStore";
 
 // Iconos desde sprite SVG
 const Icon = ({ name }) => (
@@ -12,6 +13,9 @@ const Icon = ({ name }) => (
 export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(true);
   const [fixed, setFixed] = useState(false);
+
+  const navigate = useNavigate();
+  const { usuario } = useAuthStore();
 
   const item = (to, label, iconName) => (
     <NavLink
@@ -25,7 +29,6 @@ export default function Sidebar() {
     >
       <Icon name={iconName} />
 
-      {/* Ocultar texto cuando está colapsado */}
       {!collapsed && <span className="whitespace-nowrap">{label}</span>}
     </NavLink>
   );
@@ -88,8 +91,6 @@ export default function Sidebar() {
         {/* ⭐ SOLO INTRANET */}
         {puedeVerModulo("intranet") && item("/intranet", "Intranet", "globe")}
 
-        {/* ❌ Documentos y Noticias eliminados del sidebar */}
-
         {/* ⭐ SECCIÓN: Comunicación */}
         {!collapsed && (
           <p className="text-xs text-gray-400 uppercase tracking-wide px-2 mt-4">
@@ -106,13 +107,51 @@ export default function Sidebar() {
           </p>
         )}
 
-        
         {puedeVerModulo("logs") && item("/logs", "Logs", "clipboard")}
         {puedeVerModulo("seguridad") && item("/seguridad", "Seguridad", "shield")}
         {puedeVerModulo("utilidades") && item("/herramientas/utilidades", "Utilidades", "cog")}
         {puedeVerModulo("inicializacion") &&
           item("/utilidades/inicializacion", "Inicialización", "refresh")}
       </nav>
+
+      {/* ⭐ PERFIL DEL USUARIO */}
+      <div className="mt-auto pt-4 border-t border-gray-200">
+        <button
+          onClick={() => navigate(`/panel/empleados/${usuario.id}`)}
+          className={`
+            flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200
+            text-gray-700 hover:bg-gray-100 w-full
+            ${collapsed ? "justify-center" : ""}
+          `}
+        >
+          {/* FOTO DEL USUARIO */}
+          <img
+            src={usuario.foto || "/icons/user-default.png"}
+            alt="Foto usuario"
+            className="w-8 h-8 rounded-full object-cover border border-gray-300"
+          />
+
+          {/* TEXTO + ESTADO SOLO SI NO ESTÁ COLAPSADO */}
+          {!collapsed && (
+            <div className="flex flex-col">
+              <span className="whitespace-nowrap font-medium">
+                {usuario.nombre}
+              </span>
+
+              {/* ESTADO ONLINE/OFFLINE */}
+              <span className="text-xs flex items-center gap-1">
+                <span
+                  className={`w-2 h-2 rounded-full ${
+                    usuario.online ? "bg-green-500" : "bg-gray-400"
+                  }`}
+                ></span>
+                {usuario.online ? "Online" : "Offline"}
+              </span>
+            </div>
+          )}
+        </button>
+      </div>
+
     </aside>
   );
 }

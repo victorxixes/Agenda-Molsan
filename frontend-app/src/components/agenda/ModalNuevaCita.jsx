@@ -253,12 +253,12 @@ useEffect(() => {
                 Observación: {notarioSeleccionado.observacion}
               </p>
 
-              <iframe
-                className="w-full h-40 mt-2 rounded"
-                src={`https://www.google.com/maps?q=${encodeURIComponent(
-                  notarioSeleccionado.direccion
-                )}&output=embed`}
-              ></iframe>
+            <iframe
+  className="w-full h-40 mt-2 rounded"
+  src={`https://www.google.com/maps?q=${encodeURIComponent(
+    `${notarioSeleccionado.direccion}, ${notarioSeleccionado.cp} ${notarioSeleccionado.municipio}`
+  )}&output=embed`}
+></iframe>
             </div>
           )}
 

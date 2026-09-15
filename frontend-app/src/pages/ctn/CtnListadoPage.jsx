@@ -82,6 +82,7 @@ export default function CtnListadoPage() {
               <th>Apellidos</th>
               <th>Provincia</th>
               <th>Municipio</th>
+              <th>Dirección</th
               <th></th>
             </tr>
           </thead>
@@ -93,6 +94,7 @@ export default function CtnListadoPage() {
                 <td>{n.apellidos}</td>
                 <td>{n.provincia}</td>
                 <td>{n.municipio}</td>
+                <td>{n.direccion}</td>
                 <td>
                   <button
                     onClick={() => abrirDetalle(n)}

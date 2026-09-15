@@ -1,7 +1,7 @@
 import Sidebar from "../components/Sidebar";
 import { Outlet } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
-import EmpleadoFichaModal from "../components/EmpleadoPerfilModal";
+import EmpleadoPerfilModal from "../components/EmpleadoPerfilModal";
 
 export default function Layout() {
   const perfilModalId = useAuthStore((s) => s.perfilModalId);
@@ -12,7 +12,7 @@ export default function Layout() {
 
       {/* ⭐ MODAL PERFIL */}
       {perfilModalId && (
-        <EmpleadoFichaModal
+        <EmpleadoPerfilModal
           id={perfilModalId}
           onClose={() => setPerfilModal(null)}
         />

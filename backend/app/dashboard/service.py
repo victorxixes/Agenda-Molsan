@@ -33,7 +33,7 @@ def obtener_dashboard(db: Session):
         if c.notario and hasattr(c.notario, "nombre"):
             notario_nombre = c.notario.nombre
             
-        es_vc = (c.vc == "SI")
+        
         proximas.append({
             "fecha": str(c.fecha),
             "notario": notario_nombre,
@@ -49,44 +49,4 @@ def obtener_dashboard(db: Session):
     presencial_total = db.query(Cita).filter(Cita.vc == "NO").count()
     vc_total = db.query(Cita).filter(Cita.vc == "SI").count()
 
-    # -----------------------------------------
-    # APODERADOS — Ranking (SIN KM, SIN RUTAS)
-    # -----------------------------------------
-    empleados = db.query(Empleado).filter(Empleado.rol == "apoderado").all()
-
-    ranking = []
-
-    for apo in empleados:
-        citas_presenciales = db.query(Cita).filter(
-            Cita.apoderado_id == apo.id,
-            Cita.vc == "NO"
-        ).all()
-
-        firmas_total = len(citas_presenciales)
-
-        ranking.append({
-            "apoderado_id": apo.id,
-            "nombre": f"{apo.nombre} {apo.apellidos}",
-            "firmas_presencial": firmas_total,
-            "km_por_cita": [],          # vacío
-            "km_total": 0,              # sin cálculo
-            "ruta_completa": None       # sin rutas
-        })
-
-    ranking = sorted(ranking, key=lambda x: x["firmas_presencial"], reverse=True)
-
-    return {
-        "agenda": {
-            "presencial_hoy": presencial_hoy,
-            "vc_hoy": vc_hoy,
-            "proximas": proximas
-        },
-        "ctn": {
-            "presencial_total": presencial_total,
-            "vc_total": vc_total
-        },
-        "apoderados": {
-            "ranking": ranking,
-            "km_total": 0
-        }
-    }
+   

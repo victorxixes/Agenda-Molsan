@@ -29,7 +29,7 @@ def normalizar_vc(vc: str) -> str:
     vc = vc.strip().upper()
     if vc == "SI":
         return "VideoConferencia"
-    return "Presencial"  # NO y N.I. → presencial
+    return "Presencial"
 
 def limpiar_texto(v):
     if v is None:
@@ -40,6 +40,10 @@ def limpiar_texto(v):
     return v
 
 def importar_ctn_desde_excel(db: Session, contenido: bytes) -> int:
+    # ⭐ BORRAR TODO ANTES DE IMPORTAR
+    db.query(Notaria).delete()
+    db.commit()
+
     wb = load_workbook(BytesIO(contenido))
     ws = wb.active
 
@@ -72,14 +76,12 @@ def importar_ctn_desde_excel(db: Session, contenido: bytes) -> int:
                 valor = row[idx] if idx < len(row) else None
                 datos[campo] = limpiar_texto(valor)
 
-        # Normalizar VC → tipo firma
+        # Normalizar VC
         datos["vc"] = normalizar_vc(datos.get("vc"))
 
-        # Normalizar apoderado
-        ap1 = limpiar_texto(datos.get("apoderado"))
-        ap2 = limpiar_texto(datos.get("apoderado_s"))
-        datos["apoderado"] = ap1
-        datos["apoderado_s"] = ap2
+        # Normalizar apoderados
+        datos["apoderado"] = limpiar_texto(datos.get("apoderado"))
+        datos["apoderado_s"] = limpiar_texto(datos.get("apoderado_s"))
 
         # Normalizar observación
         datos["observacion"] = limpiar_texto(datos.get("observacion"))

@@ -91,7 +91,7 @@ export default function CtnListadoPage() {
             {items.map((n) => (
               <tr key={n.id} className="border-b">
                 <td>{n.codigo}</td>
-                <td>n.telefono</td>
+                <td>(n.telefono)</td>
                 <td>{n.nombre}</td>
                 <td>{n.apellidos}</td>
                 <td>{n.provincia}</td>

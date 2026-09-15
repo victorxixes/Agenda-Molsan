@@ -36,7 +36,7 @@ export default function AutocompleteNotario({ value, onSelect }) {
       vc: n.vc || "",
       apoderado: n.apoderado_s || n.apoderado || "",
       observacion: n.observacion || "",
-      tipo_firma: n.vc === "SI" ? "VideoConferencia" : "Presencial",
+      tipo_firma: n.vc === "SI" ? "Videoconferencia" : "Presencial",
     };
 
     onSelect(notarioCompleto);

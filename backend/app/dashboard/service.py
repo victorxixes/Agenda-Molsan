@@ -32,12 +32,13 @@ def obtener_dashboard(db: Session):
         notario_nombre = None
         if c.notario and hasattr(c.notario, "nombre"):
             notario_nombre = c.notario.nombre
-
+            
+        es_vc = (c.vc == "SI")
         proximas.append({
             "fecha": str(c.fecha),
             "notario": notario_nombre,
             "apoderado": c.apoderado_s,
-            "tipo_firma": "VC" if c.vc == "SI" else "Presencial",
+            "tipo_firma": "Videoconferencia" if c.vc == "SI" else "Presencial"
             "hora_inicio": str(c.hora_inicio),
             "hora_fin": str(c.hora_fin)
         })

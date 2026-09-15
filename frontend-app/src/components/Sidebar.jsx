@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { puedeVerModulo } from "../utils/permisos";
 import { useAuthStore } from "../store/authStore";
@@ -13,8 +13,9 @@ export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(true);
   const [fixed, setFixed] = useState(false);
 
+  const navigate = useNavigate();
+
   const empleado = useAuthStore((s) => s.empleado);
-  const setPerfilModal = useAuthStore((s) => s.setPerfilModal);
 
   const safeUser = empleado || {
     nombre: "Usuario",
@@ -70,7 +71,7 @@ export default function Sidebar() {
       {/* PERFIL */}
       <div className="mt-auto pt-4 border-t border-gray-200">
         <button
-          onClick={() => setPerfilModal(safeUser.id)}
+          onClick={() => navigate(`/panel/empleados/${safeUser.id}`)}
           className={`
             flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200
             text-gray-700 hover:bg-gray-100 w-full

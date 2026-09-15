@@ -53,7 +53,7 @@ def dashboard(db: Session = Depends(get_db)):
             "fecha": c.get("fecha"),
             "notario": c.get("notario_nombre"),
             "apoderado": apoderado,
-            "tipo_firma": "VC" if c.get("vc") == "SI" else "Presencial",
+            "tipo_firma": c.get("tipo_firma"),
             "hora_inicio": c.get("hora_inicio"),
             "hora_fin": c.get("hora_fin")
         })

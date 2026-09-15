@@ -25,6 +25,7 @@ export default function CtnDetallePage() {
         <p><strong>Teléfono:</strong> {notaria.telefono}</p>
         <p><strong>Provincia:</strong> {notaria.provincia}</p>
         <p><strong>Municipio:</strong> {notaria.municipio}</p>
+        <p><strong>CP:</strong> {notaria.cp}</p>
         <p><strong>Dirección:</strong> {notaria.direccion}</p>
         <p><strong>VC:</strong> {notaria.vc}</p>
         <p><strong>Apoderado:</strong> {notaria.apoderado}</p>

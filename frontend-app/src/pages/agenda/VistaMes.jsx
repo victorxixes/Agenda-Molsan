@@ -121,7 +121,7 @@ export default function VistaMes({ year, month, citas, onDiaClick, onCitaClick }
                       </div>
 
                       <div className="truncate">
-                        Apoderado: {c.apoderado || "—"}
+                        Apoderado: {c.apoderado_nombre || "—"}
                       </div>
                     </div>
                   ))}

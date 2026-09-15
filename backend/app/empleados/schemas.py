@@ -19,6 +19,7 @@ class EmpleadoBase(BaseModel):
     apellidos: Optional[str] = None
     telefono: Optional[str] = None
     email_empresa: Optional[str] = None
+    extension: Optional[str] = None
     activo: Optional[bool] = True
 
     class Config:

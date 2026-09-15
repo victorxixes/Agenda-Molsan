@@ -30,7 +30,7 @@ export default function ModalNuevaCita({
     setForm((f) => ({ ...f, [campo]: valor }));
   };
 
- useEffect(() => {
+useEffect(() => {
   if (modo === "editar" && cita) {
     setForm({
       hora_inicio: cita.hora_inicio || "",
@@ -42,7 +42,6 @@ export default function ModalNuevaCita({
       observaciones: cita.observaciones || "",
     });
 
-    // Cargar notario REAL desde CTN usando el ID
     if (cita.notario_id) {
       obtenerNotaria(cita.notario_id).then((res) => {
         const n = res.data;
@@ -75,7 +74,6 @@ export default function ModalNuevaCita({
     }
   }
 }, [modo, cita]);
-
         
   // ============================
   // Rellenar apoderado al seleccionar notario

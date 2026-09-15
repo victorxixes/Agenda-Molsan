@@ -21,7 +21,6 @@ export default function Sidebar() {
   const safeUser = usuario || {
     nombre: "Usuario",
     foto: "/icons/user-default.png",
-    online: false,
     id: 0,
   };
 
@@ -36,7 +35,6 @@ export default function Sidebar() {
       }
     >
       <Icon name={iconName} />
-
       {!collapsed && <span className="whitespace-nowrap">{label}</span>}
     </NavLink>
   );
@@ -67,7 +65,6 @@ export default function Sidebar() {
 
       <nav className="space-y-2">
 
-        {/* ⭐ SECCIÓN: General */}
         {!collapsed && (
           <p className="text-xs text-gray-400 uppercase tracking-wide px-2">
             General
@@ -76,7 +73,6 @@ export default function Sidebar() {
 
         {item("/dashboard", "Dashboard", "home")}
 
-        {/* ⭐ SECCIÓN: Agenda */}
         {!collapsed && (
           <p className="text-xs text-gray-400 uppercase tracking-wide px-2 mt-4">
             Agenda
@@ -86,7 +82,6 @@ export default function Sidebar() {
         {puedeVerModulo("agenda") && item("/agenda", "Agenda", "calendar")}
         {puedeVerModulo("mis-visitas") && item("/agenda/mis-visitas", "Mis visitas", "visit")}
 
-        {/* ⭐ SECCIÓN: Gestión */}
         {!collapsed && (
           <p className="text-xs text-gray-400 uppercase tracking-wide px-2 mt-4">
             Gestión
@@ -96,10 +91,8 @@ export default function Sidebar() {
         {puedeVerModulo("empleados") && item("/panel/empleados", "Empleados", "user-group")}
         {puedeVerModulo("ctn") && item("/ctn", "CTN", "globe")}
 
-        {/* ⭐ SOLO INTRANET */}
         {puedeVerModulo("intranet") && item("/intranet", "Intranet", "globe")}
 
-        {/* ⭐ SECCIÓN: Comunicación */}
         {!collapsed && (
           <p className="text-xs text-gray-400 uppercase tracking-wide px-2 mt-4">
             Comunicación
@@ -108,7 +101,6 @@ export default function Sidebar() {
 
         {puedeVerModulo("mensajes") && item("/mensajes", "Mensajes", "chat")}
 
-        {/* ⭐ SECCIÓN: Sistema */}
         {!collapsed && (
           <p className="text-xs text-gray-400 uppercase tracking-wide px-2 mt-4">
             Sistema
@@ -139,21 +131,16 @@ export default function Sidebar() {
             className="w-8 h-8 rounded-full object-cover border border-gray-300"
           />
 
-          {/* TEXTO + ESTADO SOLO SI NO ESTÁ COLAPSADO */}
           {!collapsed && (
             <div className="flex flex-col">
               <span className="whitespace-nowrap font-medium">
                 {safeUser.nombre}
               </span>
 
-              {/* ESTADO ONLINE/OFFLINE */}
+              {/* ⭐ ONLINE SIEMPRE (OPCIÓN A) */}
               <span className="text-xs flex items-center gap-1">
-                <span
-                  className={`w-2 h-2 rounded-full ${
-                    safeUser.online ? "bg-green-500" : "bg-gray-400"
-                  }`}
-                ></span>
-                {safeUser.online ? "Online" : "Offline"}
+                <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                Online
               </span>
             </div>
           )}

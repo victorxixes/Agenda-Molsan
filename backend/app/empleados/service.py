@@ -79,6 +79,7 @@ def listar_empleados(db: Session, q: str | None = None, activo: bool | None = No
         Empleado.apellidos,
         Empleado.telefono,
         Empleado.email_empresa,
+        Empleado.extension,
         Empleado.activo,
         Empleado.foto,
 

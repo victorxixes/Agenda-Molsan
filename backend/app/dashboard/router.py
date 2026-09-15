@@ -31,24 +31,20 @@ def dashboard(db: Session = Depends(get_db)):
     year = hoy.year
     month = hoy.month
 
-    citas_hoy = listar_citas_dia(db, hoy)          # ahora dicts
-    citas_semana = listar_citas_semana(db, hoy)    # ahora dicts
-    citas_mes = listar_citas_mes(db, year, month)  # ahora dicts
+    citas_hoy = listar_citas_dia(db, hoy)
+    citas_semana = listar_citas_semana(db, hoy)
+    citas_mes = listar_citas_mes(db, year, month)
 
     total_firmas = len([c for c in citas_mes if c.get("tipo_cita") == "Firma notarial"])
-    total_vc = len([c for c in citas_mes if c.get("vc") == "SI"])
-    total_presencial = len([c for c in citas_mes if c.get("vc") == "NO"])
+    total_vc = len([c for c in citas_mes if c.get("tipo_firma") == "Videoconferencia"])
+    total_presencial = len([c for c in citas_mes if c.get("tipo_firma") == "Presencial"])
 
     proximas_raw = sorted(citas_hoy, key=lambda c: c.get("hora_inicio"))[:5]
 
     proximas = []
     for c in proximas_raw:
-        
-        # Construir nombre completo del apoderado
-        apoderado = None
-        if c.get("apoderado_nombre"):
-            apoderado = f"{c.get('apoderado_nombre')} {c.get('apoderado_apellidos')}"
-        
+        apoderado = c.get("apoderado_nombre")  # ya viene formateado desde service
+
         proximas.append({
             "fecha": c.get("fecha"),
             "notario": c.get("notario_nombre"),
@@ -62,11 +58,10 @@ def dashboard(db: Session = Depends(get_db)):
         "hoy": len(citas_hoy),
         "semana": len(citas_semana),
         "mes": len(citas_mes),
-
         "firmas_mes": total_firmas,
         "vc_mes": total_vc,
         "presenciales_mes": total_presencial,
-
         "proximas": proximas
     }
+
 

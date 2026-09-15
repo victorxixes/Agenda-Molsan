@@ -7,6 +7,7 @@ from backend.app.agenda.models import Cita
 from backend.app.ctn.models import Notaria
 from backend.app.empleados.models import Empleado
 
+
 def cita_con_relaciones(db: Session, cita: Cita):
     # Notario
     notario = None
@@ -18,13 +19,23 @@ def cita_con_relaciones(db: Session, cita: Cita):
     if cita.apoderado_id:
         apoderado = db.query(Empleado).filter(Empleado.id == cita.apoderado_id).first()
 
+    # Tipo de firma correcto según VC
+    if notaria:
+        if notaria.vc == "SI":
+            tipo_firma = "Videoconferencia"
+        else:
+            tipo_firma = "Presencial"
+    else:
+        tipo_firma = cita.tipo_firma or "Presencial"
+
     return {
         "id": cita.id,
         "fecha": cita.fecha.strftime("%Y-%m-%d"),
         "hora_inicio": str(cita.hora_inicio),
         "hora_fin": str(cita.hora_fin),
         "tipo_cita": cita.tipo_cita,
-        "tipo_firma": cita.tipo_firma,
+        "tipo_firma": tipo_firma,
+        "vc": notario.vc if notario else None,
         "observaciones": cita.observaciones,
 
         # Notario
@@ -33,32 +44,36 @@ def cita_con_relaciones(db: Session, cita: Cita):
             f"{notario.nombre} {notario.apellidos}" if notario else None
         ),
         "notario": {
-           "id": notario.id,
-           "codigo": getattr(notario, "codigo", None),
-           "nif": getattr(notario, "nif", None),
-           "nombre": notario.nombre,
-           "apellidos": notario.apellidos,
-           "telefono": notario.telefono,
-           "provincia": notario.provincia,
-           "municipio": notario.municipio,
-           "direccion": getattr(notario, "direccion", None),
-           "vc": notario.vc,
-           "apoderado": getattr(notario, "apoderado", None),
-           "observacion": getattr(notario, "observacion", None),
-}
-if notario else None,
+            "id": notario.id,
+            "codigo": getattr(notario, "codigo", None),
+            "nif": getattr(notario, "nif", None),
+            "nombre": notario.nombre,
+            "apellidos": notario.apellidos,
+            "telefono": notario.telefono,
+            "provincia": notario.provincia,
+            "municipio": notario.municipio,
+            "direccion": getattr(notario, "direccion", None),
+            "vc": notario.vc,
+            "apoderado": getattr(notario, "apoderado", None),
+            "observacion": getattr(notario, "observacion", None),
+        } if notario else None,
 
-        # Apoderado (texto del Excel o texto de la cita)
+        # Apoderado
         "apoderado_id": cita.apoderado_id,
-        "apoderado_nombre": cita.apoderado or (notario.apoderado if notario else None),
+        "apoderado_nombre": (
+            f"{apoderado.nombre} {apoderado.apellidos}"
+            if apoderado else (notario.apoderado if notario else cita.apoderado)
+        ),
         "apoderado": cita.apoderado,
     }
+
 
 def obtener_cita(db: Session, cita_id: int):
     cita = db.query(Cita).filter(Cita.id == cita_id).first()
     if not cita:
         return None
     return cita_con_relaciones(db, cita)
+
 
 def listar_citas_dia(db: Session, fecha: date):
     citas = (
@@ -68,6 +83,7 @@ def listar_citas_dia(db: Session, fecha: date):
         .all()
     )
     return [cita_con_relaciones(db, c) for c in citas]
+
 
 def listar_citas_semana(db: Session, fecha: date):
     inicio_semana = fecha
@@ -81,6 +97,7 @@ def listar_citas_semana(db: Session, fecha: date):
         .all()
     )
     return [cita_con_relaciones(db, c) for c in citas]
+
 
 def listar_citas_mes(db: Session, year: int, month: int):
     last_day = monthrange(year, month)[1]
@@ -97,6 +114,7 @@ def listar_citas_mes(db: Session, year: int, month: int):
     )
     return [cita_con_relaciones(db, c) for c in citas]
 
+
 def _rellenar_desde_notario(db: Session, cita: Cita):
     if not cita.notario_id:
         return
@@ -105,9 +123,11 @@ def _rellenar_desde_notario(db: Session, cita: Cita):
     if not notaria:
         return
 
-    # Tipo firma desde VC
-    if not cita.tipo_firma and notaria.vc:
-        cita.tipo_firma = notaria.vc
+    # Tipo de firma correcto según VC
+    if notaria.vc == "SI":
+        cita.tipo_firma = "Videoconferencia"
+    else:
+        cita.tipo_firma = "Presencial"
 
     # Apoderado_id opcional
     if not cita.apoderado_id and notaria.apoderado_id:
@@ -117,6 +137,7 @@ def _rellenar_desde_notario(db: Session, cita: Cita):
     if not cita.observaciones and notaria.observacion:
         cita.observaciones = notaria.observacion
 
+
 def crear_cita(db: Session, data):
     cita = Cita(**data.dict())
     _rellenar_desde_notario(db, cita)
@@ -124,6 +145,7 @@ def crear_cita(db: Session, data):
     db.commit()
     db.refresh(cita)
     return cita_con_relaciones(db, cita)
+
 
 def editar_cita(db: Session, cita_id: int, data):
     cita = db.query(Cita).filter(Cita.id == cita_id).first()
@@ -139,6 +161,7 @@ def editar_cita(db: Session, cita_id: int, data):
     db.refresh(cita)
     return cita_con_relaciones(db, cita)
 
+
 def eliminar_cita(db: Session, cita_id: int):
     cita = db.query(Cita).filter(Cita.id == cita_id).first()
     if not cita:
@@ -147,6 +170,7 @@ def eliminar_cita(db: Session, cita_id: int):
     db.delete(cita)
     db.commit()
     return True
+
 
 def mover_cita(db: Session, cita_id: int, nueva_fecha: date, nueva_hora_inicio: time, nueva_hora_fin: time):
     cita = db.query(Cita).filter(Cita.id == cita_id).first()

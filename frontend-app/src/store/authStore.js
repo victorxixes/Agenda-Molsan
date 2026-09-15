@@ -15,8 +15,12 @@ function extraerIdDeToken(token) {
 export const useAuthStore = create((set) => ({
   empleado: null,
   token: null,
-  loading: true,        // ← CLAVE
-  authReady: false,     // ← CLAVE
+  loading: true,
+  authReady: false,
+
+  // ⭐ MODAL PERFIL
+  perfilModalId: null,
+  setPerfilModal: (id) => set({ perfilModalId: id }),
 
   // 🔥 HIDRACIÓN INICIAL
   init: () => {
@@ -46,7 +50,6 @@ export const useAuthStore = create((set) => ({
       if (!res.data?.token) return false;
 
       let empleadoId = res.data.empleado?.id || extraerIdDeToken(res.data.token);
-
       if (!empleadoId) return false;
 
       const ficha = await obtenerFichaCompleta(empleadoId);

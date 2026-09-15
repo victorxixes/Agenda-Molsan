@@ -19,3 +19,24 @@ def crear_tablas():
             "status": "error",
             "message": str(e)
         }
+
+@router.post("/add_columna_direccion")
+def add_columna_direccion():
+    try:
+        with engine.connect() as conn:
+            conn.execute("""
+                ALTER TABLE ctn_notarios
+                ADD COLUMN IF NOT EXISTS direccion VARCHAR(255);
+            """)
+            conn.commit()
+
+        return {
+            "status": "ok",
+            "message": "Columna 'direccion' añadida correctamente."
+        }
+
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": str(e)
+        }

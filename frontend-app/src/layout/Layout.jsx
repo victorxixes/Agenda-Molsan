@@ -1,11 +1,24 @@
 import Sidebar from "../components/Sidebar";
 import { Outlet } from "react-router-dom";
+import { useAuthStore } from "../store/authStore";
+import EmpleadoFichaModal from "../components/EmpleadoPerfilModal";
 
 export default function Layout() {
+  const perfilModalId = useAuthStore((s) => s.perfilModalId);
+  const setPerfilModal = useAuthStore((s) => s.setPerfilModal);
+
   return (
     <div className="flex min-h-screen bg-gray-100">
-      
-      {/* SIDEBAR UNIFICADO */}
+
+      {/* ⭐ MODAL PERFIL */}
+      {perfilModalId && (
+        <EmpleadoFichaModal
+          id={perfilModalId}
+          onClose={() => setPerfilModal(null)}
+        />
+      )}
+
+      {/* SIDEBAR */}
       <Sidebar />
 
       {/* MAIN */}

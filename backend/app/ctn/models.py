@@ -24,6 +24,7 @@ class Notaria(Base):
     cp = Column(String(10), nullable=True)
     provincia = Column(String(100), nullable=True, index=True)
     municipio = Column(String(100), nullable=True, index=True)
+    direccion = Column(String(255), nullable=True)
 
     # VC
     vc = Column(String(50), nullable=True, index=True)

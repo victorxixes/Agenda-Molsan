@@ -43,10 +43,16 @@ def dashboard(db: Session = Depends(get_db)):
 
     proximas = []
     for c in proximas_raw:
+        
+        # Construir nombre completo del apoderado
+        apoderado = None
+        if c.get("apoderado_nombre"):
+            apoderado = f"{c.get('apoderado_nombre')} {c.get('apoderado_apellidos')}"
+        
         proximas.append({
             "fecha": c.get("fecha"),
             "notario": c.get("notario_nombre"),
-            "apoderado": c.get("apoderado_s"),
+            "apoderado": apoderado,
             "tipo_firma": "VC" if c.get("vc") == "SI" else "Presencial",
             "hora_inicio": c.get("hora_inicio"),
             "hora_fin": c.get("hora_fin")

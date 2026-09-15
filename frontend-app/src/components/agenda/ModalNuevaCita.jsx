@@ -297,6 +297,7 @@ useEffect(() => {
   />
 </div>
 
+{/* Botones finales */}
 <div className="mt-6 flex justify-end gap-3">
   {modo === "editar" && onDelete && (
     <button

@@ -31,26 +31,25 @@ def dashboard(db: Session = Depends(get_db)):
     year = hoy.year
     month = hoy.month
 
-    citas_hoy = listar_citas_dia(db, hoy)
-    citas_semana = listar_citas_semana(db, hoy)
-    citas_mes = listar_citas_mes(db, year, month)
+    citas_hoy = listar_citas_dia(db, hoy)          # ahora dicts
+    citas_semana = listar_citas_semana(db, hoy)    # ahora dicts
+    citas_mes = listar_citas_mes(db, year, month)  # ahora dicts
 
-    total_firmas = len([c for c in citas_mes if c.tipo_cita == "Firma notarial"])
-    total_vc = len([c for c in citas_mes if c.vc == "SI"])
-    total_presencial = len([c for c in citas_mes if c.vc == "NO"])
+    total_firmas = len([c for c in citas_mes if c.get("tipo_cita") == "Firma notarial"])
+    total_vc = len([c for c in citas_mes if c.get("vc") == "SI"])
+    total_presencial = len([c for c in citas_mes if c.get("vc") == "NO"])
 
-    # ⭐ Convertir citas a dicts serializables
-    proximas_raw = sorted(citas_hoy, key=lambda c: c.hora_inicio)[:5]
+    proximas_raw = sorted(citas_hoy, key=lambda c: c.get("hora_inicio"))[:5]
 
     proximas = []
     for c in proximas_raw:
         proximas.append({
-            "fecha": str(c.fecha),
-            "notario": c.notario.nombre if c.notario else None,
-            "apoderado": c.apoderado_s,
-            "tipo_firma": "VC" if c.vc == "SI" else "Presencial",
-            "hora_inicio": str(c.hora_inicio),
-            "hora_fin": str(c.hora_fin)
+            "fecha": c.get("fecha"),
+            "notario": c.get("notario_nombre"),
+            "apoderado": c.get("apoderado_s"),
+            "tipo_firma": "VC" if c.get("vc") == "SI" else "Presencial",
+            "hora_inicio": c.get("hora_inicio"),
+            "hora_fin": c.get("hora_fin")
         })
 
     return {

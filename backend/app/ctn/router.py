@@ -71,14 +71,18 @@ def listar(
 # ---------------------------------------------------------
 # OBTENER NOTARIA POR ID
 # ---------------------------------------------------------
-@router.get("/notarias/{notaria_id}")
+@router.get("/notarias/{notaria_id}", response_model=NotariaResponse)
 def obtener(notaria_id: int, db: Session = Depends(get_db)):
     try:
         notaria_id = int(str(notaria_id).strip())
     except:
         return None
 
-    return obtener_notaria(db, notaria_id)
+    notaria = obtener_notaria(db, notaria_id)
+    if notaria is None:
+        return None
+
+    return NotariaResponse.from_orm(notaria)
 
 # ---------------------------------------------------------
 # FIRMAS POR NOTARIA

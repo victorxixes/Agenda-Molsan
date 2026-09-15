@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import AutocompleteNotario from "./AutocompleteNotario";
+import { listarNotarias } from "../../api/ctn"; // ← NUEVO IMPORT
 
 const TIPOS_CITA = ["Firma notarial", "Reunión", "Visita", "Otros"];
 
@@ -40,27 +41,47 @@ export default function ModalNuevaCita({
         tipo_cita: cita.tipo_cita || "",
         notario_id: cita.notario_id || null,
         tipo_firma: cita.tipo_firma || "",
-        apoderado_visible: cita.notario?.apoderado || "",
-        observaciones: cita.notario?.observacion || "",
+        // apoderado y observaciones de la CITA (no de CTN)
+        apoderado_visible: cita.apoderado || "",
+        observaciones: cita.observaciones || "",
       });
 
-      if (cita.notario) {
-        setNotarioSeleccionado({
-          id: cita.notario.id,
-          codigo: cita.notario.codigo,
-          nombre: cita.notario.nombre,
-          apellidos: cita.notario.apellidos,
-          nif: cita.notario.nif,
-          telefono: cita.notario.telefono || "",
-          provincia: cita.notario.provincia || "",
-          municipio: cita.notario.municipio || "",
-          direccion: cita.notario.direccion || "",
-          vc: cita.notario.vc,
-          apoderado: cita.notario.apoderado || "",
-          observacion: cita.notario.observacion || "",
-          tipo_firma:
-            cita.tipo_firma ||
-            (cita.notario.vc === "SI" ? "VideoConferencia" : "Presencial"),
+      // IMPORTANTE: volver a cargar la notaría desde CTN usando notario_id
+      if (cita.notario_id) {
+        listarNotarias({ q: String(cita.notario_id) }).then((res) => {
+          const lista = Array.isArray(res.data?.items) ? res.data.items : [];
+          const n = lista[0];
+          if (!n) return;
+
+          const notarioCompleto = {
+            id: n.id,
+            codigo: n.codigo,
+            nombre: n.nombre,
+            apellidos: n.apellidos,
+            nif: n.nif,
+            telefono: n.telefono || "",
+            provincia: n.provincia || "",
+            municipio: n.municipio || "",
+            direccion: n.direccion || "",
+            vc: n.vc,
+            apoderado: n.apoderado_s || n.apoderado || "",
+            observacion: n.observacion || "",
+            tipo_firma:
+              cita.tipo_firma ||
+              (n.vc === "SI" ? "VideoConferencia" : "Presencial"),
+          };
+
+          setNotarioSeleccionado(notarioCompleto);
+
+          // sincronizar tipo_firma y apoderado_visible con CTN
+          handleChange(
+            "tipo_firma",
+            notarioCompleto.tipo_firma
+          );
+          handleChange(
+            "apoderado_visible",
+            notarioCompleto.apoderado || ""
+          );
         });
       }
     }

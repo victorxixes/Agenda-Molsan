@@ -16,6 +16,7 @@ HEADER_MAP = {
     "CP": "cp",
     "Provincia": "provincia",
     "Municipio": "municipio",
+    "Dirección": "direccion"
     "VC": "vc",
     "Apoderado": "apoderado",
     "Apoderado S": "apoderado_s",

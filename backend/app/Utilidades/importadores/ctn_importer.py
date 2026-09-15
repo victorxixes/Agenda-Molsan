@@ -84,9 +84,6 @@ def importar_ctn_desde_excel(db: Session, contenido: bytes) -> int:
         # Normalizar observación
         datos["observacion"] = limpiar_texto(datos.get("observacion"))
 
-        # Dirección NOTARIA (si algún día la añades)
-        datos["direccion_notaria"] = limpiar_texto(datos.get("direccion_notaria")) if "direccion_notaria" in datos else ""
-
         notaria = Notaria(**datos)
         db.add(notaria)
         insertados += 1

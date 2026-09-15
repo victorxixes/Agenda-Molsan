@@ -20,43 +20,44 @@ def cita_con_relaciones(db: Session, cita: Cita):
         apoderado = db.query(Empleado).filter(Empleado.id == cita.apoderado_id).first()
 
     # Tipo de firma correcto según VC
-    if notaria:
-        if notaria.vc == "SI":
-            tipo_firma = "Videoconferencia"
-        else:
-            tipo_firma = "Presencial"
+    # Tipo de firma correcto según VC del notario
+if notario:
+    if notario.vc == "SI":
+        tipo_firma = "Videoconferencia"
     else:
-        tipo_firma = cita.tipo_firma or "Presencial"
+        tipo_firma = "Presencial"
+else:
+    tipo_firma = cita.tipo_firma or "Presencial"
 
-    return {
-        "id": cita.id,
-        "fecha": cita.fecha.strftime("%Y-%m-%d"),
-        "hora_inicio": str(cita.hora_inicio),
-        "hora_fin": str(cita.hora_fin),
-        "tipo_cita": cita.tipo_cita,
-        "tipo_firma": tipo_firma,
-        "vc": notario.vc if notario else None,
-        "observaciones": cita.observaciones,
+return {
+    "id": cita.id,
+    "fecha": cita.fecha.strftime("%Y-%m-%d"),
+    "hora_inicio": str(cita.hora_inicio),
+    "hora_fin": str(cita.hora_fin),
+    "tipo_cita": cita.tipo_cita,
+    "tipo_firma": tipo_firma,
+    "vc": notario.vc if notario else None,
+    "observaciones": cita.observaciones,
 
-        # Notario
-        "notario_id": cita.notario_id,
-        "notario_nombre": (
-            f"{notario.nombre} {notario.apellidos}" if notario else None
-        ),
-        "notario": {
-            "id": notario.id,
-            "codigo": getattr(notario, "codigo", None),
-            "nif": getattr(notario, "nif", None),
-            "nombre": notario.nombre,
-            "apellidos": notario.apellidos,
-            "telefono": notario.telefono,
-            "provincia": notario.provincia,
-            "municipio": notario.municipio,
-            "direccion": getattr(notario, "direccion", None),
-            "vc": notario.vc,
-            "apoderado": getattr(notario, "apoderado", None),
-            "observacion": getattr(notario, "observacion", None),
-        } if notario else None,
+    "notario_id": cita.notario_id,
+    "notario_nombre": (
+        f"{notario.nombre} {notario.apellidos}" if notario else None
+    ),
+    "notario": {
+        "id": notario.id,
+        "codigo": getattr(notario, "codigo", None),
+        "nif": getattr(notario, "nif", None),
+        "nombre": notario.nombre,
+        "apellidos": notario.apellidos,
+        "telefono": notario.telefono,
+        "provincia": notario.provincia,
+        "municipio": notario.municipio,
+        "direccion": getattr(notario, "direccion", None),
+        "vc": notario.vc,
+        "apoderado": getattr(notario, "apoderado", None),
+        "observacion": getattr(notario, "observacion", None),
+    } if notario else None,
+
 
         # Apoderado
         "apoderado_id": cita.apoderado_id,

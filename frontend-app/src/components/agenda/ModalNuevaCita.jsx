@@ -320,13 +320,10 @@ useEffect(() => {
     {modo === "crear" ? "Crear cita" : "Guardar cambios"}
   </button>
 </div>
+        </div> {/* cierre del grid interno */}
 
-</div> {/* cierre del grid interno */}
+      </div> {/* cierre del contenedor del modal */}
 
-</div> {/* cierre del contenedor del modal */}
-
-</div> {/* cierre del overlay */}
-
-); /* cierre del return */
-
-} /* cierre del componente */
+    </div> {/* cierre del overlay */}
+  );
+}

@@ -15,10 +15,12 @@ export default function Sidebar() {
   const [fixed, setFixed] = useState(false);
 
   const navigate = useNavigate();
-  const { usuario } = useAuthStore();
 
-  // Protección: si usuario aún no está cargado
-  const safeUser = usuario || {
+  // ✔ USAMOS usuario + empleado
+  const { usuario, empleado } = useAuthStore();
+
+  // ✔ safeUser basado en EMPLEADO (no usuario)
+  const safeUser = empleado || {
     nombre: "Usuario",
     foto: "/icons/user-default.png",
     id: 0,
@@ -117,7 +119,7 @@ export default function Sidebar() {
       {/* ⭐ PERFIL DEL USUARIO */}
       <div className="mt-auto pt-4 border-t border-gray-200">
         <button
-          onClick={() => navigate(`/panel/empleados/${safeUser.id}`)}
+          onClick={() => navigate(`/panel/empleados/${safeUser.id}`)}  // ✔ Ruta correcta
           className={`
             flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200
             text-gray-700 hover:bg-gray-100 w-full

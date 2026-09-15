@@ -41,6 +41,7 @@ export default function ModalCtnDetalle({ open, onClose, notaria, firmas }) {
           <p><strong>Teléfono:</strong> {notaria?.telefono || "No disponible"}</p>
           <p><strong>Provincia:</strong> {notaria?.provincia}</p>
           <p><strong>Municipio:</strong> {notaria?.municipio}</p>
+          <p><strong>CP:</strong> {notaria?.cp}</p>
           <p><strong>Dirección:</strong> {notaria?.direccion || "No disponible"}</p>
           <p><strong>VC:</strong> {notaria?.vc ? "Sí" : "No"}</p>
           <p><strong>Apoderado:</strong> {notaria?.apoderado || "No asignado"}</p>

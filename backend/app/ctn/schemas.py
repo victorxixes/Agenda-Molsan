@@ -14,6 +14,7 @@ class NotariaBase(BaseModel):
     cp: str | None = None
     provincia: str | None = None
     municipio: str | None = None
+    direccion: str | None = None   # ← FALTABA ESTO
 
     vc: str | None = None
 

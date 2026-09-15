@@ -8,19 +8,19 @@ export default function ModalCtnDetalle({ open, onClose, notaria, firmas }) {
     const handler = (e) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, []);
+  }, [onClose]);
 
-  // Dirección REAL desde la base de datos
-  const direccionReal = notaria?.direccion || "";
-
-  // Dirección para Google Maps (fallback si no hay dirección)
-  const direccionMapa =
-    direccionReal.trim() !== ""
-      ? direccionReal
-      : `${notaria?.municipio || ""} ${notaria?.provincia || ""}`;
+  // Construir dirección para Google Maps
+  const direccionTexto = [
+    notaria?.direccion,
+    notaria?.municipio,
+    notaria?.provincia,
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   const mapaUrl = `https://www.google.com/maps?q=${encodeURIComponent(
-    direccionMapa
+    direccionTexto || ""
   )}&output=embed`;
 
   return (
@@ -41,10 +41,7 @@ export default function ModalCtnDetalle({ open, onClose, notaria, firmas }) {
           <p><strong>Teléfono:</strong> {notaria?.telefono || "No disponible"}</p>
           <p><strong>Provincia:</strong> {notaria?.provincia}</p>
           <p><strong>Municipio:</strong> {notaria?.municipio}</p>
-
-          {/* ✔ Dirección REAL */}
-          <p><strong>Dirección:</strong> {direccionReal || "No disponible"}</p>
-
+          <p><strong>Dirección:</strong> {notaria?.direccion || "No disponible"}</p>
           <p><strong>VC:</strong> {notaria?.vc ? "Sí" : "No"}</p>
           <p><strong>Apoderado:</strong> {notaria?.apoderado || "No asignado"}</p>
           <p><strong>Observación:</strong> {notaria?.observacion || "Sin observaciones"}</p>

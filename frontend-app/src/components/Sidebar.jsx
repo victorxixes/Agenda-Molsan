@@ -17,6 +17,14 @@ export default function Sidebar() {
   const navigate = useNavigate();
   const { usuario } = useAuthStore();
 
+  // Protección: si usuario aún no está cargado
+  const safeUser = usuario || {
+    nombre: "Usuario",
+    foto: "/icons/user-default.png",
+    online: false,
+    id: 0,
+  };
+
   const item = (to, label, iconName) => (
     <NavLink
       to={to}
@@ -117,7 +125,7 @@ export default function Sidebar() {
       {/* ⭐ PERFIL DEL USUARIO */}
       <div className="mt-auto pt-4 border-t border-gray-200">
         <button
-          onClick={() => navigate(`/panel/empleados/${usuario.id}`)}
+          onClick={() => navigate(`/panel/empleados/${safeUser.id}`)}
           className={`
             flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200
             text-gray-700 hover:bg-gray-100 w-full
@@ -126,7 +134,7 @@ export default function Sidebar() {
         >
           {/* FOTO DEL USUARIO */}
           <img
-            src={usuario.foto || "/icons/user-default.png"}
+            src={safeUser.foto || "/icons/user-default.png"}
             alt="Foto usuario"
             className="w-8 h-8 rounded-full object-cover border border-gray-300"
           />
@@ -135,17 +143,17 @@ export default function Sidebar() {
           {!collapsed && (
             <div className="flex flex-col">
               <span className="whitespace-nowrap font-medium">
-                {usuario.nombre}
+                {safeUser.nombre}
               </span>
 
               {/* ESTADO ONLINE/OFFLINE */}
               <span className="text-xs flex items-center gap-1">
                 <span
                   className={`w-2 h-2 rounded-full ${
-                    usuario.online ? "bg-green-500" : "bg-gray-400"
+                    safeUser.online ? "bg-green-500" : "bg-gray-400"
                   }`}
                 ></span>
-                {usuario.online ? "Online" : "Offline"}
+                {safeUser.online ? "Online" : "Offline"}
               </span>
             </div>
           )}

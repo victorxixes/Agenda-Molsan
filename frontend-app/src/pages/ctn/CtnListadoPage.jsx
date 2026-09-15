@@ -83,6 +83,7 @@ export default function CtnListadoPage() {
               <th>Apellidos</th>
               <th>Provincia</th>
               <th>Municipio</th>
+               <th>CP</th>
               <th>Dirección</th>
               <th></th>
             </tr>
@@ -96,6 +97,7 @@ export default function CtnListadoPage() {
                 <td>{n.apellidos}</td>
                 <td>{n.provincia}</td>
                 <td>{n.municipio}</td>
+                <td>{n.cp}</td> 
                 <td>{n.direccion}</td>
                 <td>
                   <button

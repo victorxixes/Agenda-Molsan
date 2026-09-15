@@ -16,10 +16,10 @@ export default function Sidebar() {
 
   const navigate = useNavigate();
 
-  // ✔ USAMOS usuario + empleado
-  const { usuario, empleado } = useAuthStore();
+  // ✔ USAMOS SOLO "empleado" (usuario conectado)
+  const empleado = useAuthStore((s) => s.empleado);
 
-  // ✔ safeUser basado en EMPLEADO (no usuario)
+  // ✔ safeUser basado en empleado
   const safeUser = empleado || {
     nombre: "Usuario",
     foto: "/icons/user-default.png",
@@ -139,7 +139,6 @@ export default function Sidebar() {
                 {safeUser.nombre}
               </span>
 
-              {/* ⭐ ONLINE SIEMPRE (OPCIÓN A) */}
               <span className="text-xs flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full bg-green-500"></span>
                 Online

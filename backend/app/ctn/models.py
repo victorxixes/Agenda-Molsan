@@ -40,13 +40,6 @@ class Notaria(Base):
     # Relación opcional con tabla de apoderados
     apoderado_id = Column(Integer, ForeignKey("empleados.id"), nullable=True)
 
-    # Relación con Agenda
-    citas = relationship(
-        "Cita",
-        back_populates="notario",
-        lazy="selectin"
-    )
-
 # Índices adicionales
 Index("idx_notaria_nombre", Notaria.nombre)
 Index("idx_notaria_apellidos", Notaria.apellidos)

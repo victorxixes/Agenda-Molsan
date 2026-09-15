@@ -40,7 +40,7 @@ def obtener_dashboard(db: Session):
             "apoderado": c.apoderado_s,
             "tipo_firma": "Videoconferencia" if c.vc == "SI" else "Presencial",
             "hora_inicio": str(c.hora_inicio),
-            "hora_fin": str(c.hora_fin)
+            "hora_fin": str(c.hora_fin),
         })
 
     # -----------------------------------------

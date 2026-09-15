@@ -31,6 +31,7 @@ export default function AutocompleteNotario({ value, onSelect }) {
       telefono: n.telefono || "",
       provincia: n.provincia || "",
       municipio: n.municipio || "",
+      cp: n.cp || "",
       direccion: n.direccion || "",
       vc: n.vc || "",
       apoderado: n.apoderado_s || n.apoderado || "",

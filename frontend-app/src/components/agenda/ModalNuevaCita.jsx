@@ -56,6 +56,7 @@ useEffect(() => {
           telefono: n.telefono || "",
           provincia: n.provincia || "",
           municipio: n.municipio || "",
+          cp: n.cp || "",
           direccion: n.direccion || "",
           vc: n.vc,
           apoderado: n.apoderado_s || n.apoderado || "",
@@ -181,6 +182,7 @@ useEffect(() => {
                   telefono: n.telefono,
                   provincia: n.provincia,
                   municipio: n.municipio,
+                  cp: n.cp || "",
                   direccion: n.direccion || "",
                   vc: n.vc,
                   apoderado: n.apoderado_s || n.apoderado || "",
@@ -229,6 +231,10 @@ useEffect(() => {
 
               <p className="text-xs text-gray-700">
                 Municipio: {notarioSeleccionado.municipio}
+              </p>
+
+              <p className="text-xs text-gray-700">
+                CP: {notarioSeleccionado.cp}
               </p>
 
               <p className="text-xs text-gray-700">

@@ -82,7 +82,7 @@ export default function CtnListadoPage() {
               <th>Apellidos</th>
               <th>Provincia</th>
               <th>Municipio</th>
-              <th>Dirección</th
+              <th>Dirección</th>
               <th></th>
             </tr>
           </thead>

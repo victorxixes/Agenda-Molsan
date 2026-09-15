@@ -37,7 +37,7 @@ def obtener_dashboard(db: Session):
         proximas.append({
             "fecha": str(c.fecha),
             "notario": notario_nombre,
-            "apoderado": c.apoderado_s,
+            "apoderado": c.apoderado,
             "tipo_firma": "Videoconferencia" if c.vc == "SI" else "Presencial",
             "hora_inicio": str(c.hora_inicio),
             "hora_fin": str(c.hora_fin),

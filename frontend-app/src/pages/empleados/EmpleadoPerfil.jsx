@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { obtenerFichaCompleta } from "../api/empleados";
-import { API_BASE } from "../api/config";
+import { obtenerFichaCompleta } from "../../api/empleados";
+import { API_BASE } from "../../api/config";
 
 export default function EmpleadoPerfil({ id }) {
   const [data, setData] = useState(null);

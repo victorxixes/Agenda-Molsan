@@ -3,7 +3,6 @@ import EmpleadoFicha from "../pages/empleados/EmpleadoFicha";
 
 export default function EmpleadoPerfilModal({ id, onClose }) {
 
-  // Cerrar con tecla ESC
   useEffect(() => {
     const handleEsc = (e) => {
       if (e.key === "Escape") onClose();
@@ -12,7 +11,6 @@ export default function EmpleadoPerfilModal({ id, onClose }) {
     return () => window.removeEventListener("keydown", handleEsc);
   }, [onClose]);
 
-  // Cerrar al hacer clic fuera
   const handleOverlayClick = (e) => {
     if (e.target === e.currentTarget) onClose();
   };
@@ -25,7 +23,6 @@ export default function EmpleadoPerfilModal({ id, onClose }) {
       <div
         className="modal-content bg-white rounded-xl shadow-xl p-6 w-[900px] max-h-[90vh] overflow-auto relative animate-fade-in"
       >
-        {/* Botón cerrar */}
         <button
           className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition"
           onClick={onClose}
@@ -33,7 +30,7 @@ export default function EmpleadoPerfilModal({ id, onClose }) {
           ✕
         </button>
 
-        {/* ⭐ AQUÍ SE CARGA LA FICHA DEL EMPLEADO */}
+        {/* ⭐ AQUÍ SE CARGA TU FICHA */}
         <EmpleadoFicha id={id} />
       </div>
     </div>

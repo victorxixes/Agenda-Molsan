@@ -1,5 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useLogs } from "../../hooks/useLogs";
+
+/**
+ * Logs — SJ‑2026 Premium
+ * - Filtros avanzados
+ * - Ordenación estable
+ * - Paginación premium
+ * - Glass‑UI
+ * - Exportación CSV
+ */
 
 export default function Logs() {
   const { logs, cargarLogs, loading } = useLogs();
@@ -14,7 +23,7 @@ export default function Logs() {
 
   const [orden, setOrden] = useState({ campo: "fecha", dir: "desc" });
 
-  const aplicarFiltros = () => {
+  const aplicarFiltros = useCallback(() => {
     cargarLogs({
       tipo: tipo || undefined,
       texto: texto || undefined,
@@ -23,13 +32,13 @@ export default function Logs() {
       pagina,
       page_size: pageSize,
     });
-  };
+  }, [tipo, texto, fechaDesde, fechaHasta, pagina, pageSize, cargarLogs]);
 
   useEffect(() => {
     aplicarFiltros();
-  }, [pagina, pageSize]);
+  }, [pagina, pageSize, aplicarFiltros]);
 
-  const iconoTipo = (tipo) => {
+  const iconoTipo = useCallback((tipo) => {
     switch (tipo) {
       case "error": return "⛔";
       case "security": return "🔐";
@@ -37,9 +46,9 @@ export default function Logs() {
       case "info": return "ℹ️";
       default: return "•";
     }
-  };
+  }, []);
 
-  const colorTipo = (tipo) => {
+  const colorTipo = useCallback((tipo) => {
     switch (tipo) {
       case "error": return "text-red-400";
       case "security": return "text-blue-400";
@@ -47,32 +56,38 @@ export default function Logs() {
       case "info": return "text-white/70";
       default: return "text-white";
     }
-  };
+  }, []);
 
-  const ordenar = (campo) => {
+  const ordenar = useCallback((campo) => {
     setOrden((prev) => ({
       campo,
       dir: prev.campo === campo && prev.dir === "asc" ? "desc" : "asc",
     }));
-  };
+  }, []);
 
-  const logsOrdenados = [...logs].sort((a, b) => {
+  const logsOrdenados = useMemo(() => {
     const campo = orden.campo;
     const dir = orden.dir === "asc" ? 1 : -1;
 
-    if (campo === "fecha") {
-      return (new Date(a.fecha) - new Date(b.fecha)) * dir;
-    }
-    if (typeof a[campo] === "string") {
-      return a[campo].localeCompare(b[campo]) * dir;
-    }
-    return (a[campo] - b[campo]) * dir;
-  });
+    return [...logs].sort((a, b) => {
+      if (campo === "fecha") {
+        return (new Date(a.fecha) - new Date(b.fecha)) * dir;
+      }
+      if (typeof a[campo] === "string") {
+        return a[campo].localeCompare(b[campo]) * dir;
+      }
+      return (a[campo] - b[campo]) * dir;
+    });
+  }, [logs, orden]);
 
   const totalPaginas = Math.ceil(logsOrdenados.length / pageSize);
-  const visibles = logsOrdenados.slice((pagina - 1) * pageSize, pagina * pageSize);
 
-  const exportarExcel = () => {
+  const visibles = useMemo(
+    () => logsOrdenados.slice((pagina - 1) * pageSize, pagina * pageSize),
+    [logsOrdenados, pagina, pageSize]
+  );
+
+  const exportarExcel = useCallback(() => {
     const filas = logsOrdenados.map((l) => ({
       ID: l.id,
       Tipo: l.tipo,
@@ -95,10 +110,10 @@ export default function Logs() {
     a.download = "logs_sistema.csv";
     a.click();
     URL.revokeObjectURL(url);
-  };
+  }, [logsOrdenados]);
 
   return (
-    <div className="p-6 space-y-8 text-white">
+    <div className="p-6 space-y-8 text-white animate-fade-in">
 
       {/* TÍTULO PREMIUM */}
       <div className="
@@ -159,7 +174,7 @@ export default function Logs() {
         <button
           className="
             col-span-4 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
-            text-white shadow-lg transition
+            text-white shadow-lg transition active:scale-[0.97]
           "
           onClick={aplicarFiltros}
         >
@@ -187,7 +202,12 @@ export default function Logs() {
 
             <tbody>
               {visibles.map((log) => (
-                <tr key={log.id} className="border-b border-white/10">
+                <tr
+                  key={log.id}
+                  className="
+                    border-b border-white/10 hover:bg-white/5 transition
+                  "
+                >
                   <td className="py-2">{log.id}</td>
 
                   <td className={`py-2 flex items-center gap-2 ${colorTipo(log.tipo)}`}>
@@ -216,7 +236,7 @@ export default function Logs() {
           <button
             className="
               px-3 py-2 rounded-xl bg-white/10 border border-white/20
-              text-white hover:bg-white/20 transition
+              text-white hover:bg-white/20 transition active:scale-[0.97]
             "
             disabled={pagina <= 1}
             onClick={() => setPagina((p) => p - 1)}
@@ -231,7 +251,7 @@ export default function Logs() {
           <button
             className="
               px-3 py-2 rounded-xl bg-white/10 border border-white/20
-              text-white hover:bg-white/20 transition
+              text-white hover:bg-white/20 transition active:scale-[0.97]
             "
             disabled={pagina >= totalPaginas}
             onClick={() => setPagina((p) => p + 1)}
@@ -257,7 +277,7 @@ export default function Logs() {
           onClick={exportarExcel}
           className="
             px-4 py-2 rounded-xl bg-green-600 hover:bg-green-700
-            text-white shadow-lg transition
+            text-white shadow-lg transition active:scale-[0.97]
           "
         >
           Exportar Excel

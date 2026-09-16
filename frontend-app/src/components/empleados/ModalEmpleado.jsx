@@ -1196,14 +1196,14 @@ onChange={(e) =>
                 </section>
               </div>
             )}
-          </div> {/* ← cierre del contenido interno */}
+          </div> 
 
-        </div> {/* ← cierre del contenedor del modal */}
+        </div>
 
-      </div> {/* ← cierre del overlay */}
+      </div> 
 
-    </>  {/* ← cierre del fragment */}
+    </>  
 
-  );  {/* ← cierre del return */}
+  );  
 
 }  {/* ← cierre del componente */}

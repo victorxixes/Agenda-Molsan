@@ -708,4 +708,4 @@ export default function SeguridadFicha() {
   </div>
 </div>
 
-</div> {/* ← cierre del contenedor principal */}
+</div> 

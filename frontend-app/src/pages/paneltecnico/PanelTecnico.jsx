@@ -5,7 +5,6 @@ import AuditoriaAvanzada from "./AuditoriaAvanzada";
 import LogsAvanzados from "./LogsAvanzados";
 import { puedeVerModulo } from "../../utils/permisos";
 
-
 export default function PanelTecnico() {
   const usuario = useAuthStore((s) => s.user);
 

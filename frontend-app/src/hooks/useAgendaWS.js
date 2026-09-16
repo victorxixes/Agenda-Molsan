@@ -1,6 +1,13 @@
 import { useEffect, useRef } from "react";
 import { useAgendaStore } from "../store/agendaStore";
 
+/**
+ * WebSocket de Agenda — Versión SJ‑2026 Premium
+ * - Conexión blindada para Render / StrictMode
+ * - Manejo de eventos crear/editar/eliminar
+ * - Notificaciones premium
+ * - Refresco automático de la vista actual
+ */
 export function useAgendaWS() {
   const wsRef = useRef(null);
 
@@ -13,12 +20,15 @@ export function useAgendaWS() {
   const refrescarVista = useAgendaStore((s) => s.refrescarVista);
 
   useEffect(() => {
+    // Evitar doble conexión en StrictMode
+    if (wsRef.current) return;
+
     let ws;
 
     try {
       ws = new WebSocket(import.meta.env.VITE_WS_URL + "/ws/agenda");
     } catch {
-      console.warn("WS no disponible (Render). Modo offline.");
+      console.warn("WS Agenda no disponible (Render). Modo offline.");
       return;
     }
 
@@ -39,7 +49,7 @@ export function useAgendaWS() {
     ws.onmessage = async (msg) => {
       try {
         const data = JSON.parse(msg.data);
-        if (!data || !data.tipo) return;
+        if (!data?.tipo) return;
 
         console.log("WS evento:", data);
 
@@ -59,11 +69,10 @@ export function useAgendaWS() {
 
           case "eliminar":
             removeCita(data.id);
-            notify(`Cita eliminada`);
+            notify("Cita eliminada");
             await refrescarVista();
             break;
         }
-
       } catch {
         console.warn("WS mensaje inválido");
       }

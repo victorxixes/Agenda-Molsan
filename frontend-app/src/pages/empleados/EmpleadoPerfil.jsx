@@ -82,13 +82,6 @@ export default function EmpleadoPerfil({ id }) {
         </button>
 
         <button
-          className={tab === "seguridad" ? "font-bold text-blue-600" : ""}
-          onClick={() => setTab("seguridad")}
-        >
-          Seguridad
-        </button>
-
-        <button
           className={tab === "auditoria" ? "font-bold text-blue-600" : ""}
           onClick={() => setTab("auditoria")}
         >
@@ -368,29 +361,6 @@ export default function EmpleadoPerfil({ id }) {
           >
             Guardar cambios
           </button>
-        </section>
-      )}
-
-      {/* ============================
-          SEGURIDAD (SOLO LECTURA)
-      ============================ */}
-      {tab === "seguridad" && (
-        <section className="border p-4 rounded bg-white shadow">
-          <h2 className="text-lg font-semibold mb-3">Seguridad</h2>
-
-          <div className="text-sm">
-            <strong>Módulos visibles:</strong>
-            <pre className="bg-gray-100 p-2 rounded text-xs">
-              {JSON.stringify(data.modulos_visibles, null, 2)}
-            </pre>
-          </div>
-
-          <div className="text-sm mt-2">
-            <strong>Permisos por módulo:</strong>
-            <pre className="bg-gray-100 p-2 rounded text-xs">
-              {JSON.stringify(data.permisos_modulo, null, 2)}
-            </pre>
-          </div>
         </section>
       )}
 

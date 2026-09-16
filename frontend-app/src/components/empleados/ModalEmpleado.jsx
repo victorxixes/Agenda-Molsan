@@ -742,96 +742,60 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
         </div>
       )}
 
-      {/* Permisos por módulo */}
-      {seguridadTab === "permisos" && (
-        <div className="border border-gray-300 rounded-lg p-4 bg-white">
-          <h4 className="font-semibold text-xs mb-3 text-gray-900">
-            Permisos por módulo
-          </h4>
+     {/* Permisos por módulo */}
+{seguridadTab === "permisos" && (
+  <div className="border border-gray-300 rounded-lg p-4 bg-white">
+    <h4 className="font-semibold text-xs mb-3 text-gray-900">
+      Permisos por módulo
+    </h4>
 
-          {Object.keys(permisos).map((mod) => (
-            <div key={mod} className="mb-4">
-              <span className="block font-semibold text-gray-800 mb-2 text-xs">
-                {mod.toUpperCase()}
-              </span>
+    {Object.keys(permisos).map((mod) => (
+      <div key={mod} className="mb-4">
+        <span className="block font-semibold text-gray-800 mb-2 text-xs">
+          {mod.toUpperCase()}
+        </span>
 
-              <div className="grid grid-cols-4 gap-2 text-xs">
-                {["ver", "crear", "editar", "eliminar"].map((perm) => (
-                  <label key={perm} className="flex items-center gap-2 text-gray-700">
-                    <input
-                      type="checkbox"
-                      checked={permisos[mod]?.includes(perm)}
-                      onChange={(e) => {
-                        const actual = permisos[mod] || [];
-                        let nuevo;
+        <div className="grid grid-cols-4 gap-2 text-xs">
+          {["ver", "crear", "editar", "eliminar"].map((perm) => (
+            <label key={perm} className="flex items-center gap-2 text-gray-700">
+              <input
+                type="checkbox"
+                checked={permisos[mod]?.includes(perm)}
+                onChange={(e) => {
+                  const actual = permisos[mod] || [];
+                  let nuevo;
 
-                        if (e.target.checked) {
-                          nuevo = [...actual, perm];
-                        } else {
-                          nuevo = actual.filter((p) => p !== perm);
-                        }
+                  if (e.target.checked) {
+                    nuevo = [...actual, perm];
+                  } else {
+                    nuevo = actual.filter((p) => p !== perm);
+                  }
 
-                        setPermisos({
-                          ...permisos,
-                          [mod]: nuevo,
-                        });
-                      }}
-                    />
-                    {perm}
-                  </label>
-                ))}
-              </div>
-            </div>
+                  setPermisos({
+                    ...permisos,
+                    [mod]: nuevo,
+                  });
+                }}
+              />
+              {perm}
+            </label>
           ))}
-
-          <button
-            className="mt-4 px-3 py-1 bg-blue-600 text-white rounded text-xs"
-            onClick={guardarPermisos}
-          >
-            Guardar permisos
-          </button>
-
-          <button
-            className="mt-2 px-3 py-1 bg-red-600 text-white rounded text-xs"
-            onClick={() => setPermisos({})}
-          >
-            Reset permisos
-          </button>
         </div>
-      )}
-    </section>
-  </div>
-)}
-{/* TAB 5: AUDITORÍA */}
-{!loading && tab === "auditoria" && (
-  <div className="transition-all duration-200 ease-out transform">
-    <section className="border border-gray-300 bg-white p-4 rounded-xl shadow-sm">
-      <h3 className="text-sm font-semibold mb-3 text-gray-900">
-        Auditoría
-      </h3>
+      </div>
+    ))}
 
-      {(!auditoria || auditoria.length === 0) && (
-        <p className="text-gray-500 text-xs">
-          No hay registros de auditoría para este empleado.
-        </p>
-      )}
+    <button
+      className="mt-4 px-3 py-1 bg-blue-600 text-white rounded text-xs"
+      onClick={guardarPermisos}
+    >
+      Guardar permisos
+    </button>
 
-      {auditoria && auditoria.length > 0 && (
-        <ul className="list-disc ml-5 text-xs text-gray-800">
-          {auditoria.map((a) => (
-            <li key={a.id}>
-              {new Date(a.fecha).toLocaleString()} —{" "}
-              <strong>{a.modulo}</strong> [{a.accion}] — {a.descripcion}
-            </li>
-          ))}
-        </ul>
-      )}
-    </section>
+    <button
+      className="mt-2 px-3 py-1 bg-red-600 text-white rounded text-xs"
+      onClick={() => setPermisos({})}
+    >
+      Reset permisos
+    </button>
   </div>
-)}
-          </div> {/* cierre contenido */}
-        </div> {/* cierre caja modal */}
-      </div> {/* cierre overlay */}
-    </>
-  );
-}
+)}  {/* ← cierre correcto */}

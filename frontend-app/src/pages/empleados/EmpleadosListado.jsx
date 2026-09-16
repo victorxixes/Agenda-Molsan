@@ -1,30 +1,47 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { buscarEmpleados } from "../../api/empleados";
 import { useEmpleadosWS } from "../../hooks/useEmpleadosWS";
 import { API_BASE } from "../../api/config";
+
+/**
+ * EmpleadosListado — SJ‑2026 Premium
+ * - Glass‑UI
+ * - Buscador optimizado
+ * - Tarjetas premium
+ * - Render eficiente
+ */
 
 export default function EmpleadosListado({ onSeleccionar }) {
   const [empleados, setEmpleados] = useState([]);
   const [q, setQ] = useState("");
   const [activo, setActivo] = useState(null);
 
-  const cargar = () => {
+  const cargar = useCallback(() => {
     buscarEmpleados({ q: q || undefined, activo }).then((res) =>
       setEmpleados(res.data)
     );
-  };
+  }, [q, activo]);
 
-  useEffect(cargar, [q, activo]);
+  useEffect(() => {
+    cargar();
+  }, [cargar]);
 
   useEmpleadosWS((evento) => {
     if (evento.tipo === "empleado_actualizado") cargar();
   });
 
+  const empleadosMemo = useMemo(() => empleados, [empleados]);
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
 
       {/* BUSCADOR PREMIUM */}
-      <div className="flex gap-3 bg-white/10 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-xl">
+      <div
+        className="
+          flex gap-3 bg-white/10 backdrop-blur-xl border border-white/10
+          p-4 rounded-2xl shadow-xl
+        "
+      >
         <input
           className="
             flex-1 bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white
@@ -57,12 +74,12 @@ export default function EmpleadosListado({ onSeleccionar }) {
 
       {/* TARJETAS PREMIUM */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {empleados.map((e) => (
+        {empleadosMemo.map((e) => (
           <div
             key={e.id}
             className="
               bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-5
-              shadow-xl hover:shadow-2xl transition cursor-pointer
+              shadow-xl hover:shadow-2xl transition cursor-pointer active:scale-[0.98]
             "
             onClick={() => onSeleccionar?.(e.id)}
           >
@@ -100,17 +117,21 @@ export default function EmpleadosListado({ onSeleccionar }) {
             {/* ESTADO */}
             <div className="mt-4">
               {e.activo ? (
-                <span className="
-                  px-3 py-1 bg-green-500/20 text-green-200 border border-green-400
-                  rounded-xl text-xs backdrop-blur-md
-                ">
+                <span
+                  className="
+                    px-3 py-1 bg-green-500/20 text-green-200 border border-green-400
+                    rounded-xl text-xs backdrop-blur-md
+                  "
+                >
                   Activo
                 </span>
               ) : (
-                <span className="
-                  px-3 py-1 bg-red-500/20 text-red-200 border border-red-400
-                  rounded-xl text-xs backdrop-blur-md
-                ">
+                <span
+                  className="
+                    px-3 py-1 bg-red-500/20 text-red-200 border border-red-400
+                    rounded-xl text-xs backdrop-blur-md
+                  "
+                >
                   Inactivo
                 </span>
               )}

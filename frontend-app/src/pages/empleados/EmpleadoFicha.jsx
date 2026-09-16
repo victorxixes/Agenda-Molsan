@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { API_BASE } from "../../api/config";
 import {
   obtenerFichaCompleta,
@@ -7,14 +7,23 @@ import {
   subirFotoEmpleado,
 } from "../../api/empleados";
 
+/**
+ * EmpleadoFicha — SJ‑2026 Premium
+ * - Glass‑UI
+ * - Gestión de rol, módulos y permisos
+ * - Render optimizado
+ */
+
 export default function EmpleadoFicha({ empleadoId }) {
   const [data, setData] = useState(null);
   const [modulos, setModulos] = useState([]);
   const [permisos, setPermisos] = useState({});
   const [rolId, setRolId] = useState(null);
 
+  // Cargar ficha completa
   useEffect(() => {
     if (!empleadoId) return;
+
     obtenerFichaCompleta(empleadoId).then((res) => {
       setData(res.data);
       setModulos(res.data.modulos_visibles || []);
@@ -23,57 +32,78 @@ export default function EmpleadoFicha({ empleadoId }) {
     });
   }, [empleadoId]);
 
-  if (!empleadoId) return <div className="text-white/70">Selecciona un empleado.</div>;
-  if (!data) return <div className="text-white/70 animate-pulse">Cargando ficha…</div>;
+  if (!empleadoId)
+    return <div className="text-white/70">Selecciona un empleado.</div>;
+
+  if (!data)
+    return <div className="text-white/70 animate-pulse">Cargando ficha…</div>;
 
   const empleado = data?.empleado ?? {};
   const rol = empleado?.rol ?? {};
 
-  const handleFoto = async (e) => {
+  // SUBIR FOTO
+  const handleFoto = useCallback(async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+
     await subirFotoEmpleado(empleado.id, file);
+
     const res = await obtenerFichaCompleta(empleado.id);
     setData(res.data);
-  };
+  }, [empleado.id]);
 
-  const guardarModulos = async () => {
+  // GUARDAR MÓDULOS
+  const guardarModulos = useCallback(async () => {
     await actualizarModulosVisibles(empleado.id, modulos);
     alert("Módulos visibles guardados");
-  };
+  }, [empleado.id, modulos]);
 
-  const guardarPermisos = async () => {
+  // GUARDAR PERMISOS
+  const guardarPermisos = useCallback(async () => {
     await actualizarPermisosModulo(empleado.id, permisos);
     alert("Permisos guardados");
-  };
+  }, [empleado.id, permisos]);
 
-  const guardarRol = async () => {
+  // GUARDAR ROL
+  const guardarRol = useCallback(async () => {
     try {
-      await fetch(`${API_BASE}/seguridad/asignar/empleado/${empleado.id}/rol/${rolId}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" }
-      });
+      await fetch(
+        `${API_BASE}/seguridad/asignar/empleado/${empleado.id}/rol/${rolId}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        }
+      );
 
       alert("Rol actualizado correctamente");
 
       const res = await obtenerFichaCompleta(empleado.id);
       setData(res.data);
       setRolId(res.data.empleado?.rol?.id || null);
-
     } catch (err) {
       console.error(err);
       alert("Error al actualizar el rol");
     }
-  };
+  }, [empleado.id, rolId]);
+
+  const fotoUrl = useMemo(
+    () => (empleado.foto ? `${API_BASE}${empleado.foto}` : null),
+    [empleado.foto]
+  );
 
   return (
-    <div className="space-y-8 text-white">
+    <div className="space-y-8 text-white animate-fade-in">
 
       {/* DATOS BÁSICOS PREMIUM */}
-      <section className="
-        bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-xl
-      ">
-        <h2 className="text-xl font-semibold mb-4 drop-shadow">Datos básicos</h2>
+      <section
+        className="
+          bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl
+          p-6 shadow-xl
+        "
+      >
+        <h2 className="text-xl font-semibold mb-4 drop-shadow">
+          Datos básicos
+        </h2>
 
         <div className="grid grid-cols-2 gap-4 text-sm text-white/80">
           <div><strong>Nombre:</strong> {empleado.nombre}</div>
@@ -87,9 +117,9 @@ export default function EmpleadoFicha({ empleadoId }) {
         </div>
 
         <div className="mt-6 flex items-center gap-6">
-          {empleado.foto && (
+          {fotoUrl && (
             <img
-              src={`${API_BASE}${empleado.foto}`}
+              src={fotoUrl}
               alt="Foto empleado"
               className="
                 w-28 h-28 rounded-full object-cover border border-white/20
@@ -110,10 +140,15 @@ export default function EmpleadoFicha({ empleadoId }) {
       </section>
 
       {/* ROL PREMIUM */}
-      <section className="
-        bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-xl
-      ">
-        <h2 className="text-xl font-semibold mb-4 drop-shadow">Rol del empleado</h2>
+      <section
+        className="
+          bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl
+          p-6 shadow-xl
+        "
+      >
+        <h2 className="text-xl font-semibold mb-4 drop-shadow">
+          Rol del empleado
+        </h2>
 
         <div className="flex items-center gap-4">
           <select
@@ -133,7 +168,7 @@ export default function EmpleadoFicha({ empleadoId }) {
           <button
             className="
               px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
-              text-white shadow-lg transition
+              text-white shadow-lg transition active:scale-[0.97]
             "
             onClick={guardarRol}
           >
@@ -143,15 +178,20 @@ export default function EmpleadoFicha({ empleadoId }) {
       </section>
 
       {/* MÓDULOS VISIBLES PREMIUM */}
-      <section className="
-        bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-xl
-      ">
-        <h2 className="text-xl font-semibold mb-4 drop-shadow">Módulos visibles</h2>
+      <section
+        className="
+          bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl
+          p-6 shadow-xl
+        "
+      >
+        <h2 className="text-xl font-semibold mb-4 drop-shadow">
+          Módulos visibles
+        </h2>
 
         <textarea
           className="
             w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white
-            text-xs
+            text-xs scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent
           "
           rows={4}
           value={JSON.stringify(modulos, null, 2)}
@@ -165,7 +205,7 @@ export default function EmpleadoFicha({ empleadoId }) {
         <button
           className="
             mt-3 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
-            text-white shadow-lg transition
+            text-white shadow-lg transition active:scale-[0.97]
           "
           onClick={guardarModulos}
         >
@@ -174,15 +214,20 @@ export default function EmpleadoFicha({ empleadoId }) {
       </section>
 
       {/* PERMISOS PREMIUM */}
-      <section className="
-        bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-xl
-      ">
-        <h2 className="text-xl font-semibold mb-4 drop-shadow">Permisos por módulo</h2>
+      <section
+        className="
+          bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl
+          p-6 shadow-xl
+        "
+      >
+        <h2 className="text-xl font-semibold mb-4 drop-shadow">
+          Permisos por módulo
+        </h2>
 
         <textarea
           className="
             w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white
-            text-xs
+            text-xs scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent
           "
           rows={6}
           value={JSON.stringify(permisos, null, 2)}
@@ -196,14 +241,13 @@ export default function EmpleadoFicha({ empleadoId }) {
         <button
           className="
             mt-3 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
-            text-white shadow-lg transition
+            text-white shadow-lg transition active:scale-[0.97]
           "
           onClick={guardarPermisos}
         >
           Guardar permisos
         </button>
       </section>
-
     </div>
   );
 }

@@ -1,14 +1,33 @@
 import { create } from "zustand";
 import * as api from "../api/intranet";
 
+/**
+ * Store de Intranet — Versión SJ‑2026 Premium
+ * Gestiona:
+ * - Documentos
+ * - Noticias
+ * - CRUD completo
+ * - Estado de carga y errores
+ */
+
 export const useIntranetStore = create((set, get) => ({
   documentos: [],
   noticias: [],
+  loading: false,
+  error: null,
 
+  // ---------------------------------------------------------
   // DOCUMENTOS
+  // ---------------------------------------------------------
   cargarDocumentos: async (search = "") => {
-    const res = await api.listarDocumentos(search);
-    set({ documentos: res.data });
+    set({ loading: true, error: null });
+
+    try {
+      const res = await api.listarDocumentos(search);
+      set({ documentos: res.data || [], loading: false });
+    } catch {
+      set({ documentos: [], loading: false, error: "Error cargando documentos" });
+    }
   },
 
   crearDocumento: async (data) => {
@@ -28,10 +47,18 @@ export const useIntranetStore = create((set, get) => ({
     await get().cargarDocumentos();
   },
 
+  // ---------------------------------------------------------
   // NOTICIAS
+  // ---------------------------------------------------------
   cargarNoticias: async (search = "") => {
-    const res = await api.listarNoticias(search);
-    set({ noticias: res.data });
+    set({ loading: true, error: null });
+
+    try {
+      const res = await api.listarNoticias(search);
+      set({ noticias: res.data || [], loading: false });
+    } catch {
+      set({ noticias: [], loading: false, error: "Error cargando noticias" });
+    }
   },
 
   crearNoticia: async (data) => {
@@ -51,4 +78,3 @@ export const useIntranetStore = create((set, get) => ({
     await get().cargarNoticias();
   },
 }));
-

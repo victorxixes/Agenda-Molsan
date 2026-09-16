@@ -13,7 +13,7 @@ export default function EmpleadosModulo2026() {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Empleados 2026</h1>
+      <h1 className="text-2xl font-bold mb-4">Empleados</h1>
 
       <EmpleadosListado
         onSeleccionar={(id) => abrirFicha(id)}

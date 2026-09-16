@@ -12,9 +12,9 @@ export default function MonitorRealtime({ baseUrl }) {
     porUsuario: {},
   });
 
-  // Simulamos conexiones locales: cada pestaña que abre este panel
-  // se considera una conexión "técnica" al monitor.
   useEffect(() => {
+    if (!baseUrl) return;
+
     const url = buildRealtimeWsUrl(baseUrl, {
       modulo: "panel-tecnico",
       grupo: "monitor-realtime",
@@ -25,7 +25,6 @@ export default function MonitorRealtime({ baseUrl }) {
     wsRef.current = ws;
 
     ws.onopen = () => {
-      // Cada conexión que abre este panel cuenta como 1.
       setStats((prev) => ({
         ...prev,
         total: prev.total + 1,
@@ -51,12 +50,8 @@ export default function MonitorRealtime({ baseUrl }) {
       }));
     };
 
-    ws.onerror = () => {
-      // Podríamos marcar error de conexión si quieres
-    };
+    ws.onerror = () => {};
 
-    // De momento no procesamos mensajes, porque tu backend
-    // no envía eventos al cliente todavía.
     ws.onmessage = () => {};
 
     return () => {
@@ -78,9 +73,7 @@ export default function MonitorRealtime({ baseUrl }) {
           <h3 className="font-semibold mb-2">Por rol</h3>
           <ul>
             {Object.entries(stats.porRol).map(([rol, count]) => (
-              <li key={rol}>
-                {rol}: {count}
-              </li>
+              <li key={rol}>{rol}: {count}</li>
             ))}
           </ul>
         </div>
@@ -89,9 +82,7 @@ export default function MonitorRealtime({ baseUrl }) {
           <h3 className="font-semibold mb-2">Por módulo</h3>
           <ul>
             {Object.entries(stats.porModulo).map(([mod, count]) => (
-              <li key={mod}>
-                {mod}: {count}
-              </li>
+              <li key={mod}>{mod}: {count}</li>
             ))}
           </ul>
         </div>
@@ -100,19 +91,15 @@ export default function MonitorRealtime({ baseUrl }) {
           <h3 className="font-semibold mb-2">Por grupo</h3>
           <ul>
             {Object.entries(stats.porGrupo).map(([grp, count]) => (
-              <li key={grp}>
-                {grp}: {count}
-              </li>
+              <li key={grp}>{grp}: {count}</li>
             ))}
           </ul>
         </div>
       </div>
 
       <p className="text-sm text-gray-500">
-        Este monitor está basado en las conexiones WebSocket reales al endpoint
-        <code className="ml-1">/ws/realtime/</code>. Cuando el backend empiece a
-        emitir eventos <code>RealtimeEvent</code>, aquí podremos mostrar mucho
-        más detalle (usuarios activos, módulos activos, etc.).
+        Este monitor está basado en conexiones WebSocket reales al endpoint
+        <code className="ml-1">/ws/realtime/</code>.
       </p>
     </div>
   );

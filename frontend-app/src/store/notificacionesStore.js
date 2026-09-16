@@ -1,8 +1,19 @@
 import { create } from "zustand";
 
+/**
+ * Store de Notificaciones — Versión SJ‑2026 Premium
+ * Gestiona:
+ * - Lista de notificaciones
+ * - Añadir notificación
+ * - Limpiar notificaciones
+ */
+
 export const useNotificacionesStore = create((set) => ({
   notificaciones: [],
 
+  // ---------------------------------------------------------
+  // AÑADIR NOTIFICACIÓN
+  // ---------------------------------------------------------
   addNotificacion: (notif) =>
     set((state) => ({
       notificaciones: [
@@ -17,5 +28,8 @@ export const useNotificacionesStore = create((set) => ({
       ],
     })),
 
+  // ---------------------------------------------------------
+  // LIMPIAR TODAS
+  // ---------------------------------------------------------
   clearNotificaciones: () => set({ notificaciones: [] }),
 }));

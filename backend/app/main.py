@@ -13,7 +13,6 @@ from backend.app.agenda.router import router as agenda_router
 from backend.app.empleados.router import router as empleados_router
 from backend.app.intranet.router import router as intranet_router
 from backend.app.seguridad.router import router as seguridad_router
-from backend.app.logs.router import router as logs_router
 from backend.app.ctn.router import router as ctn_router
 
 # =========================================================
@@ -51,7 +50,6 @@ app.include_router(agenda_router, prefix="/api")
 app.include_router(empleados_router, prefix="/api")
 app.include_router(intranet_router, prefix="/api")
 app.include_router(seguridad_router, prefix="/api")
-app.include_router(logs_router, prefix="/api")
 app.include_router(ctn_router, prefix="/api")
 
 # =========================================================

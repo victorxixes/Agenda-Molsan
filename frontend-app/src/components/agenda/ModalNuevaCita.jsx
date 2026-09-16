@@ -1,8 +1,38 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import AutocompleteNotario from "./AutocompleteNotario";
 import { obtenerNotaria } from "../../api/ctn";
 
 const TIPOS_CITA = ["Firma notarial", "Reunión", "Visita", "Otros"];
+
+/**
+ * Normaliza el tipo de firma según el valor de VC
+ */
+const normalizarTipoFirma = (vc) => {
+  const v = vc?.toUpperCase();
+  return v === "SI" || v === "VC" || v === "VIDEOCONFERENCIA"
+    ? "Videoconferencia"
+    : "Presencial";
+};
+
+/**
+ * Normaliza un notario recibido desde API o Autocomplete
+ */
+const normalizarNotario = (n, tipoFirmaOverride = null) => ({
+  id: n.id,
+  codigo: n.codigo || "",
+  nombre: n.nombre || "",
+  apellidos: n.apellidos || "",
+  nif: n.nif || "",
+  telefono: n.telefono || "",
+  provincia: n.provincia || "",
+  municipio: n.municipio || "",
+  cp: n.cp || "",
+  direccion: n.direccion || "",
+  vc: n.vc || "",
+  apoderado: n.apoderado_s || n.apoderado || "",
+  observacion: n.observacion || "",
+  tipo_firma: tipoFirmaOverride || normalizarTipoFirma(n.vc),
+});
 
 export default function ModalNuevaCita({
   fecha,
@@ -26,77 +56,65 @@ export default function ModalNuevaCita({
 
   const [notarioSeleccionado, setNotarioSeleccionado] = useState(null);
 
-  const handleChange = (campo, valor) => {
+  /**
+   * handleChange — estable y sin recrearse
+   */
+  const handleChange = useCallback((campo, valor) => {
     setForm((f) => ({ ...f, [campo]: valor }));
-  };
+  }, []);
 
-  // ============================
-  // MODO EDITAR
-  // ============================
+  /**
+   * ============================
+   * MODO EDITAR
+   * ============================
+   */
   useEffect(() => {
-    if (modo === "editar" && cita) {
-      setForm({
-        hora_inicio: cita.hora_inicio || "",
-        hora_fin: cita.hora_fin || "",
-        tipo_cita: cita.tipo_cita || "",
-        notario_id: cita.notario_id || null,
-        tipo_firma: cita.tipo_firma || "",
-        apoderado_visible: cita.apoderado_nombre || "",
-        observaciones: cita.observaciones || "",
+    if (modo !== "editar" || !cita) return;
+
+    // Rellenar formulario base
+    setForm({
+      hora_inicio: cita.hora_inicio || "",
+      hora_fin: cita.hora_fin || "",
+      tipo_cita: cita.tipo_cita || "",
+      notario_id: cita.notario_id || null,
+      tipo_firma: cita.tipo_firma || "",
+      apoderado_visible: cita.apoderado_nombre || "",
+      observaciones: cita.observaciones || "",
+    });
+
+    // Cargar notario si existe
+    if (cita.notario_id) {
+      obtenerNotaria(cita.notario_id).then((res) => {
+        const n = res.data;
+        if (!n) return;
+
+        const notarioCompleto = normalizarNotario(n, cita.tipo_firma);
+        setNotarioSeleccionado(notarioCompleto);
+
+        handleChange("tipo_firma", notarioCompleto.tipo_firma);
+        handleChange("apoderado_visible", notarioCompleto.apoderado || "");
+        handleChange("observaciones", notarioCompleto.observacion || "");
       });
-
-      if (cita.notario_id) {
-        obtenerNotaria(cita.notario_id).then((res) => {
-          const n = res.data;
-          if (!n) return;
-
-          const tipoFirmaNormalizada =
-            n.vc?.toUpperCase() === "SI" ||
-            n.vc?.toUpperCase() === "VC" ||
-            n.vc?.toUpperCase() === "VIDEOCONFERENCIA"
-              ? "Videoconferencia"
-              : "Presencial";
-
-          const notarioCompleto = {
-            id: n.id,
-            codigo: n.codigo,
-            nombre: n.nombre,
-            apellidos: n.apellidos,
-            nif: n.nif,
-            telefono: n.telefono || "",
-            provincia: n.provincia || "",
-            municipio: n.municipio || "",
-            cp: n.cp || "",
-            direccion: n.direccion || "",
-            vc: n.vc,
-            apoderado: n.apoderado || "",
-            observacion: n.observacion || "",
-            tipo_firma: cita.tipo_firma || tipoFirmaNormalizada,
-          };
-
-          setNotarioSeleccionado(notarioCompleto);
-
-          handleChange("tipo_firma", notarioCompleto.tipo_firma);
-          handleChange("apoderado_visible", notarioCompleto.apoderado || "");
-          handleChange("observaciones", notarioCompleto.observacion || "");
-        });
-      }
     }
-  }, [modo, cita]);
+  }, [modo, cita, handleChange]);
 
-  // ============================
-  // Rellenar apoderado al seleccionar notario
-  // ============================
+  /**
+   * ============================
+   * Rellenar apoderado al seleccionar notario
+   * ============================
+   */
   useEffect(() => {
     if (notarioSeleccionado) {
       handleChange("apoderado_visible", notarioSeleccionado.apoderado || "");
     }
-  }, [notarioSeleccionado]);
+  }, [notarioSeleccionado, handleChange]);
 
-  // ============================
-  // Guardar cita
-  // ============================
-  const guardar = async () => {
+  /**
+   * ============================
+   * Guardar cita
+   * ============================
+   */
+  const guardar = useCallback(async () => {
     setLoading(true);
 
     const fechaNormalizada =
@@ -123,20 +141,23 @@ export default function ModalNuevaCita({
     }
 
     setLoading(false);
-  };
+  }, [fecha, form, onGuardar]);
 
   if (!fecha) return null;
 
-  // ============================
-  // MODAL PREMIUM
-  // ============================
-
+  /**
+   * ============================
+   * MODAL PREMIUM SJ‑2026
+   * ============================
+   */
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
-      <div className="
-        bg-white/10 backdrop-blur-xl border border-white/20
-        rounded-2xl shadow-2xl w-full max-w-xl p-6 text-white
-      ">
+      <div
+        className="
+          bg-white/10 backdrop-blur-xl border border-white/20
+          rounded-2xl shadow-2xl w-full max-w-xl p-6 text-white
+        "
+      >
         <h2 className="text-2xl font-semibold mb-4 drop-shadow">
           {modo === "crear" ? "Nueva cita" : "Editar cita"} — {fecha}
         </h2>
@@ -189,36 +210,13 @@ export default function ModalNuevaCita({
             <AutocompleteNotario
               value={notarioSeleccionado}
               onSelect={(n) => {
-                const tipoFirmaNormalizada =
-                  n.vc?.toUpperCase() === "SI" ||
-                  n.vc?.toUpperCase() === "VC" ||
-                  n.vc?.toUpperCase() === "VIDEOCONFERENCIA"
-                    ? "Videoconferencia"
-                    : "Presencial";
-
-                const notarioCompleto = {
-                  id: n.id,
-                  codigo: n.codigo,
-                  nombre: n.nombre,
-                  apellidos: n.apellidos,
-                  nif: n.nif,
-                  telefono: n.telefono,
-                  provincia: n.provincia,
-                  municipio: n.municipio,
-                  cp: n.cp || "",
-                  direccion: n.direccion || "",
-                  vc: n.vc,
-                  apoderado: n.apoderado || "",
-                  observacion: n.observacion || "",
-                  tipo_firma: tipoFirmaNormalizada,
-                };
-
+                const notarioCompleto = normalizarNotario(n);
                 setNotarioSeleccionado(notarioCompleto);
 
                 handleChange("notario_id", n.id);
-                handleChange("tipo_firma", tipoFirmaNormalizada);
-                handleChange("apoderado_visible", n.apoderado || "");
-                handleChange("observaciones", n.observacion || "");
+                handleChange("tipo_firma", notarioCompleto.tipo_firma);
+                handleChange("apoderado_visible", notarioCompleto.apoderado || "");
+                handleChange("observaciones", notarioCompleto.observacion || "");
               }}
             />
           </div>

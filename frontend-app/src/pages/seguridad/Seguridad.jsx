@@ -5,12 +5,19 @@ import SeguridadRoles from "./SeguridadRoles";
 import SeguridadPermisos from "./SeguridadPermisos";
 import SeguridadModulos from "./SeguridadModulos";
 
+/**
+ * Seguridad — SJ‑2026 Premium
+ * - Panel principal de seguridad
+ * - Roles, permisos, módulos
+ * - Glass‑UI
+ */
+
 export default function Seguridad() {
   const { cargarTodo, loading } = useSeguridad();
 
   useEffect(() => {
     cargarTodo();
-  }, []);
+  }, [cargarTodo]);
 
   if (loading)
     return (
@@ -20,10 +27,10 @@ export default function Seguridad() {
     );
 
   return (
-    <div className="p-6 space-y-8">
+    <div className="p-6 space-y-8 text-white animate-fade-in">
 
       {/* HEADER PREMIUM */}
-      <h1 className="text-3xl font-bold text-white drop-shadow mb-4">
+      <h1 className="text-3xl font-bold drop-shadow mb-4">
         Seguridad del sistema — SJ‑2026
       </h1>
 
@@ -33,14 +40,14 @@ export default function Seguridad() {
         <Link
           to="/seguridad/usuarios"
           className="
-            seg-card bg-white/10 backdrop-blur-xl border border-white/20
-            rounded-2xl shadow-xl p-6 w-64 transition hover:bg-white/20
+            bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
+            shadow-xl p-6 w-64 transition hover:bg-white/20 active:scale-[0.97]
           "
         >
-          <h2 className="seg-title text-xl font-semibold text-white drop-shadow mb-1">
+          <h2 className="text-xl font-semibold text-white drop-shadow mb-1">
             Usuarios
           </h2>
-          <p className="seg-desc text-white/70 text-sm">
+          <p className="text-white/70 text-sm">
             Bloqueo, contraseña, rol, módulos, permisos.
           </p>
         </Link>
@@ -48,14 +55,14 @@ export default function Seguridad() {
         <Link
           to="/seguridad/auditoria"
           className="
-            seg-card bg-white/10 backdrop-blur-xl border border-white/20
-            rounded-2xl shadow-xl p-6 w-64 transition hover:bg-white/20
+            bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
+            shadow-xl p-6 w-64 transition hover:bg-white/20 active:scale-[0.97]
           "
         >
-          <h2 className="seg-title text-xl font-semibold text-white drop-shadow mb-1">
+          <h2 className="text-xl font-semibold text-white drop-shadow mb-1">
             Auditoría
           </h2>
-          <p className="seg-desc text-white/70 text-sm">
+          <p className="text-white/70 text-sm">
             Acciones registradas en el sistema.
           </p>
         </Link>
@@ -63,18 +70,17 @@ export default function Seguridad() {
         <Link
           to="/seguridad/logs"
           className="
-            seg-card bg-white/10 backdrop-blur-xl border border-white/20
-            rounded-2xl shadow-xl p-6 w-64 transition hover:bg-white/20
+            bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
+            shadow-xl p-6 w-64 transition hover:bg-white/20 active:scale-[0.97]
           "
         >
-          <h2 className="seg-title text-xl font-semibold text-white drop-shadow mb-1">
+          <h2 className="text-xl font-semibold text-white drop-shadow mb-1">
             Logs
           </h2>
-          <p className="seg-desc text-white/70 text-sm">
+          <p className="text-white/70 text-sm">
             Eventos técnicos y de seguridad.
           </p>
         </Link>
-
       </div>
 
       {/* PANEL DOBLE PREMIUM */}
@@ -115,7 +121,6 @@ export default function Seguridad() {
           </h3>
           <SeguridadModulos />
         </div>
-
       </div>
     </div>
   );

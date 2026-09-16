@@ -17,13 +17,22 @@ export default function SubirDocumento() {
 
   return (
     <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold mb-4">Subir documento</h1>
 
-      <div className="border rounded bg-white p-4 shadow">
+      <h1 className="text-3xl font-bold text-white drop-shadow">
+        Subir documento
+      </h1>
+
+      <div className="
+        bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
+        p-6 shadow-xl space-y-4
+      ">
         <input
           type="text"
           placeholder="Título"
-          className="border rounded px-3 py-2 w-full mb-3"
+          className="
+            w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2
+            text-white placeholder-white/40
+          "
           value={titulo}
           onChange={(e) => setTitulo(e.target.value)}
         />
@@ -31,26 +40,35 @@ export default function SubirDocumento() {
         <input
           type="text"
           placeholder="Concepto"
-          className="border rounded px-3 py-2 w-full mb-3"
+          className="
+            w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2
+            text-white placeholder-white/40
+          "
           value={concepto}
           onChange={(e) => setConcepto(e.target.value)}
         />
 
         <input
           type="file"
-          className="mb-3"
+          className="text-white"
           onChange={(e) => setFile(e.target.files[0])}
         />
 
         <button
           onClick={enviar}
-          className="px-4 py-2 bg-green-600 text-white rounded"
+          className="
+            px-5 py-2 rounded-xl bg-green-600 hover:bg-green-700
+            text-white shadow-lg transition
+          "
         >
           Subir documento
         </button>
 
         {ok && (
-          <div className="mt-4 p-3 bg-green-100 border rounded">
+          <div className="
+            mt-4 p-4 bg-green-500/20 border border-green-500/30
+            text-white rounded-xl shadow-md backdrop-blur-md
+          ">
             Documento subido correctamente.
           </div>
         )}

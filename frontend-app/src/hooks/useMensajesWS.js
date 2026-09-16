@@ -36,7 +36,7 @@ export const useMensajesWS = (empleadoId, otroId) => {
       }
 
       if (data.tipo === "offline") {
-        setConectadosWS({ id: data.id });
+        setConectadosWS({ id: data.id, offline: true });
       }
 
       if (data.tipo === "typing") {
@@ -50,7 +50,7 @@ export const useMensajesWS = (empleadoId, otroId) => {
         data.tipo === "nuevo_mensaje" ||
         data.tipo === "nuevo_archivo"
       ) {
-        cargarConversacion(empleadoId, otroId);
+        if (otroId) cargarConversacion(empleadoId, otroId);
       }
     };
 

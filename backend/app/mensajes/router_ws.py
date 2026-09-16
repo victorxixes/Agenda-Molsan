@@ -12,14 +12,11 @@ router = APIRouter()
 async def mensajes_ws(websocket: WebSocket, empleado_id: int):
     db: Session = SessionLocal()
 
-    # Conectar usuario
     await manager.connect(websocket, empleado_id)
     print(f"[WS-MSG] Conectado: {empleado_id}")
 
-    # Obtener datos del empleado
     empleado = db.query(Empleado).filter(Empleado.id == empleado_id).first()
 
-    # Notificar a todos que este usuario está online
     await manager.broadcast({
         "tipo": "online",
         "id": empleado.id,
@@ -43,7 +40,6 @@ async def mensajes_ws(websocket: WebSocket, empleado_id: int):
 
                 tipo = data.get("tipo")
 
-                # 1) USUARIO ESCRIBIENDO
                 if tipo == "typing":
                     destinatario_id = data.get("destinatario_id")
 
@@ -52,7 +48,6 @@ async def mensajes_ws(websocket: WebSocket, empleado_id: int):
                         "from": empleado_id
                     })
 
-                # 2) ENVÍO DE MENSAJE DE TEXTO
                 elif tipo == "mensaje":
                     remitente_id = empleado_id
                     destinatario_id = data.get("destinatario_id")
@@ -60,7 +55,6 @@ async def mensajes_ws(websocket: WebSocket, empleado_id: int):
 
                     await manager.enviar_mensaje_ws(remitente_id, destinatario_id, contenido)
 
-                # 3) ENVÍO DE ARCHIVO
                 elif tipo == "archivo":
                     remitente_id = empleado_id
                     destinatario_id = data.get("destinatario_id")
@@ -78,7 +72,6 @@ async def mensajes_ws(websocket: WebSocket, empleado_id: int):
         print(f"[WS-MSG] Desconectado: {empleado_id}")
         manager.disconnect(empleado_id)
 
-        # Notificar desconexión
         await manager.broadcast({
             "tipo": "offline",
             "id": empleado.id

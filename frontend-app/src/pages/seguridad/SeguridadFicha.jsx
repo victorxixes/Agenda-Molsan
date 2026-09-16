@@ -584,57 +584,6 @@ export default function SeguridadFicha() {
   );
 }
 
-{/* LOGS DEL USUARIO */}
-<div
-  className="
-    bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
-    shadow-xl p-6 space-y-4
-  "
->
-  <h2 className="text-xl font-semibold text-white drop-shadow mb-3">
-    Logs del usuario
-  </h2>
-
-  <button
-    onClick={descargarExcelLogs}
-    className="
-      px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl
-      shadow-lg transition text-sm
-    "
-  >
-    Descargar Excel
-  </button>
-
-  {/* FILTROS */}
-  <div className="flex flex-col md:flex-row gap-4 mb-4">
-    <input
-      type="text"
-      className="
-        w-full md:w-1/2 bg-white/10 border border-white/20 rounded-xl px-3 py-2
-        text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
-      "
-      placeholder="Buscar por evento, detalle o fecha..."
-      value={busquedaLog}
-      onChange={(e) => {
-        setBusquedaLog(e.target.value);
-        setPaginaLog(0);
-      }}
-    />
-
-    <input
-      type="date"
-      className="
-        w-full md:w-1/3 bg-white/10 border border-white/20 rounded-xl px-3 py-2
-        text-white focus:ring-2 focus:ring-blue-400
-      "
-      value={filtroFechaLog}
-      onChange={(e) => {
-        setFiltroFechaLog(e.target.value);
-        setPaginaLog(0);
-      }}
-    />
-  </div>
-
   {/* TABLA LOGS */}
   <table
     className="

@@ -798,8 +798,10 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
       Reset permisos
     </button>
   </div>
-  
-  {/* TAB 5: AUDITORÍA */}
+)}  {/* ← cierre correcto del bloque permisos */}
+
+
+{/* TAB 5: AUDITORÍA */}
 {!loading && tab === "auditoria" && (
   <div className="transition-all duration-200 ease-out transform">
     <section className="border border-gray-300 bg-white p-4 rounded-xl shadow-sm">
@@ -826,5 +828,3 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
     </section>
   </div>
 )}
-
-)}  {/* ← cierre correcto */}

@@ -1,11 +1,20 @@
 import axios from "axios";
 
+/**
+ * Axios SJ‑2026 Premium
+ * - BaseURL desde VITE_API_URL
+ * - Token JWT automático
+ * - Manejo de errores de red
+ */
+
 const instance = axios.create({
-  baseURL: import.meta.env.VITE_API_URL, // 🔥 debe ser https://agenda-intranet-b.onrender.com/api
+  baseURL: import.meta.env.VITE_API_URL,
   withCredentials: false,
 });
 
-// Interceptor de request
+/* ---------------------------------------------------------
+   REQUEST INTERCEPTOR
+--------------------------------------------------------- */
 instance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
@@ -15,10 +24,13 @@ instance.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Interceptor de respuesta
+/* ---------------------------------------------------------
+   RESPONSE INTERCEPTOR
+--------------------------------------------------------- */
 instance.interceptors.response.use(
   (response) => response,
   (error) => {
+    // Error sin respuesta → servidor caído o red caída
     if (!error.response) {
       return Promise.reject({
         status: 500,
@@ -26,6 +38,7 @@ instance.interceptors.response.use(
         message: "Error de red o servidor no disponible",
       });
     }
+
     return Promise.reject(error);
   }
 );

@@ -127,20 +127,28 @@ export default function ModalNuevaCita({
 
   if (!fecha) return null;
 
+  // ============================
+  // MODAL PREMIUM
+  // ============================
+
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-xl p-6">
-        <h2 className="text-lg font-semibold mb-4 text-gray-900">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
+      <div className="
+        bg-white/10 backdrop-blur-xl border border-white/20
+        rounded-2xl shadow-2xl w-full max-w-xl p-6 text-white
+      ">
+        <h2 className="text-2xl font-semibold mb-4 drop-shadow">
           {modo === "crear" ? "Nueva cita" : "Editar cita"} — {fecha}
         </h2>
 
         <div className="grid grid-cols-2 gap-4 text-sm">
+
           {/* Hora inicio */}
           <div>
-            <label className="block mb-1 text-gray-700">Hora inicio</label>
+            <label className="block mb-1 text-white/80">Hora inicio</label>
             <input
               type="time"
-              className="w-full border rounded px-2 py-1"
+              className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white"
               value={form.hora_inicio}
               onChange={(e) => handleChange("hora_inicio", e.target.value)}
             />
@@ -148,10 +156,10 @@ export default function ModalNuevaCita({
 
           {/* Hora fin */}
           <div>
-            <label className="block mb-1 text-gray-700">Hora fin</label>
+            <label className="block mb-1 text-white/80">Hora fin</label>
             <input
               type="time"
-              className="w-full border rounded px-2 py-1"
+              className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white"
               value={form.hora_fin}
               onChange={(e) => handleChange("hora_fin", e.target.value)}
             />
@@ -159,9 +167,9 @@ export default function ModalNuevaCita({
 
           {/* Tipo de cita */}
           <div className="col-span-2">
-            <label className="block mb-1 text-gray-700">Tipo de cita</label>
+            <label className="block mb-1 text-white/80">Tipo de cita</label>
             <select
-              className="w-full border rounded px-2 py-1"
+              className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white"
               value={form.tipo_cita}
               onChange={(e) => handleChange("tipo_cita", e.target.value)}
             >
@@ -176,7 +184,7 @@ export default function ModalNuevaCita({
 
           {/* Autocomplete Notario */}
           <div className="col-span-2">
-            <label className="block mb-1 text-gray-700">Buscar notario</label>
+            <label className="block mb-1 text-white/80">Buscar notario</label>
 
             <AutocompleteNotario
               value={notarioSeleccionado}
@@ -217,53 +225,28 @@ export default function ModalNuevaCita({
 
           {/* Tarjeta del notario */}
           {notarioSeleccionado && (
-            <div className="col-span-2 border rounded p-3 bg-gray-50">
-              <h4 className="font-semibold text-sm mb-2">
+            <div className="
+              col-span-2 border border-white/20 rounded-xl p-4 bg-white/5 backdrop-blur-xl shadow-lg
+            ">
+              <h4 className="font-semibold text-sm mb-2 text-white">
                 {notarioSeleccionado.nombre} {notarioSeleccionado.apellidos}
               </h4>
 
-              <p className="text-xs text-gray-700">
-                Código: {notarioSeleccionado.codigo}
-              </p>
-
-              <p className="text-xs text-gray-700">
-                NIF: {notarioSeleccionado.nif}
-              </p>
-
-              <p className="text-xs text-gray-700">
-                Teléfono: {notarioSeleccionado.telefono}
-              </p>
-
-              <p className="text-xs text-gray-700">
-                Provincia: {notarioSeleccionado.provincia}
-              </p>
-
-              <p className="text-xs text-gray-700">
-                Municipio: {notarioSeleccionado.municipio}
-              </p>
-
-              <p className="text-xs text-gray-700">
-                CP: {notarioSeleccionado.cp}
-              </p>
-
-              <p className="text-xs text-gray-700">
-                Dirección: {notarioSeleccionado.direccion}
-              </p>
-
-              <p className="text-xs text-gray-700">
-                VC: {notarioSeleccionado.tipo_firma}
-              </p>
-
-              <p className="text-xs text-gray-700">
-                Apoderado: {notarioSeleccionado.apoderado}
-              </p>
-
-              <p className="text-xs text-gray-700">
-                Observación: {notarioSeleccionado.observacion}
-              </p>
+              <div className="space-y-1 text-white/80 text-xs">
+                <p>Código: {notarioSeleccionado.codigo}</p>
+                <p>NIF: {notarioSeleccionado.nif}</p>
+                <p>Teléfono: {notarioSeleccionado.telefono}</p>
+                <p>Provincia: {notarioSeleccionado.provincia}</p>
+                <p>Municipio: {notarioSeleccionado.municipio}</p>
+                <p>CP: {notarioSeleccionado.cp}</p>
+                <p>Dirección: {notarioSeleccionado.direccion}</p>
+                <p>VC: {notarioSeleccionado.tipo_firma}</p>
+                <p>Apoderado: {notarioSeleccionado.apoderado}</p>
+                <p>Observación: {notarioSeleccionado.observacion}</p>
+              </div>
 
               <iframe
-                className="w-full h-40 mt-2 rounded"
+                className="w-full h-40 mt-3 rounded-xl border border-white/20"
                 src={`https://www.google.com/maps?q=${encodeURIComponent(
                   `${notarioSeleccionado.direccion}, ${notarioSeleccionado.cp} ${notarioSeleccionado.municipio}`
                 )}&output=embed`}
@@ -273,9 +256,9 @@ export default function ModalNuevaCita({
 
           {/* Tipo firma */}
           <div>
-            <label className="block mb-1 text-gray-700">Tipo firma</label>
+            <label className="block mb-1 text-white/80">Tipo firma</label>
             <input
-              className="w-full border rounded px-2 py-1"
+              className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white"
               value={form.tipo_firma}
               onChange={(e) => handleChange("tipo_firma", e.target.value)}
             />
@@ -283,9 +266,9 @@ export default function ModalNuevaCita({
 
           {/* Apoderado */}
           <div>
-            <label className="block mb-1 text-gray-700">Apoderado</label>
+            <label className="block mb-1 text-white/80">Apoderado</label>
             <input
-              className="w-full border rounded px-2 py-1"
+              className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white"
               value={form.apoderado_visible || ""}
               disabled
             />
@@ -293,9 +276,9 @@ export default function ModalNuevaCita({
 
           {/* Observaciones */}
           <div className="col-span-2">
-            <label className="block mb-1 text-gray-700">Observaciones</label>
+            <label className="block mb-1 text-white/80">Observaciones</label>
             <textarea
-              className="w-full border rounded px-2 py-1"
+              className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white"
               rows={3}
               value={form.observaciones}
               onChange={(e) =>
@@ -309,19 +292,31 @@ export default function ModalNuevaCita({
         <div className="mt-6 flex justify-end gap-3">
           {modo === "editar" && onDelete && (
             <button
-              className="px-3 py-1 bg-red-600 text-white rounded"
+              className="
+                px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700
+                text-white transition shadow-lg
+              "
               onClick={onDelete}
             >
               Eliminar
             </button>
           )}
 
-          <button className="px-3 py-1 bg-gray-200 rounded" onClick={onClose}>
+          <button
+            className="
+              px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20
+              text-white transition shadow-lg
+            "
+            onClick={onClose}
+          >
             Cancelar
           </button>
 
           <button
-            className="px-3 py-1 bg-blue-600 text-white rounded"
+            className="
+              px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
+              text-white transition shadow-lg
+            "
             onClick={guardar}
             disabled={loading}
           >

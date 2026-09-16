@@ -104,11 +104,11 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
   };
 
   const guardarRol = async () => {
-  if (!empleado?.id) return;
+  if (!empleado?.id || !empleado?.rol_id) return;
 
-  await axios.put(`${API_BASE}/seguridad/empleado/${empleado.id}/rol`, {
-    rol_id: empleado.rol_id
-  });
+  await axios.post(
+    `${API_BASE}/seguridad/asignar/empleado/${empleado.id}/rol/${empleado.rol_id}`
+  );
 
   mostrarToast("ok", "Rol actualizado");
 };

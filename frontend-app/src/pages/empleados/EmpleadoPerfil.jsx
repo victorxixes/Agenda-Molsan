@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { API_BASE } from "../../api/config";
 import {
   obtenerFichaCompleta,
@@ -6,13 +6,22 @@ import {
   subirFotoEmpleado,
 } from "../../api/empleados";
 
+/**
+ * EmpleadoPerfil — SJ‑2026 Premium
+ * - Glass‑UI
+ * - Tabs premium
+ * - Edición completa del empleado
+ * - Foto con preview
+ * - Render optimizado
+ */
+
 export default function EmpleadoPerfil({ id }) {
   const [data, setData] = useState(null);
   const [empleadoEdit, setEmpleadoEdit] = useState({});
   const [fotoPreview, setFotoPreview] = useState(null);
-
   const [tab, setTab] = useState("basicos");
 
+  // Cargar ficha completa
   useEffect(() => {
     if (!id) return;
     obtenerFichaCompleta(id).then((res) => {
@@ -28,13 +37,15 @@ export default function EmpleadoPerfil({ id }) {
       </div>
     );
 
-  const empleado = empleadoEdit;
+  const empleado = useMemo(() => empleadoEdit, [empleadoEdit]);
 
-  const handleChange = (field, value) => {
+  // Cambiar campos
+  const handleChange = useCallback((field, value) => {
     setEmpleadoEdit((prev) => ({ ...prev, [field]: value }));
-  };
+  }, []);
 
-  const guardarCambios = async () => {
+  // Guardar cambios
+  const guardarCambios = useCallback(async () => {
     try {
       await editarEmpleado(empleado.id, empleadoEdit);
       alert("Cambios guardados correctamente");
@@ -46,22 +57,26 @@ export default function EmpleadoPerfil({ id }) {
       console.error(err);
       alert("Error al guardar los cambios");
     }
-  };
+  }, [empleado.id, empleadoEdit]);
 
-  const handleFoto = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+  // Subir foto
+  const handleFoto = useCallback(
+    async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
 
-    setFotoPreview(URL.createObjectURL(file));
+      setFotoPreview(URL.createObjectURL(file));
 
-    await subirFotoEmpleado(empleado.id, file);
-    const res = await obtenerFichaCompleta(empleado.id);
-    setData(res.data);
-    setEmpleadoEdit(res.data.empleado);
-  };
+      await subirFotoEmpleado(empleado.id, file);
+      const res = await obtenerFichaCompleta(empleado.id);
+      setData(res.data);
+      setEmpleadoEdit(res.data.empleado);
+    },
+    [empleado.id]
+  );
 
   return (
-    <div className="space-y-8 text-white">
+    <div className="space-y-8 text-white animate-fade-in">
 
       {/* TABS PREMIUM */}
       <div className="flex gap-6 border-b border-white/20 pb-3">
@@ -69,10 +84,12 @@ export default function EmpleadoPerfil({ id }) {
           <button
             key={t}
             className={`
-              pb-2 transition-all
-              ${tab === t
-                ? "text-blue-300 font-semibold border-b-2 border-blue-400"
-                : "text-white/60 hover:text-white"}
+              pb-2 transition-all duration-300
+              ${
+                tab === t
+                  ? "text-blue-300 font-semibold border-b-2 border-blue-400 scale-[1.05]"
+                  : "text-white/60 hover:text-white"
+              }
             `}
             onClick={() => setTab(t)}
           >
@@ -85,7 +102,7 @@ export default function EmpleadoPerfil({ id }) {
       </div>
 
       {/* ============================
-          DATOS BÁSICOS (EDITABLE)
+          DATOS BÁSICOS
       ============================ */}
       {tab === "basicos" && (
         <section
@@ -99,90 +116,28 @@ export default function EmpleadoPerfil({ id }) {
           </h2>
 
           <div className="grid grid-cols-2 gap-4 text-sm">
-
-            <div>
-              <strong className="text-white/80">Nombre:</strong>
-              <input
-                className="
-                  w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
-                  text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
-                "
-                value={empleado.nombre || ""}
-                onChange={(e) => handleChange("nombre", e.target.value)}
-              />
-            </div>
-
-            <div>
-              <strong className="text-white/80">Apellidos:</strong>
-              <input
-                className="
-                  w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
-                  text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
-                "
-                value={empleado.apellidos || ""}
-                onChange={(e) => handleChange("apellidos", e.target.value)}
-              />
-            </div>
-
-            <div>
-              <strong className="text-white/80">DNI:</strong>
-              <input
-                className="
-                  w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
-                  text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
-                "
-                value={empleado.dni || ""}
-                onChange={(e) => handleChange("dni", e.target.value)}
-              />
-            </div>
-
-            <div>
-              <strong className="text-white/80">Teléfono:</strong>
-              <input
-                className="
-                  w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
-                  text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
-                "
-                value={empleado.telefono || ""}
-                onChange={(e) => handleChange("telefono", e.target.value)}
-              />
-            </div>
-
-            <div>
-              <strong className="text-white/80">Email personal:</strong>
-              <input
-                className="
-                  w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
-                  text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
-                "
-                value={empleado.email_personal || ""}
-                onChange={(e) => handleChange("email_personal", e.target.value)}
-              />
-            </div>
-
-            <div>
-              <strong className="text-white/80">Email empresa:</strong>
-              <input
-                className="
-                  w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
-                  text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
-                "
-                value={empleado.email_empresa || ""}
-                onChange={(e) => handleChange("email_empresa", e.target.value)}
-              />
-            </div>
-
-            <div>
-              <strong className="text-white/80">Usuario:</strong>
-              <input
-                className="
-                  w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
-                  text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
-                "
-                value={empleado.usuario || ""}
-                onChange={(e) => handleChange("usuario", e.target.value)}
-              />
-            </div>
+            {[
+              ["nombre", "Nombre"],
+              ["apellidos", "Apellidos"],
+              ["dni", "DNI"],
+              ["telefono", "Teléfono"],
+              ["email_personal", "Email personal"],
+              ["email_empresa", "Email empresa"],
+              ["usuario", "Usuario"],
+            ].map(([campo, label]) => (
+              <div key={campo}>
+                <strong className="text-white/80">{label}:</strong>
+                <input
+                  className="
+                    w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                    text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                    transition-all duration-300
+                  "
+                  value={empleado[campo] || ""}
+                  onChange={(e) => handleChange(campo, e.target.value)}
+                />
+              </div>
+            ))}
 
             <div>
               <strong className="text-white/80">Rol actual:</strong>
@@ -200,7 +155,7 @@ export default function EmpleadoPerfil({ id }) {
                 alt="Foto empleado"
                 className="
                   w-28 h-28 rounded-full object-cover border border-white/20
-                  shadow-xl
+                  shadow-xl transition-all duration-300 hover:scale-[1.03]
                 "
               />
             )}
@@ -218,7 +173,7 @@ export default function EmpleadoPerfil({ id }) {
           <button
             className="
               mt-4 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
-              text-white shadow-lg transition
+              text-white shadow-lg transition active:scale-[0.97]
             "
             onClick={guardarCambios}
           >
@@ -228,7 +183,7 @@ export default function EmpleadoPerfil({ id }) {
       )}
 
       {/* ============================
-          DATOS PERSONALES (EDITABLE)
+          DATOS PERSONALES
       ============================ */}
       {tab === "personales" && (
         <section
@@ -242,103 +197,30 @@ export default function EmpleadoPerfil({ id }) {
           </h2>
 
           <div className="grid grid-cols-2 gap-4 text-sm">
-
-            <div>
-              <strong className="text-white/80">Dirección:</strong>
-              <input
-                className="
-                  w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
-                  text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
-                "
-                value={empleado.direccion || ""}
-                onChange={(e) => handleChange("direccion", e.target.value)}
-              />
-            </div>
-
-            <div>
-              <strong className="text-white/80">Código postal:</strong>
-              <input
-                className="
-                  w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
-                  text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
-                "
-                value={empleado.codigo_postal || ""}
-                onChange={(e) => handleChange("codigo_postal", e.target.value)}
-              />
-            </div>
-
-            <div>
-              <strong className="text-white/80">Población:</strong>
-              <input
-                className="
-                  w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
-                  text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
-                "
-                value={empleado.poblacion || ""}
-                onChange={(e) => handleChange("poblacion", e.target.value)}
-              />
-            </div>
-
-            <div>
-              <strong className="text-white/80">Provincia:</strong>
-              <input
-                className="
-                  w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
-                  text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
-                "
-                value={empleado.provincia || ""}
-                onChange={(e) => handleChange("provincia", e.target.value)}
-              />
-            </div>
-
-            <div>
-              <strong className="text-white/80">Fecha nacimiento:</strong>
-              <input
-                type="date"
-                className="
-                  w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
-                  text-white focus:ring-2 focus:ring-blue-400
-                "
-                value={empleado.fecha_nacimiento || ""}
-                onChange={(e) => handleChange("fecha_nacimiento", e.target.value)}
-              />
-            </div>
-
-            <div>
-              <strong className="text-white/80">Alergias:</strong>
-              <input
-                className="
-                  w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
-                  text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
-                "
-                value={empleado.alergias || ""}
-                onChange={(e) => handleChange("alergias", e.target.value)}
-              />
-            </div>
-
-            <div>
-              <strong className="text-white/80">Persona contacto:</strong>
-              <input
-                className="
-                  w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
-                  text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
-                "
-                value={empleado.persona_contacto || ""}
-                onChange={(e) => handleChange("persona_contacto", e.target.value)}
-              />
-            </div>
-
-            <div>
-              <strong className="text-white/80">Teléfono contacto:</strong>
-              <input
-                className="
-                  w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
-                  text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
-                "
-                value={empleado.telefono_contacto || ""}
-                onChange={(e) => handleChange("telefono_contacto", e.target.value)}
-              />
-            </div>
+            {[
+              ["direccion", "Dirección"],
+              ["codigo_postal", "Código postal"],
+              ["poblacion", "Población"],
+              ["provincia", "Provincia"],
+              ["fecha_nacimiento", "Fecha nacimiento", "date"],
+              ["alergias", "Alergias"],
+              ["persona_contacto", "Persona contacto"],
+              ["telefono_contacto", "Teléfono contacto"],
+            ].map(([campo, label, tipo]) => (
+              <div key={campo}>
+                <strong className="text-white/80">{label}:</strong>
+                <input
+                  type={tipo || "text"}
+                  className="
+                    w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                    text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                    transition-all duration-300
+                  "
+                  value={empleado[campo] || ""}
+                  onChange={(e) => handleChange(campo, e.target.value)}
+                />
+              </div>
+            ))}
 
             <div className="col-span-2">
               <strong className="text-white/80">Observaciones:</strong>
@@ -346,6 +228,7 @@ export default function EmpleadoPerfil({ id }) {
                 className="
                   w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
                   text-white text-sm focus:ring-2 focus:ring-blue-400
+                  scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent
                 "
                 rows={3}
                 value={empleado.observaciones || ""}
@@ -357,7 +240,7 @@ export default function EmpleadoPerfil({ id }) {
           <button
             className="
               mt-4 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
-              text-white shadow-lg transition
+              text-white shadow-lg transition active:scale-[0.97]
             "
             onClick={guardarCambios}
           >
@@ -367,7 +250,7 @@ export default function EmpleadoPerfil({ id }) {
       )}
 
       {/* ============================
-          DATOS LABORALES (EDITABLE)
+          DATOS LABORALES
       ============================ */}
       {tab === "laborales" && (
         <section
@@ -381,68 +264,27 @@ export default function EmpleadoPerfil({ id }) {
           </h2>
 
           <div className="grid grid-cols-2 gap-4 text-sm">
-
-            <div>
-              <strong className="text-white/80">Departamento ID:</strong>
-              <input
-                className="
-                  w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
-                  text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
-                "
-                value={empleado.departamento_id || ""}
-                onChange={(e) => handleChange("departamento_id", e.target.value)}
-              />
-            </div>
-
-            <div>
-              <strong className="text-white/80">Sección ID:</strong>
-              <input
-                className="
-                  w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
-                  text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
-                "
-                value={empleado.seccion_id || ""}
-                onChange={(e) => handleChange("seccion_id", e.target.value)}
-              />
-            </div>
-
-            <div>
-              <strong className="text-white/80">Cargo ID:</strong>
-              <input
-                className="
-                  w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
-                  text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
-                "
-                value={empleado.cargo_id || ""}
-                onChange={(e) => handleChange("cargo_id", e.target.value)}
-              />
-            </div>
-
-            <div>
-              <strong className="text-white/80">Fecha alta:</strong>
-              <input
-                type="date"
-                className="
-                  w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
-                  text-white focus:ring-2 focus:ring-blue-400
-                "
-                value={empleado.fecha_alta || ""}
-                onChange={(e) => handleChange("fecha_alta", e.target.value)}
-              />
-            </div>
-
-            <div>
-              <strong className="text-white/80">Fecha baja:</strong>
-              <input
-                type="date"
-                className="
-                  w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
-                  text-white focus:ring-2 focus:ring-blue-400
-                "
-                value={empleado.fecha_baja || ""}
-                onChange={(e) => handleChange("fecha_baja", e.target.value)}
-              />
-            </div>
+            {[
+              ["departamento_id", "Departamento ID"],
+              ["seccion_id", "Sección ID"],
+              ["cargo_id", "Cargo ID"],
+              ["fecha_alta", "Fecha alta", "date"],
+              ["fecha_baja", "Fecha baja", "date"],
+            ].map(([campo, label, tipo]) => (
+              <div key={campo}>
+                <strong className="text-white/80">{label}:</strong>
+                <input
+                  type={tipo || "text"}
+                  className="
+                    w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                    text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                    transition-all duration-300
+                  "
+                  value={empleado[campo] || ""}
+                  onChange={(e) => handleChange(campo, e.target.value)}
+                />
+              </div>
+            ))}
 
             <div>
               <strong className="text-white/80">Activo:</strong>
@@ -455,7 +297,7 @@ export default function EmpleadoPerfil({ id }) {
           <button
             className="
               mt-4 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
-              text-white shadow-lg transition
+              text-white shadow-lg transition active:scale-[0.97]
             "
             onClick={guardarCambios}
           >
@@ -465,7 +307,7 @@ export default function EmpleadoPerfil({ id }) {
       )}
 
       {/* ============================
-          AUDITORÍA (SOLO LECTURA)
+          AUDITORÍA
       ============================ */}
       {tab === "auditoria" && (
         <section
@@ -484,7 +326,8 @@ export default function EmpleadoPerfil({ id }) {
                 key={item.id}
                 className="
                   bg-white/5 border border-white/20 rounded-xl p-4
-                  shadow-md backdrop-blur-md
+                  shadow-md backdrop-blur-md transition-all duration-300
+                  hover:scale-[1.01]
                 "
               >
                 <div><strong className="text-white/80">Fecha:</strong> {item.fecha}</div>
@@ -496,7 +339,6 @@ export default function EmpleadoPerfil({ id }) {
           </div>
         </section>
       )}
-
     </div>
   );
 }

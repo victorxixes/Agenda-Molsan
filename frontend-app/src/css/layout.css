@@ -1,7 +1,12 @@
+/* ============================================================
+   ERP SJ‑2026 — Layout premium
+   ============================================================ */
+
 .container-sj {
   max-width: 1500px;
   margin: 0 auto;
   padding: var(--sj-gap);
+  animation: fadeInSJ 0.35s ease-out;
 }
 
 .section-sj {
@@ -11,6 +16,11 @@
 .grid-sj {
   display: grid;
   gap: var(--sj-gap);
+  transition: transform 0.25s ease;
+}
+
+.grid-sj > *:hover {
+  transform: translateY(-4px);
 }
 
 .grid-2 { grid-template-columns: repeat(2, 1fr); }
@@ -34,4 +44,10 @@
   display: flex;
   flex-direction: column;
   gap: var(--sj-gap);
+}
+
+/* Fade-in corporativo */
+@keyframes fadeInSJ {
+  0% { opacity: 0; transform: translateY(6px); }
+  100% { opacity: 1; transform: translateY(0); }
 }

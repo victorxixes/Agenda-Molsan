@@ -30,24 +30,35 @@ export default function SeguridadPermisos() {
   };
 
   return (
-    <div className="border p-4 rounded bg-white shadow">
-      <h2 className="text-xl font-semibold mb-3">Permisos por módulo (dinámicos)</h2>
+    <div
+      className="
+        bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
+        shadow-xl p-6 space-y-6
+      "
+    >
+      <h2 className="text-xl font-semibold text-white drop-shadow mb-2">
+        Permisos por módulo (dinámicos)
+      </h2>
 
-      <ul className="space-y-4">
+      <ul className="space-y-6 text-white">
         {Object.entries(permisosGlobales).map(([modulo, permsDisponibles]) => (
-          <li key={modulo} className="border-b pb-3">
+          <li key={modulo}>
             <strong className="text-lg">{modulo}</strong>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3">
               {permsDisponibles.map((perm) => (
                 <label
                   key={perm}
-                  className="flex items-center gap-2 text-sm border px-2 py-1 rounded bg-gray-50"
+                  className="
+                    flex items-center gap-2 text-sm bg-white/10 border border-white/20
+                    rounded-xl px-3 py-2 hover:bg-white/20 transition
+                  "
                 >
                   <input
                     type="checkbox"
                     checked={permisosEmpleado[modulo]?.includes(perm) || false}
                     onChange={() => cambiarPermiso(modulo, perm)}
+                    className="accent-purple-500 h-4 w-4 cursor-pointer"
                   />
                   {perm}
                 </label>

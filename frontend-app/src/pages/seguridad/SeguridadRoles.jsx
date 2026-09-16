@@ -1,16 +1,26 @@
+import { useMemo } from "react";
 import { useSeguridad } from "../../hooks/useSeguridad";
+
+/**
+ * SeguridadRoles — SJ‑2026 Premium
+ * - Tabla de roles
+ * - Glass‑UI
+ * - Render optimizado
+ */
 
 export default function SeguridadRoles() {
   const { roles = [] } = useSeguridad();
+
+  const rolesMemo = useMemo(() => roles || [], [roles]);
 
   return (
     <div
       className="
         bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
-        shadow-xl p-6 space-y-4
+        shadow-xl p-6 space-y-4 text-white animate-fade-in
       "
     >
-      <h2 className="text-xl font-semibold text-white drop-shadow mb-2">
+      <h2 className="text-xl font-semibold drop-shadow mb-2">
         Roles del sistema
       </h2>
 
@@ -23,10 +33,12 @@ export default function SeguridadRoles() {
         </thead>
 
         <tbody>
-          {(roles || []).map((r) => (
+          {rolesMemo.map((r) => (
             <tr
               key={r.id}
-              className="border-b border-white/10 hover:bg-white/5 transition"
+              className="
+                border-b border-white/10 hover:bg-white/5 transition
+              "
             >
               <td className="p-3">{r.id}</td>
               <td className="p-3">{r.nombre}</td>

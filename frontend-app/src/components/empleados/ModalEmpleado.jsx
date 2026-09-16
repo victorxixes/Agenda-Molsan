@@ -798,4 +798,33 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
       Reset permisos
     </button>
   </div>
+  
+  /* TAB 5: AUDITORÍA */}
+{!loading && tab === "auditoria" && (
+  <div className="transition-all duration-200 ease-out transform">
+    <section className="border border-gray-300 bg-white p-4 rounded-xl shadow-sm">
+      <h3 className="text-sm font-semibold mb-3 text-gray-900">
+        Auditoría
+      </h3>
+
+      {(!auditoria || auditoria.length === 0) && (
+        <p className="text-gray-500 text-xs">
+          No hay registros de auditoría para este empleado.
+        </p>
+      )}
+
+      {auditoria && auditoria.length > 0 && (
+        <ul className="list-disc ml-5 text-xs text-gray-800">
+          {auditoria.map((a) => (
+            <li key={a.id}>
+              {new Date(a.fecha).toLocaleString()} —{" "}
+              <strong>{a.modulo}</strong> [{a.accion}] — {a.descripcion}
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  </div>
+)}
+
 )}  {/* ← cierre correcto */}

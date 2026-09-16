@@ -1,23 +1,27 @@
 from datetime import datetime
 from sqlalchemy.orm import Session
+from threading import Lock
+
 from backend.app.mensajes.models import Mensaje
 from backend.app.database import SessionLocal
 
 
 class WSManager:
-    def __init__(self):
-        # empleado_id → websocket
-        self.conectados = {}
+    # Compartido entre instancias
+    conectados = {}
+    lock = Lock()
 
     # ---------------------------------------------------------
     # CONECTAR / DESCONECTAR
     # ---------------------------------------------------------
     async def connect(self, websocket, empleado_id):
         await websocket.accept()
-        self.conectados[empleado_id] = websocket
+        with self.lock:
+            self.conectados[empleado_id] = websocket
 
     def disconnect(self, empleado_id):
-        self.conectados.pop(empleado_id, None)
+        with self.lock:
+            self.conectados.pop(empleado_id, None)
 
     # ---------------------------------------------------------
     # ENVIAR A UN USUARIO
@@ -31,8 +35,11 @@ class WSManager:
     # BROADCAST GLOBAL
     # ---------------------------------------------------------
     async def broadcast(self, data):
-        for ws in self.conectados.values():
-            await ws.send_json(data)
+        for ws in list(self.conectados.values()):
+            try:
+                await ws.send_json(data)
+            except Exception:
+                continue
 
     # ---------------------------------------------------------
     # GUARDAR Y ENVIAR MENSAJE DE TEXTO
@@ -54,22 +61,18 @@ class WSManager:
         db.refresh(mensaje)
         db.close()
 
-        # Enviar al remitente
-        await self.send_to_user(remitente_id, {
+        payload = {
             "tipo": "mensaje",
             "mensaje": mensaje.as_dict()
-        })
+        }
 
-        # Enviar al destinatario
-        await self.send_to_user(destinatario_id, {
-            "tipo": "mensaje",
-            "mensaje": mensaje.as_dict()
-        })
+        await self.send_to_user(remitente_id, payload)
+        await self.send_to_user(destinatario_id, payload)
 
         return mensaje
 
     # ---------------------------------------------------------
-    # GUARDAR Y ENVIAR ARCHIVO (PDF, Word, imagen…)
+    # GUARDAR Y ENVIAR ARCHIVO
     # ---------------------------------------------------------
     async def enviar_archivo_ws(self, remitente_id: int, destinatario_id: int, archivo_url: str):
         db: Session = SessionLocal()
@@ -88,17 +91,13 @@ class WSManager:
         db.refresh(mensaje)
         db.close()
 
-        # Enviar al remitente
-        await self.send_to_user(remitente_id, {
+        payload = {
             "tipo": "archivo",
             "mensaje": mensaje.as_dict()
-        })
+        }
 
-        # Enviar al destinatario
-        await self.send_to_user(destinatario_id, {
-            "tipo": "archivo",
-            "mensaje": mensaje.as_dict()
-        })
+        await self.send_to_user(remitente_id, payload)
+        await self.send_to_user(destinatario_id, payload)
 
         return mensaje
 

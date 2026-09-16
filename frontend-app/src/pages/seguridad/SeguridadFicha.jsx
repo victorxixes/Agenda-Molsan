@@ -516,12 +516,212 @@ export default function SeguridadFicha() {
     />
   </div>
 
-     </div>   {/* cierre del bloque LOGS */}
+  {/* TABLA AUDITORÍA */}
+<table
+  className="
+    w-full text-sm bg-white/5 border border-white/10 rounded-xl
+    text-white
+  "
+>
+  <thead>
+    <tr className="bg-white/10 border-b border-white/20">
+      <th
+        className="p-2 cursor-pointer hover:text-blue-300 transition"
+        onClick={() => ordenarAud("fecha")}
+      >
+        Fecha {ordenAud.campo === "fecha" ? (ordenAud.asc ? "▲" : "▼") : ""}
+      </th>
+
+      <th
+        className="p-2 cursor-pointer hover:text-blue-300 transition"
+        onClick={() => ordenarAud("modulo")}
+      >
+        Módulo {ordenAud.campo === "modulo" ? (ordenAud.asc ? "▲" : "▼") : ""}
+      </th>
+
+      <th
+        className="p-2 cursor-pointer hover:text-blue-300 transition"
+        onClick={() => ordenarAud("accion")}
+      >
+        Acción {ordenAud.campo === "accion" ? (ordenAud.asc ? "▲" : "▼") : ""}
+      </th>
+
+      <th className="p-2">Descripción</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    {auditoriaPaginada.map((a) => (
+      <tr
+        key={a.id}
+        className="
+          border-b border-white/10 hover:bg-white/5 transition
+        "
+      >
+        <td className="p-2">{a.fecha}</td>
+        <td className="p-2">{a.modulo}</td>
+        <td className="p-2">
+          {iconosAccion[a.accion] || iconosAccion.default} {a.accion}
+        </td>
+        <td className="p-2">{a.descripcion}</td>
+      </tr>
+    ))}
+  </tbody>
+</table>
+
+{/* PAGINACIÓN AUDITORÍA */}
+<div className="flex items-center gap-3 mt-4 text-white">
+  <button
+    disabled={paginaAud === 0}
+    onClick={() => setPaginaAud(paginaAud - 1)}
+    className="
+      px-3 py-1 bg-white/10 border border-white/20 rounded-xl
+      disabled:opacity-40 hover:bg-white/20 transition
+    "
+  >
+    ← Anterior
+  </button>
+
+  <span className="text-sm text-white/70">Página {paginaAud + 1}</span>
+
+  <button
+    disabled={(paginaAud + 1) * pageSizeAud >= auditoriaOrdenada.length}
+    onClick={() => setPaginaAud(paginaAud + 1)}
+    className="
+      px-3 py-1 bg-white/10 border border-white/20 rounded-xl
+      disabled:opacity-40 hover:bg-white/20 transition
+    "
+  >
+    Siguiente →
+  </button>
+</div>
+
+{/* LOGS DEL USUARIO */}
+<div
+  className="
+    bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
+    shadow-xl p-6 space-y-4
+  "
+>
+  <h2 className="text-xl font-semibold text-white drop-shadow mb-3">
+    Logs del usuario
+  </h2>
+
+  <button
+    onClick={descargarExcelLogs}
+    className="
+      px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl
+      shadow-lg transition text-sm
+    "
+  >
+    Descargar Excel
+  </button>
+
+  {/* FILTROS */}
+  <div className="flex flex-col md:flex-row gap-4 mb-4">
+    <input
+      type="text"
+      className="
+        w-full md:w-1/2 bg-white/10 border border-white/20 rounded-xl px-3 py-2
+        text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+      "
+      placeholder="Buscar por evento, detalle o fecha..."
+      value={busquedaLog}
+      onChange={(e) => {
+        setBusquedaLog(e.target.value);
+        setPaginaLog(0);
+      }}
+    />
+
+    <input
+      type="date"
+      className="
+        w-full md:w-1/3 bg-white/10 border border-white/20 rounded-xl px-3 py-2
+        text-white focus:ring-2 focus:ring-blue-400
+      "
+      value={filtroFechaLog}
+      onChange={(e) => {
+        setFiltroFechaLog(e.target.value);
+        setPaginaLog(0);
+      }}
+    />
+  </div>
+
+  {/* TABLA LOGS */}
+  <table
+    className="
+      w-full text-sm bg-white/5 border border-white/10 rounded-xl
+      text-white
+    "
+  >
+    <thead>
+      <tr className="bg-white/10 border-b border-white/20">
+        <th
+          className="p-2 cursor-pointer hover:text-purple-300 transition"
+          onClick={() => ordenarLog("fecha")}
+        >
+          Fecha {ordenLog.campo === "fecha" ? (ordenLog.asc ? "▲" : "▼") : ""}
+        </th>
+        <th
+          className="p-2 cursor-pointer hover:text-purple-300 transition"
+          onClick={() => ordenarLog("evento")}
+        >
+          Evento {ordenLog.campo === "evento" ? (ordenLog.asc ? "▲" : "▼") : ""}
+        </th>
+        <th className="p-2">Detalle</th>
+        <th className="p-2">IP</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {logsPaginados.map((l) => (
+        <tr
+          key={l.id}
+          className="
+            border-b border-white/10 hover:bg-white/5 transition
+          "
+        >
+          <td className="p-2">{l.fecha}</td>
+          <td className="p-2">
+            {iconosEvento[l.evento] || iconosEvento.default} {l.evento}
+          </td>
+          <td className="p-2">{l.detalle || "-"}</td>
+          <td className="p-2">{l.ip || "-"}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+
+  {/* PAGINACIÓN LOGS */}
+  <div className="flex items-center gap-3 mt-4 text-white">
+    <button
+      disabled={paginaLog === 0}
+      onClick={() => setPaginaLog(paginaLog - 1)}
+      className="
+        px-3 py-1 bg-white/10 border border-white/20 rounded-xl
+        disabled:opacity-40 hover:bg-white/20 transition
+      "
+    >
+      ← Anterior
+    </button>
+
+    <span className="text-sm text-white/70">Página {paginaLog + 1}</span>
+
+    <button
+      disabled={(paginaLog + 1) * pageSizeLog >= logsOrdenados.length}
+      onClick={() => setPaginaLog(paginaLog + 1)}
+      className="
+        px-3 py-1 bg-white/10 border border-white/20 rounded-xl
+        disabled:opacity-40 hover:bg-white/20 transition
+      "
+    >
+      Siguiente →
+    </button>
+  </div>
+</div>
 
 </div>   {/* cierre del contenedor principal p-6 space-y-6 */}
 
 );       {/* cierre del return */}
 }        {/* cierre del componente SeguridadFicha */}
-
-
-       
+           

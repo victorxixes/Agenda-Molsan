@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { API_BASE } from "../../api/config";
 import {
   obtenerFichaCompleta,
-  actualizarEmpleado,
+  editarEmpleado,
   subirFotoEmpleado,
 } from "../../api/empleados";
 
@@ -33,7 +33,7 @@ export default function EmpleadoPerfil({ id }) {
   // Guardar cambios (básicos, personales, laborales)
   const guardarCambios = async () => {
     try {
-      await actualizarEmpleado(empleado.id, empleadoEdit);
+      await editarEmpleado(empleado.id, empleadoEdit);
       alert("Cambios guardados correctamente");
 
       const res = await obtenerFichaCompleta(empleado.id);

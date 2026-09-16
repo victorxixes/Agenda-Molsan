@@ -1,15 +1,17 @@
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from sqlalchemy.orm import Session
 import json
 
-from backend.app.database import get_db
+from backend.app.database import SessionLocal
 from backend.app.empleados.models import Empleado
 from backend.app.mensajes.ws_manager import manager
 
 router = APIRouter()
 
 @router.websocket("/ws/mensajes/{empleado_id}")
-async def mensajes_ws(websocket: WebSocket, empleado_id: int, db: Session = Depends(get_db)):
+async def mensajes_ws(websocket: WebSocket, empleado_id: int):
+    db: Session = SessionLocal()
+
     # Conectar usuario
     await manager.connect(websocket, empleado_id)
     print(f"[WS-MSG] Conectado: {empleado_id}")
@@ -17,7 +19,7 @@ async def mensajes_ws(websocket: WebSocket, empleado_id: int, db: Session = Depe
     # Obtener datos del empleado
     empleado = db.query(Empleado).filter(Empleado.id == empleado_id).first()
 
-    # Notificar a todos que este usuario está online (con foto + nombre)
+    # Notificar a todos que este usuario está online
     await manager.broadcast({
         "tipo": "online",
         "id": empleado.id,
@@ -41,9 +43,7 @@ async def mensajes_ws(websocket: WebSocket, empleado_id: int, db: Session = Depe
 
                 tipo = data.get("tipo")
 
-                # ---------------------------------------------------------
                 # 1) USUARIO ESCRIBIENDO
-                # ---------------------------------------------------------
                 if tipo == "typing":
                     destinatario_id = data.get("destinatario_id")
 
@@ -52,9 +52,7 @@ async def mensajes_ws(websocket: WebSocket, empleado_id: int, db: Session = Depe
                         "from": empleado_id
                     })
 
-                # ---------------------------------------------------------
                 # 2) ENVÍO DE MENSAJE DE TEXTO
-                # ---------------------------------------------------------
                 elif tipo == "mensaje":
                     remitente_id = empleado_id
                     destinatario_id = data.get("destinatario_id")
@@ -62,27 +60,13 @@ async def mensajes_ws(websocket: WebSocket, empleado_id: int, db: Session = Depe
 
                     await manager.enviar_mensaje_ws(remitente_id, destinatario_id, contenido)
 
-                    await manager.send_to_user(destinatario_id, {
-                        "tipo": "nuevo_mensaje",
-                        "de": remitente_id,
-                        "contenido": contenido
-                    })
-
-                # ---------------------------------------------------------
                 # 3) ENVÍO DE ARCHIVO
-                # ---------------------------------------------------------
                 elif tipo == "archivo":
                     remitente_id = empleado_id
                     destinatario_id = data.get("destinatario_id")
                     archivo_url = data.get("archivo_url")
 
                     await manager.enviar_archivo_ws(remitente_id, destinatario_id, archivo_url)
-
-                    await manager.send_to_user(destinatario_id, {
-                        "tipo": "nuevo_archivo",
-                        "de": remitente_id,
-                        "archivo_url": archivo_url
-                    })
 
             except WebSocketDisconnect:
                 break
@@ -99,3 +83,5 @@ async def mensajes_ws(websocket: WebSocket, empleado_id: int, db: Session = Depe
             "tipo": "offline",
             "id": empleado.id
         })
+
+        db.close()

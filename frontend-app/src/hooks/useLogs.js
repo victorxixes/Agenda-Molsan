@@ -1,3 +1,9 @@
 import { useLogsStore } from "../store/logsStore";
 
-export const useLogs = () => useLogsStore();
+/**
+ * Hook premium SJ‑2026
+ * Acceso directo al store de Logs (estado + acciones)
+ */
+export const useLogs = () => {
+  return useLogsStore();
+};

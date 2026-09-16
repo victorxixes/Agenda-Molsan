@@ -448,6 +448,7 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
       className="w-20 h-20 rounded object-cover border border-gray-300"
     />
   )}
+</div>
 
                     <label className="text-xs text-gray-700">
                       Subir nueva foto:

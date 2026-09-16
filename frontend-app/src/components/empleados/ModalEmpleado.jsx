@@ -798,9 +798,8 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
       Reset permisos
     </button>
   </div>
-)}  {/* ← cierre correcto del bloque permisos */}
-
-
+)}  
+    
 {/* TAB 5: AUDITORÍA */}
 {!loading && tab === "auditoria" && (
   <div className="transition-all duration-200 ease-out transform">

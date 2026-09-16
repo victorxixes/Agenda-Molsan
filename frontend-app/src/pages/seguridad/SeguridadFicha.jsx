@@ -67,121 +67,121 @@ export default function SeguridadResumen({ empleadoId }) {
     asignarModulos(empleado.id, nuevo);
   };
 
-  return (
-    <div className="p-6 space-y-8">
+ return (
+  <div className="p-6 space-y-8">
 
-      {/* HEADER SJ‑2026 */}
-      <h1 className="text-3xl font-bold text-white drop-shadow mb-4">
-        Resumen de seguridad — SJ‑2026 · {empleado.nombre} ({empleado.usuario})
-      </h1>
+    {/* DATOS BÁSICOS */}
+    <div
+      className="
+        bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
+        shadow-xl p-6 space-y-4
+      "
+    >
+      <h2 className="text-xl font-semibold text-white drop-shadow mb-3">
+        Datos básicos
+      </h2>
 
-      {/* DATOS BÁSICOS */}
-      <div
-        className="
-          bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
-          shadow-xl p-6 space-y-4
-        "
-      >
-        <h2 className="text-xl font-semibold text-white drop-shadow mb-3">
-          Datos básicos
-        </h2>
+      <div className="flex gap-6">
+        <img
+          src={empleado.foto}
+          alt="Foto empleado"
+          className="w-32 h-32 rounded-xl border border-white/20 object-cover shadow-lg"
+        />
 
-        <div className="flex gap-6">
-          <img
-            src={empleado.foto}
-            alt="Foto empleado"
-            className="w-32 h-32 rounded-xl border border-white/20 object-cover shadow-lg"
-          />
-
-          <div className="grid grid-cols-2 gap-2 text-white/90 text-sm">
-            <div><strong>ID:</strong> {empleado.id}</div>
-            <div><strong>Usuario:</strong> {empleado.usuario}</div>
-            <div><strong>Nombre:</strong> {empleado.nombre}</div>
-            <div><strong>Apellidos:</strong> {empleado.apellidos || "-"}</div>
-            <div><strong>DNI:</strong> {empleado.dni || "-"}</div>
-            <div><strong>Email:</strong> {empleado.email_empresa || "-"}</div>
-            <div>
-              <strong>Activo:</strong>{" "}
-              {empleado.activo ? (
-                <span className="text-green-400 font-semibold">Sí</span>
-              ) : (
-                <span className="text-red-400 font-semibold">No</span>
-              )}
-            </div>
-            <div><strong>Rol:</strong> {empleado.rol_nombre || "-"}</div>
+        <div className="grid grid-cols-2 gap-2 text-white/90 text-sm">
+          <div><strong>ID:</strong> {empleado.id}</div>
+          <div><strong>Usuario:</strong> {empleado.usuario}</div>
+          <div><strong>Nombre:</strong> {empleado.nombre}</div>
+          <div><strong>Apellidos:</strong> {empleado.apellidos || "-"}</div>
+          <div><strong>DNI:</strong> {empleado.dni || "-"}</div>
+          <div><strong>Email:</strong> {empleado.email_empresa || "-"}</div>
+          <div>
+            <strong>Activo:</strong>{" "}
+            {empleado.activo ? (
+              <span className="text-green-400 font-semibold">Sí</span>
+            ) : (
+              <span className="text-red-400 font-semibold">No</span>
+            )}
           </div>
-        </div>
-
-        <div className="mt-4 flex gap-3">
-          {empleado.activo ? (
-            <button
-              className="
-                px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700
-                text-white shadow-lg transition text-sm
-              "
-              onClick={() => bloquear(empleado.id)}
-            >
-              Bloquear usuario
-            </button>
-          ) : (
-            <button
-              className="
-                px-4 py-2 rounded-xl bg-green-600 hover:bg-green-700
-                text-white shadow-lg transition text-sm
-              "
-              onClick={() => desbloquear(empleado.id)}
-            >
-              Desbloquear usuario
-            </button>
-          )}
+          <div><strong>Rol:</strong> {empleado.rol_nombre || "-"}</div>
         </div>
       </div>
+
+      <div className="mt-4 flex gap-3">
+        {empleado.activo ? (
+          <button
+            className="
+              px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700
+              text-white shadow-lg transition text-sm
+            "
+            onClick={() => bloquear(empleado.id)}
+          >
+            Bloquear usuario
+          </button>
+        ) : (
+          <button
+            className="
+              px-4 py-2 rounded-xl bg-green-600 hover:bg-green-700
+              text-white shadow-lg transition text-sm
+            "
+            onClick={() => desbloquear(empleado.id)}
+          >
+            Desbloquear usuario
+          </button>
+        )}
+      </div>
     </div>
-  );
-}
-{/* SEGURIDAD — SJ‑2026 */}
-<div
-  className="
-    bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
-    shadow-xl p-6 space-y-4
-  "
->
-  <h2 className="text-xl font-semibold text-white drop-shadow mb-3">
-    Seguridad
-  </h2>
 
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-white">
+    {/* SEGURIDAD — SJ‑2026 */}
+    <div
+      className="
+        bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
+        shadow-xl p-6 space-y-4
+      "
+    >
+      <h2 className="text-xl font-semibold text-white drop-shadow mb-3">
+        Seguridad
+      </h2>
 
-    {/* RESET PASSWORD */}
-    <div>
-      <label className="block text-sm mb-1 text-white/80">
-        Nueva contraseña
-      </label>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-white">
 
-      <input
-        type="password"
-        className="
-          w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
-          text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
-          transition
-        "
-        value={nuevaPassword}
-        onChange={(e) => setNuevaPassword(e.target.value)}
-      />
+        {/* RESET PASSWORD */}
+        <div>
+          <label className="block text-sm mb-1 text-white/80">
+            Nueva contraseña
+          </label>
 
-      <button
-        className="
-          mt-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
-          text-white shadow-lg transition text-sm active:scale-[0.97]
-        "
-        onClick={() => {
-          resetPassword(empleado.id, nuevaPassword);
-          setNuevaPassword("");
-        }}
-      >
-        Resetear contraseña
-      </button>
+          <input
+            type="password"
+            className="
+              w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+              text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+              transition
+            "
+            value={nuevaPassword}
+            onChange={(e) => setNuevaPassword(e.target.value)}
+          />
+
+          <button
+            className="
+              mt-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
+              text-white shadow-lg transition text-sm active:scale-[0.97]
+            "
+            onClick={() => {
+              resetPassword(empleado.id, nuevaPassword);
+              setNuevaPassword("");
+            }}
+          >
+            Resetear contraseña
+          </button>
+        </div>
+
+      </div>
     </div>
+
+  </div>
+);
+
 
     {/* ASIGNAR ROL */}
     <div>

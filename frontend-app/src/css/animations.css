@@ -1,34 +1,40 @@
+/* ============================================================
+   ERP SJ‑2026 — Animaciones premium oficiales
+   ============================================================ */
+
+/* Fade-in suave corporativo */
 .fade-in {
-  animation: fadeIn 0.3s ease-in-out;
+  animation: fadeInSJ 0.35s ease-out;
 }
 
-/* ================================
-   ERP SJ‑2026 — Animaciones premium
-   ================================ */
+@keyframes fadeInSJ {
+  0% { opacity: 0; transform: translateY(6px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
 
 /* Elevación suave */
 .hover-elevate {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 .hover-elevate:hover {
   transform: translateY(-4px);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.10);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.12);
 }
 
 /* Zoom elegante */
 .hover-zoom {
-  transition: transform 0.2s ease;
+  transition: transform 0.25s ease;
 }
 .hover-zoom:hover {
-  transform: scale(1.02);
+  transform: scale(1.03);
 }
 
-/* Sombra dinámica azul corporativa */
+/* Sombra azul corporativa */
 .hover-shadow-blue {
   transition: box-shadow 0.25s ease;
 }
 .hover-shadow-blue:hover {
-  box-shadow: 0 6px 20px rgba(31, 58, 95, 0.25);
+  box-shadow: 0 8px 24px rgba(31, 58, 95, 0.28);
 }
 
 /* Iluminación suave */
@@ -36,104 +42,106 @@
   transition: box-shadow 0.25s ease;
 }
 .hover-glow:hover {
-  box-shadow: 0 0 12px rgba(31, 58, 95, 0.35);
+  box-shadow: 0 0 14px rgba(31, 58, 95, 0.40);
 }
 
-/* Flotación premium estilo Apple */
+/* Flotación estilo Apple */
 .hover-float {
-  transition: transform 0.3s ease;
+  transition: transform 0.35s ease;
 }
 .hover-float:hover {
-  transform: translateY(-6px) scale(1.02);
+  transform: translateY(-6px) scale(1.03);
 }
 
-/* Deslizamiento suave */
+/* Deslizamiento lateral */
 .hover-slide {
-  transition: transform 0.2s ease;
+  transition: transform 0.25s ease;
 }
 .hover-slide:hover {
-  transform: translateX(4px);
+  transform: translateX(6px);
 }
 
-/* Respiración (muy sutil) */
+/* Respiración premium */
 .breathe {
-  animation: breatheAnim 3s ease-in-out infinite;
+  animation: breatheSJ 3.2s ease-in-out infinite;
 }
-@keyframes breatheAnim {
+
+@keyframes breatheSJ {
   0% { transform: scale(1); }
-  50% { transform: scale(1.015); }
+  50% { transform: scale(1.018); }
   100% { transform: scale(1); }
 }
 
-/* Vibración mínima para acciones críticas */
+/* Vibración mínima */
 .hover-wiggle:hover {
-  animation: wiggle 0.3s ease;
+  animation: wiggleSJ 0.28s ease;
 }
-@keyframes wiggle {
+
+@keyframes wiggleSJ {
   0% { transform: rotate(0deg); }
-  25% { transform: rotate(1deg); }
-  50% { transform: rotate(-1deg); }
-  75% { transform: rotate(1deg); }
+  25% { transform: rotate(1.2deg); }
+  50% { transform: rotate(-1.2deg); }
+  75% { transform: rotate(1.2deg); }
   100% { transform: rotate(0deg); }
 }
 
-/* ============================================
+/* ============================================================
    ERP SJ‑2026 — Activación automática global
-   ============================================ */
+   ============================================================ */
 
-/* Todas las cards */
+/* Cards */
 .card-sj {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 .card-sj:hover {
   transform: translateY(-4px);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.10);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.12);
 }
 
-/* Todos los botones */
+/* Botones */
 .btn-sj {
-  transition: transform 0.2s ease;
+  transition: transform 0.25s ease;
 }
 .btn-sj:hover {
-  transform: scale(1.02);
+  transform: scale(1.03);
 }
 
-/* Todas las tablas */
+/* Tablas */
 .table-sj {
   transition: box-shadow 0.25s ease;
 }
 .table-sj:hover {
-  box-shadow: 0 6px 20px rgba(31, 58, 95, 0.25);
+  box-shadow: 0 8px 24px rgba(31, 58, 95, 0.28);
 }
 
-/* Todas las pestañas */
+/* Pestañas */
 .tab-sj {
-  transition: transform 0.2s ease;
+  transition: transform 0.25s ease;
 }
 .tab-sj:hover {
-  transform: translateX(4px);
+  transform: translateX(6px);
 }
 
-/* Todos los inputs */
+/* Inputs */
 .input-sj {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 .input-sj:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.10);
 }
 
-/* Todos los modales */
+/* Modales */
 .modal-sj {
   transition: box-shadow 0.25s ease;
 }
 .modal-sj:hover {
-  box-shadow: 0 0 12px rgba(31, 58, 95, 0.35);
+  box-shadow: 0 0 14px rgba(31, 58, 95, 0.40);
 }
 
-/* Todos los grids */
+/* Grids */
 .grid-sj > * {
-  transition: transform 0.2s ease;
+  transition: transform 0.25s ease;
 }
 .grid-sj > *:hover {
   transform: translateY(-4px);

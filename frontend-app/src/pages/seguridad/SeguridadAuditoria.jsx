@@ -1,5 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { useSeguridad } from "../../hooks/useSeguridad";
+
+/**
+ * SeguridadAuditoria — SJ‑2026 Premium
+ * - Filtros avanzados
+ * - Ordenación premium
+ * - Paginación premium
+ * - Exportación Excel
+ * - Glass‑UI
+ */
 
 export default function SeguridadAuditoria() {
   const { auditoria = [], cargarTodo } = useSeguridad();
@@ -12,59 +21,69 @@ export default function SeguridadAuditoria() {
 
   const [orden, setOrden] = useState({ campo: "fecha", asc: false });
 
-  const ordenar = (campo) => {
+  const ordenar = useCallback((campo) => {
     setOrden((prev) => ({
       campo,
-      asc: prev.campo === campo ? !prev.asc : true
+      asc: prev.campo === campo ? !prev.asc : true,
     }));
-  };
+  }, []);
 
-  const iconosAccion = {
-    login: "🔐",
-    login_error: "⚠️",
-    acceso: "📥",
-    update: "✏️",
-    delete: "🗑️",
-    permiso: "🔧",
-    modulo: "📦",
-    default: "📄"
-  };
+  const iconosAccion = useMemo(
+    () => ({
+      login: "🔐",
+      login_error: "⚠️",
+      acceso: "📥",
+      update: "✏️",
+      delete: "🗑️",
+      permiso: "🔧",
+      modulo: "📦",
+      default: "📄",
+    }),
+    []
+  );
 
   useEffect(() => {
     cargarTodo();
-  }, []);
+  }, [cargarTodo]);
 
-  const auditoriaFiltrada = auditoria.filter((a) => {
+  const auditoriaFiltrada = useMemo(() => {
     const texto = busqueda.toLowerCase();
 
-    const coincideBusqueda =
-      a.usuario?.toLowerCase().includes(texto) ||
-      a.modulo?.toLowerCase().includes(texto) ||
-      a.accion?.toLowerCase().includes(texto) ||
-      a.descripcion?.toLowerCase().includes(texto) ||
-      a.fecha?.toLowerCase().includes(texto);
+    return auditoria.filter((a) => {
+      const coincideBusqueda =
+        a.usuario?.toLowerCase().includes(texto) ||
+        a.modulo?.toLowerCase().includes(texto) ||
+        a.accion?.toLowerCase().includes(texto) ||
+        a.descripcion?.toLowerCase().includes(texto) ||
+        a.fecha?.toLowerCase().includes(texto);
 
-    const coincideFecha = filtroFecha ? a.fecha.startsWith(filtroFecha) : true;
+      const coincideFecha = filtroFecha
+        ? a.fecha.startsWith(filtroFecha)
+        : true;
 
-    return coincideBusqueda && coincideFecha;
-  });
+      return coincideBusqueda && coincideFecha;
+    });
+  }, [auditoria, busqueda, filtroFecha]);
 
-  const auditoriaOrdenada = [...auditoriaFiltrada].sort((a, b) => {
-    const campo = orden.campo;
-    const asc = orden.asc ? 1 : -1;
+  const auditoriaOrdenada = useMemo(() => {
+    const { campo, asc } = orden;
+    const dir = asc ? 1 : -1;
 
-    if (a[campo] < b[campo]) return -1 * asc;
-    if (a[campo] > b[campo]) return 1 * asc;
-    return 0;
-  });
+    return [...auditoriaFiltrada].sort((a, b) => {
+      if (a[campo] < b[campo]) return -1 * dir;
+      if (a[campo] > b[campo]) return 1 * dir;
+      return 0;
+    });
+  }, [auditoriaFiltrada, orden]);
 
-  const auditoriaPaginada = auditoriaOrdenada.slice(
-    pagina * pageSize,
-    pagina * pageSize + pageSize
-  );
+  const auditoriaPaginada = useMemo(() => {
+    return auditoriaOrdenada.slice(
+      pagina * pageSize,
+      pagina * pageSize + pageSize
+    );
+  }, [auditoriaOrdenada, pagina]);
 
-  // DESCARGA EXCEL
-  const descargarExcel = () => {
+  const descargarExcel = useCallback(() => {
     const encabezados = ["ID", "Usuario", "Módulo", "Acción", "Descripción", "Fecha"];
     const filas = auditoriaOrdenada.map((a) => [
       a.id,
@@ -72,14 +91,16 @@ export default function SeguridadAuditoria() {
       a.modulo,
       a.accion,
       a.descripcion,
-      a.fecha
+      a.fecha,
     ]);
 
     const contenido = [encabezados, ...filas]
       .map((fila) => fila.join("\t"))
       .join("\n");
 
-    const blob = new Blob([contenido], { type: "application/vnd.ms-excel" });
+    const blob = new Blob([contenido], {
+      type: "application/vnd.ms-excel",
+    });
     const url = URL.createObjectURL(blob);
 
     const a = document.createElement("a");
@@ -88,22 +109,21 @@ export default function SeguridadAuditoria() {
     a.click();
 
     URL.revokeObjectURL(url);
-  };
+  }, [auditoriaOrdenada]);
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 text-white animate-fade-in">
 
-      {/* HEADER PREMIUM */}
-      <h1 className="text-3xl font-bold text-white drop-shadow mb-4">
+      <h1 className="text-3xl font-bold drop-shadow mb-4">
         Auditoría del sistema — SJ‑2026
       </h1>
 
-      {/* BOTÓN EXCEL PREMIUM */}
+      {/* BOTÓN EXCEL */}
       <button
         onClick={descargarExcel}
         className="
           px-4 py-2 rounded-xl bg-green-600 hover:bg-green-700
-          text-white shadow-lg transition
+          text-white shadow-lg transition active:scale-[0.97]
         "
       >
         Descargar Excel
@@ -192,8 +212,7 @@ export default function SeguridadAuditoria() {
                 <td className="p-3">{a.modulo}</td>
 
                 <td className="p-3">
-                  {iconosAccion[a.accion] || iconosAccion.default}{" "}
-                  {a.accion}
+                  {iconosAccion[a.accion] || iconosAccion.default} {a.accion}
                 </td>
 
                 <td className="p-3">{a.descripcion}</td>
@@ -210,7 +229,7 @@ export default function SeguridadAuditoria() {
           onClick={() => setPagina(pagina - 1)}
           className="
             px-3 py-1 bg-white/10 border border-white/20 rounded-xl
-            disabled:opacity-40 hover:bg-white/20 transition
+            disabled:opacity-40 hover:bg-white/20 transition active:scale-[0.97]
           "
         >
           ← Anterior
@@ -225,7 +244,7 @@ export default function SeguridadAuditoria() {
           onClick={() => setPagina(pagina + 1)}
           className="
             px-3 py-1 bg-white/10 border border-white/20 rounded-xl
-            disabled:opacity-40 hover:bg-white/20 transition
+            disabled:opacity-40 hover:bg-white/20 transition active:scale-[0.97]
           "
         >
           Siguiente →

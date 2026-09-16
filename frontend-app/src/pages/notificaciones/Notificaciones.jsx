@@ -7,36 +7,62 @@ export default function Notificaciones() {
   useNotificacionesWS();
 
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-bold">Notificaciones internas</h1>
+    <div className="p-6 space-y-6 text-white">
+
+      {/* HEADER PREMIUM */}
+      <div className="
+        flex items-center justify-between
+        bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
+        p-4 shadow-xl
+      ">
+        <h1 className="text-3xl font-bold drop-shadow">
+          Notificaciones internas
+        </h1>
+
         <button
-          className="text-sm px-3 py-1 border rounded"
+          className="
+            px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700
+            text-white shadow-lg transition
+          "
           onClick={clearNotificaciones}
         >
           Limpiar
         </button>
       </div>
 
+      {/* LISTA PREMIUM */}
       {notificaciones.length === 0 ? (
-        <p className="text-gray-500">No hay notificaciones.</p>
+        <p className="text-white/70 text-sm">
+          No hay notificaciones.
+        </p>
       ) : (
-        <ul className="space-y-2">
+        <ul className="space-y-4">
           {notificaciones.map((n) => (
             <li
               key={n.id}
-              className="border rounded p-3 bg-white shadow-sm flex flex-col"
+              className="
+                bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
+                p-4 shadow-xl flex flex-col space-y-2
+              "
             >
-              <div className="flex justify-between">
-                <span className="font-semibold">{n.titulo}</span>
-                <span className="text-xs text-gray-400">
+              <div className="flex justify-between items-center">
+                <span className="font-semibold text-lg text-white drop-shadow">
+                  {n.titulo}
+                </span>
+
+                <span className="text-xs text-white/60">
                   {new Date(n.fecha).toLocaleString()}
                 </span>
               </div>
+
               {n.descripcion && (
-                <p className="text-sm text-gray-700 mt-1">{n.descripcion}</p>
+                <p className="text-white/80 text-sm">{n.descripcion}</p>
               )}
-              <span className="text-xs text-gray-500 mt-1">
+
+              <span className="
+                text-xs text-white/60 mt-1
+                bg-white/5 border border-white/10 px-2 py-1 rounded-xl w-fit
+              ">
                 Tipo: {n.tipo}
               </span>
             </li>

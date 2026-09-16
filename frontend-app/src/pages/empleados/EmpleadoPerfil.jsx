@@ -1,199 +1,120 @@
 import { useEffect, useState } from "react";
-import { obtenerFichaCompleta } from "../../api/empleados";
 import { API_BASE } from "../../api/config";
+import { obtenerFichaCompleta } from "../../api/empleados";
 
 export default function EmpleadoPerfil({ id }) {
   const [data, setData] = useState(null);
-  const [tab, setTab] = useState("basicos");
 
   useEffect(() => {
     if (!id) return;
-
     obtenerFichaCompleta(id).then((res) => {
       setData(res.data);
     });
   }, [id]);
 
-  if (!data) {
-    return <div className="text-gray-500">Cargando perfil...</div>;
-  }
+  if (!data) return <div>Cargando perfil...</div>;
 
-  const empleado = data.empleado;
+  const empleado = data.empleado ?? {};
+  const rol = empleado.rol ?? {};
 
   return (
     <div className="space-y-6">
 
-      {/* TÍTULO */}
-      <h2 className="text-xl font-bold">
-        Ficha empleado {empleado.id} — {empleado.nombre} {empleado.apellidos || ""}
-      </h2>
+      {/* Datos básicos */}
+      <section className="border p-4 rounded bg-white shadow">
+        <h2 className="text-lg font-semibold mb-3">Datos básicos</h2>
 
-      {/* TABS */}
-      <div className="flex gap-4 border-b pb-2">
-        <button className={tab === "basicos" ? "font-bold text-blue-600" : ""} onClick={() => setTab("basicos")}>
-          Datos básicos
-        </button>
+        <div className="grid grid-cols-2 gap-2 text-sm">
+          <div><strong>Nombre:</strong> {empleado.nombre}</div>
+          <div><strong>Apellidos:</strong> {empleado.apellidos || "—"}</div>
+          <div><strong>DNI:</strong> {empleado.dni}</div>
+          <div><strong>Teléfono:</strong> {empleado.telefono || "—"}</div>
+          <div><strong>Email personal:</strong> {empleado.email_personal || "—"}</div>
+          <div><strong>Email empresa:</strong> {empleado.email_empresa || "—"}</div>
+          <div><strong>Usuario:</strong> {empleado.usuario}</div>
+          <div><strong>Rol actual:</strong> {rol?.nombre || "—"}</div>
+        </div>
 
-        <button className={tab === "personales" ? "font-bold text-blue-600" : ""} onClick={() => setTab("personales")}>
-          Datos personales
-        </button>
-
-        <button className={tab === "laborales" ? "font-bold text-blue-600" : ""} onClick={() => setTab("laborales")}>
-          Datos laborales
-        </button>
-
-        <button className={tab === "seguridad" ? "font-bold text-blue-600" : ""} onClick={() => setTab("seguridad")}>
-          Seguridad
-        </button>
-
-        <button className={tab === "auditoria" ? "font-bold text-blue-600" : ""} onClick={() => setTab("auditoria")}>
-          Auditoría
-        </button>
-      </div>
-
-      {/* DATOS BÁSICOS */}
-      {tab === "basicos" && (
-        <div className="grid grid-cols-2 gap-4">
-
-          <div>
-            <label className="font-semibold">Estado:</label>
-            <div>{empleado.activo ? "Activo" : "Inactivo"}</div>
-          </div>
-
-          <div>
-            <label className="font-semibold">Teléfono:</label>
-            <div>{empleado.telefono || "—"}</div>
-          </div>
-
-          <div>
-            <label className="font-semibold">Email empresa:</label>
-            <div>{empleado.email_empresa || "—"}</div>
-          </div>
-
-          <div>
-            <label className="font-semibold">Extensión:</label>
-            <div>{empleado.extension || "—"}</div>
-          </div>
-
+        <div className="mt-4 flex items-center gap-4">
           {empleado.foto && (
             <img
               src={`${API_BASE}${empleado.foto}`}
               alt="Foto empleado"
-              className="w-32 h-32 rounded-lg object-cover border"
+              className="w-24 h-24 rounded object-cover border"
             />
           )}
         </div>
-      )}
+      </section>
 
-      {/* DATOS PERSONALES */}
-      {tab === "personales" && (
-        <div className="grid grid-cols-2 gap-4">
+      {/* Datos personales */}
+      <section className="border p-4 rounded bg-white shadow">
+        <h2 className="text-lg font-semibold mb-3">Datos personales</h2>
 
-          <div>
-            <label className="font-semibold">DNI:</label>
-            <div>{empleado.dni}</div>
-          </div>
-
-          <div>
-            <label className="font-semibold">Fecha nacimiento:</label>
-            <div>{empleado.fecha_nacimiento || "—"}</div>
-          </div>
-
-          <div>
-            <label className="font-semibold">Dirección:</label>
-            <div>{empleado.direccion || "—"}</div>
-          </div>
-
-          <div>
-            <label className="font-semibold">Código postal:</label>
-            <div>{empleado.codigo_postal || "—"}</div>
-          </div>
-
-          <div>
-            <label className="font-semibold">Población:</label>
-            <div>{empleado.poblacion || "—"}</div>
-          </div>
-
-          <div>
-            <label className="font-semibold">Provincia:</label>
-            <div>{empleado.provincia || "—"}</div>
-          </div>
-
-          <div>
-            <label className="font-semibold">Alergias:</label>
-            <div>{empleado.alergias || "—"}</div>
-          </div>
-
-          <div>
-            <label className="font-semibold">Persona contacto:</label>
-            <div>{empleado.persona_contacto || "—"}</div>
-          </div>
-
-          <div>
-            <label className="font-semibold">Teléfono contacto:</label>
-            <div>{empleado.telefono_contacto || "—"}</div>
-          </div>
-
-          <div className="col-span-2">
-            <label className="font-semibold">Observaciones:</label>
-            <div>{empleado.observaciones || "—"}</div>
-          </div>
+        <div className="grid grid-cols-2 gap-2 text-sm">
+          <div><strong>Dirección:</strong> {empleado.direccion || "—"}</div>
+          <div><strong>Código postal:</strong> {empleado.codigo_postal || "—"}</div>
+          <div><strong>Población:</strong> {empleado.poblacion || "—"}</div>
+          <div><strong>Provincia:</strong> {empleado.provincia || "—"}</div>
+          <div><strong>Fecha nacimiento:</strong> {empleado.fecha_nacimiento || "—"}</div>
+          <div><strong>Alergias:</strong> {empleado.alergias || "—"}</div>
+          <div><strong>Persona contacto:</strong> {empleado.persona_contacto || "—"}</div>
+          <div><strong>Teléfono contacto:</strong> {empleado.telefono_contacto || "—"}</div>
         </div>
-      )}
 
-      {/* DATOS LABORALES */}
-      {tab === "laborales" && (
-        <div className="grid grid-cols-2 gap-4">
-
-          <div>
-            <label className="font-semibold">Departamento ID:</label>
-            <div>{empleado.departamento_id || "—"}</div>
-          </div>
-
-          <div>
-            <label className="font-semibold">Sección ID:</label>
-            <div>{empleado.seccion_id || "—"}</div>
-          </div>
-
-          <div>
-            <label className="font-semibold">Cargo ID:</label>
-            <div>{empleado.cargo_id || "—"}</div>
-          </div>
-
-          <div>
-            <label className="font-semibold">Fecha alta:</label>
-            <div>{empleado.fecha_alta || "—"}</div>
-          </div>
-
-          <div>
-            <label className="font-semibold">Fecha baja:</label>
-            <div>{empleado.fecha_baja || "—"}</div>
-          </div>
+        <div className="mt-2 text-sm">
+          <strong>Observaciones:</strong> {empleado.observaciones || "—"}
         </div>
-      )}
+      </section>
 
-      {/* SEGURIDAD */}
-      {tab === "seguridad" && (
-        <div className="space-y-4">
+      {/* Datos laborales */}
+      <section className="border p-4 rounded bg-white shadow">
+        <h2 className="text-lg font-semibold mb-3">Datos laborales</h2>
 
-          <div>
-            <label className="font-semibold">Usuario:</label>
-            <div>{empleado.usuario}</div>
-          </div>
+        <div className="grid grid-cols-2 gap-2 text-sm">
+          <div><strong>Departamento ID:</strong> {empleado.departamento_id || "—"}</div>
+          <div><strong>Sección ID:</strong> {empleado.seccion_id || "—"}</div>
+          <div><strong>Cargo ID:</strong> {empleado.cargo_id || "—"}</div>
+          <div><strong>Fecha alta:</strong> {empleado.fecha_alta || "—"}</div>
+          <div><strong>Fecha baja:</strong> {empleado.fecha_baja || "—"}</div>
+          <div><strong>Activo:</strong> {empleado.activo ? "Sí" : "No"}</div>
+        </div>
+      </section>
 
-          <div>
-            <label className="font-semibold">Rol:</label>
-            <div>{empleado.rol || "—"}</div>
-          </div>
+      {/* Seguridad */}
+      <section className="border p-4 rounded bg-white shadow">
+        <h2 className="text-lg font-semibold mb-3">Seguridad</h2>
 
-          <div>
-            <label className="font-semibold">Módulos visibles:</label>
-            <pre className="bg-gray-100 p-2 rounded text-sm">
-              {JSON.stringify(data.modulos_visibles, null, 2)}
-            </pre>
-          </div>
+        <div className="text-sm">
+          <strong>Módulos visibles:</strong>
+          <pre className="bg-gray-100 p-2 rounded text-xs">
+            {JSON.stringify(data.modulos_visibles, null, 2)}
+          </pre>
+        </div>
 
-          <div>
-            <label className="font-semibold">Permisos módulo:</label>
-            <pre className="bg-gray-100 p-2 rounded text-sm">
-              {JSON.stringify(data.permisos_modulo
+        <div className="text-sm mt-2">
+          <strong>Permisos por módulo:</strong>
+          <pre className="bg-gray-100 p-2 rounded text-xs">
+            {JSON.stringify(data.permisos_modulo, null, 2)}
+          </pre>
+        </div>
+      </section>
+
+      {/* Auditoría */}
+      <section className="border p-4 rounded bg-white shadow">
+        <h2 className="text-lg font-semibold mb-3">Auditoría</h2>
+
+        <div className="space-y-2 text-sm">
+          {data.auditoria.map((item) => (
+            <div key={item.id} className="border rounded p-2 bg-gray-50">
+              <div><strong>Fecha:</strong> {item.fecha}</div>
+              <div><strong>Módulo:</strong> {item.modulo}</div>
+              <div><strong>Acción:</strong> {item.accion}</div>
+              <div><strong>Descripción:</strong> {item.descripcion}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+    </div>
+  );
+}

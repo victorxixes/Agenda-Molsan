@@ -893,6 +893,283 @@ onChange={(e) =>
 )}
 
 {/* ============================
+    TAB 4: SEGURIDAD — SaaS Premium
+============================ */}
+{!loading && tab === "seguridad" && (
+  <section
+    className="
+      bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
+      p-6 shadow-xl space-y-6
+    "
+  >
+    <h3 className="text-lg font-semibold drop-shadow mb-4">
+      Seguridad interna
+    </h3>
+
+    {/* Usuario + Password */}
+    <div className="grid grid-cols-3 gap-4 text-sm">
+      <div>
+        <span className="block mb-1 text-white/80">Usuario</span>
+        <input
+          className="
+            w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+            text-white/80 cursor-not-allowed
+          "
+          value={empleado.usuario || ""}
+          readOnly
+        />
+      </div>
+
+      <div>
+        <span className="block mb-1 text-white/80">Password</span>
+        <input
+          className="
+            w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+            text-white/80 cursor-not-allowed
+          "
+          value="********"
+          readOnly
+        />
+      </div>
+    </div>
+
+    {/* Rol del empleado */}
+    <div
+      className="
+        bg-white/5 border border-white/20 rounded-xl p-4 shadow-md
+        backdrop-blur-md
+      "
+    >
+      <h4 className="font-semibold text-sm mb-3 text-white flex items-center gap-3">
+        Rol del empleado
+        <span
+          className="
+            px-3 py-1 bg-white/10 border border-white/20 rounded-xl
+            text-white/80 text-xs backdrop-blur-md
+          "
+        >
+          Actual: <strong className="text-white">{empleado?.rol?.nombre || "Sin rol"}</strong>
+        </span>
+      </h4>
+
+      <div className="flex items-center gap-4 text-sm">
+        <select
+          className="
+            bg-white/10 border border-white/20 rounded-xl px-3 py-2
+            text-white focus:ring-2 focus:ring-blue-400
+          "
+          value={empleado?.rol?.id || ""}
+          onChange={(e) => {
+            const id = Number(e.target.value);
+            const rolObj = roles.find(r => r.id === id) || null;
+            handleEmpleadoChange("rol", rolObj);
+          }}
+        >
+          <option value="">Sin rol</option>
+          {roles.map((r) => (
+            <option key={r.id} value={r.id}>
+              {r.nombre}
+            </option>
+          ))}
+        </select>
+
+        <button
+          className="
+            px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
+            text-white shadow-lg transition
+          "
+          onClick={guardarRol}
+        >
+          Guardar rol
+        </button>
+
+        <button
+          className="
+            px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700
+            text-white shadow-lg transition
+          "
+          onClick={() => handleEmpleadoChange("rol", null)}
+        >
+          Reset rol
+        </button>
+      </div>
+    </div>
+
+    {/* Reset contraseña */}
+    <button
+      className="
+        px-4 py-2 rounded-xl bg-orange-600 hover:bg-orange-700
+        text-white shadow-lg transition
+      "
+      onClick={async () => {
+        await resetPasswordEmpleado(empleado.id);
+        mostrarToast("ok", "Contraseña reseteada");
+      }}
+    >
+      Reset contraseña
+    </button>
+
+    {/* Tabs internos */}
+    <div className="flex gap-3 mt-6 text-sm">
+      <button
+        className={`
+          px-4 py-2 rounded-xl transition-all
+          ${seguridadTab === "modulos"
+            ? "bg-blue-600 text-white shadow-lg"
+            : "bg-white/10 text-white/70 hover:bg-white/20"}
+        `}
+        onClick={() => setSeguridadTab("modulos")}
+      >
+        Módulos visibles
+      </button>
+
+      <button
+        className={`
+          px-4 py-2 rounded-xl transition-all
+          ${seguridadTab === "permisos"
+            ? "bg-blue-600 text-white shadow-lg"
+            : "bg-white/10 text-white/70 hover:bg-white/20"}
+        `}
+        onClick={() => setSeguridadTab("permisos")}
+      >
+        Permisos por módulo
+      </button>
+    </div>
+
+    {/* Módulos visibles */}
+    {seguridadTab === "modulos" && (
+      <div
+        className="
+          bg-white/5 border border-white/20 rounded-xl p-4 shadow-md
+          backdrop-blur-md
+        "
+      >
+        <h4 className="font-semibold text-sm mb-3 text-white">
+          Selecciona los módulos visibles
+        </h4>
+
+        <div className="grid grid-cols-2 gap-3 text-sm text-white/80">
+          {[
+            "dashboard",
+            "agenda",
+            "empleados",
+            "seguridad",
+            "auditoria",
+            "intranet",
+            "mensajes",
+            "utilidades",
+          ].map((mod) => (
+            <label key={mod} className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={modulos.includes(mod)}
+                onChange={(e) => {
+                  if (e.target.checked) {
+                    setModulos([...modulos, mod]);
+                  } else {
+                    setModulos(modulos.filter((m) => m !== mod));
+                  }
+                }}
+              />
+              {mod}
+            </label>
+          ))}
+        </div>
+
+        <button
+          className="
+            mt-4 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
+            text-white shadow-lg transition
+          "
+          onClick={guardarModulos}
+        >
+          Guardar módulos visibles
+        </button>
+
+        <button
+          className="
+            mt-2 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700
+            text-white shadow-lg transition
+          "
+          onClick={() => setModulos([])}
+        >
+          Reset módulos visibles
+        </button>
+      </div>
+    )}
+
+    {/* Permisos por módulo */}
+    {seguridadTab === "permisos" && (
+      <div
+        className="
+          bg-white/5 border border-white/20 rounded-xl p-4 shadow-md
+          backdrop-blur-md
+        "
+      >
+        <h4 className="font-semibold text-sm mb-3 text-white">
+          Permisos por módulo
+        </h4>
+
+        {Object.keys(permisos).map((mod) => (
+          <div key={mod} className="mb-4">
+            <span className="block font-semibold text-white mb-2 text-sm">
+              {mod.toUpperCase()}
+            </span>
+
+            <div className="grid grid-cols-4 gap-3 text-sm text-white/80">
+              {["ver", "crear", "editar", "eliminar"].map((perm) => (
+                <label key={perm} className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={permisos[mod]?.includes(perm)}
+                    onChange={(e) => {
+                      const actual = permisos[mod] || [];
+                      let nuevo;
+
+                      if (e.target.checked) {
+                        nuevo = [...actual, perm];
+                      } else {
+                        nuevo = actual.filter((p) => p !== perm);
+                      }
+
+                      setPermisos({
+                        ...permisos,
+                        [mod]: nuevo,
+                      });
+                    }}
+                  />
+                  {perm}
+                </label>
+              ))}
+            </div>
+          </div>
+        ))}
+
+        <button
+          className="
+            mt-4 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
+            text-white shadow-lg transition
+          "
+          onClick={guardarPermisos}
+        >
+          Guardar permisos
+        </button>
+
+        <button
+          className="
+            mt-2 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700
+            text-white shadow-lg transition
+          "
+          onClick={() => setPermisos({})}
+        >
+          Reset permisos
+        </button>
+      </div>
+    )}
+  </section>
+)}
+
+{/* ============================
     TAB 5: AUDITORÍA
 ============================ */}
 {!loading && tab === "auditoria" && (

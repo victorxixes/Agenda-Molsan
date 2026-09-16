@@ -1,6 +1,13 @@
 import { useEffect, useRef } from "react";
 import { useMensajesStore } from "../store/mensajesStore";
 
+/**
+ * WebSocket de Mensajes — Versión SJ‑2026 Premium
+ * - Conexión blindada para Render/StrictMode
+ * - Keep-alive automático
+ * - Reconexión inteligente
+ * - Manejo de online/offline, typing y nuevos mensajes
+ */
 export const useMensajesWS = (empleadoId, otroId) => {
   const wsRef = useRef(null);
   const pingInterval = useRef(null);
@@ -14,17 +21,21 @@ export const useMensajesWS = (empleadoId, otroId) => {
   useEffect(() => {
     if (!empleadoId) return;
 
+    // Evitar doble conexión
+    if (wsRef.current) return;
+
     let ws;
 
     const conectar = () => {
-      ws = new WebSocket(`${import.meta.env.VITE_WS_URL}/ws/mensajes/${empleadoId}`);
+      ws = new WebSocket(
+        `${import.meta.env.VITE_WS_URL}/ws/mensajes/${empleadoId}`
+      );
       wsRef.current = ws;
 
       ws.onopen = () => {
-        // Cargar conectados al abrir
         cargarConectados();
 
-        // Keep-alive
+        // Keep-alive premium
         pingInterval.current = setInterval(() => {
           if (ws.readyState === WebSocket.OPEN) {
             ws.send("ping");
@@ -42,8 +53,9 @@ export const useMensajesWS = (empleadoId, otroId) => {
           return;
         }
 
-        if (!data || !data.tipo) return;
+        if (!data?.tipo) return;
 
+        // Estado online/offline
         if (data.tipo === "online") {
           setConectadosWS(data);
         }
@@ -52,11 +64,13 @@ export const useMensajesWS = (empleadoId, otroId) => {
           setConectadosWS({ id: data.id, offline: true });
         }
 
+        // Typing
         if (data.tipo === "typing") {
           setTyping(data.from);
           setTimeout(() => clearTyping(data.from), 1500);
         }
 
+        // Mensajes nuevos
         if (
           data.tipo === "mensaje" ||
           data.tipo === "archivo" ||
@@ -67,11 +81,15 @@ export const useMensajesWS = (empleadoId, otroId) => {
         }
       };
 
+      ws.onerror = () => {
+        console.warn("WS Mensajes error.");
+      };
+
       ws.onclose = () => {
         clearInterval(pingInterval.current);
         pingInterval.current = null;
 
-        // Reconectar automáticamente
+        // Reconexión automática premium
         setTimeout(() => conectar(), 2000);
       };
     };
@@ -79,8 +97,14 @@ export const useMensajesWS = (empleadoId, otroId) => {
     conectar();
 
     return () => {
-      if (wsRef.current) wsRef.current.close();
+      try {
+        wsRef.current?.close();
+      } catch {}
+
       clearInterval(pingInterval.current);
+      pingInterval.current = null;
+
+      wsRef.current = null;
     };
   }, [empleadoId, otroId]);
 

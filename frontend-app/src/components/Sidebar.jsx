@@ -25,7 +25,6 @@ export default function Sidebar() {
 
   const empleado = useAuthStore((s) => s.empleado);
   const setPerfilModal = useAuthStore((s) => s.setPerfilModal);
-
   const mensajesNoLeidos = useMensajesStore((s) => s.noLeidosTotal || 0);
 
   const safeUser = empleado || {
@@ -74,6 +73,7 @@ export default function Sidebar() {
       onMouseEnter={() => !fixed && setCollapsed(false)}
       onMouseLeave={() => !fixed && setCollapsed(true)}
     >
+
       {/* HEADER */}
       <div className="flex items-center justify-between mb-2">
         {!collapsed && (
@@ -145,87 +145,88 @@ export default function Sidebar() {
         {puedeVerModulo("seguridad") && item("/seguridad", "Seguridad", "shield")}
       </nav>
 
-      {/* PERFIL */}
-{!collapsed && (
-  <div className="mt-auto pt-4 border-t border-gray-200">
-    <button
-      onClick={() => setPerfilModal(safeUser.id)}
-      className={`
-        flex items-center gap-4 px-3 py-2 rounded-xl transition-all duration-300
-        text-gray-700 hover:bg-gray-100 w-full
-      `}
-    >
-      <div className="relative w-12 h-12 rounded-full overflow-hidden border border-gray-300 shadow-md">
-        <img
-          src={safeUser.foto || "/icons/user-default.png"}
-          className="w-full h-full object-cover"
-        />
-        <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border border-white rounded-full"></span>
-      </div>
+      {/* PERFIL EXPANDIDO */}
+      {!collapsed && (
+        <div className="mt-auto pt-4 border-t border-gray-200">
+          <button
+            onClick={() => setPerfilModal(safeUser.id)}
+            className="
+              flex items-center gap-4 px-3 py-2 rounded-xl transition-all duration-300
+              text-gray-700 hover:bg-gray-100 w-full
+            "
+          >
+            <div className="relative w-12 h-12 rounded-full overflow-hidden border border-gray-300 shadow-md">
+              <img
+                src={safeUser.foto || "/icons/user-default.png"}
+                className="w-full h-full object-cover"
+              />
+              <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border border-white rounded-full"></span>
+            </div>
 
-      <div className="flex flex-col">
-        <span className="whitespace-nowrap font-semibold text-gray-800">
-          {safeUser.nombre}
-        </span>
-        <span className="text-xs text-gray-500 flex items-center gap-1">
-          Online
-        </span>
-      </div>
-    </button>
+            <div className="flex flex-col">
+              <span className="whitespace-nowrap font-semibold text-gray-800">
+                {safeUser.nombre}
+              </span>
+              <span className="text-xs text-gray-500 flex items-center gap-1">
+                Online
+              </span>
+            </div>
+          </button>
 
-    {/* BOTÓN CERRAR SESIÓN */}
-    <button
-      onClick={() => useAuthStore.getState().logout()}
-      className="
-        mt-3 flex items-center gap-3 px-3 py-2 rounded-xl w-full
-        text-red-600 hover:bg-red-100 transition-all duration-300
-        group
-      "
-    >
-      <div
-        className="
-          w-10 h-10 flex items-center justify-center rounded-full
-          bg-red-200 text-red-700
-          group-hover:bg-red-300 group-hover:scale-105
-          transition-all duration-300
-        "
-      >
-        <svg className="w-5 h-5">
-          <use href="/icons/icons.svg#logout" />
-        </svg>
-      </div>
+          {/* BOTÓN CERRAR SESIÓN */}
+          <button
+            onClick={() => useAuthStore.getState().logout()}
+            className="
+              mt-3 flex items-center gap-3 px-3 py-2 rounded-xl w-full
+              text-red-600 hover:bg-red-100 transition-all duration-300
+              group
+            "
+          >
+            <div
+              className="
+                w-10 h-10 flex items-center justify-center rounded-full
+                bg-red-200 text-red-700
+                group-hover:bg-red-300 group-hover:scale-105
+                transition-all duration-300
+              "
+            >
+              <svg className="w-5 h-5">
+                <use href="/icons/icons.svg#logout" />
+              </svg>
+            </div>
 
-      <span className="font-medium">Cerrar sesión</span>
-    </button>
-  </div>
-)}
+            <span className="font-medium">Cerrar sesión</span>
+          </button>
+        </div>
+      )}
 
-{/* PERFIL MINI + LOGOUT MINI CUANDO ESTÁ COLAPSADO */}
-{collapsed && (
-  <div className="mt-auto flex flex-col items-center gap-4 pb-2">
-    {/* Mini avatar */}
-    <div className="relative w-12 h-12 rounded-full overflow-hidden border border-gray-300 shadow-md">
-      <img
-        src={safeUser.foto || "/icons/user-default.png"}
-        className="w-full h-full object-cover"
-      />
-      <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border border-white rounded-full"></span>
-    </div>
+      {/* PERFIL MINI + LOGOUT MINI */}
+      {collapsed && (
+        <div className="mt-auto flex flex-col items-center gap-4 pb-2">
+          <div className="relative w-12 h-12 rounded-full overflow-hidden border border-gray-300 shadow-md">
+            <img
+              src={safeUser.foto || "/icons/user-default.png"}
+              className="w-full h-full object-cover"
+            />
+            <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border border-white rounded-full"></span>
+          </div>
 
-    {/* Botón logout mini */}
-    <button
-      onClick={() => useAuthStore.getState().logout()}
-      className="
-        w-10 h-10 flex items-center justify-center rounded-full
-        bg-red-200 text-red-700
-        hover:bg-red-300 hover:scale-110
-        transition-all duration-300
-      "
-    >
-      <svg className="w-5 h-5">
-        <use href="/icons/icons.svg#logout" />
-      </svg>
-    </button>
-  </div>
-)}
-</aside>
+          <button
+            onClick={() => useAuthStore.getState().logout()}
+            className="
+              w-10 h-10 flex items-center justify-center rounded-full
+              bg-red-200 text-red-700
+              hover:bg-red-300 hover:scale-110
+              transition-all duration-300
+            "
+          >
+            <svg className="w-5 h-5">
+              <use href="/icons/icons.svg#logout" />
+            </svg>
+          </button>
+        </div>
+      )}
+
+    </aside>
+  );
+}

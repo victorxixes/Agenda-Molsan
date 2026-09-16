@@ -1,5 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { obtenerEmpleado, editarEmpleado } from "../../api/empleados";
+
+/**
+ * EmpleadoEditar — SJ‑2026 Premium
+ * - Glass‑UI
+ * - Switch activo premium
+ * - Render optimizado
+ */
 
 export default function EmpleadoEditar({ empleadoId, onGuardado }) {
   const [form, setForm] = useState({
@@ -10,8 +17,10 @@ export default function EmpleadoEditar({ empleadoId, onGuardado }) {
     activo: true,
   });
 
+  // Cargar empleado
   useEffect(() => {
     if (!empleadoId) return;
+
     obtenerEmpleado(empleadoId).then((res) => {
       const e = res.data;
       setForm({
@@ -24,13 +33,30 @@ export default function EmpleadoEditar({ empleadoId, onGuardado }) {
     });
   }, [empleadoId]);
 
-  const handleChange = (campo, valor) =>
+  const handleChange = useCallback((campo, valor) => {
     setForm((f) => ({ ...f, [campo]: valor }));
+  }, []);
 
-  const guardar = async () => {
+  const guardar = useCallback(async () => {
     await editarEmpleado(empleadoId, form);
     onGuardado?.();
-  };
+  }, [empleadoId, form, onGuardado]);
+
+  const activoClass = useMemo(
+    () =>
+      form.activo
+        ? "bg-green-500/60"
+        : "bg-white/20",
+    [form.activo]
+  );
+
+  const activoThumb = useMemo(
+    () =>
+      form.activo
+        ? "translate-x-6"
+        : "translate-x-1",
+    [form.activo]
+  );
 
   if (!empleadoId) return null;
 
@@ -92,18 +118,18 @@ export default function EmpleadoEditar({ empleadoId, onGuardado }) {
         />
 
         {/* Activo */}
-        <label className="flex items-center gap-3 mt-2 text-white/80">
+        <label className="flex items-center gap-3 mt-2 text-white/80 select-none">
           <div
             className={`
               w-12 h-6 rounded-full cursor-pointer transition-all
-              ${form.activo ? "bg-green-500/60" : "bg-white/20"}
+              ${activoClass}
             `}
             onClick={() => handleChange("activo", !form.activo)}
           >
             <div
               className={`
                 w-5 h-5 bg-white rounded-full shadow-md transform transition-all
-                ${form.activo ? "translate-x-6" : "translate-x-1"}
+                ${activoThumb}
               `}
             />
           </div>
@@ -111,10 +137,11 @@ export default function EmpleadoEditar({ empleadoId, onGuardado }) {
         </label>
       </div>
 
+      {/* BOTÓN PREMIUM */}
       <button
         className="
           px-4 py-2 rounded-xl bg-green-600 hover:bg-green-700
-          text-white shadow-lg transition
+          text-white shadow-lg transition active:scale-[0.97]
         "
         onClick={guardar}
       >

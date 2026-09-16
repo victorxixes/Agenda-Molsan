@@ -1,20 +1,35 @@
+import { useMemo } from "react";
 import { useNotificacionesStore } from "../../store/notificacionesStore";
 import { useNotificacionesWS } from "../../hooks/useNotificacionesWS";
+
+/**
+ * Notificaciones — SJ‑2026 Premium
+ * - WS realtime
+ * - Glass‑UI
+ * - Lista optimizada
+ * - Render estable
+ */
 
 export default function Notificaciones() {
   const { notificaciones, clearNotificaciones } = useNotificacionesStore();
 
+  // WebSocket realtime
   useNotificacionesWS();
+
+  // Evita recalcular en cada render
+  const lista = useMemo(() => notificaciones, [notificaciones]);
 
   return (
     <div className="p-6 space-y-6 text-white">
 
       {/* HEADER PREMIUM */}
-      <div className="
-        flex items-center justify-between
-        bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
-        p-4 shadow-xl
-      ">
+      <div
+        className="
+          flex items-center justify-between
+          bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
+          p-4 shadow-xl
+        "
+      >
         <h1 className="text-3xl font-bold drop-shadow">
           Notificaciones internas
         </h1>
@@ -22,7 +37,7 @@ export default function Notificaciones() {
         <button
           className="
             px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700
-            text-white shadow-lg transition
+            text-white shadow-lg transition active:scale-[0.97]
           "
           onClick={clearNotificaciones}
         >
@@ -31,18 +46,18 @@ export default function Notificaciones() {
       </div>
 
       {/* LISTA PREMIUM */}
-      {notificaciones.length === 0 ? (
+      {lista.length === 0 ? (
         <p className="text-white/70 text-sm">
           No hay notificaciones.
         </p>
       ) : (
         <ul className="space-y-4">
-          {notificaciones.map((n) => (
+          {lista.map((n) => (
             <li
               key={n.id}
               className="
                 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
-                p-4 shadow-xl flex flex-col space-y-2
+                p-4 shadow-xl flex flex-col space-y-2 animate-fadeIn
               "
             >
               <div className="flex justify-between items-center">
@@ -59,10 +74,12 @@ export default function Notificaciones() {
                 <p className="text-white/80 text-sm">{n.descripcion}</p>
               )}
 
-              <span className="
-                text-xs text-white/60 mt-1
-                bg-white/5 border border-white/10 px-2 py-1 rounded-xl w-fit
-              ">
+              <span
+                className="
+                  text-xs text-white/60 mt-1
+                  bg-white/5 border border-white/10 px-2 py-1 rounded-xl w-fit
+                "
+              >
                 Tipo: {n.tipo}
               </span>
             </li>

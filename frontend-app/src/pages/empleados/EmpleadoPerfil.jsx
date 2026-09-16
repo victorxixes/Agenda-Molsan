@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { API_BASE } from "../../api/config";
 import {
   obtenerFichaCompleta,
+  actualizarEmpleado,
   subirFotoEmpleado,
 } from "../../api/empleados";
 
@@ -24,6 +25,26 @@ export default function EmpleadoPerfil({ id }) {
 
   const empleado = empleadoEdit;
 
+  // Manejar cambios de inputs
+  const handleChange = (field, value) => {
+    setEmpleadoEdit((prev) => ({ ...prev, [field]: value }));
+  };
+
+  // Guardar cambios (básicos, personales, laborales)
+  const guardarCambios = async () => {
+    try {
+      await actualizarEmpleado(empleado.id, empleadoEdit);
+      alert("Cambios guardados correctamente");
+
+      const res = await obtenerFichaCompleta(empleado.id);
+      setData(res.data);
+      setEmpleadoEdit(res.data.empleado);
+    } catch (err) {
+      console.error(err);
+      alert("Error al guardar los cambios");
+    }
+  };
+
   // Manejar foto
   const handleFoto = async (e) => {
     const file = e.target.files[0];
@@ -35,11 +56,6 @@ export default function EmpleadoPerfil({ id }) {
     const res = await obtenerFichaCompleta(empleado.id);
     setData(res.data);
     setEmpleadoEdit(res.data.empleado);
-  };
-
-  // Manejar cambios de inputs
-  const handleChange = (field, value) => {
-    setEmpleadoEdit((prev) => ({ ...prev, [field]: value }));
   };
 
   return (
@@ -134,6 +150,13 @@ export default function EmpleadoPerfil({ id }) {
             <input type="file" className="block mt-1" onChange={handleFoto} />
           </label>
         </div>
+
+        <button
+          className="mt-4 px-3 py-1 bg-blue-600 text-white rounded text-sm"
+          onClick={guardarCambios}
+        >
+          Guardar cambios
+        </button>
       </section>
 
       {/* Datos personales */}
@@ -225,6 +248,13 @@ export default function EmpleadoPerfil({ id }) {
             />
           </div>
         </div>
+
+        <button
+          className="mt-4 px-3 py-1 bg-blue-600 text-white rounded text-sm"
+          onClick={guardarCambios}
+        >
+          Guardar cambios
+        </button>
       </section>
 
       {/* Datos laborales */}
@@ -285,6 +315,13 @@ export default function EmpleadoPerfil({ id }) {
             <div>{empleado.activo ? "Sí" : "No"}</div>
           </div>
         </div>
+
+        <button
+          className="mt-4 px-3 py-1 bg-blue-600 text-white rounded text-sm"
+          onClick={guardarCambios}
+        >
+          Guardar cambios
+        </button>
       </section>
 
       {/* Seguridad (solo lectura) */}

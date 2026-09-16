@@ -1,6 +1,14 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useAuthStore } from "../store/authStore";
 import { useNavigate } from "react-router-dom";
+
+/**
+ * LoginPage — SJ‑2026 Premium
+ * - Glass‑UI
+ * - Animaciones fade + slide
+ * - Inputs premium
+ * - Funciones estabilizadas
+ */
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -11,14 +19,17 @@ export default function LoginPage() {
   const [mostrarPass, setMostrarPass] = useState(false);
   const [error, setError] = useState(null);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError(null);
+  const handleSubmit = useCallback(
+    async (e) => {
+      e.preventDefault();
+      setError(null);
 
-    const ok = await iniciarSesion(usuario, password);
-    if (ok) navigate("/dashboard");
-    else setError("Credenciales incorrectas");
-  };
+      const ok = await iniciarSesion(usuario, password);
+      if (ok) navigate("/dashboard");
+      else setError("Credenciales incorrectas");
+    },
+    [usuario, password, iniciarSesion, navigate]
+  );
 
   return (
     <div
@@ -91,7 +102,7 @@ export default function LoginPage() {
                 absolute right-3 top-2.5 cursor-pointer text-white/70
                 hover:text-white transition
               "
-              onClick={() => setMostrarPass(!mostrarPass)}
+              onClick={() => setMostrarPass((v) => !v)}
             >
               {mostrarPass ? "🙈" : "👁️"}
             </span>
@@ -106,7 +117,7 @@ export default function LoginPage() {
             bg-blue-600 hover:bg-blue-700
             shadow-[0_0_15px_rgba(255,255,255,0.3)]
             hover:shadow-[0_0_25px_rgba(255,255,255,0.5)]
-            transition-all
+            transition-all active:scale-[0.98]
           "
         >
           Entrar

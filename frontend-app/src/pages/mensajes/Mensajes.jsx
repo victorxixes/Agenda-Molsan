@@ -26,7 +26,7 @@ export default function Mensajes({ usuarioId }) {
   useEffect(() => {
     const el = chatRef.current;
     if (!el) return;
-    el.scrollTo({ top: el.scrollHeight });
+    el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
   }, [mensajes]);
 
   const enviarMensajeWS = () => {
@@ -102,55 +102,73 @@ export default function Mensajes({ usuarioId }) {
   }, {});
 
   return (
-    <div className="p-6 grid grid-cols-3 gap-4">
-      <div className="border p-4">
-        <h2 className="font-bold mb-2">Conectados</h2>
+    <div className="p-6 grid grid-cols-3 gap-4 text-white">
+
+      {/* LISTA DE CONECTADOS */}
+      <div className="
+        bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
+        p-4 shadow-xl
+      ">
+        <h2 className="font-semibold text-lg mb-3 drop-shadow">Conectados</h2>
 
         {conectados.length === 0 && (
-          <p className="text-sm text-gray-500">No hay empleados conectados.</p>
+          <p className="text-sm text-white/60">No hay empleados conectados.</p>
         )}
 
-        {conectados.map((c) => (
-          <div
-            key={c.id}
-            className={`cursor-pointer hover:bg-gray-100 p-2 flex items-center gap-3 ${
-              otroId === c.id ? "bg-blue-50" : ""
-            }`}
-            onClick={() => setOtroId(c.id)}
-          >
-            <img
-              src={
-                c.foto
-                  ? `${import.meta.env.VITE_API_URL}${c.foto}`
-                  : "/no-foto.png"
-              }
-              className="w-10 h-10 rounded-full object-cover border"
-            />
+        <div className="space-y-2">
+          {conectados.map((c) => (
+            <div
+              key={c.id}
+              className={`
+                cursor-pointer p-3 rounded-xl flex items-center gap-3
+                transition-all duration-200
+                ${otroId === c.id
+                  ? "bg-blue-600/30 border border-blue-500/40 shadow-lg"
+                  : "bg-white/5 hover:bg-white/10 border border-white/10"}
+              `}
+              onClick={() => setOtroId(c.id)}
+            >
+              <img
+                src={
+                  c.foto
+                    ? `${import.meta.env.VITE_API_URL}${c.foto}`
+                    : "/no-foto.png"
+                }
+                className="w-10 h-10 rounded-full object-cover border border-white/20"
+              />
 
-            <div className="text-sm flex-1">
-              <div className="font-semibold text-gray-900">
-                {c.nombre} {c.apellidos}
+              <div className="flex-1">
+                <div className="font-semibold text-white">
+                  {c.nombre} {c.apellidos}
+                </div>
+                <div className="text-xs text-white/60">ID: {c.id}</div>
               </div>
-              <div className="text-xs text-gray-600">ID: {c.id}</div>
-            </div>
 
-            <span className="w-3 h-3 rounded-full bg.green-500"></span>
-          </div>
-        ))}
+              <span className="w-3 h-3 rounded-full bg-green-500 border border-white"></span>
+            </div>
+          ))}
+        </div>
       </div>
 
-      <div className="col-span-2 border p-4">
+      {/* CHAT */}
+      <div className="
+        col-span-2 bg-white/10 backdrop-blur-xl border border-white/20
+        rounded-2xl p-4 shadow-xl
+      ">
         {otroId ? (
           <>
             <MensajesHeader otroId={otroId} conectados={conectados} />
 
             <div
               ref={chatRef}
-              className="h-[400px] overflow-y-auto border p-2 mb-4 bg-white"
+              className="
+                h-[400px] overflow-y-auto border border-white/10 rounded-xl
+                p-4 mb-4 bg-white/5 backdrop-blur-md shadow-inner
+              "
             >
               {Object.keys(mensajesAgrupados).map((fecha) => (
                 <div key={fecha}>
-                  <div className="text-center text-gray-500 text-sm my-2">
+                  <div className="text-center text-white/60 text-sm my-2">
                     {fecha}
                   </div>
 
@@ -181,17 +199,18 @@ export default function Mensajes({ usuarioId }) {
               ))}
 
               {typing[otroId] && (
-                <div className="flex items-center gap-2 text-gray-500 italic text-sm mt-2">
+                <div className="flex items-center gap-2 text-white/70 italic text-sm mt-2">
                   <div className="flex gap-1">
-                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></span>
-                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-150"></span>
-                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-300"></span>
+                    <span className="w-2 h-2 bg-white/40 rounded-full animate-bounce"></span>
+                    <span className="w-2 h-2 bg-white/40 rounded-full animate-bounce delay-150"></span>
+                    <span className="w-2 h-2 bg-white/40 rounded-full animate-bounce delay-300"></span>
                   </div>
                   <span>escribiendo…</span>
                 </div>
               )}
             </div>
 
+            {/* INPUT DE MENSAJE */}
             <form
               onSubmit={async (e) => {
                 e.preventDefault();
@@ -207,7 +226,7 @@ export default function Mensajes({ usuarioId }) {
 
                 setTexto("");
               }}
-              className="flex gap-2"
+              className="flex gap-3"
             >
               <input
                 value={texto}
@@ -215,11 +234,18 @@ export default function Mensajes({ usuarioId }) {
                   setTexto(e.target.value);
                   enviarTypingWS();
                 }}
-                className="border p-2 w-full"
+                className="
+                  flex-1 bg-white/10 border border-white/20 rounded-xl px-4 py-2
+                  text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                "
                 placeholder="Escribe un mensaje…"
               />
 
-              <label className="bg-gray-200 px-3 py-2 rounded cursor-pointer text-sm flex items-center">
+              <label className="
+                bg-white/10 border border-white/20 rounded-xl px-4 py-2
+                cursor-pointer text-white shadow hover:bg-white/20 transition
+                flex items-center
+              ">
                 📎
                 <input
                   type="file"
@@ -230,14 +256,17 @@ export default function Mensajes({ usuarioId }) {
 
               <button
                 type="submit"
-                className="bg-blue-500 text-white px-4 py-2 rounded"
+                className="
+                  bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-xl
+                  shadow-lg transition
+                "
               >
                 Enviar
               </button>
             </form>
           </>
         ) : (
-          <p className="text-gray-600">
+          <p className="text-white/70">
             Selecciona un usuario conectado en la columna izquierda para empezar a chatear.
           </p>
         )}

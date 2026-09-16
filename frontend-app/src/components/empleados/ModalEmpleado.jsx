@@ -443,7 +443,7 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
         <div className="mt-4 flex items-center gap-4">
           {empleado.foto && (
             <img
-              src={`${API_BASE}${empleado.foto}?v=${Date.now()}`}
+              src={`${API_BASE}${empleado.foto_url}?v=${Date.now()}`}
               alt="Foto empleado"
               className="w-20 h-20 rounded object-cover border border-gray-300"
             />

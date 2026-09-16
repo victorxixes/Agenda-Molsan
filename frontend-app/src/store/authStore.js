@@ -3,6 +3,9 @@ import { login } from "../api/auth";
 import { obtenerFichaCompleta } from "../api/empleados";
 import { API_BASE } from "../api/config";
 
+/**
+ * Extrae el ID del empleado desde el JWT.
+ */
 function extraerIdDeToken(token) {
   try {
     const payload = JSON.parse(atob(token.split(".")[1]));
@@ -12,17 +15,31 @@ function extraerIdDeToken(token) {
   }
 }
 
+/**
+ * Store de Autenticación — Versión SJ‑2026 Premium
+ * Gestiona:
+ * - Sesión
+ * - Token
+ * - Ficha del empleado
+ * - Persistencia localStorage
+ * - Modal de perfil
+ */
+
 export const useAuthStore = create((set) => ({
   empleado: null,
   token: null,
   loading: true,
   authReady: false,
 
-  // ⭐ MODAL PERFIL
+  // ---------------------------------------------------------
+  // MODAL PERFIL
+  // ---------------------------------------------------------
   perfilModalId: null,
   setPerfilModal: (id) => set({ perfilModalId: id }),
 
-  // 🔥 HIDRACIÓN INICIAL
+  // ---------------------------------------------------------
+  // HIDRACIÓN INICIAL
+  // ---------------------------------------------------------
   init: () => {
     const token = localStorage.getItem("token");
     const empleado = localStorage.getItem("empleado");
@@ -44,12 +61,17 @@ export const useAuthStore = create((set) => ({
     }
   },
 
+  // ---------------------------------------------------------
+  // INICIAR SESIÓN
+  // ---------------------------------------------------------
   iniciarSesion: async (usuario, password) => {
     try {
       const res = await login(usuario, password);
       if (!res.data?.token) return false;
 
-      let empleadoId = res.data.empleado?.id || extraerIdDeToken(res.data.token);
+      let empleadoId =
+        res.data.empleado?.id || extraerIdDeToken(res.data.token);
+
       if (!empleadoId) return false;
 
       const ficha = await obtenerFichaCompleta(empleadoId);
@@ -74,13 +96,14 @@ export const useAuthStore = create((set) => ({
       localStorage.setItem("empleado", JSON.stringify(empleado));
 
       return true;
-
-    } catch (err) {
-      console.error("Error login:", err);
+    } catch {
       return false;
     }
   },
 
+  // ---------------------------------------------------------
+  // LOGOUT
+  // ---------------------------------------------------------
   logout: () => {
     set({ empleado: null, token: null });
     localStorage.removeItem("token");

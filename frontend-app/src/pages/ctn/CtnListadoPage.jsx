@@ -28,97 +28,97 @@ export default function CtnListadoPage() {
   };
 
   return (
-    <div className="space-y-4">
-      {/* Filtros */}
-      <div className="grid grid-cols-5 gap-4">
-        <input
-          className="border p-2"
-          placeholder="Provincia"
-          value={filtros.provincia}
-          onChange={(e) => setFiltros({ ...filtros, provincia: e.target.value })}
-        />
-        <input
-          className="border p-2"
-          placeholder="Municipio"
-          value={filtros.municipio}
-          onChange={(e) => setFiltros({ ...filtros, municipio: e.target.value })}
-        />
-        <input
-          className="border p-2"
-          placeholder="VC"
-          value={filtros.vc}
-          onChange={(e) => setFiltros({ ...filtros, vc: e.target.value })}
-        />
-        <input
-          className="border p-2"
-          placeholder="Apoderado"
-          value={filtros.apoderado}
-          onChange={(e) => setFiltros({ ...filtros, apoderado: e.target.value })}
-        />
-        <input
-          className="border p-2"
-          placeholder="Buscar nombre, apellidos, código, NIF…"
-          value={filtros.q}
-          onChange={(e) => setFiltros({ ...filtros, q: e.target.value })}
-        />
+    <div className="space-y-6">
+
+      {/* Filtros Premium */}
+      <div className="
+        bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-xl
+        grid grid-cols-5 gap-4
+      ">
+        {Object.keys(filtros).map((key) => (
+          <input
+            key={key}
+            className="
+              bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white
+              placeholder-white/40 focus:ring-2 focus:ring-blue-400
+            "
+            placeholder={key === "q"
+              ? "Buscar nombre, apellidos, código, NIF…"
+              : key.charAt(0).toUpperCase() + key.slice(1)}
+            value={filtros[key]}
+            onChange={(e) => setFiltros({ ...filtros, [key]: e.target.value })}
+          />
+        ))}
       </div>
 
       <button
-        className="bg-blue-600 text-white px-4 py-2 rounded"
+        className="
+          px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
+          text-white shadow-lg transition
+        "
         onClick={aplicarFiltros}
       >
         Aplicar filtros
       </button>
 
-      {/* Tabla */}
+      {/* Tabla Premium */}
       {loading ? (
-        <p>Cargando notarías…</p>
+        <p className="text-white/70 animate-pulse">Cargando notarías…</p>
       ) : (
-        <table className="w-full border">
-          <thead>
-            <tr className="bg-gray-100">
-              <th>Código</th>
-              <th>Teléfono</th>
-              <th>Nombre</th>
-              <th>Apellidos</th>
-              <th>Provincia</th>
-              <th>Municipio</th>
-               <th>CP</th>
-              <th>Dirección</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.map((n) => (
-              <tr key={n.id} className="border-b">
-                <td>{n.codigo}</td>
-                <td>{n.telefono}</td>
-                <td>{n.nombre}</td>
-                <td>{n.apellidos}</td>
-                <td>{n.provincia}</td>
-                <td>{n.municipio}</td>
-                <td>{n.cp}</td> 
-                <td>{n.direccion}</td>
-                <td>
-                  <button
-                    onClick={() => abrirDetalle(n)}
-                    className="text-blue-600 underline"
-                  >
-                    Ver detalle
-                  </button>
-                </td>
+        <div className="
+          bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-xl
+        ">
+          <table className="w-full text-white text-sm">
+            <thead>
+              <tr className="text-white/80 border-b border-white/20">
+                <th className="py-2">Código</th>
+                <th>Teléfono</th>
+                <th>Nombre</th>
+                <th>Apellidos</th>
+                <th>Provincia</th>
+                <th>Municipio</th>
+                <th>CP</th>
+                <th>Dirección</th>
+                <th></th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+
+            <tbody>
+              {items.map((n) => (
+                <tr
+                  key={n.id}
+                  className="
+                    border-b border-white/10 hover:bg-white/10 transition cursor-pointer
+                  "
+                >
+                  <td className="py-2">{n.codigo}</td>
+                  <td>{n.telefono}</td>
+                  <td>{n.nombre}</td>
+                  <td>{n.apellidos}</td>
+                  <td>{n.provincia}</td>
+                  <td>{n.municipio}</td>
+                  <td>{n.cp}</td>
+                  <td>{n.direccion}</td>
+                  <td>
+                    <button
+                      onClick={() => abrirDetalle(n)}
+                      className="text-blue-300 hover:text-blue-400 underline"
+                    >
+                      Ver detalle
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          <p className="text-white/60 text-sm mt-3">
+            Página {page} — {items.length} de {total}
+          </p>
+        </div>
       )}
 
-      {/* Paginación */}
-      <p className="text-sm text-gray-600">
-        Página {page} — {items.length} de {total}
-      </p>
-
-      {/* MODAL */}
+      {/* MODAL PREMIUM */}
       <ModalCtnDetalle
         open={modalOpen}
         onClose={() => setModalOpen(false)}

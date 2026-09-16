@@ -23,7 +23,7 @@ export default function AutocompleteNotario({ value, onSelect }) {
     setOpen(false);
 
     const notarioCompleto = {
-      id: n.id,                     // ← ID REAL DEL CTN (716)
+      id: n.id,
       codigo: n.codigo || "",
       nombre: n.nombre || "",
       apellidos: n.apellidos || "",
@@ -44,10 +44,14 @@ export default function AutocompleteNotario({ value, onSelect }) {
 
   return (
     <div className="relative w-full">
+      {/* INPUT PREMIUM */}
       <input
         type="text"
-        className="w-full border rounded px-2 py-1"
-        placeholder="Buscar notario..."
+        className="
+          w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white
+          placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-400
+        "
+        placeholder="Buscar notario…"
         value={value ? `${value.nombre} ${value.apellidos}` : query}
         onChange={(e) => {
           setQuery(e.target.value);
@@ -55,20 +59,34 @@ export default function AutocompleteNotario({ value, onSelect }) {
         }}
       />
 
+      {/* DROPDOWN PREMIUM */}
       {open && (
-        <div className="absolute left-0 right-0 bg-white border rounded shadow max-h-60 overflow-auto z-10">
+        <div
+          className="
+            absolute left-0 right-0 mt-2 bg-white/10 backdrop-blur-xl
+            border border-white/20 rounded-xl shadow-2xl max-h-60 overflow-auto z-20
+          "
+        >
           {notarios.length === 0 ? (
-            <div className="px-3 py-2 text-sm text-gray-500">
+            <div className="px-4 py-3 text-sm text-white/70">
               No hay resultados
             </div>
           ) : (
             notarios.map((n) => (
               <div
-                key={n.id}   // ← USAR ID REAL DEL CTN
+                key={n.id}
                 onClick={() => seleccionar(n)}
-                className="px-3 py-2 cursor-pointer hover:bg-gray-100 text-sm"
+                className="
+                  px-4 py-3 cursor-pointer text-sm text-white
+                  hover:bg-white/20 transition-all rounded-lg
+                "
               >
-                {n.nombre} {n.apellidos} — {n.municipio}
+                <div className="font-semibold">
+                  {n.nombre} {n.apellidos}
+                </div>
+                <div className="text-white/70 text-xs">
+                  {n.municipio} — {n.provincia}
+                </div>
               </div>
             ))
           )}

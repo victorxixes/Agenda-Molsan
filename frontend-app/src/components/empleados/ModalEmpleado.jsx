@@ -799,7 +799,7 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
     </button>
   </div>
   
-  /* TAB 5: AUDITORÍA */}
+  {/* TAB 5: AUDITORÍA */}
 {!loading && tab === "auditoria" && (
   <div className="transition-all duration-200 ease-out transform">
     <section className="border border-gray-300 bg-white p-4 rounded-xl shadow-sm">

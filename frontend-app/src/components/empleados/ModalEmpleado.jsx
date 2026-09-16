@@ -70,7 +70,6 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
     cargar();
   }, [open, empleadoId]);
 
-
   const handleEmpleadoChange = (campo, valor) =>
     setEmpleado((e) => ({ ...e, [campo]: valor }));
 
@@ -104,17 +103,16 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
   };
 
   const guardarRol = async () => {
-  if (!empleado?.id || !empleado?.rol_id) return;
+    if (!empleado?.id || !empleado?.rol_id) return;
 
-  await axios.post(
-    `${API_BASE}/seguridad/asignar/empleado/${empleado.id}/rol/${empleado.rol_id}`
-  );
+    await axios.post(
+      `${API_BASE}/seguridad/asignar/empleado/${empleado.id}/rol/${empleado.rol_id}`
+    );
 
-  mostrarToast("ok", "Rol actualizado");
-};
+    mostrarToast("ok", "Rol actualizado");
+  };
 
   if (!open || !empleadoId) return null;
-
 
   return (
     <>
@@ -189,13 +187,15 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
                         className="bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
                         value={empleado.rol?.id || ""}
                         onChange={(e) =>
-                           handleEmpleadoChange("rol", {
-                             id: Number(e.target.value),
-                            nombre: roles.find(r => r.id === Number(e.target.value))?.nombre || ""
+                          handleEmpleadoChange("rol", {
+                            id: Number(e.target.value),
+                            nombre:
+                              roles.find(
+                                (r) => r.id === Number(e.target.value)
+                              )?.nombre || ""
                           })
                         }
                       >
-
                         <option value="1">Activo</option>
                         <option value="0">Baja</option>
                       </select>
@@ -261,326 +261,330 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
             )}
 
             {/* TAB 2: DATOS PERSONALES */}
-            {!loading && tab === "personales" && (
-              <div className="transition-all duration-200 ease-out transform">
-                <section className="border border-gray-300 bg-white p-4 rounded-xl shadow-sm">
-                  <h3 className="text-sm font-semibold mb-3 text-gray-900">
-                    Datos personales
-                  </h3>
+{!loading && tab === "personales" && (
+  <div className="transition-all duration-200 ease-out transform">
+    <section className="border border-gray-300 bg-white p-4 rounded-xl shadow-sm">
+      <h3 className="text-sm font-semibold mb-3 text-gray-900">
+        Datos personales
+      </h3>
 
-                  <div className="grid grid-cols-2 gap-3 text-xs">
-                    {/* Nombre */}
-                    <div>
-                      <span className="block mb-1 text-gray-700">Nombre</span>
-                      <input
-                        className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
-                        value={empleado.nombre || ""}
-                        onChange={(e) =>
-                          handleEmpleadoChange("nombre", e.target.value)
-                        }
-                      />
-                    </div>
+      <div className="grid grid-cols-2 gap-3 text-xs">
+        {/* Nombre */}
+        <div>
+          <span className="block mb-1 text-gray-700">Nombre</span>
+          <input
+            className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
+            value={empleado.nombre || ""}
+            onChange={(e) =>
+              handleEmpleadoChange("nombre", e.target.value)
+            }
+          />
+        </div>
 
-                    {/* Teléfono */}
-                    <div>
-                      <span className="block mb-1 text-gray-700">Teléfono</span>
-                      <input
-                        className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
-                        value={empleado.telefono || ""}
-                        onChange={(e) =>
-                          handleEmpleadoChange("telefono", e.target.value)
-                        }
-                      />
-                    </div>
+        {/* Teléfono */}
+        <div>
+          <span className="block mb-1 text-gray-700">Teléfono</span>
+          <input
+            className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
+            value={empleado.telefono || ""}
+            onChange={(e) =>
+              handleEmpleadoChange("telefono", e.target.value)
+            }
+          />
+        </div>
 
-                    {/* Apellidos */}
-                    <div>
-                      <span className="block mb-1 text-gray-700">Apellidos</span>
-                      <input
-                        className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
-                        value={empleado.apellidos || ""}
-                        onChange={(e) =>
-                          handleEmpleadoChange("apellidos", e.target.value)
-                        }
-                      />
-                    </div>
+        {/* Apellidos */}
+        <div>
+          <span className="block mb-1 text-gray-700">Apellidos</span>
+          <input
+            className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
+            value={empleado.apellidos || ""}
+            onChange={(e) =>
+              handleEmpleadoChange("apellidos", e.target.value)
+            }
+          />
+        </div>
 
-                    {/* DNI */}
-                    <div>
-                      <span className="block mb-1 text-gray-700">DNI</span>
-                      <input
-                        className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
-                        value={empleado.dni || ""}
-                        onChange={(e) =>
-                          handleEmpleadoChange("dni", e.target.value)
-                        }
-                      />
-                    </div>
+        {/* DNI */}
+        <div>
+          <span className="block mb-1 text-gray-700">DNI</span>
+          <input
+            className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
+            value={empleado.dni || ""}
+            onChange={(e) =>
+              handleEmpleadoChange("dni", e.target.value)
+            }
+          />
+        </div>
 
-                    {/* Email personal */}
-                    <div>
-                      <span className="block mb-1 text-gray-700">Email personal</span>
-                      <input
-                        className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
-                        value={empleado.email_personal || ""}
-                        onChange={(e) =>
-                          handleEmpleadoChange("email_personal", e.target.value)
-                        }
-                      />
-                    </div>
+        {/* Email personal */}
+        <div>
+          <span className="block mb-1 text-gray-700">Email personal</span>
+          <input
+            className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
+            value={empleado.email_personal || ""}
+            onChange={(e) =>
+              handleEmpleadoChange("email_personal", e.target.value)
+            }
+          />
+        </div>
 
-                    {/* Dirección */}
-                    <div>
-                      <span className="block mb-1 text-gray-700">Dirección</span>
-                      <input
-                        className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
-                        value={empleado.direccion || ""}
-                        onChange={(e) =>
-                          handleEmpleadoChange("direccion", e.target.value)
-                        }
-                      />
-                    </div>
+        {/* Dirección */}
+        <div>
+          <span className="block mb-1 text-gray-700">Dirección</span>
+          <input
+            className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
+            value={empleado.direccion || ""}
+            onChange={(e) =>
+              handleEmpleadoChange("direccion", e.target.value)
+            }
+          />
+        </div>
 
-                    {/* Código postal */}
-                    <div>
-                      <span className="block mb-1 text-gray-700">Código postal</span>
-                      <input
-                        className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
-                        value={empleado.codigo_postal || ""}
-                        onChange={(e) =>
-                          handleEmpleadoChange("codigo_postal", e.target.value)
-                        }
-                      />
-                    </div>
+        {/* Código postal */}
+        <div>
+          <span className="block mb-1 text-gray-700">Código postal</span>
+          <input
+            className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
+            value={empleado.codigo_postal || ""}
+            onChange={(e) =>
+              handleEmpleadoChange("codigo_postal", e.target.value)
+            }
+          />
+        </div>
 
-                    {/* Población */}
-                    <div>
-                      <span className="block mb-1 text-gray-700">Población</span>
-                      <input
-                        className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
-                        value={empleado.poblacion || ""}
-                        onChange={(e) =>
-                          handleEmpleadoChange("poblacion", e.target.value)
-                        }
-                      />
-                    </div>
+        {/* Población */}
+        <div>
+          <span className="block mb-1 text-gray-700">Población</span>
+          <input
+            className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
+            value={empleado.poblacion || ""}
+            onChange={(e) =>
+              handleEmpleadoChange("poblacion", e.target.value)
+            }
+          />
+        </div>
 
-                    {/* Provincia */}
-                    <div>
-                      <span className="block mb-1 text-gray-700">Provincia</span>
-                      <input
-                        className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
-                        value={empleado.provincia || ""}
-                        onChange={(e) =>
-                          handleEmpleadoChange("provincia", e.target.value)
-                        }
-                      />
-                    </div>
+        {/* Provincia */}
+        <div>
+          <span className="block mb-1 text-gray-700">Provincia</span>
+          <input
+            className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
+            value={empleado.provincia || ""}
+            onChange={(e) =>
+              handleEmpleadoChange("provincia", e.target.value)
+            }
+          />
+        </div>
 
-                    {/* Fecha nacimiento */}
-                    <div>
-                      <span className="block mb-1 text-gray-700">Fecha nacimiento</span>
-                      <input
-                        type="date"
-                        className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
-                        value={empleado.fecha_nacimiento || ""}
-                        onChange={(e) =>
-                          handleEmpleadoChange("fecha_nacimiento", e.target.value)
-                        }
-                      />
-                    </div>
+        {/* Fecha nacimiento */}
+        <div>
+          <span className="block mb-1 text-gray-700">Fecha nacimiento</span>
+          <input
+            type="date"
+            className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
+            value={empleado.fecha_nacimiento || ""}
+            onChange={(e) =>
+              handleEmpleadoChange("fecha_nacimiento", e.target.value)
+            }
+          />
+        </div>
 
-                    {/* Alergias */}
-                    <div>
-                      <span className="block mb-1 text-gray-700">Alergias</span>
-                      <input
-                        className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
-                        value={empleado.alergias || ""}
-                        onChange={(e) =>
-                          handleEmpleadoChange("alergias", e.target.value)
-                        }
-                      />
-                    </div>
+        {/* Alergias */}
+        <div>
+          <span className="block mb-1 text-gray-700">Alergias</span>
+          <input
+            className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
+            value={empleado.alergias || ""}
+            onChange={(e) =>
+              handleEmpleadoChange("alergias", e.target.value)
+            }
+          />
+        </div>
 
-                    {/* Persona contacto */}
-                    <div>
-                      <span className="block mb-1 text-gray-700">Persona contacto</span>
-                      <input
-                        className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
-                        value={empleado.persona_contacto || ""}
-                        onChange={(e) =>
-                          handleEmpleadoChange("persona_contacto", e.target.value)
-                        }
-                      />
-                    </div>
+        {/* Persona contacto */}
+        <div>
+          <span className="block mb-1 text-gray-700">Persona contacto</span>
+          <input
+            className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
+            value={empleado.persona_contacto || ""}
+            onChange={(e) =>
+              handleEmpleadoChange("persona_contacto", e.target.value)
+            }
+          />
+        </div>
 
-                    {/* Teléfono contacto */}
-                    <div>
-                      <span className="block mb-1 text-gray-700">Teléfono contacto</span>
-                      <input
-                        className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
-                        value={empleado.telefono_contacto || ""}
-                        onChange={(e) =>
-                          handleEmpleadoChange("telefono_contacto", e.target.value)
-                        }
-                      />
-                    </div>
+        {/* Teléfono contacto */}
+        <div>
+          <span className="block mb-1 text-gray-700">Teléfono contacto</span>
+          <input
+            className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
+            value={empleado.telefono_contacto || ""}
+            onChange={(e) =>
+              handleEmpleadoChange("telefono_contacto", e.target.value)
+            }
+          />
+        </div>
 
-                   {/* Observaciones */}
-                      <div className="col-span-2">
-                        <span className="block mb-1 text-gray-700">Observaciones</span>
-                        <textarea
-                          className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
-                          rows={3}
-                          value={empleado.observaciones || ""}
-                          onChange={(e) =>
-                            handleEmpleadoChange("observaciones", e.target.value)
-                          }
-                        />
-                      </div>
-                      
-                      {/* Foto + subida */}
-                      <div className="mt-4 flex items-center gap-4">
-                        {empleado.foto && (
-                          <img
-                            src={`${API_BASE}${empleado.foto}?v=${Date.now()}`}
-                            alt="Foto empleado"
-                            className="w-20 h-20 rounded object-cover border border-gray-300"
-                          />
-                        )}
-                      
-                        <label className="text-xs text-gray-700">
-                          Subir nueva foto:
-                          <input
-                            type="file"
-                            className="block mt-1 text-xs"
-                            onChange={handleFoto}
-                          />
-                        </label>
-                      </div>
-                      
-                      <button
-                        className="mt-4 px-3 py-1 bg-blue-600 text-white rounded text-xs"
-                        onClick={guardarEmpleado}
-                      >
-                        Guardar datos personales
-                      </button>
+        {/* Observaciones */}
+        <div className="col-span-2">
+          <span className="block mb-1 text-gray-700">Observaciones</span>
+          <textarea
+            className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
+            rows={3}
+            value={empleado.observaciones || ""}
+            onChange={(e) =>
+              handleEmpleadoChange("observaciones", e.target.value)
+            }
+          />
+        </div>
+
+        {/* Foto + subida */}
+        <div className="mt-4 flex items-center gap-4">
+          {empleado.foto && (
+            <img
+              src={`${API_BASE}${empleado.foto}?v=${Date.now()}`}
+              alt="Foto empleado"
+              className="w-20 h-20 rounded object-cover border border-gray-300"
+            />
+          )}
+
+          <label className="text-xs text-gray-700">
+            Subir nueva foto:
+            <input
+              type="file"
+              className="block mt-1 text-xs"
+              onChange={handleFoto}
+            />
+          </label>
+        </div>
+
+        <button
+          className="mt-4 px-3 py-1 bg-blue-600 text-white rounded text-xs"
+          onClick={guardarEmpleado}
+        >
+          Guardar datos personales
+        </button>
+      </div>
+    </section>
+  </div>
+)}
 
             {/* TAB 3: DATOS LABORALES */}
-            {!loading && tab === "laborales" && (
-              <div className="transition-all duration-200 ease-out transform">
-                <section className="border border-gray-300 bg-white p-4 rounded-xl shadow-sm">
-                  <h3 className="text-sm font-semibold mb-3 text-gray-900">
-                    Datos laborales
-                  </h3>
+{!loading && tab === "laborales" && (
+  <div className="transition-all duration-200 ease-out transform">
+    <section className="border border-gray-300 bg-white p-4 rounded-xl shadow-sm">
+      <h3 className="text-sm font-semibold mb-3 text-gray-900">
+        Datos laborales
+      </h3>
 
-                  <div className="grid grid-cols-3 gap-3 text-xs">
-                    {/* Departamento */}
-                    <div>
-                      <span className="block mb-1 text-gray-700">Departamento</span>
-                      <select
-                        className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
-                        value={empleado.departamento_id || ""}
-                        onChange={(e) =>
-                          handleEmpleadoChange(
-                            "departamento_id",
-                            Number(e.target.value) || null
-                          )
-                        }
-                      >
-                        <option value="">Sin departamento</option>
-                        {departamentos.map((d) => (
-                          <option key={d.id} value={d.id}>
-                            {d.nombre}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
+      <div className="grid grid-cols-3 gap-3 text-xs">
+        {/* Departamento */}
+        <div>
+          <span className="block mb-1 text-gray-700">Departamento</span>
+          <select
+            className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
+            value={empleado.departamento_id || ""}
+            onChange={(e) =>
+              handleEmpleadoChange(
+                "departamento_id",
+                Number(e.target.value) || null
+              )
+            }
+          >
+            <option value="">Sin departamento</option>
+            {departamentos.map((d) => (
+              <option key={d.id} value={d.id}>
+                {d.nombre}
+              </option>
+            ))}
+          </select>
+        </div>
 
-                    {/* Sección */}
-                    <div>
-                      <span className="block mb-1 text-gray-700">Sección</span>
-                      <select
-                        className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
-                        value={empleado.seccion_id || ""}
-                        onChange={(e) =>
-                          handleEmpleadoChange(
-                            "seccion_id",
-                            Number(e.target.value) || null
-                          )
-                        }
-                      >
-                        <option value="">Sin sección</option>
-                        {secciones.map((s) => (
-                          <option key={s.id} value={s.id}>
-                            {s.nombre}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
+        {/* Sección */}
+        <div>
+          <span className="block mb-1 text-gray-700">Sección</span>
+          <select
+            className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
+            value={empleado.seccion_id || ""}
+            onChange={(e) =>
+              handleEmpleadoChange(
+                "seccion_id",
+                Number(e.target.value) || null
+              )
+            }
+          >
+            <option value="">Sin sección</option>
+            {secciones.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.nombre}
+              </option>
+            ))}
+          </select>
+        </div>
 
-                    {/* Cargo */}
-                    <div>
-                      <span className="block mb-1 text-gray-700">Cargo</span>
-                      <select
-                        className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
-                        value={empleado.cargo_id || ""}
-                        onChange={(e) =>
-                          handleEmpleadoChange(
-                            "cargo_id",
-                            Number(e.target.value) || null
-                          )
-                        }
-                      >
-                        <option value="">Sin cargo</option>
-                        {cargos.map((c) => (
-                          <option key={c.id} value={c.id}>
-                            {c.nombre}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
+        {/* Cargo */}
+        <div>
+          <span className="block mb-1 text-gray-700">Cargo</span>
+          <select
+            className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
+            value={empleado.cargo_id || ""}
+            onChange={(e) =>
+              handleEmpleadoChange(
+                "cargo_id",
+                Number(e.target.value) || null
+              )
+            }
+          >
+            <option value="">Sin cargo</option>
+            {cargos.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.nombre}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
 
-                  <div className="grid grid-cols-2 gap-3 text-xs mt-4 text-gray-700">
-                    {/* Fecha alta */}
-                    <div>
-                      <span className="block mb-1 text-gray-700">Fecha alta</span>
-                      <input
-                        type="date"
-                        className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
-                        value={empleado.fecha_alta || ""}
-                        onChange={(e) =>
-                          handleEmpleadoChange("fecha_alta", e.target.value)
-                        }
-                      />
-                    </div>
+      <div className="grid grid-cols-2 gap-3 text-xs mt-4 text-gray-700">
+        {/* Fecha alta */}
+        <div>
+          <span className="block mb-1 text-gray-700">Fecha alta</span>
+          <input
+            type="date"
+            className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
+            value={empleado.fecha_alta || ""}
+            onChange={(e) =>
+              handleEmpleadoChange("fecha_alta", e.target.value)
+            }
+          />
+        </div>
 
-                    {/* Fecha baja */}
-                    <div>
-                      <span className="block mb-1 text-gray-700">Fecha baja</span>
-                      <input
-                        type="date"
-                        className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
-                        value={empleado.fecha_baja || ""}
-                        onChange={(e) =>
-                          handleEmpleadoChange("fecha_baja", e.target.value)
-                        }
-                      />
-                    </div>
-                  </div>
+        {/* Fecha baja */}
+        <div>
+          <span className="block mb-1 text-gray-700">Fecha baja</span>
+          <input
+            type="date"
+            className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
+            value={empleado.fecha_baja || ""}
+            onChange={(e) =>
+              handleEmpleadoChange("fecha_baja", e.target.value)
+            }
+          />
+        </div>
+      </div>
 
-                  <button
-                    className="mt-4 px-3 py-1 bg-blue-600 text-white rounded text-xs"
-                    onClick={guardarEmpleado}
-                  >
-                    Guardar datos laborales
-                  </button>
-                </section>
-              </div>
-            )}
+      <button
+        className="mt-4 px-3 py-1 bg-blue-600 text-white rounded text-xs"
+        onClick={guardarEmpleado}
+      >
+        Guardar datos laborales
+      </button>
+    </section>
+  </div>
+)}
 
-         {/* TAB 4: SEGURIDAD */}
+            {/* TAB 4: SEGURIDAD */}
 {!loading && tab === "seguridad" && (
   <div className="transition-all duration-200 ease-out transform">
     <section className="border border-gray-300 bg-white p-4 rounded-xl shadow-sm">
@@ -797,12 +801,11 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
         </div>
       )}
 
-    </section>   
-  </div>        
-)}              
+    </section>
+  </div>
+)}
 
-    
-{/* TAB 5: AUDITORÍA */}
+            {/* TAB 5: AUDITORÍA */}
 {!loading && tab === "auditoria" && (
   <div className="transition-all duration-200 ease-out transform">
     <section className="border border-gray-300 bg-white p-4 rounded-xl shadow-sm">
@@ -826,14 +829,20 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
           ))}
         </ul>
       )}
-        </section>
+    </section>
   </div>
 )}
+        </div>   {/* cierre contenido */}
+      </div>     {/* cierre caja modal */}
+    </div>       {/* cierre overlay */}
+  </>            {/* cierre fragment */}
+);               {/* cierre return */}
+}                {/* cierre componente */}
 
-</div>  
-</div>   
-</div>   
-</>     
-);      
-}       
-    
+
+
+
+            
+
+
+            

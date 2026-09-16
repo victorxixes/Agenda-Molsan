@@ -1,11 +1,20 @@
+import { useCallback } from "react";
 import { Link } from "react-router-dom";
 
+/**
+ * Utilidades — SJ‑2026 Premium
+ * - Cards glass‑UI
+ * - Animación fade‑in
+ */
+
 export default function Utilidades() {
+  const titulo = useCallback(() => "Utilidades del sistema", []);
+
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 animate-fade-in">
 
       <h1 className="text-3xl font-bold text-white drop-shadow mb-4">
-        Utilidades del sistema
+        {titulo()}
       </h1>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -39,7 +48,7 @@ function Card({ titulo, descripcion, link }) {
       to={link}
       className="
         bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
-        p-6 shadow-xl hover:bg-white/20 transition block
+        p-6 shadow-xl hover:bg-white/20 transition block active:scale-[0.97]
       "
     >
       <h2 className="text-xl font-semibold text-white drop-shadow mb-2">

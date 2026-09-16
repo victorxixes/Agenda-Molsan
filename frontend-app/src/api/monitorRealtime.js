@@ -1,21 +1,35 @@
 import axios from "./axios";
 
-// ⭐ LISTAR TABLAS
-export const listarTablas = () => {
-  return axios.get("/debug/tablas");
-};
+/**
+ * API Monitor Realtime — Versión SJ‑2026 Premium
+ * Gestiona:
+ * - Listado de tablas
+ * - Descripción de tabla
+ * - Contenido de tabla
+ * - Construcción de URL WebSocket realtime
+ */
 
-// ⭐ DESCRIBIR TABLA
-export const describirTabla = (tabla) => {
-  return axios.get(`/debug/describe/${tabla}`);
-};
+/* ---------------------------------------------------------
+   LISTAR TABLAS
+--------------------------------------------------------- */
+export const listarTablas = () =>
+  axios.get("/debug/tablas");
 
-// ⭐ OBTENER CONTENIDO DE TABLA
-export const obtenerContenidoTabla = (tabla) => {
-  return axios.get(`/debug/contenido/${tabla}`);
-};
+/* ---------------------------------------------------------
+   DESCRIBIR TABLA
+--------------------------------------------------------- */
+export const describirTabla = (tabla) =>
+  axios.get(`/debug/describe/${tabla}`);
 
-// ⭐ URL para WebSocket realtime
+/* ---------------------------------------------------------
+   OBTENER CONTENIDO DE TABLA
+--------------------------------------------------------- */
+export const obtenerContenidoTabla = (tabla) =>
+  axios.get(`/debug/contenido/${tabla}`);
+
+/* ---------------------------------------------------------
+   URL WEBSOCKET REALTIME
+--------------------------------------------------------- */
 export const buildRealtimeWsUrl = (baseUrl, params) => {
   const query = new URLSearchParams(params).toString();
   return `${baseUrl.replace("http", "ws")}/ws/realtime/?${query}`;

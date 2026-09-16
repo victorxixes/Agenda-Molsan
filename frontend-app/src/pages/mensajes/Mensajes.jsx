@@ -19,25 +19,16 @@ export default function Mensajes({ usuarioId }) {
   const wsRef = useMensajesWS(usuarioId, otroId);
   const chatRef = useRef(null);
 
-  // =========================================================
-  // CARGAR CONVERSACIÓN AL SELECCIONAR USUARIO
-  // =========================================================
   useEffect(() => {
     if (otroId) cargarConversacion(usuarioId, otroId);
   }, [otroId, usuarioId]);
 
-  // =========================================================
-  // SCROLL AUTOMÁTICO
-  // =========================================================
   useEffect(() => {
     const el = chatRef.current;
     if (!el) return;
     el.scrollTo({ top: el.scrollHeight });
   }, [mensajes]);
 
-  // =========================================================
-  // ENVIAR MENSAJE WS
-  // =========================================================
   const enviarMensajeWS = () => {
     if (!otroId || !texto.trim()) return;
 
@@ -50,9 +41,6 @@ export default function Mensajes({ usuarioId }) {
     );
   };
 
-  // =========================================================
-  // TYPING WS
-  // =========================================================
   const enviarTypingWS = () => {
     if (!otroId) return;
 
@@ -64,9 +52,6 @@ export default function Mensajes({ usuarioId }) {
     );
   };
 
-  // =========================================================
-  // SUBIR ARCHIVO + ENVIAR WS + REST
-  // =========================================================
   const handleAdjunto = async (e) => {
     const file = e.target.files[0];
     if (!file || !otroId) return;
@@ -75,7 +60,6 @@ export default function Mensajes({ usuarioId }) {
     fd.append("file", file);
 
     try {
-      // 1) Subir archivo
       const res = await fetch(`${import.meta.env.VITE_API_URL}/mensajes/upload`, {
         method: "POST",
         body: fd,
@@ -86,7 +70,6 @@ export default function Mensajes({ usuarioId }) {
 
       const archivo_url = data.archivo_url;
 
-      // 2) WS tiempo real
       wsRef.current?.send(
         JSON.stringify({
           tipo: "archivo",
@@ -95,7 +78,6 @@ export default function Mensajes({ usuarioId }) {
         })
       );
 
-      // 3) REST guardar en BD
       await enviarMensajeREST({
         remitente_id: usuarioId,
         destinatario_id: otroId,
@@ -108,9 +90,6 @@ export default function Mensajes({ usuarioId }) {
     }
   };
 
-  // =========================================================
-  // AGRUPAR MENSAJES POR FECHA
-  // =========================================================
   const mensajesAgrupados = mensajes.reduce((acc, m) => {
     const fechaObj = new Date(m.fecha);
     const fecha = isNaN(fechaObj.getTime())
@@ -124,10 +103,6 @@ export default function Mensajes({ usuarioId }) {
 
   return (
     <div className="p-6 grid grid-cols-3 gap-4">
-      
-      {/* =========================================================
-          SIDEBAR CONECTADOS
-      ========================================================= */}
       <div className="border p-4">
         <h2 className="font-bold mb-2">Conectados</h2>
 
@@ -159,14 +134,11 @@ export default function Mensajes({ usuarioId }) {
               <div className="text-xs text-gray-600">ID: {c.id}</div>
             </div>
 
-            <span className="w-3 h-3 rounded-full bg-green-500"></span>
+            <span className="w-3 h-3 rounded-full bg.green-500"></span>
           </div>
         ))}
       </div>
 
-      {/* =========================================================
-          CHAT
-      ========================================================= */}
       <div className="col-span-2 border p-4">
         {otroId ? (
           <>
@@ -208,7 +180,6 @@ export default function Mensajes({ usuarioId }) {
                 </div>
               ))}
 
-              {/* TYPING */}
               {typing[otroId] && (
                 <div className="flex items-center gap-2 text-gray-500 italic text-sm mt-2">
                   <div className="flex gap-1">
@@ -221,9 +192,6 @@ export default function Mensajes({ usuarioId }) {
               )}
             </div>
 
-            {/* =========================================================
-                INPUT + ADJUNTOS
-            ========================================================= */}
             <form
               onSubmit={async (e) => {
                 e.preventDefault();
@@ -251,7 +219,6 @@ export default function Mensajes({ usuarioId }) {
                 placeholder="Escribe un mensaje…"
               />
 
-              {/* BOTÓN ADJUNTAR */}
               <label className="bg-gray-200 px-3 py-2 rounded cursor-pointer text-sm flex items-center">
                 📎
                 <input

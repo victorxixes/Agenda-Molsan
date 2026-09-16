@@ -1,5 +1,4 @@
 import axios from "axios";
-
 import { useEffect, useState } from "react";
 import { API_BASE } from "../../api/config";
 import {
@@ -116,43 +115,62 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
 
   return (
     <>
+      {/* TOAST PREMIUM */}
       {toast && (
         <div
-          className={`fixed top-4 right-4 px-4 py-2 rounded shadow-lg text-white text-sm transition-all ${
-            toast.tipo === "ok" ? "bg-green-600" : "bg-red-600"
-          }`}
+          className={`
+            fixed top-4 right-4 px-4 py-2 rounded-xl shadow-2xl text-white text-sm
+            backdrop-blur-xl border border-white/20
+            ${toast.tipo === "ok" ? "bg-green-500/30" : "bg-red-500/30"}
+          `}
         >
           {toast.mensaje}
         </div>
       )}
 
-      <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-        <div className="bg-white rounded-xl shadow-lg w-[900px] max-h-[90vh] overflow-hidden border border-gray-300">
+      {/* OVERLAY PREMIUM */}
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
 
-          {/* HEADER */}
-          <div className="flex justify-between items-center px-4 py-3 border-b border-gray-200 bg-gray-50">
-            <h2 className="text-lg font-semibold text-gray-900">
+        {/* MODAL PREMIUM */}
+        <div className="
+          bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
+          shadow-2xl w-[900px] max-h-[90vh] overflow-hidden text-white
+        ">
+
+          {/* HEADER PREMIUM */}
+          <div className="
+            flex justify-between items-center px-6 py-4 border-b border-white/20
+            bg-white/5 backdrop-blur-xl
+          ">
+            <h2 className="text-xl font-semibold drop-shadow">
               Ficha empleado {empleado.id} — {empleado.nombre} {empleado.apellidos}
             </h2>
             <button
-              className="px-3 py-1 text-xs rounded bg-gray-200 hover:bg-gray-300 text-gray-700"
+              className="
+                px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20
+                text-white shadow-lg transition
+              "
               onClick={onClose}
             >
               Cerrar
             </button>
           </div>
 
-          {/* TABS PRINCIPALES */}
-          <div className="px-4 pt-3 pb-2 border-b border-gray-200 flex gap-2 text-xs bg-white">
+          {/* TABS PRINCIPALES PREMIUM */}
+          <div className="
+            px-6 pt-3 pb-2 border-b border-white/20 flex gap-3 text-sm
+            bg-white/5 backdrop-blur-xl
+          ">
             {["basicos", "personales", "laborales", "seguridad", "auditoria"].map(
               (t) => (
                 <button
                   key={t}
-                  className={`px-3 py-1 rounded-full transition-all duration-200 ${
-                    tab === t
-                      ? "bg-blue-600 text-white shadow-sm"
-                      : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                  }`}
+                  className={`
+                    px-4 py-2 rounded-xl transition-all duration-200
+                    ${tab === t
+                      ? "bg-blue-600 text-white shadow-lg"
+                      : "bg-white/10 text-white/70 hover:bg-white/20"}
+                  `}
                   onClick={() => setTab(t)}
                 >
                   {t === "basicos" && "Datos básicos"}
@@ -165,684 +183,1023 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
             )}
           </div>
 
-          {/* CONTENIDO */}
-          <div className="px-4 pb-4 pt-2 overflow-y-auto max-h-[75vh] bg-white">
+          {/* CONTENIDO PREMIUM */}
+          <div className="px-6 pb-6 pt-4 overflow-y-auto max-h-[75vh]">
+
             {loading && (
-              <div className="text-sm text-gray-500">Cargando ficha...</div>
+              <div className="text-sm text-white/70 animate-pulse">
+                Cargando ficha…
+              </div>
             )}
 
-            {/* TAB 1: DATOS BÁSICOS */}
+            {/* ============================
+                TAB 1: DATOS BÁSICOS
+            ============================ */}
             {!loading && tab === "basicos" && (
-              <div className="transition-all duration-200 ease-out transform">
-                <section className="border border-gray-300 bg-white p-4 rounded-xl shadow-sm">
-                  <h3 className="text-sm font-semibold mb-3 text-gray-900">
-                    Datos básicos
-                  </h3>
+              <section className="
+                bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
+                p-6 shadow-xl space-y-6
+              ">
+                <h3 className="text-lg font-semibold drop-shadow mb-4">
+                  Datos básicos
+                </h3>
 
-                  <div className="grid grid-cols-3 gap-3 text-xs">
-                    {/* Estado */}
-                    <div>
-                      <span className="block mb-1 text-gray-700">Estado</span>
-                      <select
-                        className="bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
-                        value={empleado.rol?.id || ""}
-                        onChange={(e) =>
-                          handleEmpleadoChange("rol", {
-                            id: Number(e.target.value),
-                            nombre:
-                              roles.find(
-                                (r) => r.id === Number(e.target.value)
-                              )?.nombre || ""
-                          })
-                        }
-                      >
-                        <option value="1">Activo</option>
-                        <option value="0">Baja</option>
-                      </select>
-                    </div>
+                <div className="grid grid-cols-3 gap-4 text-sm">
 
-                    {/* Nombre */}
-                    <div>
-                      <span className="block mb-1 text-gray-700">Nombre</span>
-                      <input
-                        className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
-                        value={empleado.nombre || ""}
-                        onChange={(e) =>
-                          handleEmpleadoChange("nombre", e.target.value)
-                        }
-                      />
-                    </div>
-
-                    {/* Teléfono */}
-                    <div>
-                      <span className="block mb-1 text-gray-700">Teléfono</span>
-                      <input
-                        className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
-                        value={empleado.telefono || ""}
-                        onChange={(e) =>
-                          handleEmpleadoChange("telefono", e.target.value)
-                        }
-                      />
-                    </div>
-
-                    {/* Email empresa */}
-                    <div>
-                      <span className="block mb-1 text-gray-700">Email empresa</span>
-                      <input
-                        className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
-                        value={empleado.email_empresa || ""}
-                        onChange={(e) =>
-                          handleEmpleadoChange("email_empresa", e.target.value)
-                        }
-                      />
-                    </div>
-
-                    {/* Extensión */}
-                    <div>
-                      <span className="block mb-1 text-gray-700">Extensión</span>
-                      <input
-                        className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
-                        value={empleado.extension || ""}
-                        onChange={(e) =>
-                          handleEmpleadoChange("extension", e.target.value)
-                        }
-                      />
-                    </div>
+                  {/* Estado */}
+                  <div>
+                    <span className="block mb-1 text-white/80">Estado</span>
+                    <select
+                      className="
+                        w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                        text-white focus:ring-2 focus:ring-blue-400
+                      "
+                      value={empleado.rol?.id || ""}
+                      onChange={(e) =>
+                        handleEmpleadoChange("rol", {
+                          id: Number(e.target.value),
+                          nombre:
+                            roles.find(
+                              (r) => r.id === Number(e.target.value)
+                            )?.nombre || ""
+                        })
+                      }
+                    >
+                      <option value="1">Activo</option>
+                      <option value="0">Baja</option>
+                    </select>
                   </div>
 
-                  <button
-                    className="mt-4 px-3 py-1 bg-blue-600 text-white rounded text-xs"
-                    onClick={guardarEmpleado}
-                  >
-                    Guardar datos básicos
-                  </button>
-                </section>
-              </div>
+                  {/* Nombre */}
+                  <div>
+                    <span className="block mb-1 text-white/80">Nombre</span>
+                    <input
+                      className="
+                        w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                        text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                      "
+                      value={empleado.nombre || ""}
+                      onChange={(e) =>
+                        handleEmpleadoChange("nombre", e.target.value)
+                      }
+                    />
+                  </div>
+
+                  {/* Teléfono */}
+                  <div>
+                    <span className="block mb-1 text-white/80">Teléfono</span>
+                    <input
+                      className="
+                        w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                        text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                      "
+                      value={empleado.telefono || ""}
+                      onChange={(e) =>
+                        handleEmpleadoChange("telefono", e.target.value)
+                      }
+                    />
+                  </div>
+
+                  {/* Email empresa */}
+                  <div>
+                    <span className="block mb-1 text-white/80">Email empresa</span>
+                    <input
+                      className="
+                        w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                        text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                      "
+                      value={empleado.email_empresa || ""}
+                      onChange={(e) =>
+                        handleEmpleadoChange("email_empresa", e.target.value)
+                      }
+                    />
+                  </div>
+
+                  {/* Extensión */}
+                  <div>
+                    <span className="block mb-1 text-white/80">Extensión</span>
+                    <input
+                      className="
+                        w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                        text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                      "
+                      value={empleado.extension || ""}
+                      onChange={(e) =>
+                        handleEmpleadoChange("extension", e.target.value)
+                      }
+                    />
+                  </div>
+                </div>
+
+                <button
+                  className="
+                    mt-4 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
+                    text-white shadow-lg transition
+                  "
+                  onClick={guardarEmpleado}
+                >
+                  Guardar datos básicos
+                </button>
+              </section>
             )}
 
-            {/* TAB 2: DATOS PERSONALES */}
+            {/* ============================
+                TAB 2: DATOS PERSONALES
+            ============================ */}
+            {!loading && tab === "personales" && (
+              <section className="
+                bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
+                p-6 shadow-xl space-y-6
+              ">
+                <h3 className="text-lg font-semibold drop-shadow mb-4">
+                  Datos personales
+                </h3>
+
+                <div className="grid grid-cols-2 gap-4 text-sm">
+
+                  <div>
+                    <span className="block mb-1 text-white/80">Dirección</span>
+                    <input
+                      className="
+                        w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                        text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                      "
+                      value={empleado.direccion || ""}
+                      onChange={(e) =>
+                        handleEmpleadoChange("direccion", e.target.value)
+                      }
+                    />
+                  </div>
+
+                  <div>
+                    <span className="block mb-1 text-white/80">Código postal</span>
+                    <input
+                      className="
+                        w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                        text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                      "
+                      value={empleado.codigo_postal || ""}
+                      onChange={(e) =>
+                        handleEmpleadoChange("codigo_postal", e.target.value)
+                      }
+                    />
+                  </div>
+
+                  <div>
+                    <span className="block mb-1 text-white/80">Población</span>
+                    <input
+                      className="
+                        w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                        text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                      "
+                      value={empleado.poblacion || ""}
+                      onChange={(e) =>
+                        handleEmpleadoChange("poblacion", e.target.value)
+                      }
+                    />
+                  </div>
+
+                  <div>
+                    <span className="block mb-1 text-white/80">Provincia</span>
+                    <input
+                      className="
+                        w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                        text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                      "
+                      value={empleado.provincia || ""}
+                      onChange={(e) =>
+                        handleEmpleadoChange("provincia", e.target.value)
+                      }
+                    />
+                  </div>
+
+                  <div>
+                    <span className="block mb-1 text-white/80">Fecha nacimiento</span>
+                    <input
+                      type="date"
+                      className="
+                        w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                        text-white focus:ring-2 focus:ring-blue-400
+                      "
+                      value={empleado.fecha_nacimiento || ""}
+                      onChange={(e) =>
+                        handleEmpleadoChange("fecha_nacimiento", e.target.value)
+                      }
+                    />
+                  </div>
+
+                  <div>
+                    <span className="block mb-1 text-white/80">Alergias</span>
+                    <input
+                      className="
+                        w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                        text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                      "
+                      value={empleado.alergias || ""}
+                      onChange={(e) =>
+                        handleEmpleadoChange("alergias", e.target.value)
+                      }
+                    />
+                  </div>
+
+                  <div>
+                    <span className="block mb-1 text-white/80">Persona contacto</span>
+                    <input
+                      className="
+                        w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                        text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                      "
+                      value={empleado.persona_contacto || ""}
+                      onChange={(e) =>
+                        handleEmpleadoChange("persona_contacto", e.target.value)
+                      }
+                    />
+                  </div>
+
+                  <div>
+                    <span className="block mb-1 text-white/80">Teléfono contacto</span>
+                    <input
+                      className="
+                        w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                        text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                      "
+                      value={empleado.telefono_contacto || ""}
+                      onChange={(e) =>
+                        handleEmpleadoChange("telefono_contacto", e.target.value)
+                      }
+                    />
+                  </div>
+
+                  <div className="col-span-2">
+                    <span className="block mb-1 text-white/80">Observaciones</span>
+                    <textarea
+                      className="
+                        w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                        text-white text-sm focus:ring-2 focus:ring-blue-400
+                      "
+                      rows={3}
+                      value={empleado.observaciones || ""}
+                      onChange={(e) =>
+                        handleEmpleadoChange("observaciones", e.target.value)
+                      }
+                    />
+                  </div>
+                </div>
+
+                <button
+                  className="
+                    mt-4 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
+                    text-white shadow-lg transition
+                  "
+                  onClick={guardarCambios}
+                >
+                  Guardar cambios
+                </button>
+              </section>
+            )}
+
+            {/* ============================
+                TAB 3: DATOS LABORALES
+            ============================ */}
+            {!loading && tab === "laborales" && (
+              <section className="
+                bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
+                p-6 shadow-xl space-y-6
+              ">
+                <h3 className="text-lg font-semibold drop-shadow mb-4">
+                  Datos laborales
+                </h3>
+
+                <div className="grid grid-cols-2 gap-4 text-sm">
+
+                  <div>
+                    <span className="block mb-1 text-white/80">Departamento ID</span>
+                    <input
+                      className="
+                        w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                        text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                      "
+                      value={empleado.departamento_id || ""}
+                      onChange={(e) =>
+                        handleEmpleadoChange("departamento_id", e.target.value)
+                      }
+                    />
+                  </div>
+
+                  <div>
+                    <span className="block mb-1 text-white/80">Sección ID</span>
+                    <input
+                      className="
+                        w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                        text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                      "
+                      value={empleado.seccion_id || ""}
+                      onChange={(e) =>
+                        handleEmpleadoChange("seccion_id", e.target.value)
+                      }
+                    />
+                  </div>
+
+                  <div>
+                    <span className="block mb-1 text-white/80">Cargo ID</span>
+                    <input
+                      className="
+                        w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                        text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                      "
+                      value={empleado.cargo_id ||
+
+                        {/* ============================
+    TAB 2: DATOS PERSONALES — SaaS Premium
+============================ */}
 {!loading && tab === "personales" && (
-  <div className="transition-all duration-200 ease-out transform">
-    <section className="border border-gray-300 bg-white p-4 rounded-xl shadow-sm">
-      <h3 className="text-sm font-semibold mb-3 text-gray-900">
-        Datos personales
-      </h3>
+  <section
+    className="
+      bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
+      p-6 shadow-xl space-y-6
+    "
+  >
+    <h3 className="text-lg font-semibold drop-shadow mb-4">
+      Datos personales
+    </h3>
 
-      <div className="grid grid-cols-2 gap-3 text-xs">
-        {/* Nombre */}
-        <div>
-          <span className="block mb-1 text-gray-700">Nombre</span>
+    <div className="grid grid-cols-2 gap-4 text-sm">
+
+      {/* Nombre */}
+      <div>
+        <span className="block mb-1 text-white/80">Nombre</span>
+        <input
+          className="
+            w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+            text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+          "
+          value={empleado.nombre || ""}
+          onChange={(e) => handleEmpleadoChange("nombre", e.target.value)}
+        />
+      </div>
+
+      {/* Teléfono */}
+      <div>
+        <span className="block mb-1 text-white/80">Teléfono</span>
+        <input
+          className="
+            w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+            text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+          "
+          value={empleado.telefono || ""}
+          onChange={(e) => handleEmpleadoChange("telefono", e.target.value)}
+        />
+      </div>
+
+      {/* Apellidos */}
+      <div>
+        <span className="block mb-1 text-white/80">Apellidos</span>
+        <input
+          className="
+            w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+            text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+          "
+          value={empleado.apellidos || ""}
+          onChange={(e) => handleEmpleadoChange("apellidos", e.target.value)}
+        />
+      </div>
+
+      {/* DNI */}
+      <div>
+        <span className="block mb-1 text-white/80">DNI</span>
+        <input
+          className="
+            w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+            text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+          "
+          value={empleado.dni || ""}
+          onChange={(e) => handleEmpleadoChange("dni", e.target.value)}
+        />
+      </div>
+
+      {/* Email personal */}
+      <div>
+        <span className="block mb-1 text-white/80">Email personal</span>
+        <input
+          className="
+            w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+            text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+          "
+          value={empleado.email_personal || ""}
+          onChange={(e) => handleEmpleadoChange("email_personal", e.target.value)}
+        />
+      </div>
+
+      {/* Dirección */}
+      <div>
+        <span className="block mb-1 text-white/80">Dirección</span>
+        <input
+          className="
+            w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+            text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+          "
+          value={empleado.direccion || ""}
+          onChange={(e) => handleEmpleadoChange("direccion", e.target.value)}
+        />
+      </div>
+
+      {/* Código postal */}
+      <div>
+        <span className="block mb-1 text-white/80">Código postal</span>
+        <input
+          className="
+            w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+            text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+          "
+          value={empleado.codigo_postal || ""}
+          onChange={(e) => handleEmpleadoChange("codigo_postal", e.target.value)}
+        />
+      </div>
+
+      {/* Población */}
+      <div>
+        <span className="block mb-1 text-white/80">Población</span>
+        <input
+          className="
+            w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+            text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+          "
+          value={empleado.poblacion || ""}
+          onChange={(e) => handleEmpleadoChange("poblacion", e.target.value)}
+        />
+      </div>
+
+      {/* Provincia */}
+      <div>
+        <span className="block mb-1 text-white/80">Provincia</span>
+        <input
+          className="
+            w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+            text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+          "
+          value={empleado.provincia || ""}
+          onChange={(e) => handleEmpleadoChange("provincia", e.target.value)}
+        />
+      </div>
+
+      {/* Fecha nacimiento */}
+      <div>
+        <span className="block mb-1 text-white/80">Fecha nacimiento</span>
+        <input
+          type="date"
+          className="
+            w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+            text-white focus:ring-2 focus:ring-blue-400
+          "
+          value={empleado.fecha_nacimiento || ""}
+          onChange={(e) => handleEmpleadoChange("fecha_nacimiento", e.target.value)}
+        />
+      </div>
+
+      {/* Alergias */}
+      <div>
+        <span className="block mb-1 text-white/80">Alergias</span>
+        <input
+          className="
+            w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+            text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+          "
+          value={empleado.alergias || ""}
+          onChange={(e) => handleEmpleadoChange("alergias", e.target.value)}
+        />
+      </div>
+
+      {/* Persona contacto */}
+      <div>
+        <span className="block mb-1 text-white/80">Persona contacto</span>
+        <input
+          className="
+            w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+            text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+          "
+          value={empleado.persona_contacto || ""}
+          onChange={(e) => handleEmpleadoChange("persona_contacto", e.target.value)}
+        />
+      </div>
+
+      {/* Teléfono contacto */}
+      <div>
+        <span className="block mb-1 text-white/80">Teléfono contacto</span>
+        <input
+          className="
+            w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+            text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+          "
+          value={empleado.telefono_contacto || ""}
+          onChange={(e) => handleEmpleadoChange("telefono_contacto", e.target.value)}
+        />
+      </div>
+
+      {/* Observaciones */}
+      <div className="col-span-2">
+        <span className="block mb-1 text-white/80">Observaciones</span>
+        <textarea
+          className="
+            w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+            text-white text-sm focus:ring-2 focus:ring-blue-400
+          "
+          rows={3}
+          value={empleado.observaciones || ""}
+          onChange={(e) => handleEmpleadoChange("observaciones", e.target.value)}
+        />
+      </div>
+
+      {/* Foto */}
+      <div className="mt-4 flex items-center gap-4">
+        {empleado.foto_url && (
+          <img
+            src={`${API_BASE}${empleado.foto_url}?v=${Date.now()}`}
+            alt="Foto empleado"
+            className="
+              w-20 h-20 rounded-full object-cover border border-white/20
+              shadow-xl
+            "
+          />
+        )}
+
+        <label className="text-xs text-white/80">
+          Subir nueva foto:
           <input
-            className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
-            value={empleado.nombre || ""}
-            onChange={(e) =>
-              handleEmpleadoChange("nombre", e.target.value)
-            }
+            type="file"
+            className="block mt-1 text-xs text-white"
+            onChange={handleFoto}
           />
-        </div>
+        </label>
+      </div>
+    </div>
 
-        {/* Teléfono */}
-        <div>
-          <span className="block mb-1 text-gray-700">Teléfono</span>
-          <input
-            className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
-            value={empleado.telefono || ""}
-            onChange={(e) =>
-              handleEmpleadoChange("telefono", e.target.value)
-            }
-          />
-        </div>
+    <button
+      className="
+        mt-4 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
+        text-white shadow-lg transition
+      "
+      onClick={guardarEmpleado}
+    >
+      Guardar datos personales
+    </button>
+  </section>
+)}
 
-        {/* Apellidos */}
-        <div>
-          <span className="block mb-1 text-gray-700">Apellidos</span>
-          <input
-            className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
-            value={empleado.apellidos || ""}
-            onChange={(e) =>
-              handleEmpleadoChange("apellidos", e.target.value)
-            }
-          />
-        </div>
+                    {/* ============================
+    TAB 3: DATOS LABORALES — SaaS Premium
+============================ */}
+{!loading && tab === "laborales" && (
+  <section
+    className="
+      bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
+      p-6 shadow-xl space-y-6
+    "
+  >
+    <h3 className="text-lg font-semibold drop-shadow mb-4">
+      Datos laborales
+    </h3>
 
-        {/* DNI */}
-        <div>
-          <span className="block mb-1 text-gray-700">DNI</span>
-          <input
-            className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
-            value={empleado.dni || ""}
-            onChange={(e) =>
-              handleEmpleadoChange("dni", e.target.value)
-            }
-          />
-        </div>
+    <div className="grid grid-cols-3 gap-4 text-sm">
 
-        {/* Email personal */}
-        <div>
-          <span className="block mb-1 text-gray-700">Email personal</span>
-          <input
-            className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
-            value={empleado.email_personal || ""}
-            onChange={(e) =>
-              handleEmpleadoChange("email_personal", e.target.value)
-            }
-          />
-        </div>
+      {/* Departamento */}
+      <div>
+        <span className="block mb-1 text-white/80">Departamento</span>
+        <select
+          className="
+            w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+            text-white focus:ring-2 focus:ring-blue-400
+          "
+          value={empleado.departamento_id || ""}
+          onChange={(e) =>
+            handleEmpleadoChange(
+              "departamento_id",
+              Number(e.target.value) || null
+            )
+          }
+        >
+          <option value="">Sin departamento</option>
+          {departamentos.map((d) => (
+            <option key={d.id} value={d.id}>
+              {d.nombre}
+            </option>
+          ))}
+        </select>
+      </div>
 
-        {/* Dirección */}
-        <div>
-          <span className="block mb-1 text-gray-700">Dirección</span>
-          <input
-            className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
-            value={empleado.direccion || ""}
-            onChange={(e) =>
-              handleEmpleadoChange("direccion", e.target.value)
-            }
-          />
-        </div>
+      {/* Sección */}
+      <div>
+        <span className="block mb-1 text-white/80">Sección</span>
+        <select
+          className="
+            w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+            text-white focus:ring-2 focus:ring-blue-400
+          "
+          value={empleado.seccion_id || ""}
+          onChange={(e) =>
+            handleEmpleadoChange(
+              "seccion_id",
+              Number(e.target.value) || null
+            )
+          }
+        >
+          <option value="">Sin sección</option>
+          {secciones.map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.nombre}
+            </option>
+          ))}
+        </select>
+      </div>
 
-        {/* Código postal */}
-        <div>
-          <span className="block mb-1 text-gray-700">Código postal</span>
-          <input
-            className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
-            value={empleado.codigo_postal || ""}
-            onChange={(e) =>
-              handleEmpleadoChange("codigo_postal", e.target.value)
-            }
-          />
-        </div>
+      {/* Cargo */}
+      <div>
+        <span className="block mb-1 text-white/80">Cargo</span>
+        <select
+          className="
+            w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+            text-white focus:ring-2 focus:ring-blue-400
+          "
+          value={empleado.cargo_id || ""}
+          onChange={(e) =>
+            handleEmpleadoChange(
+              "cargo_id",
+              Number(e.target.value) || null
+            )
+          }
+        >
+          <option value="">Sin cargo</option>
+          {cargos.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.nombre}
+            </option>
+          ))}
+        </select>
+      </div>
+    </div>
 
-        {/* Población */}
-        <div>
-          <span className="block mb-1 text-gray-700">Población</span>
-          <input
-            className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
-            value={empleado.poblacion || ""}
-            onChange={(e) =>
-              handleEmpleadoChange("poblacion", e.target.value)
-            }
-          />
-        </div>
+    {/* Fechas */}
+    <div className="grid grid-cols-2 gap-4 text-sm mt-4">
 
-        {/* Provincia */}
-        <div>
-          <span className="block mb-1 text-gray-700">Provincia</span>
-          <input
-            className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
-            value={empleado.provincia || ""}
-            onChange={(e) =>
-              handleEmpleadoChange("provincia", e.target.value)
-            }
-          />
-        </div>
+      {/* Fecha alta */}
+      <div>
+        <span className="block mb-1 text-white/80">Fecha alta</span>
+        <input
+          type="date"
+          className="
+            w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+            text-white focus:ring-2 focus:ring-blue-400
+          "
+          value={empleado.fecha_alta || ""}
+          onChange={(e) =>
+            handleEmpleadoChange("fecha_alta", e.target.value)
+          }
+        />
+      </div>
 
-        {/* Fecha nacimiento */}
-        <div>
-          <span className="block mb-1 text-gray-700">Fecha nacimiento</span>
-          <input
-            type="date"
-            className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
-            value={empleado.fecha_nacimiento || ""}
-            onChange={(e) =>
-              handleEmpleadoChange("fecha_nacimiento", e.target.value)
-            }
-          />
-        </div>
+      {/* Fecha baja */}
+      <div>
+        <span className="block mb-1 text-white/80">Fecha baja</span>
+        <input
+          type="date"
+          className="
+            w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+            text-white focus:ring-2 focus:ring-blue-400
+          "
+          value={empleado.fecha_baja || ""}
+          onChange={(e) =>
+            handleEmpleadoChange("fecha_baja", e.target.value)
+          }
+        />
+      </div>
+    </div>
 
-        {/* Alergias */}
-        <div>
-          <span className="block mb-1 text-gray-700">Alergias</span>
-          <input
-            className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
-            value={empleado.alergias || ""}
-            onChange={(e) =>
-              handleEmpleadoChange("alergias", e.target.value)
-            }
-          />
-        </div>
+    <button
+      className="
+        mt-4 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
+        text-white shadow-lg transition
+      "
+      onClick={guardarEmpleado}
+    >
+      Guardar datos laborales
+    </button>
+  </section>
+)}
 
-        {/* Persona contacto */}
-        <div>
-          <span className="block mb-1 text-gray-700">Persona contacto</span>
-          <input
-            className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
-            value={empleado.persona_contacto || ""}
-            onChange={(e) =>
-              handleEmpleadoChange("persona_contacto", e.target.value)
-            }
-          />
-        </div>
+                    {/* ============================
+    TAB 4: SEGURIDAD — SaaS Premium
+============================ */}
+{!loading && tab === "seguridad" && (
+  <section
+    className="
+      bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
+      p-6 shadow-xl space-y-6
+    "
+  >
+    <h3 className="text-lg font-semibold drop-shadow mb-4">
+      Seguridad interna
+    </h3>
 
-        {/* Teléfono contacto */}
-        <div>
-          <span className="block mb-1 text-gray-700">Teléfono contacto</span>
-          <input
-            className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
-            value={empleado.telefono_contacto || ""}
-            onChange={(e) =>
-              handleEmpleadoChange("telefono_contacto", e.target.value)
-            }
-          />
-        </div>
+    {/* Usuario + Password */}
+    <div className="grid grid-cols-3 gap-4 text-sm">
+      <div>
+        <span className="block mb-1 text-white/80">Usuario</span>
+        <input
+          className="
+            w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+            text-white/80 cursor-not-allowed
+          "
+          value={empleado.usuario || ""}
+          readOnly
+        />
+      </div>
 
-        {/* Observaciones */}
-        <div className="col-span-2">
-          <span className="block mb-1 text-gray-700">Observaciones</span>
-          <textarea
-            className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
-            rows={3}
-            value={empleado.observaciones || ""}
-            onChange={(e) =>
-              handleEmpleadoChange("observaciones", e.target.value)
-            }
-          />
-        </div>
+      <div>
+        <span className="block mb-1 text-white/80">Password</span>
+        <input
+          className="
+            w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+            text-white/80 cursor-not-allowed
+          "
+          value="********"
+          readOnly
+        />
+      </div>
+    </div>
 
-        {/* Foto + subida */}
-        <div className="mt-4 flex items-center gap-4">
-          {empleado.foto_url && (
-            <img
-              src={`${API_BASE}${empleado.foto_url}?v=${Date.now()}`}
-              alt="Foto empleado"
-              className="w-20 h-20 rounded object-cover border border-gray-300"
-            />
-          )}
+    {/* Rol del empleado */}
+    <div
+      className="
+        bg-white/5 border border-white/20 rounded-xl p-4 shadow-md
+        backdrop-blur-md
+      "
+    >
+      <h4 className="font-semibold text-sm mb-3 text-white flex items-center gap-3">
+        Rol del empleado
+        <span
+          className="
+            px-3 py-1 bg-white/10 border border-white/20 rounded-xl
+            text-white/80 text-xs backdrop-blur-md
+          "
+        >
+          Actual: <strong className="text-white">{empleado?.rol?.nombre || "Sin rol"}</strong>
+        </span>
+      </h4>
 
-          <label className="text-xs text-gray-700">
-            Subir nueva foto:
-            <input
-              type="file"
-              className="block mt-1 text-xs"
-              onChange={handleFoto}
-            />
-          </label>
-        </div>
+      <div className="flex items-center gap-4 text-sm">
+        <select
+          className="
+            bg-white/10 border border-white/20 rounded-xl px-3 py-2
+            text-white focus:ring-2 focus:ring-blue-400
+          "
+          value={empleado?.rol?.id || ""}
+          onChange={(e) => {
+            const id = Number(e.target.value);
+            const rolObj = roles.find(r => r.id === id) || null;
+            handleEmpleadoChange("rol", rolObj);
+          }}
+        >
+          <option value="">Sin rol</option>
+          {roles.map((r) => (
+            <option key={r.id} value={r.id}>
+              {r.nombre}
+            </option>
+          ))}
+        </select>
 
         <button
-          className="mt-4 px-3 py-1 bg-blue-600 text-white rounded text-xs"
-          onClick={guardarEmpleado}
+          className="
+            px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
+            text-white shadow-lg transition
+          "
+          onClick={guardarRol}
         >
-          Guardar datos personales
+          Guardar rol
+        </button>
+
+        <button
+          className="
+            px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700
+            text-white shadow-lg transition
+          "
+          onClick={() => handleEmpleadoChange("rol", null)}
+        >
+          Reset rol
         </button>
       </div>
-    </section>
-  </div>
-)}
+    </div>
 
-            {/* TAB 3: DATOS LABORALES */}
-{!loading && tab === "laborales" && (
-  <div className="transition-all duration-200 ease-out transform">
-    <section className="border border-gray-300 bg-white p-4 rounded-xl shadow-sm">
-      <h3 className="text-sm font-semibold mb-3 text-gray-900">
-        Datos laborales
-      </h3>
+    {/* Reset contraseña */}
+    <button
+      className="
+        px-4 py-2 rounded-xl bg-orange-600 hover:bg-orange-700
+        text-white shadow-lg transition
+      "
+      onClick={async () => {
+        await resetPasswordEmpleado(empleado.id);
+        mostrarToast("ok", "Contraseña reseteada");
+      }}
+    >
+      Reset contraseña
+    </button>
 
-      <div className="grid grid-cols-3 gap-3 text-xs">
-        {/* Departamento */}
-        <div>
-          <span className="block mb-1 text-gray-700">Departamento</span>
-          <select
-            className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
-            value={empleado.departamento_id || ""}
-            onChange={(e) =>
-              handleEmpleadoChange(
-                "departamento_id",
-                Number(e.target.value) || null
-              )
-            }
-          >
-            <option value="">Sin departamento</option>
-            {departamentos.map((d) => (
-              <option key={d.id} value={d.id}>
-                {d.nombre}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Sección */}
-        <div>
-          <span className="block mb-1 text-gray-700">Sección</span>
-          <select
-            className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
-            value={empleado.seccion_id || ""}
-            onChange={(e) =>
-              handleEmpleadoChange(
-                "seccion_id",
-                Number(e.target.value) || null
-              )
-            }
-          >
-            <option value="">Sin sección</option>
-            {secciones.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.nombre}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Cargo */}
-        <div>
-          <span className="block mb-1 text-gray-700">Cargo</span>
-          <select
-            className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
-            value={empleado.cargo_id || ""}
-            onChange={(e) =>
-              handleEmpleadoChange(
-                "cargo_id",
-                Number(e.target.value) || null
-              )
-            }
-          >
-            <option value="">Sin cargo</option>
-            {cargos.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.nombre}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-3 text-xs mt-4 text-gray-700">
-        {/* Fecha alta */}
-        <div>
-          <span className="block mb-1 text-gray-700">Fecha alta</span>
-          <input
-            type="date"
-            className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
-            value={empleado.fecha_alta || ""}
-            onChange={(e) =>
-              handleEmpleadoChange("fecha_alta", e.target.value)
-            }
-          />
-        </div>
-
-        {/* Fecha baja */}
-        <div>
-          <span className="block mb-1 text-gray-700">Fecha baja</span>
-          <input
-            type="date"
-            className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
-            value={empleado.fecha_baja || ""}
-            onChange={(e) =>
-              handleEmpleadoChange("fecha_baja", e.target.value)
-            }
-          />
-        </div>
-      </div>
+    {/* Tabs internos */}
+    <div className="flex gap-3 mt-6 text-sm">
+      <button
+        className={`
+          px-4 py-2 rounded-xl transition-all
+          ${seguridadTab === "modulos"
+            ? "bg-blue-600 text-white shadow-lg"
+            : "bg-white/10 text-white/70 hover:bg-white/20"}
+        `}
+        onClick={() => setSeguridadTab("modulos")}
+      >
+        Módulos visibles
+      </button>
 
       <button
-        className="mt-4 px-3 py-1 bg-blue-600 text-white rounded text-xs"
-        onClick={guardarEmpleado}
+        className={`
+          px-4 py-2 rounded-xl transition-all
+          ${seguridadTab === "permisos"
+            ? "bg-blue-600 text-white shadow-lg"
+            : "bg-white/10 text-white/70 hover:bg-white/20"}
+        `}
+        onClick={() => setSeguridadTab("permisos")}
       >
-        Guardar datos laborales
+        Permisos por módulo
       </button>
-    </section>
-  </div>
-)}
+    </div>
 
-            {/* TAB 4: SEGURIDAD */}
-{!loading && tab === "seguridad" && (
-  <div className="transition-all duration-200 ease-out transform">
-    <section className="border border-gray-300 bg-white p-4 rounded-xl shadow-sm">
-      <h3 className="text-sm font-semibold mb-3 text-gray-900">
-        Seguridad interna
-      </h3>
-
-      {/* Usuario */}
-      <div className="grid grid-cols-3 gap-3 text-xs mb-4">
-        <div>
-          <span className="block mb-1 text-gray-700">Usuario</span>
-          <input
-            className="w-full bg-gray-100 border border-gray-300 rounded-md px-2 py-1 text-gray-600 text-xs"
-            value={empleado.usuario || ""}
-            readOnly
-          />
-        </div>
-
-        <div>
-          <span className="block mb-1 text-gray-700">Password</span>
-          <input
-            className="w-full bg-gray-100 border border-gray-300 rounded-md px-2 py-1 text-gray-600 text-xs"
-            value="********"
-            readOnly
-          />
-        </div>
-      </div>
-
-      {/* Panel: Rol del empleado */}
-      <div className="border border-gray-300 rounded-lg p-4 bg-white mb-4">
-        <h4 className="font-semibold text-xs mb-3 text-gray-900 flex items-center gap-3">
-          Rol del empleado
-          <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">
-            Actual: <strong>{empleado?.rol?.nombre || "Sin rol"}</strong>
-          </span>
+    {/* Módulos visibles */}
+    {seguridadTab === "modulos" && (
+      <div
+        className="
+          bg-white/5 border border-white/20 rounded-xl p-4 shadow-md
+          backdrop-blur-md
+        "
+      >
+        <h4 className="font-semibold text-sm mb-3 text-white">
+          Selecciona los módulos visibles
         </h4>
 
-        <div className="flex items-center gap-3 text-xs">
-          <select
-            className="bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
-            value={empleado?.rol?.id || ""}
-            onChange={(e) => {
-              const id = Number(e.target.value);
-              const rolObj = roles.find(r => r.id === id) || null;
-              handleEmpleadoChange("rol", rolObj);
-            }}
-          >
-            <option value="">Sin rol</option>
-            {roles.map((r) => (
-              <option key={r.id} value={r.id}>
-                {r.nombre}
-              </option>
-            ))}
-          </select>
-
-          <button
-            className="px-3 py-1 bg-blue-600 text-white rounded text-xs"
-            onClick={guardarRol}
-          >
-            Guardar rol
-          </button>
-
-          <button
-            className="px-3 py-1 bg-red-600 text-white rounded text-xs"
-            onClick={() => handleEmpleadoChange("rol", null)}
-          >
-            Reset rol
-          </button>
+        <div className="grid grid-cols-2 gap-3 text-sm text-white/80">
+          {[
+            "dashboard",
+            "agenda",
+            "empleados",
+            "seguridad",
+            "auditoria",
+            "intranet",
+            "mensajes",
+            "utilidades",
+          ].map((mod) => (
+            <label key={mod} className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={modulos.includes(mod)}
+                onChange={(e) => {
+                  if (e.target.checked) {
+                    setModulos([...modulos, mod]);
+                  } else {
+                    setModulos(modulos.filter((m) => m !== mod));
+                  }
+                }}
+              />
+              {mod}
+            </label>
+          ))}
         </div>
-      </div>
 
-      {/* Botón reset contraseña */}
-      <button
-        className="mb-4 px-3 py-1 bg-orange-600 text-white rounded text-xs"
-        onClick={async () => {
-          await resetPasswordEmpleado(empleado.id);
-          mostrarToast("ok", "Contraseña reseteada");
-        }}
+        <button
+          className="
+            mt-4 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
+            text-white shadow-lg transition
+          "
+          onClick={guardarModulos}
+        >
+          Guardar módulos visibles
+        </button>
+
+        <button
+          className="
+            mt-2 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700
+            text-white shadow-lg transition
+          "
+          onClick={() => setModulos([])}
+        >
+          Reset módulos visibles
+        </button>
+      </div>
+    )}
+
+    {/* Permisos por módulo */}
+    {seguridadTab === "permisos" && (
+      <div
+        className="
+          bg-white/5 border border-white/20 rounded-xl p-4 shadow-md
+          backdrop-blur-md
+        "
       >
-        Reset contraseña
-      </button>
+        <h4 className="font-semibold text-sm mb-3 text-white">
+          Permisos por módulo
+        </h4>
 
-      {/* Tabs internos */}
-      <div className="flex gap-2 mb-4 text-xs">
+        {Object.keys(permisos).map((mod) => (
+          <div key={mod} className="mb-4">
+            <span className="block font-semibold text-white mb-2 text-sm">
+              {mod.toUpperCase()}
+            </span>
+
+            <div className="grid grid-cols-4 gap-3 text-sm text-white/80">
+              {["ver", "crear", "editar", "eliminar"].map((perm) => (
+                <label key={perm} className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={permisos[mod]?.includes(perm)}
+                    onChange={(e) => {
+                      const actual = permisos[mod] || [];
+                      let nuevo;
+
+                      if (e.target.checked) {
+                        nuevo = [...actual, perm];
+                      } else {
+                        nuevo = actual.filter((p) => p !== perm);
+                      }
+
+                      setPermisos({
+                        ...permisos,
+                        [mod]: nuevo,
+                      });
+                    }}
+                  />
+                  {perm}
+                </label>
+              ))}
+            </div>
+          </div>
+        ))}
+
         <button
-          className={`px-3 py-1 rounded-full ${
-            seguridadTab === "modulos"
-              ? "bg-blue-600 text-white"
-              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-          }`}
-          onClick={() => setSeguridadTab("modulos")}
+          className="
+            mt-4 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
+            text-white shadow-lg transition
+          "
+          onClick={guardarPermisos}
         >
-          Módulos visibles
+          Guardar permisos
         </button>
 
         <button
-          className={`px-3 py-1 rounded-full ${
-            seguridadTab === "permisos"
-              ? "bg-blue-600 text-white"
-              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-          }`}
-          onClick={() => setSeguridadTab("permisos")}
+          className="
+            mt-2 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700
+            text-white shadow-lg transition
+          "
+          onClick={() => setPermisos({})}
         >
-          Permisos por módulo
+          Reset permisos
         </button>
       </div>
-
-      {/* Módulos visibles */}
-      {seguridadTab === "modulos" && (
-        <div className="border border-gray-300 rounded-lg p-4 bg-white">
-          <h4 className="font-semibold text-xs mb-3 text-gray-900">
-            Selecciona los módulos visibles
-          </h4>
-
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            {[
-              "dashboard",
-              "agenda",
-              "empleados",
-              "seguridad",
-              "auditoria",
-              "intranet",
-              "mensajes",
-              "utilidades",
-            ].map((mod) => (
-              <label key={mod} className="flex items-center gap-2 text-gray-700">
-                <input
-                  type="checkbox"
-                  checked={modulos.includes(mod)}
-                  onChange={(e) => {
-                    if (e.target.checked) {
-                      setModulos([...modulos, mod]);
-                    } else {
-                      setModulos(modulos.filter((m) => m !== mod));
-                    }
-                  }}
-                />
-                {mod}
-              </label>
-            ))}
-          </div>
-
-          <button
-            className="mt-4 px-3 py-1 bg-blue-600 text-white rounded text-xs"
-            onClick={guardarModulos}
-          >
-            Guardar módulos visibles
-          </button>
-
-          <button
-            className="mt-2 px-3 py-1 bg-red-600 text-white rounded text-xs"
-            onClick={() => setModulos([])}
-          >
-            Reset módulos visibles
-          </button>
-        </div>
-      )}
-
-      {/* Permisos por módulo */}
-      {seguridadTab === "permisos" && (
-        <div className="border border-gray-300 rounded-lg p-4 bg-white">
-          <h4 className="font-semibold text-xs mb-3 text-gray-900">
-            Permisos por módulo
-          </h4>
-
-          {Object.keys(permisos).map((mod) => (
-            <div key={mod} className="mb-4">
-              <span className="block font-semibold text-gray-800 mb-2 text-xs">
-                {mod.toUpperCase()}
-              </span>
-
-              <div className="grid grid-cols-4 gap-2 text-xs">
-                {["ver", "crear", "editar", "eliminar"].map((perm) => (
-                  <label key={perm} className="flex items-center gap-2 text-gray-700">
-                    <input
-                      type="checkbox"
-                      checked={permisos[mod]?.includes(perm)}
-                      onChange={(e) => {
-                        const actual = permisos[mod] || [];
-                        let nuevo;
-
-                        if (e.target.checked) {
-                          nuevo = [...actual, perm];
-                        } else {
-                          nuevo = actual.filter((p) => p !== perm);
-                        }
-
-                        setPermisos({
-                          ...permisos,
-                          [mod]: nuevo,
-                        });
-                      }}
-                    />
-                    {perm}
-                  </label>
-                ))}
-              </div>
-            </div>
-          ))}
-
-          <button
-            className="mt-4 px-3 py-1 bg-blue-600 text-white rounded text-xs"
-            onClick={guardarPermisos}
-          >
-            Guardar permisos
-          </button>
-
-          <button
-            className="mt-2 px-3 py-1 bg-red-600 text-white rounded text-xs"
-            onClick={() => setPermisos({})}
-          >
-            Reset permisos
-          </button>
-        </div>
-      )}
-
-    </section>
-  </div>
+    )}
+  </section>
 )}
 
-            {/* TAB 5: AUDITORÍA */}
+                    {/* ============================
+    TAB 5: AUDITORÍA — SaaS Premium
+============================ */}
 {!loading && tab === "auditoria" && (
-  <div className="transition-all duration-200 ease-out transform">
-    <section className="border border-gray-300 bg-white p-4 rounded-xl shadow-sm">
-      <h3 className="text-sm font-semibold mb-3 text-gray-900">
-        Auditoría
-      </h3>
+  <section
+    className="
+      bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
+      p-6 shadow-xl space-y-6
+    "
+  >
+    <h3 className="text-lg font-semibold drop-shadow mb-4">
+      Auditoría
+    </h3>
 
-      {(!auditoria || auditoria.length === 0) && (
-        <p className="text-gray-500 text-xs">
-          No hay registros de auditoría para este empleado.
-        </p>
-      )}
+    {(!auditoria || auditoria.length === 0) && (
+      <p className="text-white/70 text-sm">
+        No hay registros de auditoría para este empleado.
+      </p>
+    )}
 
-      {auditoria && auditoria.length > 0 && (
-        <ul className="list-disc ml-5 text-xs text-gray-800">
-          {auditoria.map((a) => (
-            <li key={a.id}>
-              {new Date(a.fecha).toLocaleString()} —{" "}
-              <strong>{a.modulo}</strong> [{a.accion}] — {a.descripcion}
-            </li>
-          ))}
-        </ul>
-      )}
-    </section>
-  </div>
+    {auditoria && auditoria.length > 0 && (
+      <ul className="space-y-3 text-sm text-white/80">
+        {auditoria.map((a) => (
+          <li
+            key={a.id}
+            className="
+              bg-white/5 border border-white/20 rounded-xl p-4
+              shadow-md backdrop-blur-md
+            "
+          >
+            <div><strong className="text-white">Fecha:</strong> {new Date(a.fecha).toLocaleString()}</div>
+            <div><strong className="text-white">Módulo:</strong> {a.modulo}</div>
+            <div><strong className="text-white">Acción:</strong> {a.accion}</div>
+            <div><strong className="text-white">Descripción:</strong> {a.descripcion}</div>
+          </li>
+        ))}
+      </ul>
+    )}
+  </section>
 )}
-        </div>  
-      </div>     
-    </div>       
-  </>            
-);              
-}                
 
-
-
-
-            
-
-
-            

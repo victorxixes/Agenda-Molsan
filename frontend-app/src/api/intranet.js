@@ -1,6 +1,16 @@
 import axios from "./axios";
 
-// DOCUMENTOS
+/**
+ * API Intranet — Versión SJ‑2026 Premium
+ * Gestiona:
+ * - Documentos
+ * - Noticias
+ * - Descargas
+ */
+
+/* ---------------------------------------------------------
+   DOCUMENTOS
+--------------------------------------------------------- */
 export const listarDocumentos = (search) =>
   axios.get("/intranet/documentos", { params: { search } });
 
@@ -21,7 +31,9 @@ export const descargarDocumento = (id) =>
     responseType: "blob",
   });
 
-// NOTICIAS
+/* ---------------------------------------------------------
+   NOTICIAS
+--------------------------------------------------------- */
 export const listarNoticias = (search) =>
   axios.get("/intranet/noticias", { params: { search } });
 
@@ -36,4 +48,3 @@ export const actualizarNoticia = (id, data) =>
 
 export const eliminarNoticia = (id) =>
   axios.delete(`/intranet/noticias/${id}`);
-

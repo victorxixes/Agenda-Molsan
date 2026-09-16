@@ -30,12 +30,14 @@
 
 /* Título */
 .seg-title {
-  @apply text-lg font-semibold text-sj-azul mb-1;
+  @apply text-lg font-semibold mb-1;
+  color: var(--sj-azul); /* ✔ Tailwind-safe */
 }
 
 /* Descripción */
 .seg-desc {
-  @apply text-sm text-sj-azul-claro;
+  @apply text-sm mb-1;
+  color: var(--sj-azul-claro); /* ✔ Tailwind-safe */
 }
 
 /* Root ocupa toda la pantalla */

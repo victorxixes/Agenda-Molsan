@@ -1,3 +1,7 @@
+/* ============================================================
+   ERP SJ‑2026 — Layout & Grid premium
+   ============================================================ */
+
 .container-sj {
   max-width: 1500px;
   margin: 0 auto;
@@ -11,6 +15,10 @@
 .grid-sj {
   display: grid;
   gap: var(--sj-gap);
+  transition: transform 0.25s ease;
+}
+.grid-sj > *:hover {
+  transform: translateY(-4px);
 }
 
 .grid-2 { grid-template-columns: repeat(2, 1fr); }

@@ -722,4 +722,4 @@ export default function SeguridadFicha() {
 </div>   
 
 );  
-}         {/* cierre del componente SeguridadFicha */}
+}         

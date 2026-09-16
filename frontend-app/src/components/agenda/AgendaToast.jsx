@@ -17,14 +17,18 @@ export default function AgendaToast() {
   }, [notificaciones]);
 
   return (
-    <div className="fixed bottom-4 right-4 space-y-2 z-50 pointer-events-none">
+    <div className="fixed bottom-6 right-6 space-y-3 z-50 pointer-events-none">
       {notificaciones.map((n) => (
         <div
           key={n.id}
           className="
-            bg-black/80 text-white px-4 py-2 rounded-lg shadow-lg text-sm
-            animate-fade-in pointer-events-auto
+            pointer-events-auto px-4 py-3 rounded-xl shadow-2xl text-sm
+            bg-white/10 backdrop-blur-xl border border-white/20 text-white
+            animate-[fadeIn_0.3s_ease,slideUp_0.3s_ease]
           "
+          style={{
+            animationFillMode: "both",
+          }}
         >
           {n.msg}
         </div>

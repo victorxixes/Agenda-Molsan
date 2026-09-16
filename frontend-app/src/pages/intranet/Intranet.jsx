@@ -12,21 +12,12 @@ export default function Intranet() {
     loading
   } = useIntranet();
 
-  // Buscador global
-  const [tipoVista, setTipoVista] = useState("todos"); // todos | noticias | documentos
-
-  // Filtros documentos
+  const [tipoVista, setTipoVista] = useState("todos");
   const [filtroConcepto, setFiltroConcepto] = useState("");
   const [filtroFecha, setFiltroFecha] = useState("");
-
-  // Ordenación documentos
   const [orden, setOrden] = useState({ campo: "fecha", dir: "desc" });
-
-  // Paginación documentos
   const [pagina, setPagina] = useState(1);
   const [pageSize, setPageSize] = useState(20);
-
-  // Modal PDF
   const [pdfUrl, setPdfUrl] = useState(null);
 
   useEffect(() => {
@@ -34,9 +25,13 @@ export default function Intranet() {
     cargarNoticias();
   }, []);
 
-  if (loading) return <p>Cargando intranet…</p>;
+  if (loading)
+    return (
+      <p className="text-white/70 animate-pulse p-6">
+        Cargando intranet…
+      </p>
+    );
 
-  // ⭐ Filtrar documentos
   const docsFiltrados = documentos.filter((d) => {
     const okConcepto =
       filtroConcepto === "" ||
@@ -49,7 +44,6 @@ export default function Intranet() {
     return okConcepto && okFecha;
   });
 
-  // ⭐ Ordenar documentos
   const docsOrdenados = [...docsFiltrados].sort((a, b) => {
     const campo = orden.campo;
     const dir = orden.dir === "asc" ? 1 : -1;
@@ -71,7 +65,6 @@ export default function Intranet() {
     }));
   };
 
-  // ⭐ Paginación documentos
   const totalPaginas = Math.ceil(docsOrdenados.length / pageSize);
   const docsVisibles = docsOrdenados.slice(
     (pagina - 1) * pageSize,
@@ -79,17 +72,29 @@ export default function Intranet() {
   );
 
   return (
-    <div className="container-sj space-y-6">
+    <div className="p-6 space-y-8 text-white">
 
-      <div className="seg-card">
-        <h1 className="seg-title">Intranet</h1>
-        <p className="seg-desc">Documentos y noticias internas del ERP.</p>
+      {/* HEADER PREMIUM */}
+      <div className="
+        bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
+        p-6 shadow-xl
+      ">
+        <h1 className="text-3xl font-bold drop-shadow">Intranet</h1>
+        <p className="text-white/70 text-sm mt-1">
+          Documentos y noticias internas del ERP.
+        </p>
       </div>
 
-      {/* ⭐ Buscador global */}
-      <div className="seg-card flex items-center gap-4">
+      {/* BUSCADOR GLOBAL PREMIUM */}
+      <div className="
+        bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
+        p-6 shadow-xl flex items-center gap-4
+      ">
         <select
-          className="sj-input w-60"
+          className="
+            bg-white/10 border border-white/20 rounded-xl px-4 py-2
+            text-white focus:ring-2 focus:ring-blue-400
+          "
           value={tipoVista}
           onChange={(e) => setTipoVista(e.target.value)}
         >
@@ -99,32 +104,47 @@ export default function Intranet() {
         </select>
       </div>
 
-      {/* ⭐ Layout en dos columnas */}
+      {/* LAYOUT PREMIUM */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-        {/* ⭐ Noticias (izquierda) */}
+        {/* NOTICIAS PREMIUM */}
         {(tipoVista === "todos" || tipoVista === "noticias") && (
-          <div className="seg-card space-y-4">
-            <h2 className="text-xl font-bold mb-2">Noticias</h2>
+          <div className="
+            bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
+            p-6 shadow-xl space-y-4
+          ">
+            <h2 className="text-2xl font-semibold drop-shadow mb-2">
+              Noticias
+            </h2>
 
             {noticias.length === 0 && (
-              <p className="text-gray-500">No hay noticias.</p>
+              <p className="text-white/70">No hay noticias.</p>
             )}
 
             {noticias.map((n) => (
               <div
                 key={n.id}
-                className="border rounded-lg p-4 bg-white shadow-sm space-y-2"
+                className="
+                  bg-white/5 border border-white/20 rounded-xl p-4
+                  shadow-md backdrop-blur-md space-y-2
+                "
               >
-                <h3 className="font-semibold text-lg">{n.titulo}</h3>
-                <p className="text-gray-700">{n.concepto}</p>
-                <p className="text-sm text-gray-500">
+                <h3 className="font-semibold text-xl text-white drop-shadow">
+                  {n.titulo}
+                </h3>
+
+                <p className="text-white/80">{n.concepto}</p>
+
+                <p className="text-sm text-white/60">
                   {new Date(n.fecha).toLocaleString("es-ES")}
                 </p>
 
                 <button
                   onClick={() => eliminarNoticia(n.id)}
-                  className="text-red-600 hover:text-red-800 text-sm"
+                  className="
+                    text-red-400 hover:text-red-300 text-sm
+                    transition
+                  "
                 >
                   Eliminar
                 </button>
@@ -133,15 +153,23 @@ export default function Intranet() {
           </div>
         )}
 
-        {/* ⭐ Documentos (derecha) */}
+        {/* DOCUMENTOS PREMIUM */}
         {(tipoVista === "todos" || tipoVista === "documentos") && (
-          <div className="seg-card space-y-4">
-            <h2 className="text-xl font-bold mb-2">Documentos</h2>
+          <div className="
+            bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
+            p-6 shadow-xl space-y-4
+          ">
+            <h2 className="text-2xl font-semibold drop-shadow mb-2">
+              Documentos
+            </h2>
 
-            {/* ⭐ Filtros */}
+            {/* FILTROS PREMIUM */}
             <div className="grid grid-cols-2 gap-3">
               <input
-                className="sj-input"
+                className="
+                  bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                  text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                "
                 placeholder="Filtrar por concepto..."
                 value={filtroConcepto}
                 onChange={(e) => setFiltroConcepto(e.target.value)}
@@ -149,18 +177,21 @@ export default function Intranet() {
 
               <input
                 type="date"
-                className="sj-input"
+                className="
+                  bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                  text-white focus:ring-2 focus:ring-blue-400
+                "
                 value={filtroFecha}
                 onChange={(e) => setFiltroFecha(e.target.value)}
               />
             </div>
 
             {docsVisibles.length === 0 ? (
-              <p className="text-gray-500">No hay documentos.</p>
+              <p className="text-white/70">No hay documentos.</p>
             ) : (
-              <table className="sj-table w-full text-sm">
+              <table className="w-full text-sm">
                 <thead>
-                  <tr>
+                  <tr className="text-white/70 border-b border-white/10">
                     <th>ID</th>
 
                     <th
@@ -185,30 +216,35 @@ export default function Intranet() {
 
                 <tbody>
                   {docsVisibles.map((d) => (
-                    <tr key={d.id}>
-                      <td>{d.id}</td>
-                      <td>{d.titulo}</td>
-                      <td>{d.concepto}</td>
+                    <tr key={d.id} className="border-b border-white/10">
+                      <td className="py-2">{d.id}</td>
+                      <td className="py-2">{d.titulo}</td>
+                      <td className="py-2">{d.concepto}</td>
 
-                      <td>
+                      <td className="py-2">
                         {d.fecha_publicacion
                           ? new Date(d.fecha_publicacion).toLocaleString("es-ES")
                           : "Sin fecha"}
                       </td>
 
-                      <td className="flex gap-3">
+                      <td className="py-2 flex gap-3">
 
-                        {/* ⭐ Vista previa PDF */}
                         <button
                           onClick={() => setPdfUrl(d.fichero)}
-                          className="text-blue-600 hover:text-blue-800 text-sm"
+                          className="
+                            text-blue-400 hover:text-blue-300 text-sm
+                            transition
+                          "
                         >
                           Ver PDF
                         </button>
 
                         <button
                           onClick={() => eliminarDocumento(d.id)}
-                          className="text-red-600 hover:text-red-800 text-sm"
+                          className="
+                            text-red-400 hover:text-red-300 text-sm
+                            transition
+                          "
                         >
                           Eliminar
                         </button>
@@ -219,22 +255,28 @@ export default function Intranet() {
               </table>
             )}
 
-            {/* ⭐ Paginación documentos */}
+            {/* PAGINACIÓN PREMIUM */}
             <div className="flex items-center justify-between mt-4">
               <button
-                className="sj-btn bg-gray-200 text-gray-700 hover:bg-gray-300"
+                className="
+                  px-3 py-2 rounded-xl bg-white/10 border border-white/20
+                  text-white hover:bg-white/20 transition
+                "
                 disabled={pagina <= 1}
                 onClick={() => setPagina((p) => p - 1)}
               >
                 ← Anterior
               </button>
 
-              <span className="text-sm text-gray-600">
+              <span className="text-white/70 text-sm">
                 Página {pagina} de {totalPaginas}
               </span>
 
               <button
-                className="sj-btn bg-gray-200 text-gray-700 hover:bg-gray-300"
+                className="
+                  px-3 py-2 rounded-xl bg-white/10 border border-white/20
+                  text-white hover:bg-white/20 transition
+                "
                 disabled={pagina >= totalPaginas}
                 onClick={() => setPagina((p) => p + 1)}
               >
@@ -242,7 +284,10 @@ export default function Intranet() {
               </button>
 
               <select
-                className="sj-input w-32"
+                className="
+                  bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                  text-white focus:ring-2 focus:ring-blue-400
+                "
                 value={pageSize}
                 onChange={(e) => setPageSize(Number(e.target.value))}
               >
@@ -256,19 +301,24 @@ export default function Intranet() {
 
       </div>
 
-      {/* ⭐ Modal PDF */}
+      {/* MODAL PDF PREMIUM */}
       {pdfUrl && (
         <div
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+          className="
+            fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center
+            justify-center z-50
+          "
           onClick={() => setPdfUrl(null)}
         >
           <div
-            className="bg-white rounded-lg shadow-xl p-4 w-[80vw] h-[80vh]"
+            className="
+              bg-white rounded-2xl shadow-2xl p-4 w-[80vw] h-[80vh]
+            "
             onClick={(e) => e.stopPropagation()}
           >
             <iframe
               src={pdfUrl}
-              className="w-full h-full"
+              className="w-full h-full rounded-xl"
               title="Vista previa PDF"
             ></iframe>
           </div>

@@ -441,7 +441,7 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
 
         {/* Foto + subida */}
         <div className="mt-4 flex items-center gap-4">
-          {empleado.foto && (
+          {empleado.foto_url && (
             <img
               src={`${API_BASE}${empleado.foto_url}?v=${Date.now()}`}
               alt="Foto empleado"

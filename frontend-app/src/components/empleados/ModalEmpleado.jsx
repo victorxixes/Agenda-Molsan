@@ -186,12 +186,16 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
                     <div>
                       <span className="block mb-1 text-gray-700">Estado</span>
                       <select
-                        className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
-                        value={empleado.activo ? "1" : "0"}
+                        className="bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
+                        value={empleado.rol?.id || ""}
                         onChange={(e) =>
-                          handleEmpleadoChange("activo", e.target.value === "1")
+                           handleEmpleadoChange("rol", {
+                             id: Number(e.target.value),
+                            nombre: roles.find(r => r.id === Number(e.target.value))?.nombre || ""
+                          })
                         }
                       >
+
                         <option value="1">Activo</option>
                         <option value="0">Baja</option>
                       </select>

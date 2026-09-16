@@ -4,9 +4,7 @@ import EmpleadoPerfil from "../pages/empleados/EmpleadoPerfil";
 export default function EmpleadoPerfilModal({ id, onClose }) {
 
   useEffect(() => {
-    const handleEsc = (e) => {
-      if (e.key === "Escape") onClose();
-    };
+    const handleEsc = (e) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", handleEsc);
     return () => window.removeEventListener("keydown", handleEsc);
   }, [onClose]);
@@ -17,20 +15,30 @@ export default function EmpleadoPerfilModal({ id, onClose }) {
 
   return (
     <div
-      className="modal-overlay fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50"
+      className="
+        fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50
+        animate-fade-in
+      "
       onClick={handleOverlayClick}
     >
       <div
-        className="modal-content bg-white rounded-xl shadow-xl p-6 w-[900px] max-h-[90vh] overflow-auto relative"
+        className="
+          bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
+          shadow-2xl p-6 w-[900px] max-h-[90vh] overflow-auto relative
+        "
       >
+        {/* BOTÓN CERRAR */}
         <button
-          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition"
+          className="
+            absolute top-4 right-4 text-white/70 hover:text-white
+            transition text-xl
+          "
           onClick={onClose}
         >
           ✕
         </button>
 
-        {/* ⭐ CARGA EL PERFIL DEL EMPLEADO CONECTADO */}
+        {/* PERFIL PREMIUM */}
         <EmpleadoPerfil id={id} />
       </div>
     </div>

@@ -1,5 +1,12 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { buildRealtimeWsUrl } from "../../api/monitorRealtime";
+
+/**
+ * MonitorRealtime — SJ‑2026 Premium
+ * - WebSocket realtime
+ * - Métricas glass‑UI
+ * - Animación fade‑in
+ */
 
 export default function MonitorRealtime({ baseUrl }) {
   const wsRef = useRef(null);
@@ -51,45 +58,56 @@ export default function MonitorRealtime({ baseUrl }) {
     };
 
     ws.onerror = () => {};
-
     ws.onmessage = () => {};
 
-    return () => {
-      ws.close();
-    };
+    return () => ws.close();
   }, [baseUrl]);
 
-  return (
-    <div className="p-4 border rounded bg-white shadow space-y-4">
-      <h2 className="text-xl font-semibold">Monitor Realtime (WebSockets)</h2>
+  const resumen = useMemo(() => stats.total, [stats.total]);
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="border rounded p-3">
+  return (
+    <div
+      className="
+        bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
+        p-6 shadow-xl space-y-4 animate-fade-in
+      "
+    >
+      <h2 className="text-xl font-semibold text-white drop-shadow">
+        Monitor Realtime (WebSockets)
+      </h2>
+
+      <div className="grid grid-cols-2 gap-4 text-white">
+
+        {/* RESUMEN */}
+        <div className="bg-white/5 border border-white/20 rounded-xl p-4 shadow-inner">
           <h3 className="font-semibold mb-2">Resumen</h3>
-          <p>Total conexiones (esta vista): {stats.total}</p>
+          <p>Total conexiones (esta vista): {resumen}</p>
         </div>
 
-        <div className="border rounded p-3">
+        {/* POR ROL */}
+        <div className="bg-white/5 border border-white/20 rounded-xl p-4 shadow-inner">
           <h3 className="font-semibold mb-2">Por rol</h3>
-          <ul>
+          <ul className="space-y-1">
             {Object.entries(stats.porRol).map(([rol, count]) => (
               <li key={rol}>{rol}: {count}</li>
             ))}
           </ul>
         </div>
 
-        <div className="border rounded p-3">
+        {/* POR MÓDULO */}
+        <div className="bg-white/5 border border-white/20 rounded-xl p-4 shadow-inner">
           <h3 className="font-semibold mb-2">Por módulo</h3>
-          <ul>
+          <ul className="space-y-1">
             {Object.entries(stats.porModulo).map(([mod, count]) => (
               <li key={mod}>{mod}: {count}</li>
             ))}
           </ul>
         </div>
 
-        <div className="border rounded p-3">
+        {/* POR GRUPO */}
+        <div className="bg-white/5 border border-white/20 rounded-xl p-4 shadow-inner">
           <h3 className="font-semibold mb-2">Por grupo</h3>
-          <ul>
+          <ul className="space-y-1">
             {Object.entries(stats.porGrupo).map(([grp, count]) => (
               <li key={grp}>{grp}: {count}</li>
             ))}
@@ -97,9 +115,9 @@ export default function MonitorRealtime({ baseUrl }) {
         </div>
       </div>
 
-      <p className="text-sm text-gray-500">
+      <p className="text-sm text-white/60">
         Este monitor está basado en conexiones WebSocket reales al endpoint
-        <code className="ml-1">/ws/realtime/</code>.
+        <code className="ml-1 text-white/80">/ws/realtime/</code>.
       </p>
     </div>
   );

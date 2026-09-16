@@ -92,7 +92,7 @@ export default function Sidebar() {
         </button>
       </div>
 
-      {/* MINI AVATAR CUANDO ESTÁ COLAPSADO */}
+      {/* MINI AVATAR */}
       {collapsed && (
         <div className="flex justify-center mb-4">
           <div className="relative w-12 h-12 rounded-full overflow-hidden border border-white/20 shadow-lg animate-[fadeIn_0.4s_ease]">
@@ -105,7 +105,7 @@ export default function Sidebar() {
         </div>
       )}
 
-      {/* SECCIÓN: GENERAL */}
+      {/* GENERAL */}
       {!collapsed && (
         <h3 className="text-xs font-semibold text-white/60 uppercase tracking-wider px-2">
           General
@@ -117,7 +117,7 @@ export default function Sidebar() {
         {puedeVerModulo("agenda") && item("/agenda", "Agenda", "calendar")}
       </nav>
 
-      {/* SECCIÓN: GESTIÓN */}
+      {/* GESTIÓN */}
       {!collapsed && (
         <h3 className="text-xs font-semibold text-white/60 uppercase tracking-wider px-2 mt-4">
           Gestión
@@ -127,13 +127,18 @@ export default function Sidebar() {
       <nav className="space-y-2">
         {puedeVerModulo("empleados") &&
           item("/panel/empleados", "Empleados", "user-group")}
+
+        {puedeVerModulo("ctn") &&
+          item("/ctn", "CTN — Notarios", "globe")}
+
         {puedeVerModulo("intranet") &&
           item("/intranet", "Intranet", "globe")}
+
         {puedeVerModulo("mensajes") &&
           item("/mensajes", "Mensajes", "chat", mensajesNoLeidos)}
       </nav>
 
-      {/* SECCIÓN: SISTEMA */}
+      {/* SISTEMA */}
       {!collapsed && (
         <h3 className="text-xs font-semibold text-white/60 uppercase tracking-wider px-2 mt-4">
           Sistema
@@ -143,6 +148,9 @@ export default function Sidebar() {
       <nav className="space-y-2">
         {puedeVerModulo("logs") && item("/logs", "Logs", "clipboard")}
         {puedeVerModulo("seguridad") && item("/seguridad", "Seguridad", "shield")}
+
+        {puedeVerModulo("utilidades") &&
+          item("/herramientas/utilidades", "Utilidades", "cog")}
       </nav>
 
       {/* PERFIL EXPANDIDO */}
@@ -173,7 +181,7 @@ export default function Sidebar() {
             </div>
           </button>
 
-          {/* BOTÓN CERRAR SESIÓN */}
+          {/* LOGOUT */}
           <button
             onClick={() => useAuthStore.getState().logout()}
             className="
@@ -200,7 +208,7 @@ export default function Sidebar() {
         </div>
       )}
 
-      {/* PERFIL MINI + LOGOUT MINI */}
+      {/* MINI PERFIL + LOGOUT */}
       {collapsed && (
         <div className="mt-auto flex flex-col items-center gap-4 pb-2">
           <div className="relative w-12 h-12 rounded-full overflow-hidden border border-white/20 shadow-lg">

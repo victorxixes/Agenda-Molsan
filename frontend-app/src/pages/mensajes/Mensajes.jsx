@@ -19,24 +19,25 @@ export default function Mensajes({ usuarioId }) {
   const wsRef = useMensajesWS(usuarioId, otroId);
   const chatRef = useRef(null);
 
-  // Cargar conversación al seleccionar usuario
+  // =========================================================
+  // CARGAR CONVERSACIÓN AL SELECCIONAR USUARIO
+  // =========================================================
   useEffect(() => {
     if (otroId) cargarConversacion(usuarioId, otroId);
-  }, [otroId, usuarioId, cargarConversacion]);
+  }, [otroId, usuarioId]);
 
-  // Scroll inteligente
+  // =========================================================
+  // SCROLL AUTOMÁTICO
+  // =========================================================
   useEffect(() => {
     const el = chatRef.current;
     if (!el) return;
-
-    const estaAbajo = el.scrollTop + el.clientHeight >= el.scrollHeight - 50;
-
-    if (estaAbajo) {
-      el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
-    }
+    el.scrollTo({ top: el.scrollHeight });
   }, [mensajes]);
 
-  // Enviar mensaje por WebSocket
+  // =========================================================
+  // ENVIAR MENSAJE WS
+  // =========================================================
   const enviarMensajeWS = () => {
     if (!otroId || !texto.trim()) return;
 
@@ -49,7 +50,9 @@ export default function Mensajes({ usuarioId }) {
     );
   };
 
-  // Enviar typing por WebSocket
+  // =========================================================
+  // TYPING WS
+  // =========================================================
   const enviarTypingWS = () => {
     if (!otroId) return;
 
@@ -61,13 +64,58 @@ export default function Mensajes({ usuarioId }) {
     );
   };
 
-  // Agrupar mensajes por fecha (FIX: fecha como Date, no split directo)
+  // =========================================================
+  // SUBIR ARCHIVO + ENVIAR WS + REST
+  // =========================================================
+  const handleAdjunto = async (e) => {
+    const file = e.target.files[0];
+    if (!file || !otroId) return;
+
+    const fd = new FormData();
+    fd.append("file", file);
+
+    try {
+      // 1) Subir archivo
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/mensajes/upload`, {
+        method: "POST",
+        body: fd,
+      });
+
+      const data = await res.json();
+      if (data.status !== "ok") return;
+
+      const archivo_url = data.archivo_url;
+
+      // 2) WS tiempo real
+      wsRef.current?.send(
+        JSON.stringify({
+          tipo: "archivo",
+          destinatario_id: otroId,
+          archivo_url,
+        })
+      );
+
+      // 3) REST guardar en BD
+      await enviarMensajeREST({
+        remitente_id: usuarioId,
+        destinatario_id: otroId,
+        contenido: null,
+        archivo_url,
+      });
+
+    } catch (err) {
+      console.error("Error adjunto:", err);
+    }
+  };
+
+  // =========================================================
+  // AGRUPAR MENSAJES POR FECHA
+  // =========================================================
   const mensajesAgrupados = mensajes.reduce((acc, m) => {
     const fechaObj = new Date(m.fecha);
-    const fecha =
-      isNaN(fechaObj.getTime())
-        ? "Sin fecha"
-        : fechaObj.toISOString().split("T")[0]; // YYYY-MM-DD
+    const fecha = isNaN(fechaObj.getTime())
+      ? "Sin fecha"
+      : fechaObj.toISOString().split("T")[0];
 
     if (!acc[fecha]) acc[fecha] = [];
     acc[fecha].push(m);
@@ -76,7 +124,10 @@ export default function Mensajes({ usuarioId }) {
 
   return (
     <div className="p-6 grid grid-cols-3 gap-4">
-      {/* Lista de empleados conectados (sidebar fijo) */}
+      
+      {/* =========================================================
+          SIDEBAR CONECTADOS
+      ========================================================= */}
       <div className="border p-4">
         <h2 className="font-bold mb-2">Conectados</h2>
 
@@ -108,22 +159,17 @@ export default function Mensajes({ usuarioId }) {
               <div className="text-xs text-gray-600">ID: {c.id}</div>
             </div>
 
-            <span
-              className={`w-3 h-3 rounded-full ${
-                conectados.some((x) => x.id === c.id)
-                  ? "bg-green-500"
-                  : "bg-gray-400"
-              }`}
-            ></span>
+            <span className="w-3 h-3 rounded-full bg-green-500"></span>
           </div>
         ))}
       </div>
 
-      {/* Chat (columna derecha, no desaparece el sidebar) */}
+      {/* =========================================================
+          CHAT
+      ========================================================= */}
       <div className="col-span-2 border p-4">
         {otroId ? (
           <>
-            {/* Cabecera del chat */}
             <MensajesHeader otroId={otroId} conectados={conectados} />
 
             <div
@@ -162,7 +208,7 @@ export default function Mensajes({ usuarioId }) {
                 </div>
               ))}
 
-              {/* Typing animado */}
+              {/* TYPING */}
               {typing[otroId] && (
                 <div className="flex items-center gap-2 text-gray-500 italic text-sm mt-2">
                   <div className="flex gap-1">
@@ -175,7 +221,9 @@ export default function Mensajes({ usuarioId }) {
               )}
             </div>
 
-            {/* Input */}
+            {/* =========================================================
+                INPUT + ADJUNTOS
+            ========================================================= */}
             <form
               onSubmit={async (e) => {
                 e.preventDefault();
@@ -203,6 +251,16 @@ export default function Mensajes({ usuarioId }) {
                 placeholder="Escribe un mensaje…"
               />
 
+              {/* BOTÓN ADJUNTAR */}
+              <label className="bg-gray-200 px-3 py-2 rounded cursor-pointer text-sm flex items-center">
+                📎
+                <input
+                  type="file"
+                  className="hidden"
+                  onChange={handleAdjunto}
+                />
+              </label>
+
               <button
                 type="submit"
                 className="bg-blue-500 text-white px-4 py-2 rounded"
@@ -213,8 +271,7 @@ export default function Mensajes({ usuarioId }) {
           </>
         ) : (
           <p className="text-gray-600">
-            Selecciona un usuario conectado en la columna izquierda para
-            empezar a chatear.
+            Selecciona un usuario conectado en la columna izquierda para empezar a chatear.
           </p>
         )}
       </div>

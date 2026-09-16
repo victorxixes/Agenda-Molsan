@@ -1,12 +1,21 @@
 import { useAuthStore } from "../store/authStore";
 
 /**
- * Utilidades de permisos — Versión SJ‑2026 Premium
- * - Verificación de módulos visibles
- * - Verificación de permisos por módulo
+ * Permisos — SJ‑2026 Premium
+ * Utilidades centralizadas para:
+ * - Verificar módulos visibles
+ * - Verificar permisos por acción
  * - Basado en authStore (empleado)
+ *
+ * Diseño:
+ * - Lectura directa del estado con getState() (rápido y sin re-render)
+ * - Normalización defensiva
+ * - Funciones puras y estables
  */
 
+/**
+ * Verifica si el empleado puede ver un módulo concreto.
+ */
 export function puedeVerModulo(modulo) {
   const empleado = useAuthStore.getState().empleado;
   if (!empleado) return false;
@@ -15,6 +24,9 @@ export function puedeVerModulo(modulo) {
   return modulos.includes(modulo);
 }
 
+/**
+ * Verifica si el empleado tiene un permiso específico dentro de un módulo.
+ */
 export function tienePermiso(modulo, accion) {
   const empleado = useAuthStore.getState().empleado;
   if (!empleado) return false;

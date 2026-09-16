@@ -25,68 +25,54 @@ export default function EmpleadoPerfil({ id }) {
 
       {/* TÍTULO */}
       <h2 className="text-xl font-bold">
-        Ficha empleado {empleado.id} — {empleado.nombre} {empleado.apellidos}
+        Ficha empleado {empleado.id} — {empleado.nombre} {empleado.apellidos || ""}
       </h2>
 
       {/* TABS */}
       <div className="flex gap-4 border-b pb-2">
-        <button
-          className={tab === "basicos" ? "font-bold text-blue-600" : ""}
-          onClick={() => setTab("basicos")}
-        >
+        <button className={tab === "basicos" ? "font-bold text-blue-600" : ""} onClick={() => setTab("basicos")}>
           Datos básicos
         </button>
 
-        <button
-          className={tab === "personales" ? "font-bold text-blue-600" : ""}
-          onClick={() => setTab("personales")}
-        >
+        <button className={tab === "personales" ? "font-bold text-blue-600" : ""} onClick={() => setTab("personales")}>
           Datos personales
         </button>
 
-        <button
-          className={tab === "laborales" ? "font-bold text-blue-600" : ""}
-          onClick={() => setTab("laborales")}
-        >
+        <button className={tab === "laborales" ? "font-bold text-blue-600" : ""} onClick={() => setTab("laborales")}>
           Datos laborales
         </button>
 
-        <button
-          className={tab === "seguridad" ? "font-bold text-blue-600" : ""}
-          onClick={() => setTab("seguridad")}
-        >
+        <button className={tab === "seguridad" ? "font-bold text-blue-600" : ""} onClick={() => setTab("seguridad")}>
           Seguridad
         </button>
 
-        <button
-          className={tab === "auditoria" ? "font-bold text-blue-600" : ""}
-          onClick={() => setTab("auditoria")}
-        >
+        <button className={tab === "auditoria" ? "font-bold text-blue-600" : ""} onClick={() => setTab("auditoria")}>
           Auditoría
         </button>
       </div>
 
-      {/* CONTENIDO DE CADA TAB */}
+      {/* DATOS BÁSICOS */}
       {tab === "basicos" && (
         <div className="grid grid-cols-2 gap-4">
+
           <div>
             <label className="font-semibold">Estado:</label>
-            <div>{empleado.estado}</div>
+            <div>{empleado.activo ? "Activo" : "Inactivo"}</div>
           </div>
 
           <div>
             <label className="font-semibold">Teléfono:</label>
-            <div>{empleado.telefono}</div>
+            <div>{empleado.telefono || "—"}</div>
           </div>
 
           <div>
             <label className="font-semibold">Email empresa:</label>
-            <div>{empleado.email_empresa}</div>
+            <div>{empleado.email_empresa || "—"}</div>
           </div>
 
           <div>
             <label className="font-semibold">Extensión:</label>
-            <div>{empleado.extension}</div>
+            <div>{empleado.extension || "—"}</div>
           </div>
 
           {empleado.foto && (
@@ -99,8 +85,10 @@ export default function EmpleadoPerfil({ id }) {
         </div>
       )}
 
+      {/* DATOS PERSONALES */}
       {tab === "personales" && (
         <div className="grid grid-cols-2 gap-4">
+
           <div>
             <label className="font-semibold">DNI:</label>
             <div>{empleado.dni}</div>
@@ -108,36 +96,73 @@ export default function EmpleadoPerfil({ id }) {
 
           <div>
             <label className="font-semibold">Fecha nacimiento:</label>
-            <div>{empleado.fecha_nacimiento}</div>
+            <div>{empleado.fecha_nacimiento || "—"}</div>
           </div>
 
           <div>
             <label className="font-semibold">Dirección:</label>
-            <div>{empleado.direccion}</div>
+            <div>{empleado.direccion || "—"}</div>
+          </div>
+
+          <div>
+            <label className="font-semibold">Código postal:</label>
+            <div>{empleado.codigo_postal || "—"}</div>
           </div>
 
           <div>
             <label className="font-semibold">Población:</label>
-            <div>{empleado.poblacion}</div>
+            <div>{empleado.poblacion || "—"}</div>
+          </div>
+
+          <div>
+            <label className="font-semibold">Provincia:</label>
+            <div>{empleado.provincia || "—"}</div>
+          </div>
+
+          <div>
+            <label className="font-semibold">Alergias:</label>
+            <div>{empleado.alergias || "—"}</div>
+          </div>
+
+          <div>
+            <label className="font-semibold">Persona contacto:</label>
+            <div>{empleado.persona_contacto || "—"}</div>
+          </div>
+
+          <div>
+            <label className="font-semibold">Teléfono contacto:</label>
+            <div>{empleado.telefono_contacto || "—"}</div>
+          </div>
+
+          <div className="col-span-2">
+            <label className="font-semibold">Observaciones:</label>
+            <div>{empleado.observaciones || "—"}</div>
           </div>
         </div>
       )}
 
+      {/* DATOS LABORALES */}
       {tab === "laborales" && (
         <div className="grid grid-cols-2 gap-4">
+
           <div>
-            <label className="font-semibold">Cargo:</label>
-            <div>{empleado.cargo}</div>
+            <label className="font-semibold">Departamento ID:</label>
+            <div>{empleado.departamento_id || "—"}</div>
           </div>
 
           <div>
-            <label className="font-semibold">Departamento:</label>
-            <div>{empleado.departamento}</div>
+            <label className="font-semibold">Sección ID:</label>
+            <div>{empleado.seccion_id || "—"}</div>
+          </div>
+
+          <div>
+            <label className="font-semibold">Cargo ID:</label>
+            <div>{empleado.cargo_id || "—"}</div>
           </div>
 
           <div>
             <label className="font-semibold">Fecha alta:</label>
-            <div>{empleado.fecha_alta}</div>
+            <div>{empleado.fecha_alta || "—"}</div>
           </div>
 
           <div>
@@ -147,8 +172,10 @@ export default function EmpleadoPerfil({ id }) {
         </div>
       )}
 
+      {/* SEGURIDAD */}
       {tab === "seguridad" && (
-        <div className="space-y-2">
+        <div className="space-y-4">
+
           <div>
             <label className="font-semibold">Usuario:</label>
             <div>{empleado.usuario}</div>
@@ -156,31 +183,17 @@ export default function EmpleadoPerfil({ id }) {
 
           <div>
             <label className="font-semibold">Rol:</label>
-            <div>{empleado.rol}</div>
+            <div>{empleado.rol || "—"}</div>
           </div>
 
           <div>
-            <label className="font-semibold">Permisos:</label>
+            <label className="font-semibold">Módulos visibles:</label>
             <pre className="bg-gray-100 p-2 rounded text-sm">
-              {JSON.stringify(data.permisos_modulo, null, 2)}
+              {JSON.stringify(data.modulos_visibles, null, 2)}
             </pre>
           </div>
-        </div>
-      )}
-
-      {tab === "auditoria" && (
-        <div className="space-y-2">
-          <div>
-            <label className="font-semibold">Creado:</label>
-            <div>{empleado.creado}</div>
-          </div>
 
           <div>
-            <label className="font-semibold">Modificado:</label>
-            <div>{empleado.modificado}</div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
+            <label className="font-semibold">Permisos módulo:</label>
+            <pre className="bg-gray-100 p-2 rounded text-sm">
+              {JSON.stringify(data.permisos_modulo

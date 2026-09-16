@@ -1,5 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { useIntranet } from "../../hooks/useIntranet";
+
+/**
+ * Intranet — SJ‑2026 Premium
+ * - Documentos + Noticias
+ * - Filtros avanzados
+ * - Ordenación estable
+ * - Paginación premium
+ * - Modal PDF glass‑UI
+ */
 
 export default function Intranet() {
   const {
@@ -9,7 +18,7 @@ export default function Intranet() {
     cargarNoticias,
     eliminarDocumento,
     eliminarNoticia,
-    loading
+    loading,
   } = useIntranet();
 
   const [tipoVista, setTipoVista] = useState("todos");
@@ -20,59 +29,72 @@ export default function Intranet() {
   const [pageSize, setPageSize] = useState(20);
   const [pdfUrl, setPdfUrl] = useState(null);
 
+  // Cargar datos iniciales
   useEffect(() => {
     cargarDocumentos();
     cargarNoticias();
-  }, []);
+  }, [cargarDocumentos, cargarNoticias]);
 
-  if (loading)
+  if (loading) {
     return (
       <p className="text-white/70 animate-pulse p-6">
         Cargando intranet…
       </p>
     );
+  }
 
-  const docsFiltrados = documentos.filter((d) => {
-    const okConcepto =
-      filtroConcepto === "" ||
-      d.concepto.toLowerCase().includes(filtroConcepto.toLowerCase());
+  // FILTROS
+  const docsFiltrados = useMemo(() => {
+    return documentos.filter((d) => {
+      const okConcepto =
+        filtroConcepto === "" ||
+        d.concepto.toLowerCase().includes(filtroConcepto.toLowerCase());
 
-    const okFecha =
-      filtroFecha === "" ||
-      (d.fecha_publicacion && d.fecha_publicacion.startsWith(filtroFecha));
+      const okFecha =
+        filtroFecha === "" ||
+        (d.fecha_publicacion &&
+          new Date(d.fecha_publicacion).toISOString().slice(0, 10) ===
+            filtroFecha);
 
-    return okConcepto && okFecha;
-  });
+      return okConcepto && okFecha;
+    });
+  }, [documentos, filtroConcepto, filtroFecha]);
 
-  const docsOrdenados = [...docsFiltrados].sort((a, b) => {
+  // ORDENACIÓN
+  const docsOrdenados = useMemo(() => {
     const campo = orden.campo;
     const dir = orden.dir === "asc" ? 1 : -1;
 
-    if (campo === "fecha") {
-      return (
-        new Date(a.fecha_publicacion || 0) -
-        new Date(b.fecha_publicacion || 0)
-      ) * dir;
-    }
+    return [...docsFiltrados].sort((a, b) => {
+      if (campo === "fecha") {
+        return (
+          (new Date(a.fecha_publicacion || 0) -
+            new Date(b.fecha_publicacion || 0)) * dir
+        );
+      }
+      return a[campo].localeCompare(b[campo]) * dir;
+    });
+  }, [docsFiltrados, orden]);
 
-    return a[campo].localeCompare(b[campo]) * dir;
-  });
-
-  const ordenar = (campo) => {
+  const ordenar = useCallback((campo) => {
     setOrden((prev) => ({
       campo,
       dir: prev.campo === campo && prev.dir === "asc" ? "desc" : "asc",
     }));
-  };
+  }, []);
 
-  const totalPaginas = Math.ceil(docsOrdenados.length / pageSize);
-  const docsVisibles = docsOrdenados.slice(
-    (pagina - 1) * pageSize,
-    pagina * pageSize
+  // PAGINACIÓN
+  const totalPaginas = useMemo(
+    () => Math.ceil(docsOrdenados.length / pageSize),
+    [docsOrdenados.length, pageSize]
   );
 
+  const docsVisibles = useMemo(() => {
+    return docsOrdenados.slice((pagina - 1) * pageSize, pagina * pageSize);
+  }, [docsOrdenados, pagina, pageSize]);
+
   return (
-    <div className="p-6 space-y-8 text-white">
+    <div className="p-6 space-y-8 text-white animate-fade-in">
 
       {/* HEADER PREMIUM */}
       <div className="
@@ -298,7 +320,6 @@ export default function Intranet() {
             </div>
           </div>
         )}
-
       </div>
 
       {/* MODAL PDF PREMIUM */}
@@ -306,7 +327,7 @@ export default function Intranet() {
         <div
           className="
             fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center
-            justify-center z-50
+            justify-center z-50 animate-fade-in
           "
           onClick={() => setPdfUrl(null)}
         >

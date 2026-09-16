@@ -1,16 +1,27 @@
+/* ============================================================
+   ERP SJ‑2026 — Tablas premium estilo dashboard
+   ============================================================ */
+
 .table-sj {
   width: 100%;
   border-collapse: collapse;
   border-radius: var(--sj-radius);
   overflow: hidden;
   border: 1px solid var(--sj-gris-azulado);
-  animation: fadeIn 0.25s ease-out;
+  background: var(--sj-blanco);
+  animation: fadeInSJ 0.35s ease-out;
+  transition: box-shadow 0.25s ease;
+}
+
+.table-sj:hover {
+  box-shadow: 0 8px 24px rgba(31, 58, 95, 0.25);
 }
 
 .table-sj thead {
   background-color: var(--sj-gris-azulado);
   color: var(--sj-azul);
   font-weight: 600;
+  letter-spacing: 0.3px;
 }
 
 .table-sj th,
@@ -20,9 +31,15 @@
 }
 
 .table-sj tr:hover {
-  background-color: var(--sj-gris-azulado);
+  background-color: #f0f4fa;
 }
 
 .table-sj.striped tr:nth-child(even) {
   background-color: #f7f9fc;
+}
+
+/* Fade-in corporativo */
+@keyframes fadeInSJ {
+  0% { opacity: 0; transform: translateY(6px); }
+  100% { opacity: 1; transform: translateY(0); }
 }

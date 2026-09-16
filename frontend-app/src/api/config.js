@@ -1,1 +1,7 @@
-export const API_BASE = "https://agenda-intranet-b.onrender.com/api";
+/**
+ * Configuración API — SJ‑2026 Premium
+ * Base pública para imágenes y recursos estáticos.
+ */
+
+export const API_BASE = import.meta.env.VITE_API_URL;
+

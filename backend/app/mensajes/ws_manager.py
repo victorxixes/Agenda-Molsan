@@ -7,13 +7,9 @@ from backend.app.database import SessionLocal
 
 
 class WSManager:
-    # Compartido entre instancias
     conectados = {}
     lock = Lock()
 
-    # ---------------------------------------------------------
-    # CONECTAR / DESCONECTAR
-    # ---------------------------------------------------------
     async def connect(self, websocket, empleado_id):
         await websocket.accept()
         with self.lock:
@@ -23,17 +19,11 @@ class WSManager:
         with self.lock:
             self.conectados.pop(empleado_id, None)
 
-    # ---------------------------------------------------------
-    # ENVIAR A UN USUARIO
-    # ---------------------------------------------------------
     async def send_to_user(self, empleado_id, data):
         ws = self.conectados.get(empleado_id)
         if ws:
             await ws.send_json(data)
 
-    # ---------------------------------------------------------
-    # BROADCAST GLOBAL
-    # ---------------------------------------------------------
     async def broadcast(self, data):
         for ws in list(self.conectados.values()):
             try:
@@ -41,9 +31,6 @@ class WSManager:
             except Exception:
                 continue
 
-    # ---------------------------------------------------------
-    # GUARDAR Y ENVIAR MENSAJE DE TEXTO
-    # ---------------------------------------------------------
     async def enviar_mensaje_ws(self, remitente_id: int, destinatario_id: int, contenido: str):
         db: Session = SessionLocal()
 
@@ -71,9 +58,6 @@ class WSManager:
 
         return mensaje
 
-    # ---------------------------------------------------------
-    # GUARDAR Y ENVIAR ARCHIVO
-    # ---------------------------------------------------------
     async def enviar_archivo_ws(self, remitente_id: int, destinatario_id: int, archivo_url: str):
         db: Session = SessionLocal()
 

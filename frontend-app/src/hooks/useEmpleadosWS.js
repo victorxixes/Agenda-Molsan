@@ -1,17 +1,30 @@
 import { useEffect, useRef } from "react";
 
+/**
+ * WebSocket de Empleados — Versión SJ‑2026 Premium
+ * - Conexión blindada para evitar dobles WS en Render/StrictMode
+ * - Recibe eventos del backend y los pasa al callback onEvento
+ * - Cierre seguro y limpieza completa
+ */
 export function useEmpleadosWS(onEvento) {
   const wsRef = useRef(null);
 
   useEffect(() => {
-if (wsRef.current) {
-  try {
-    wsRef.current.close();
-  } catch {}
-}
+    // Evitar doble conexión en StrictMode
+    if (wsRef.current) return;
 
+    // Cerrar WS previo si existiera
+    try {
+      wsRef.current?.close();
+    } catch {}
+
+    // Crear conexión
     const ws = new WebSocket(`${import.meta.env.VITE_WS_URL}/ws/empleados`);
     wsRef.current = ws;
+
+    ws.onopen = () => {
+      ws.send(JSON.stringify({ tipo: "ping" }));
+    };
 
     ws.onmessage = (ev) => {
       if (!ev.data) return;
@@ -23,17 +36,23 @@ if (wsRef.current) {
         return;
       }
 
-      if (data && data.tipo && onEvento) {
+      if (data?.tipo && onEvento) {
         onEvento(data);
       }
     };
 
-    ws.onopen = () => {
-      ws.send(JSON.stringify({ tipo: "ping" }));
+    ws.onerror = () => {
+      console.warn("WS Empleados error. Modo offline.");
+    };
+
+    ws.onclose = () => {
+      console.warn("WS Empleados cerrado.");
     };
 
     return () => {
-      wsRef.current?.close();
+      try {
+        wsRef.current?.close();
+      } catch {}
       wsRef.current = null;
     };
   }, []);

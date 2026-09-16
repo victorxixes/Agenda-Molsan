@@ -4,17 +4,14 @@ import { useLogs } from "../../hooks/useLogs";
 export default function Logs() {
   const { logs, cargarLogs, loading } = useLogs();
 
-  // Filtros
   const [tipo, setTipo] = useState("");
   const [texto, setTexto] = useState("");
   const [fechaDesde, setFechaDesde] = useState("");
   const [fechaHasta, setFechaHasta] = useState("");
 
-  // Paginación local
   const [pagina, setPagina] = useState(1);
   const [pageSize, setPageSize] = useState(50);
 
-  // Ordenación
   const [orden, setOrden] = useState({ campo: "fecha", dir: "desc" });
 
   const aplicarFiltros = () => {
@@ -32,39 +29,26 @@ export default function Logs() {
     aplicarFiltros();
   }, [pagina, pageSize]);
 
-  // Iconos por tipo
   const iconoTipo = (tipo) => {
     switch (tipo) {
-      case "error":
-        return "⚠️";
-      case "security":
-        return "🔐";
-      case "warning":
-        return "⚠️";
-      case "info":
-        return "ℹ️";
-      default:
-        return "•";
+      case "error": return "⛔";
+      case "security": return "🔐";
+      case "warning": return "⚠️";
+      case "info": return "ℹ️";
+      default: return "•";
     }
   };
 
-  // Colores por tipo
   const colorTipo = (tipo) => {
     switch (tipo) {
-      case "error":
-        return "text-red-600 font-semibold";
-      case "security":
-        return "text-blue-600 font-semibold";
-      case "warning":
-        return "text-yellow-600 font-semibold";
-      case "info":
-        return "text-gray-600";
-      default:
-        return "text-gray-800";
+      case "error": return "text-red-400";
+      case "security": return "text-blue-400";
+      case "warning": return "text-yellow-400";
+      case "info": return "text-white/70";
+      default: return "text-white";
     }
   };
 
-  // Ordenar columnas
   const ordenar = (campo) => {
     setOrden((prev) => ({
       campo,
@@ -85,14 +69,9 @@ export default function Logs() {
     return (a[campo] - b[campo]) * dir;
   });
 
-  // Paginación local
   const totalPaginas = Math.ceil(logsOrdenados.length / pageSize);
-  const visibles = logsOrdenados.slice(
-    (pagina - 1) * pageSize,
-    pagina * pageSize
-  );
+  const visibles = logsOrdenados.slice((pagina - 1) * pageSize, pagina * pageSize);
 
-  // Exportar Excel
   const exportarExcel = () => {
     const filas = logsOrdenados.map((l) => ({
       ID: l.id,
@@ -113,31 +92,45 @@ export default function Logs() {
 
     const a = document.createElement("a");
     a.href = url;
-    a.download = "logs_sistema.xlsx";
+    a.download = "logs_sistema.csv";
     a.click();
     URL.revokeObjectURL(url);
   };
 
   return (
-    <div className="container-sj space-y-6">
+    <div className="p-6 space-y-8 text-white">
 
-      {/* Título */}
-      <div className="seg-card">
-        <h1 className="seg-title">Logs del sistema</h1>
-        <p className="seg-desc">Monitorización avanzada de eventos, seguridad y actividad del ERP.</p>
+      {/* TÍTULO PREMIUM */}
+      <div className="
+        bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
+        p-6 shadow-xl
+      ">
+        <h1 className="text-3xl font-bold drop-shadow">Logs del sistema</h1>
+        <p className="text-white/70 text-sm mt-1">
+          Monitorización avanzada de eventos, seguridad y actividad del ERP.
+        </p>
       </div>
 
-      {/* Filtros */}
-      <div className="seg-card grid-sj grid-4">
+      {/* FILTROS PREMIUM */}
+      <div className="
+        bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
+        p-6 shadow-xl grid grid-cols-4 gap-4
+      ">
         <input
-          className="sj-input"
+          className="
+            bg-white/10 border border-white/20 rounded-xl px-3 py-2
+            text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+          "
           placeholder="Tipo (error, security, info...)"
           value={tipo}
           onChange={(e) => setTipo(e.target.value)}
         />
 
         <input
-          className="sj-input"
+          className="
+            bg-white/10 border border-white/20 rounded-xl px-3 py-2
+            text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+          "
           placeholder="Buscar texto..."
           value={texto}
           onChange={(e) => setTexto(e.target.value)}
@@ -145,59 +138,68 @@ export default function Logs() {
 
         <input
           type="date"
-          className="sj-input"
+          className="
+            bg-white/10 border border-white/20 rounded-xl px-3 py-2
+            text-white focus:ring-2 focus:ring-blue-400
+          "
           value={fechaDesde}
           onChange={(e) => setFechaDesde(e.target.value)}
         />
 
         <input
           type="date"
-          className="sj-input"
+          className="
+            bg-white/10 border border-white/20 rounded-xl px-3 py-2
+            text-white focus:ring-2 focus:ring-blue-400
+          "
           value={fechaHasta}
           onChange={(e) => setFechaHasta(e.target.value)}
         />
 
-        <button className="sj-btn col-span-4" onClick={aplicarFiltros}>
+        <button
+          className="
+            col-span-4 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
+            text-white shadow-lg transition
+          "
+          onClick={aplicarFiltros}
+        >
           Aplicar filtros
         </button>
       </div>
 
-      {/* Tabla */}
-      <div className="seg-card overflow-hidden">
+      {/* TABLA PREMIUM */}
+      <div className="
+        bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
+        p-6 shadow-xl overflow-hidden
+      ">
         {loading ? (
-          <p className="text-gray-600 text-sm">Cargando logs…</p>
+          <p className="text-white/70 text-sm animate-pulse">Cargando logs…</p>
         ) : (
-          <table className="sj-table w-full text-sm">
+          <table className="w-full text-sm">
             <thead>
-              <tr>
-                <th className="cursor-pointer" onClick={() => ordenar("id")}>
-                  ID
-                </th>
-                <th className="cursor-pointer" onClick={() => ordenar("tipo")}>
-                  Tipo
-                </th>
-                <th className="cursor-pointer" onClick={() => ordenar("mensaje")}>
-                  Mensaje
-                </th>
-                <th className="cursor-pointer" onClick={() => ordenar("fecha")}>
-                  Fecha
-                </th>
+              <tr className="text-white/70 border-b border-white/10">
+                <th className="cursor-pointer py-2" onClick={() => ordenar("id")}>ID</th>
+                <th className="cursor-pointer py-2" onClick={() => ordenar("tipo")}>Tipo</th>
+                <th className="cursor-pointer py-2" onClick={() => ordenar("mensaje")}>Mensaje</th>
+                <th className="cursor-pointer py-2" onClick={() => ordenar("fecha")}>Fecha</th>
               </tr>
             </thead>
 
             <tbody>
               {visibles.map((log) => (
-                <tr key={log.id}>
-                  <td>{log.id}</td>
+                <tr key={log.id} className="border-b border-white/10">
+                  <td className="py-2">{log.id}</td>
 
-                  <td className={`flex items-center gap-2 ${colorTipo(log.tipo)}`}>
+                  <td className={`py-2 flex items-center gap-2 ${colorTipo(log.tipo)}`}>
                     <span>{iconoTipo(log.tipo)}</span>
                     <span>{log.tipo}</span>
                   </td>
 
-                  <td>{log.mensaje}</td>
+                  <td className="py-2">{log.mensaje}</td>
 
-                  <td>{new Date(log.fecha).toLocaleString("es-ES")}</td>
+                  <td className="py-2">
+                    {new Date(log.fecha).toLocaleString("es-ES")}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -205,25 +207,32 @@ export default function Logs() {
         )}
       </div>
 
-      {/* Paginación + Exportar */}
-      <div className="seg-card flex items-center justify-between">
-
-        {/* Paginación */}
-        <div className="flex items-center gap-2">
+      {/* PAGINACIÓN + EXPORTAR PREMIUM */}
+      <div className="
+        bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
+        p-6 shadow-xl flex items-center justify-between
+      ">
+        <div className="flex items-center gap-3">
           <button
-            className="sj-btn bg-gray-200 text-gray-700 hover:bg-gray-300"
+            className="
+              px-3 py-2 rounded-xl bg-white/10 border border-white/20
+              text-white hover:bg-white/20 transition
+            "
             disabled={pagina <= 1}
             onClick={() => setPagina((p) => p - 1)}
           >
             ← Anterior
           </button>
 
-          <span className="text-sm text-gray-600">
+          <span className="text-white/70 text-sm">
             Página {pagina} de {totalPaginas}
           </span>
 
           <button
-            className="sj-btn bg-gray-200 text-gray-700 hover:bg-gray-300"
+            className="
+              px-3 py-2 rounded-xl bg-white/10 border border-white/20
+              text-white hover:bg-white/20 transition
+            "
             disabled={pagina >= totalPaginas}
             onClick={() => setPagina((p) => p + 1)}
           >
@@ -231,9 +240,11 @@ export default function Logs() {
           </button>
         </div>
 
-        {/* Tamaño página */}
         <select
-          className="sj-input w-40"
+          className="
+            bg-white/10 border border-white/20 rounded-xl px-3 py-2
+            text-white focus:ring-2 focus:ring-blue-400
+          "
           value={pageSize}
           onChange={(e) => setPageSize(Number(e.target.value))}
         >
@@ -242,10 +253,12 @@ export default function Logs() {
           <option value={100}>100 por página</option>
         </select>
 
-        {/* Exportar Excel */}
         <button
           onClick={exportarExcel}
-          className="sj-btn bg-green-600 hover:bg-green-700 px-4 py-2"
+          className="
+            px-4 py-2 rounded-xl bg-green-600 hover:bg-green-700
+            text-white shadow-lg transition
+          "
         >
           Exportar Excel
         </button>

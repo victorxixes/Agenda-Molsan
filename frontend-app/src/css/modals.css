@@ -1,26 +1,44 @@
+/* ============================================================
+   ERP SJ‑2026 — Modales premium
+   ============================================================ */
+
 .modal-overlay-sj {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.45);
-  backdrop-filter: blur(2px);
-  animation: fadeIn 0.25s ease-out;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
+  animation: fadeInSJ 0.35s ease-out;
 }
 
 .modal-sj {
   background: var(--sj-blanco);
   border-radius: var(--sj-radius);
   padding: 32px;
-  box-shadow: var(--sj-shadow);
   width: 450px;
-  animation: fadeIn 0.25s ease-out;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+  border: 1px solid var(--sj-gris-azulado);
+  animation: fadeInSJ 0.35s ease-out;
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
+}
+
+.modal-sj:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.22);
 }
 
 .modal-sj-header {
   font-weight: 600;
   margin-bottom: 16px;
+  color: var(--sj-azul);
 }
 
 .modal-sj-footer {
   margin-top: 24px;
   text-align: right;
+}
+
+/* Fade-in corporativo */
+@keyframes fadeInSJ {
+  0% { opacity: 0; transform: translateY(8px); }
+  100% { opacity: 1; transform: translateY(0); }
 }

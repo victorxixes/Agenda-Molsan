@@ -15,18 +15,12 @@ from backend.app.mensajes.service import (
 )
 from backend.app.mensajes.ws_manager import manager
 
-# =========================================================
-# ROUTER (CORS FIX: redirect_slashes=False)
-# =========================================================
 router = APIRouter(
     prefix="/mensajes",
     tags=["Mensajes"],
     redirect_slashes=False
 )
 
-# =========================================================
-# EMPLEADOS CONECTADOS
-# =========================================================
 @router.get("/conectados")
 def conectados(db: Session = Depends(get_db)):
     resultado = []
@@ -46,19 +40,13 @@ def conectados(db: Session = Depends(get_db)):
 
     return resultado
 
-# =========================================================
-# ENVIAR MENSAJE (REST)
-# =========================================================
-@router.post("")   # sin barra final
+@router.post("")
 def enviar(datos: MensajeCreate, db: Session = Depends(get_db)):
     d = datos.dict()
     d["fecha"] = datetime.now()
     d["leido"] = False
     return enviar_mensaje(db, d)
 
-# =========================================================
-# SUBIR ARCHIVO
-# =========================================================
 @router.post("/upload")
 def subir_archivo(file: UploadFile = File(...)):
     ext = file.filename.split(".")[-1].lower()
@@ -80,7 +68,6 @@ def subir_archivo(file: UploadFile = File(...)):
     with open(ruta_tmp, "wb") as f:
         f.write(file.file.read())
 
-    # La URL pública que usará el frontend
     archivo_url = f"/static/mensajes/{nombre}"
 
     return {
@@ -88,23 +75,14 @@ def subir_archivo(file: UploadFile = File(...)):
         "archivo_url": archivo_url
     }
 
-# =========================================================
-# CONVERSACIÓN ENTRE DOS EMPLEADOS
-# =========================================================
 @router.get("/{usuario_id}/{otro_id}")
 def conversacion(usuario_id: int, otro_id: int, db: Session = Depends(get_db)):
     return listar_conversacion(db, usuario_id, otro_id)
 
-# =========================================================
-# MARCAR UN MENSAJE COMO LEÍDO
-# =========================================================
 @router.put("/leido/{mensaje_id}")
 def leido(mensaje_id: int, db: Session = Depends(get_db)):
     return marcar_leido(db, mensaje_id)
 
-# =========================================================
-# MARCAR TODA LA CONVERSACIÓN COMO LEÍDA
-# =========================================================
 @router.put("/leido/conversacion/{usuario_id}/{otro_id}")
 def marcar_conversacion(usuario_id: int, otro_id: int, db: Session = Depends(get_db)):
     return marcar_conversacion_leida(db, usuario_id, otro_id)

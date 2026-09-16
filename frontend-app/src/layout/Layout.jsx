@@ -8,9 +8,15 @@ export default function Layout() {
   const setPerfilModal = useAuthStore((s) => s.setPerfilModal);
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div
+      className="
+        flex min-h-screen 
+        bg-gradient-to-br from-blue-900 via-blue-800 to-blue-700
+        text-gray-100
+      "
+    >
 
-      {/* ⭐ MODAL PERFIL */}
+      {/* MODAL PERFIL */}
       {perfilModalId && (
         <EmpleadoPerfilModal
           id={perfilModalId}
@@ -22,9 +28,17 @@ export default function Layout() {
       <Sidebar />
 
       {/* MAIN */}
-      <main className="flex-1">
-        <header className="bg-white border-b p-4 shadow-sm">
-          <h1 className="text-lg font-semibold">Panel de control</h1>
+      <main className="flex-1 backdrop-blur-xl bg-white/10">
+        <header
+          className="
+            bg-white/20 backdrop-blur-xl 
+            border-b border-white/20 
+            p-4 shadow-lg
+          "
+        >
+          <h1 className="text-xl font-semibold text-white drop-shadow">
+            Panel de control
+          </h1>
         </header>
 
         <div className="p-6">

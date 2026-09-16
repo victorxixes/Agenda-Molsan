@@ -1169,44 +1169,41 @@ onChange={(e) =>
   </section>
 )}
 
-                    {/* ============================
-    TAB 5: AUDITORÍA — SaaS Premium
-============================ */}
-{!loading && tab === "auditoria" && (
-  <section
-    className="
-      bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
-      p-6 shadow-xl space-y-6
-    "
-  >
-    <h3 className="text-lg font-semibold drop-shadow mb-4">
-      Auditoría
-    </h3>
+                {/* TAB 5: AUDITORÍA */}
+            {!loading && tab === "auditoria" && (
+              <div className="transition-all duration-200 ease-out transform">
+                <section className="border border-gray-300 bg-white p-4 rounded-xl shadow-sm">
+                  <h3 className="text-sm font-semibold mb-3 text-gray-900">
+                    Auditoría
+                  </h3>
 
-    {(!auditoria || auditoria.length === 0) && (
-      <p className="text-white/70 text-sm">
-        No hay registros de auditoría para este empleado.
-      </p>
-    )}
+                  {(!auditoria || auditoria.length === 0) && (
+                    <p className="text-gray-500 text-xs">
+                      No hay registros de auditoría para este empleado.
+                    </p>
+                  )}
 
-    {auditoria && auditoria.length > 0 && (
-      <ul className="space-y-3 text-sm text-white/80">
-        {auditoria.map((a) => (
-          <li
-            key={a.id}
-            className="
-              bg-white/5 border border-white/20 rounded-xl p-4
-              shadow-md backdrop-blur-md
-            "
-          >
-            <div><strong className="text-white">Fecha:</strong> {new Date(a.fecha).toLocaleString()}</div>
-            <div><strong className="text-white">Módulo:</strong> {a.modulo}</div>
-            <div><strong className="text-white">Acción:</strong> {a.accion}</div>
-            <div><strong className="text-white">Descripción:</strong> {a.descripcion}</div>
-          </li>
-        ))}
-      </ul>
-    )}
-  </section>
-)}
+                  {auditoria && auditoria.length > 0 && (
+                    <ul className="list-disc ml-5 text-xs text-gray-800">
+                      {auditoria.map((a) => (
+                        <li key={a.id}>
+                          {new Date(a.fecha).toLocaleString()} —{" "}
+                          <strong>{a.modulo}</strong> [{a.accion}] — {a.descripcion}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </section>
+              </div>
+            )}
+          </div> {/* ← cierre del contenido interno */}
 
+        </div> {/* ← cierre del contenedor del modal */}
+
+      </div> {/* ← cierre del overlay */}
+
+    </>  {/* ← cierre del fragment */}
+
+  );  {/* ← cierre del return */}
+
+}  {/* ← cierre del componente */}

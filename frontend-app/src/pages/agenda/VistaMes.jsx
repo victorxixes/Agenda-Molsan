@@ -1,37 +1,17 @@
+import { useMemo, useCallback } from "react";
 import { useAgendaStore } from "../../store/agendaStore";
 
-// ⭐ Solo días laborales
+/**
+ * VistaMes — SJ‑2026 Premium
+ * - Calendario laboral (Lun–Vie)
+ * - Glass‑UI
+ * - Animaciones suaves
+ * - Render optimizado
+ */
+
 const DIAS_SEMANA = ["Lun", "Mar", "Mié", "Jue", "Vie"];
 
-function getMatrix(fechaBase) {
-  const f = new Date(fechaBase);
-  if (isNaN(f.getTime())) return [[]];
-
-  const year = f.getFullYear();
-  const month = f.getMonth();
-  const firstDay = new Date(year, month, 1);
-
-  // Lunes = 0, Domingo = 6
-  const start = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1;
-
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-  const cells = [];
-  for (let i = 0; i < start; i++) cells.push(null);
-  for (let d = 1; d <= daysInMonth; d++) cells.push(new Date(year, month, d));
-
-  // ⭐ Ajustar matriz a semanas laborales (5 columnas)
-  const weeks = [];
-  for (let i = 0; i < cells.length; i += 7) {
-    const semanaCompleta = cells.slice(i, i + 7);
-    const soloLaborales = semanaCompleta.slice(0, 5); // Lunes a Viernes
-    weeks.push(soloLaborales);
-  }
-
-  return weeks;
-}
-
-function colorPorTipo(tipo) {
+const colorPorTipo = (tipo) => {
   switch (tipo) {
     case "Firma notarial":
       return "bg-blue-500/20 border-blue-400 text-blue-200";
@@ -40,17 +20,52 @@ function colorPorTipo(tipo) {
     default:
       return "bg-white/10 border-white/20 text-white";
   }
+};
+
+function generarMatriz(fechaBase) {
+  const f = new Date(fechaBase);
+  if (isNaN(f.getTime())) return [[]];
+
+  const year = f.getFullYear();
+  const month = f.getMonth();
+  const firstDay = new Date(year, month, 1);
+
+  const start = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1;
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  const cells = [];
+  for (let i = 0; i < start; i++) cells.push(null);
+  for (let d = 1; d <= daysInMonth; d++) cells.push(new Date(year, month, d));
+
+  const weeks = [];
+  for (let i = 0; i < cells.length; i += 7) {
+    const semanaCompleta = cells.slice(i, i + 7);
+    weeks.push(semanaCompleta.slice(0, 5)); // Solo L–V
+  }
+
+  return weeks;
 }
 
 export default function VistaMes({ year, month, citas, onDiaClick, onCitaClick }) {
-  const citasSeguras = Array.isArray(citas) ? citas : [];
   const resaltadaId = useAgendaStore((s) => s.resaltadaId);
 
-  const fechaBase = `${year}-${String(month).padStart(2, "0")}-01`;
-  const matrix = getMatrix(fechaBase);
+  const fechaBase = useMemo(
+    () => `${year}-${String(month).padStart(2, "0")}-01`,
+    [year, month]
+  );
+
+  const matrix = useMemo(() => generarMatriz(fechaBase), [fechaBase]);
+
+  const citasSeguras = useMemo(() => (Array.isArray(citas) ? citas : []), [citas]);
+
+  const obtenerCitasDia = useCallback(
+    (fechaStr) =>
+      citasSeguras.filter((c) => (c.fecha || "").slice(0, 10) === fechaStr),
+    [citasSeguras]
+  );
 
   return (
-    <div className="text-xs text-white">
+    <div className="text-xs text-white animate-fade-in">
 
       {/* Cabecera días */}
       <div className="grid grid-cols-5 mb-3">
@@ -81,11 +96,7 @@ export default function VistaMes({ year, month, citas, onDiaClick, onCitaClick }
             }
 
             const fechaStr = day.toLocaleDateString("sv-SE");
-
-            const citasDia = citasSeguras.filter((c) => {
-              const fechaCita = (c.fecha || "").slice(0, 10);
-              return fechaCita === fechaStr;
-            });
+            const citasDia = obtenerCitasDia(fechaStr);
 
             return (
               <div
@@ -103,7 +114,7 @@ export default function VistaMes({ year, month, citas, onDiaClick, onCitaClick }
                 </div>
 
                 {/* Citas */}
-                <div className="mt-1 space-y-1 overflow-y-auto max-h-20 pr-1">
+                <div className="mt-1 space-y-1 overflow-y-auto max-h-20 pr-1 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
                   {citasDia.map((c) => (
                     <div
                       key={c.id}

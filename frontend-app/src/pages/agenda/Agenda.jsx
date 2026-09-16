@@ -2,6 +2,9 @@ import { useState, useEffect } from "react";
 import { useAgendaStore } from "../../store/agendaStore";
 
 import VistaMes from "./VistaMes";
+import VistaSemana from "./VistaSemana";
+import VistaDia from "./VistaDia";
+
 import ModalNuevaCita from "../../components/agenda/ModalNuevaCita.jsx";
 import AgendaToast from "../../components/agenda/AgendaToast.jsx";
 
@@ -14,6 +17,7 @@ export default function Agenda() {
   const hoy = new Date();
   const [year, setYear] = useState(hoy.getFullYear());
   const [month, setMonth] = useState(hoy.getMonth() + 1);
+  const [vista, setVista] = useState("mes"); // mes | semana | dia
 
   const {
     citas,
@@ -45,32 +49,26 @@ export default function Agenda() {
 
   // Editar cita
   const abrirEditar = async (cita) => {
-  try {
-    // 1️⃣ Obtener la cita completa del backend
-    const res = await fetch(`https://agenda-intranet-b.onrender.com/api/agenda/${cita.id}`);
-    const citaCompleta = await res.json();
+    try {
+      const res = await fetch(`https://agenda-intranet-b.onrender.com/api/agenda/${cita.id}`);
+      const citaCompleta = await res.json();
 
-    // 2️⃣ Guardar la cita completa
-    setModalModo("editar");
-    setFechaSeleccionada(citaCompleta.fecha);
-    setCitaSeleccionada(citaCompleta);
+      setModalModo("editar");
+      setFechaSeleccionada(citaCompleta.fecha);
+      setCitaSeleccionada(citaCompleta);
 
-    // 3️⃣ Abrir modal
-    setMostrarModal(true);
-  } catch (err) {
-    console.error("Error cargando cita completa:", err);
-    notify("Error al cargar la cita.");
-  }
-};
+      setMostrarModal(true);
+    } catch (err) {
+      console.error("Error cargando cita completa:", err);
+      notify("Error al cargar la cita.");
+    }
+  };
 
-
-  // Guardar cita (crear o editar)
+  // Guardar cita
   const guardarCita = async (payload) => {
     try {
-      let creada;
-
       if (modalModo === "crear") {
-        creada = await crear(payload, year, month);
+        const creada = await crear(payload, year, month);
         if (creada?.id) {
           marcarResaltada(creada.id);
           notify("Cita creada correctamente.");
@@ -124,18 +122,28 @@ export default function Agenda() {
   };
 
   return (
-    <div className="container-sj space-y-6">
-      <div className="seg-card">
-        <h1 className="seg-title">Agenda corporativa</h1>
-        <p className="seg-desc">Calendario de citas SJ‑2026.</p>
+    <div className="space-y-6 p-6 text-white">
+
+      {/* CABECERA PREMIUM */}
+      <div className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-xl">
+        <h1 className="text-3xl font-bold drop-shadow">Agenda corporativa</h1>
+        <p className="text-white/70">Calendario de citas SJ‑2026.</p>
       </div>
 
-      {/* Selector de año y mes */}
-      <div className="seg-card flex items-center gap-4">
-        <button className="sj-btn px-3" onClick={mesAnterior}>←</button>
+      {/* SELECTOR PREMIUM */}
+      <div className="
+        bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl
+        p-4 flex items-center gap-4 shadow-xl
+      ">
+        <button
+          className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 transition"
+          onClick={mesAnterior}
+        >
+          ←
+        </button>
 
         <select
-          className="sj-input w-32"
+          className="sj-input w-32 bg-white/10 text-white border-white/20 rounded-xl"
           value={year}
           onChange={(e) => setYear(parseInt(e.target.value))}
         >
@@ -145,7 +153,7 @@ export default function Agenda() {
         </select>
 
         <select
-          className="sj-input w-40"
+          className="sj-input w-40 bg-white/10 text-white border-white/20 rounded-xl"
           value={month}
           onChange={(e) => setMonth(parseInt(e.target.value))}
         >
@@ -154,21 +162,76 @@ export default function Agenda() {
           ))}
         </select>
 
-        <button className="sj-btn px-3" onClick={mesSiguiente}>→</button>
+        <button
+          className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 transition"
+          onClick={mesSiguiente}
+        >
+          →
+        </button>
+
+        {/* BOTONES DE VISTA */}
+        <div className="ml-auto flex gap-2">
+          <button
+            className={`px-3 py-2 rounded-xl transition ${
+              vista === "mes" ? "bg-white/20" : "bg-white/10 hover:bg-white/20"
+            }`}
+            onClick={() => setVista("mes")}
+          >
+            Mes
+          </button>
+
+          <button
+            className={`px-3 py-2 rounded-xl transition ${
+              vista === "semana" ? "bg-white/20" : "bg-white/10 hover:bg-white/20"
+            }`}
+            onClick={() => setVista("semana")}
+          >
+            Semana
+          </button>
+
+          <button
+            className={`px-3 py-2 rounded-xl transition ${
+              vista === "dia" ? "bg-white/20" : "bg-white/10 hover:bg-white/20"
+            }`}
+            onClick={() => setVista("dia")}
+          >
+            Día
+          </button>
+        </div>
       </div>
 
-      {/* Vista mensual */}
-      <div className="seg-card">
-        <VistaMes
-          year={year}
-          month={month}
-          citas={Array.isArray(citas) ? citas : []}
-          onDiaClick={abrirCrear}
-          onCitaClick={abrirEditar}
-        />
+      {/* VISTA PREMIUM */}
+      <div className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-xl">
+        {vista === "mes" && (
+          <VistaMes
+            year={year}
+            month={month}
+            citas={Array.isArray(citas) ? citas : []}
+            onDiaClick={abrirCrear}
+            onCitaClick={abrirEditar}
+          />
+        )}
+
+        {vista === "semana" && (
+          <VistaSemana
+            fechaBase={`${year}-${String(month).padStart(2, "0")}-01`}
+            citas={Array.isArray(citas) ? citas : []}
+            onCitaClick={abrirEditar}
+            onCrearCita={abrirCrear}
+          />
+        )}
+
+        {vista === "dia" && (
+          <VistaDia
+            fechaDia={new Date()}
+            citas={Array.isArray(citas) ? citas : []}
+            onCitaClick={abrirEditar}
+            onCrearCita={abrirCrear}
+          />
+        )}
       </div>
 
-      {/* Modal */}
+      {/* MODAL PREMIUM */}
       {mostrarModal && (
         <ModalNuevaCita
           fecha={fechaSeleccionada}
@@ -180,7 +243,7 @@ export default function Agenda() {
         />
       )}
 
-      {/* Notificaciones flotantes */}
+      {/* TOAST PREMIUM */}
       <AgendaToast />
     </div>
   );

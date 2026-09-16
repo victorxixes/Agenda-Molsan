@@ -4,8 +4,6 @@ import { useNavigate } from "react-router-dom";
 
 export default function LoginPage() {
   const navigate = useNavigate();
-
-  // ÚNICA función correcta del store
   const iniciarSesion = useAuthStore((s) => s.iniciarSesion);
 
   const [usuario, setUsuario] = useState("");
@@ -18,12 +16,8 @@ export default function LoginPage() {
     setError(null);
 
     const ok = await iniciarSesion(usuario, password);
-
-    if (ok) {
-      navigate("/dashboard");
-    } else {
-      setError("Credenciales incorrectas");
-    }
+    if (ok) navigate("/dashboard");
+    else setError("Credenciales incorrectas");
   };
 
   return (
@@ -38,26 +32,28 @@ export default function LoginPage() {
         onSubmit={handleSubmit}
         className="
           bg-white/10 backdrop-blur-xl p-8 rounded-2xl shadow-2xl w-full max-w-sm
-          border border-[#1F3A5F]/40 animate-slideUp
+          border border-white/20 animate-slideUp
         "
       >
         {/* LOGO */}
-        <div className="flex justify-center mb-4">
+        <div className="flex justify-center mb-6">
           <img
             src="/img/logo.jpg"
             alt="Logo empresa"
-            className="h-20 w-auto rounded-xl shadow-md"
+            className="h-20 w-auto rounded-xl shadow-xl"
           />
         </div>
 
         {/* TÍTULO */}
-        <h2 className="text-2xl font-semibold text-center mb-6 text-white">
-          Bienvenido a la Agenda Molsan
+        <h2 className="text-3xl font-bold text-center mb-6 text-white drop-shadow">
+          Agenda Molsan
         </h2>
 
         {/* ERROR */}
         {error && (
-          <p className="text-red-300 text-sm mb-3 text-center">{error}</p>
+          <p className="text-red-300 text-sm mb-3 text-center">
+            {error}
+          </p>
         )}
 
         {/* USUARIO */}
@@ -66,8 +62,8 @@ export default function LoginPage() {
           <input
             type="text"
             className="
-              w-full px-3 py-2 rounded bg-white/20 text-white
-              focus:outline-none focus:ring-2 focus:ring-[#6A7A8C]
+              w-full px-3 py-2 rounded-xl bg-white/20 text-white
+              focus:outline-none focus:ring-2 focus:ring-blue-400
             "
             value={usuario}
             onChange={(e) => setUsuario(e.target.value)}
@@ -75,7 +71,7 @@ export default function LoginPage() {
           />
         </div>
 
-        {/* CONTRASEÑA + OJO */}
+        {/* CONTRASEÑA */}
         <div className="mb-6">
           <label className="block text-sm mb-1 text-white/80">Contraseña</label>
 
@@ -83,14 +79,13 @@ export default function LoginPage() {
             <input
               type={mostrarPass ? "text" : "password"}
               className="
-                w-full px-3 py-2 rounded bg-white/20 text-white pr-10
-                focus:outline-none focus:ring-2 focus:ring-[#6A7A8C]
+                w-full px-3 py-2 rounded-xl bg-white/20 text-white pr-10
+                focus:outline-none focus:ring-2 focus:ring-blue-400
               "
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
 
-            {/* ICONO OJO */}
             <span
               className="
                 absolute right-3 top-2.5 cursor-pointer text-white/70
@@ -107,10 +102,10 @@ export default function LoginPage() {
         <button
           type="submit"
           className="
-            w-full py-2 rounded text-white font-semibold
-            bg-[#1F3A5F] hover:bg-[#2F4A6F]
-            shadow-[0_0_10px_rgba(31,58,95,0.6)]
-            hover:shadow-[0_0_15px_rgba(31,58,95,0.9)]
+            w-full py-2 rounded-xl text-white font-semibold
+            bg-blue-600 hover:bg-blue-700
+            shadow-[0_0_15px_rgba(255,255,255,0.3)]
+            hover:shadow-[0_0_25px_rgba(255,255,255,0.5)]
             transition-all
           "
         >

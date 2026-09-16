@@ -718,7 +718,6 @@ export default function SeguridadFicha() {
     </button>
   </div>
 </div>
-</div>  
 );       
 }        
 

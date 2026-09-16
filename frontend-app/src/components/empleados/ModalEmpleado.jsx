@@ -441,13 +441,14 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
                   </div>
 
                   <div className="mt-4 flex items-center gap-4">
-                    {empleado.foto && (
-                      <img
-                        src={empleado.foto || "/no-foto.png"}
-                        alt="Foto empleado"
-                        className="w-20 h-20 rounded object-cover border border-gray-300"
-                      />
-                    )}
+  {empleado.foto && (
+    <img
+      src={`${API_BASE}${empleado.foto}?v=${Date.now()}`}
+      alt="Foto empleado"
+      className="w-20 h-20 rounded object-cover border border-gray-300"
+    />
+  )}
+
                     <label className="text-xs text-gray-700">
                       Subir nueva foto:
                       <input

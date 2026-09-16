@@ -112,7 +112,7 @@ def subir_foto(empleado_id: int, archivo: UploadFile = File(...), db: Session = 
     if not empleado:
         raise HTTPException(status_code=404, detail="Empleado no encontrado")
 
-    fotos_dir = os.path.join(os.path.dirname(__file__), "..", "fotos", "empleados")
+    fotos_dir = os.path.join(os.path.dirname(__file__), "static", "fotos", "empleados")
     os.makedirs(fotos_dir, exist_ok=True)
 
     extension = archivo.filename.split(".")[-1]

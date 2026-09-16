@@ -1,24 +1,35 @@
+/* ============================================================
+   ERP SJ‑2026 — Cards premium
+   ============================================================ */
+
 .card-sj {
   background: var(--sj-blanco);
   border: 1px solid var(--sj-gris-azulado);
   border-radius: var(--sj-radius);
   padding: 24px;
   box-shadow: var(--sj-shadow);
-  transition: 0.25s;
-  animation: fadeIn 0.25s ease-out;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  animation: fadeInSJ 0.35s ease-out;
 }
 
 .card-sj:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.10);
 }
 
 .card-sj-header {
   font-weight: 600;
   margin-bottom: 12px;
+  color: var(--sj-azul);
 }
 
 .card-sj-footer {
   margin-top: 16px;
   text-align: right;
+}
+
+/* Fade-in corporativo */
+@keyframes fadeInSJ {
+  0% { opacity: 0; transform: translateY(6px); }
+  100% { opacity: 1; transform: translateY(0); }
 }

@@ -907,14 +907,14 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
   </section>
 )}
 
-          </div> {/* ← cierre del contenido scrollable */}
+          </div> 
 
-        </div> {/* ← cierre del modal */}
+        </div> 
 
-      </div> {/* ← cierre del overlay */}
+      </div> 
 
-    </>  {/* ← cierre del fragmento */}
+    </>  
 
-  );  {/* ← cierre del return */}
+  );  
 
-}  {/* ← cierre del componente */}
+} 

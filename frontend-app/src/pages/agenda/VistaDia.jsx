@@ -5,11 +5,11 @@ const HORAS = Array.from({ length: 12 }, (_, i) => `${9 + i}:00`);
 function colorPorTipo(tipo) {
   switch (tipo) {
     case "Firma notarial":
-      return "bg-blue-100 border-blue-400 text-blue-800";
+      return "bg-blue-500/20 border-blue-400 text-blue-200";
     case "Reunión":
-      return "bg-green-100 border-green-400 text-green-800";
+      return "bg-green-500/20 border-green-400 text-green-200";
     default:
-      return "bg-gray-100 border-gray-300 text-gray-800";
+      return "bg-white/10 border-white/20 text-white";
   }
 }
 
@@ -20,8 +20,10 @@ export default function VistaDia({ fechaDia, citas = [], onCitaClick, onCrearCit
   const fechaNormalizada = fechaDia.toLocaleDateString("sv-SE");
 
   return (
-    <div className="grid grid-cols-[80px,1fr] gap-2">
-      <div className="text-xs text-gray-500 flex flex-col">
+    <div className="grid grid-cols-[80px,1fr] gap-4 text-xs">
+
+      {/* Columna de horas */}
+      <div className="text-white/70 flex flex-col">
         {HORAS.map((h) => (
           <div key={h} className="h-12 flex items-start justify-end pr-2">
             {h}
@@ -29,11 +31,17 @@ export default function VistaDia({ fechaDia, citas = [], onCitaClick, onCrearCit
         ))}
       </div>
 
-      <div className="relative border rounded-lg bg-white">
+      {/* Timeline */}
+      <div className="
+        relative border border-white/10 rounded-2xl bg-white/5 backdrop-blur-xl shadow-xl
+      ">
         {HORAS.map((h) => (
           <div
             key={h}
-            className="h-12 border-b border-gray-100 hover:bg-gray-50 cursor-pointer"
+            className="
+              h-12 border-b border-white/10 hover:bg-white/10 cursor-pointer
+              transition-all duration-300
+            "
             onDoubleClick={() => onCrearCita(fechaNormalizada)}
           />
         ))}
@@ -46,10 +54,15 @@ export default function VistaDia({ fechaDia, citas = [], onCitaClick, onCrearCit
             <div
               key={cita.id}
               className={`
-                absolute left-4 right-4 mt-1 p-2 text-xs rounded border shadow-sm cursor-pointer
+                absolute left-4 right-4 mt-1 p-3 rounded-xl border shadow-lg cursor-pointer
+                backdrop-blur-xl
                 ${colorPorTipo(cita.tipo_cita)}
                 transition-all duration-300
-                ${resaltadaId === cita.id ? "ring-2 ring-yellow-400 bg-yellow-50 shadow-md" : ""}
+                ${
+                  resaltadaId === cita.id
+                    ? "ring-2 ring-yellow-400 bg-yellow-500/20 scale-[1.03]"
+                    : "hover:scale-[1.02]"
+                }
               `}
               style={{
                 top: (inicioHora - 9) * 48,
@@ -57,24 +70,24 @@ export default function VistaDia({ fechaDia, citas = [], onCitaClick, onCrearCit
               }}
               onClick={() => onCitaClick(cita)}
             >
-              <div className="font-semibold truncate">
+              <div className="font-semibold truncate text-white">
                 {cita.tipo_cita} — {cita.hora_inicio} - {cita.hora_fin}
               </div>
 
-              <div className="truncate">
+              <div className="truncate text-white/80">
                 Notario: {cita.notario_nombre || "—"}
               </div>
 
-              <div className="truncate">
+              <div className="truncate text-white/80">
                 Firma: {cita.tipo_firma}
               </div>
 
-              <div className="truncate">
+              <div className="truncate text-white/80">
                 Apoderado: {cita.apoderado_nombre || "—"}
               </div>
 
               {cita.observaciones && (
-                <div className="text-[11px] mt-1 truncate">
+                <div className="text-[11px] mt-1 truncate text-white/70">
                   Obs: {cita.observaciones}
                 </div>
               )}

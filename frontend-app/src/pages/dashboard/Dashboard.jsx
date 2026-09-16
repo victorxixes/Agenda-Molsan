@@ -1,16 +1,22 @@
-import { useEffect } from "react";
+import { useEffect, useCallback, useMemo } from "react";
 import { useDashboard } from "../../hooks/useDashboard";
 
+/**
+ * Dashboard — SJ‑2026 Premium
+ * - KPIs glass‑UI
+ * - Próximas citas premium
+ * - Animaciones fade + slide
+ * - Render optimizado
+ */
+
 export default function Dashboard() {
-  const {
-    data,
-    loading,
-    cargarDashboard,
-  } = useDashboard();
+  const { data, loading, cargarDashboard } = useDashboard();
+
+  const cargar = useCallback(() => cargarDashboard(), [cargarDashboard]);
 
   useEffect(() => {
-    cargarDashboard();
-  }, []);
+    cargar();
+  }, [cargar]);
 
   if (loading || !data) {
     return (
@@ -19,6 +25,8 @@ export default function Dashboard() {
       </div>
     );
   }
+
+  const citasHoy = useMemo(() => data.proximas || [], [data.proximas]);
 
   return (
     <div className="p-6 space-y-10 animate-fade-in">
@@ -36,47 +44,12 @@ export default function Dashboard() {
       {/* GRID DE KPIs PREMIUM */}
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6">
 
-        <CardMetric
-          titulo="Citas hoy"
-          valor={data.hoy}
-          icon="calendar"
-          color="from-blue-500 to-blue-700"
-        />
-
-        <CardMetric
-          titulo="Citas semana"
-          valor={data.semana}
-          icon="calendar"
-          color="from-indigo-500 to-indigo-700"
-        />
-
-        <CardMetric
-          titulo="Citas mes"
-          valor={data.mes}
-          icon="calendar"
-          color="from-purple-500 to-purple-700"
-        />
-
-        <CardMetric
-          titulo="Firmas mes"
-          valor={data.firmas_mes}
-          icon="clipboard"
-          color="from-green-500 to-green-700"
-        />
-
-        <CardMetric
-          titulo="VC mes"
-          valor={data.vc_mes}
-          icon="video"
-          color="from-pink-500 to-pink-700"
-        />
-
-        <CardMetric
-          titulo="Presenciales mes"
-          valor={data.presenciales_mes}
-          icon="user-group"
-          color="from-orange-500 to-orange-700"
-        />
+        <CardMetric titulo="Citas hoy" valor={data.hoy} icon="calendar" color="from-blue-500 to-blue-700" />
+        <CardMetric titulo="Citas semana" valor={data.semana} icon="calendar" color="from-indigo-500 to-indigo-700" />
+        <CardMetric titulo="Citas mes" valor={data.mes} icon="calendar" color="from-purple-500 to-purple-700" />
+        <CardMetric titulo="Firmas mes" valor={data.firmas_mes} icon="clipboard" color="from-green-500 to-green-700" />
+        <CardMetric titulo="VC mes" valor={data.vc_mes} icon="video" color="from-pink-500 to-pink-700" />
+        <CardMetric titulo="Presenciales mes" valor={data.presenciales_mes} icon="user-group" color="from-orange-500 to-orange-700" />
 
       </div>
 
@@ -86,7 +59,7 @@ export default function Dashboard() {
           Próximas citas (hoy)
         </h2>
 
-        <ProximasCitas citas={data.proximas || []} />
+        <ProximasCitas citas={citasHoy} />
       </div>
 
     </div>

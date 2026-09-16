@@ -1,6 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useCtn } from "../../hooks/useCtn";
 import ModalCtnDetalle from "../../components/ctn/ModalCtnDetalle";
+
+/**
+ * Listado CTN — SJ‑2026 Premium
+ * - Filtros premium
+ * - Tabla glass‑UI
+ * - Modal premium
+ * - Funciones estabilizadas
+ */
 
 export default function CtnListadoPage() {
   const { items, total, page, page_size, cargarNotarias, loading } = useCtn();
@@ -16,37 +24,48 @@ export default function CtnListadoPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [selected, setSelected] = useState(null);
 
+  // Cargar inicial
   useEffect(() => {
     cargarNotarias();
-  }, []);
+  }, [cargarNotarias]);
 
-  const aplicarFiltros = () => cargarNotarias(filtros);
+  const aplicarFiltros = useCallback(() => {
+    cargarNotarias(filtros);
+  }, [filtros, cargarNotarias]);
 
-  const abrirDetalle = (notaria) => {
+  const abrirDetalle = useCallback((notaria) => {
     setSelected(notaria);
     setModalOpen(true);
-  };
+  }, []);
+
+  const filtrosKeys = useMemo(() => Object.keys(filtros), [filtros]);
 
   return (
     <div className="space-y-6">
 
       {/* Filtros Premium */}
-      <div className="
-        bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-xl
-        grid grid-cols-5 gap-4
-      ">
-        {Object.keys(filtros).map((key) => (
+      <div
+        className="
+          bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-xl
+          grid grid-cols-5 gap-4
+        "
+      >
+        {filtrosKeys.map((key) => (
           <input
             key={key}
             className="
               bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white
               placeholder-white/40 focus:ring-2 focus:ring-blue-400
             "
-            placeholder={key === "q"
-              ? "Buscar nombre, apellidos, código, NIF…"
-              : key.charAt(0).toUpperCase() + key.slice(1)}
+            placeholder={
+              key === "q"
+                ? "Buscar nombre, apellidos, código, NIF…"
+                : key.charAt(0).toUpperCase() + key.slice(1)
+            }
             value={filtros[key]}
-            onChange={(e) => setFiltros({ ...filtros, [key]: e.target.value })}
+            onChange={(e) =>
+              setFiltros((prev) => ({ ...prev, [key]: e.target.value }))
+            }
           />
         ))}
       </div>
@@ -54,7 +73,7 @@ export default function CtnListadoPage() {
       <button
         className="
           px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
-          text-white shadow-lg transition
+          text-white shadow-lg transition active:scale-[0.97]
         "
         onClick={aplicarFiltros}
       >
@@ -65,9 +84,11 @@ export default function CtnListadoPage() {
       {loading ? (
         <p className="text-white/70 animate-pulse">Cargando notarías…</p>
       ) : (
-        <div className="
-          bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-xl
-        ">
+        <div
+          className="
+            bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-xl
+          "
+        >
           <table className="w-full text-white text-sm">
             <thead>
               <tr className="text-white/80 border-b border-white/20">

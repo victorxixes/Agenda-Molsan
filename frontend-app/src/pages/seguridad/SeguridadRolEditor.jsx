@@ -68,42 +68,69 @@ export default function SeguridadRolEditor() {
 
   return (
     <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold mb-4">Editor de Roles</h1>
 
+      <h1 className="text-3xl font-bold text-white drop-shadow mb-4">
+        Editor de Roles — SJ‑2026
+      </h1>
+
+      {/* LISTA DE ROLES */}
       {modo === "lista" && (
-        <div className="border p-4 rounded bg-white shadow">
-          <div className="flex justify-between items-center mb-3">
-            <h2 className="text-xl font-semibold">Roles existentes</h2>
+        <div
+          className="
+            bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
+            shadow-xl p-6
+          "
+        >
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold text-white drop-shadow">
+              Roles existentes
+            </h2>
+
             <button
-              className="px-3 py-1 bg-blue-600 text-white rounded text-sm"
+              className="
+                px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
+                text-white shadow-lg transition text-sm
+              "
               onClick={iniciarCrear}
             >
               Crear rol
             </button>
           </div>
 
-          <table className="w-full border rounded">
-            <thead>
-              <tr className="bg-gray-100 text-left">
-                <th className="p-2">ID</th>
-                <th className="p-2">Nombre</th>
-                <th className="p-2">Acciones</th>
+          <table className="w-full text-sm text-white">
+            <thead className="bg-white/10 border-b border-white/20">
+              <tr>
+                <th className="p-3 text-left">ID</th>
+                <th className="p-3 text-left">Nombre</th>
+                <th className="p-3 text-left">Acciones</th>
               </tr>
             </thead>
+
             <tbody>
               {(roles || []).map((r) => (
-                <tr key={r.id} className="border-b">
-                  <td className="p-2">{r.id}</td>
-                  <td className="p-2">{r.nombre}</td>
-                  <td className="p-2 space-x-2">
+                <tr
+                  key={r.id}
+                  className="border-b border-white/10 hover:bg-white/5 transition"
+                >
+                  <td className="p-3">{r.id}</td>
+                  <td className="p-3">{r.nombre}</td>
+
+                  <td className="p-3 space-x-2">
                     <button
-                      className="px-2 py-1 text-xs bg-purple-100 text-purple-700 rounded"
+                      className="
+                        px-3 py-1 text-xs rounded-xl bg-purple-600/20 text-purple-200
+                        hover:bg-purple-600/30 transition
+                      "
                       onClick={() => iniciarEditar(r)}
                     >
                       Editar
                     </button>
+
                     <button
-                      className="px-2 py-1 text-xs bg-red-100 text-red-700 rounded"
+                      className="
+                        px-3 py-1 text-xs rounded-xl bg-red-600/20 text-red-200
+                        hover:bg-red-600/30 transition
+                      "
                       onClick={() => eliminarRol(r.id)}
                     >
                       Eliminar
@@ -116,30 +143,50 @@ export default function SeguridadRolEditor() {
         </div>
       )}
 
+      {/* FORMULARIO CREAR / EDITAR */}
       {(modo === "crear" || modo === "editar") && (
-        <div className="border p-4 rounded bg-white shadow">
-          <h2 className="text-xl font-semibold mb-3">
-            {modo === "crear" ? "Crear nuevo rol" : `Editar rol #${rolEditando.id}`}
+        <div
+          className="
+            bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
+            shadow-xl p-6 space-y-4
+          "
+        >
+          <h2 className="text-xl font-semibold text-white drop-shadow mb-2">
+            {modo === "crear"
+              ? "Crear nuevo rol"
+              : `Editar rol #${rolEditando.id}`}
           </h2>
 
-          <label className="block text-sm font-medium mb-1">Nombre del rol</label>
+          <label className="block text-sm text-white/80 mb-1">
+            Nombre del rol
+          </label>
+
           <input
             type="text"
-            className="border rounded px-2 py-1 w-full"
+            className="
+              w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+              text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+            "
             value={nombreRol}
             onChange={(e) => setNombreRol(e.target.value)}
           />
 
           <div className="flex gap-3 mt-4">
             <button
-              className="px-3 py-1 bg-green-600 text-white rounded text-sm"
+              className="
+                px-4 py-2 rounded-xl bg-green-600 hover:bg-green-700
+                text-white shadow-lg transition text-sm
+              "
               onClick={guardarRol}
             >
               Guardar
             </button>
 
             <button
-              className="px-3 py-1 bg-gray-300 text-gray-800 rounded text-sm"
+              className="
+                px-4 py-2 rounded-xl bg-gray-600/30 hover:bg-gray-600/40
+                text-white shadow-lg transition text-sm
+              "
               onClick={cancelar}
             >
               Cancelar

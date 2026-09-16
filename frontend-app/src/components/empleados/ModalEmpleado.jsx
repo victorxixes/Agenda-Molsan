@@ -613,17 +613,25 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
 
 {/* Panel: Rol del empleado */}
 <div className="border border-gray-300 rounded-lg p-4 bg-white mb-4">
-  <h4 className="font-semibold text-xs mb-3 text-gray-900">
+  <h4 className="font-semibold text-xs mb-3 text-gray-900 flex items-center gap-3">
     Rol del empleado
+
+    {/* ⭐ Indicador del rol actual */}
+    <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">
+      Actual: <strong>{empleado?.rol?.nombre || "Sin rol"}</strong>
+    </span>
   </h4>
 
   <div className="flex items-center gap-3 text-xs">
     <select
       className="bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
-      value={empleado.rol_id || ""}
-      onChange={(e) =>
-        handleEmpleadoChange("rol_id", Number(e.target.value) || null)
-      }
+      value={empleado?.rol?.id || ""}
+      onChange={(e) => {
+        const id = Number(e.target.value);
+        const rolObj = roles.find(r => r.id === id) || null;
+
+        handleEmpleadoChange("rol", rolObj);
+      }}
     >
       <option value="">Sin rol</option>
       {roles.map((r) => (
@@ -642,13 +650,12 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
 
     <button
       className="px-3 py-1 bg-red-600 text-white rounded text-xs"
-      onClick={() => handleEmpleadoChange("rol_id", null)}
+      onClick={() => handleEmpleadoChange("rol", null)}
     >
       Reset rol
     </button>
   </div>
 </div>
-
 
       {/* Botón reset contraseña */}
       <button

@@ -1,6 +1,6 @@
-/* ================================
-   ERP SJ‑2026 — Base global
-   ================================ */
+/* ============================================================
+   ERP SJ‑2026 — Base global premium
+   ============================================================ */
 
 * {
   margin: 0;
@@ -20,7 +20,7 @@ body {
   background-color: var(--sj-blanco);
   color: var(--sj-azul);
   font-family: var(--sj-font);
-  line-height: 1.55;
+  line-height: 1.6;
 }
 
 /* Selección de texto corporativa */
@@ -29,7 +29,7 @@ body {
   color: white;
 }
 
-/* Scroll corporativo */
+/* Scroll corporativo SJ‑2026 */
 ::-webkit-scrollbar {
   width: 8px;
 }
@@ -38,14 +38,14 @@ body {
   border-radius: 4px;
 }
 ::-webkit-scrollbar-track {
-  background: #f5f7fa;
+  background: #eef1f5;
 }
 
 /* Enlaces */
 a {
   color: var(--sj-azul);
   text-decoration: none;
-  transition: 0.2s;
+  transition: color 0.25s ease;
 }
 a:hover {
   color: var(--sj-azul-claro);
@@ -55,6 +55,10 @@ a:hover {
 button {
   font-family: inherit;
   cursor: pointer;
+  transition: transform 0.2s ease;
+}
+button:active {
+  transform: scale(0.97);
 }
 
 /* Inputs base */
@@ -63,6 +67,13 @@ textarea,
 select {
   font-family: inherit;
   color: var(--sj-azul);
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
+}
+input:hover,
+textarea:hover,
+select:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
 }
 
 /* Tablas base */

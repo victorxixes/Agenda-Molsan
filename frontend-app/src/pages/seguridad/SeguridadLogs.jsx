@@ -1,5 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { useSeguridad } from "../../hooks/useSeguridad";
+
+/**
+ * SeguridadLogs — SJ‑2026 Premium
+ * - Filtros avanzados
+ * - Ordenación premium
+ * - Paginación premium
+ * - Exportación Excel
+ * - Glass‑UI
+ */
 
 export default function SeguridadLogs() {
   const { logs = [], cargarTodo } = useSeguridad();
@@ -12,67 +21,81 @@ export default function SeguridadLogs() {
 
   const [orden, setOrden] = useState({ campo: "fecha", asc: false });
 
-  const ordenar = (campo) => {
+  const ordenar = useCallback((campo) => {
     setOrden((prev) => ({
       campo,
-      asc: prev.campo === campo ? !prev.asc : true
+      asc: prev.campo === campo ? !prev.asc : true,
     }));
-  };
+  }, []);
 
-  const iconosEvento = {
-    login: "🔐",
-    login_error: "⚠️",
-    acceso: "📥",
-    update: "✏️",
-    delete: "🗑️",
-    default: "📄"
-  };
+  const iconosEvento = useMemo(
+    () => ({
+      login: "🔐",
+      login_error: "⚠️",
+      acceso: "📥",
+      update: "✏️",
+      delete: "🗑️",
+      default: "📄",
+    }),
+    []
+  );
 
   useEffect(() => {
     cargarTodo();
-  }, []);
+  }, [cargarTodo]);
 
-  const logsFiltrados = logs.filter((l) => {
+  const logsFiltrados = useMemo(() => {
     const texto = busqueda.toLowerCase();
-    const coincideBusqueda =
-      l.evento?.toLowerCase().includes(texto) ||
-      l.detalle?.toLowerCase().includes(texto) ||
-      l.fecha?.toLowerCase().includes(texto);
 
-    const coincideFecha = filtroFecha ? l.fecha.startsWith(filtroFecha) : true;
+    return logs.filter((l) => {
+      const coincideBusqueda =
+        l.evento?.toLowerCase().includes(texto) ||
+        l.detalle?.toLowerCase().includes(texto) ||
+        l.fecha?.toLowerCase().includes(texto);
 
-    return coincideBusqueda && coincideFecha;
-  });
+      const coincideFecha = filtroFecha
+        ? l.fecha.startsWith(filtroFecha)
+        : true;
 
-  const logsOrdenados = [...logsFiltrados].sort((a, b) => {
-    const campo = orden.campo;
-    const asc = orden.asc ? 1 : -1;
+      return coincideBusqueda && coincideFecha;
+    });
+  }, [logs, busqueda, filtroFecha]);
 
-    if (a[campo] < b[campo]) return -1 * asc;
-    if (a[campo] > b[campo]) return 1 * asc;
-    return 0;
-  });
+  const logsOrdenados = useMemo(() => {
+    const { campo, asc } = orden;
+    const dir = asc ? 1 : -1;
 
-  const logsPaginados = logsOrdenados.slice(
-    pagina * pageSize,
-    pagina * pageSize + pageSize
-  );
+    return [...logsFiltrados].sort((a, b) => {
+      if (a[campo] < b[campo]) return -1 * dir;
+      if (a[campo] > b[campo]) return 1 * dir;
+      return 0;
+    });
+  }, [logsFiltrados, orden]);
 
-  const descargarExcel = () => {
+  const logsPaginados = useMemo(() => {
+    return logsOrdenados.slice(
+      pagina * pageSize,
+      pagina * pageSize + pageSize
+    );
+  }, [logsOrdenados, pagina]);
+
+  const descargarExcel = useCallback(() => {
     const encabezados = ["ID", "Evento", "Detalle", "Fecha", "IP"];
     const filas = logsOrdenados.map((l) => [
       l.id,
       l.evento,
       l.detalle,
       l.fecha,
-      l.ip || "-"
+      l.ip || "-",
     ]);
 
     const contenido = [encabezados, ...filas]
       .map((fila) => fila.join("\t"))
       .join("\n");
 
-    const blob = new Blob([contenido], { type: "application/vnd.ms-excel" });
+    const blob = new Blob([contenido], {
+      type: "application/vnd.ms-excel",
+    });
     const url = URL.createObjectURL(blob);
 
     const a = document.createElement("a");
@@ -81,25 +104,27 @@ export default function SeguridadLogs() {
     a.click();
 
     URL.revokeObjectURL(url);
-  };
+  }, [logsOrdenados]);
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 text-white animate-fade-in">
 
-      <h1 className="text-3xl font-bold text-white drop-shadow mb-4">
+      <h1 className="text-3xl font-bold drop-shadow mb-4">
         Logs del sistema — SJ‑2026
       </h1>
 
+      {/* BOTÓN EXCEL */}
       <button
         onClick={descargarExcel}
         className="
           px-4 py-2 rounded-xl bg-green-600 hover:bg-green-700
-          text-white shadow-lg transition
+          text-white shadow-lg transition active:scale-[0.97]
         "
       >
         Descargar Excel
       </button>
 
+      {/* FILTROS PREMIUM */}
       <div className="flex flex-col md:flex-row gap-4 mb-4">
         <input
           type="text"
@@ -129,6 +154,7 @@ export default function SeguridadLogs() {
         />
       </div>
 
+      {/* TABLA PREMIUM */}
       <div
         className="
           bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
@@ -183,13 +209,14 @@ export default function SeguridadLogs() {
         </table>
       </div>
 
+      {/* PAGINACIÓN PREMIUM */}
       <div className="flex items-center gap-3 mt-4 text-white">
         <button
           disabled={pagina === 0}
           onClick={() => setPagina(pagina - 1)}
           className="
             px-3 py-1 bg-white/10 border border-white/20 rounded-xl
-            disabled:opacity-40 hover:bg-white/20 transition
+            disabled:opacity-40 hover:bg-white/20 transition active:scale-[0.97]
           "
         >
           ← Anterior
@@ -204,7 +231,7 @@ export default function SeguridadLogs() {
           onClick={() => setPagina(pagina + 1)}
           className="
             px-3 py-1 bg-white/10 border border-white/20 rounded-xl
-            disabled:opacity-40 hover:bg-white/20 transition
+            disabled:opacity-40 hover:bg-white/20 transition active:scale-[0.97]
           "
         >
           Siguiente →

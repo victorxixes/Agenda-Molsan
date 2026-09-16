@@ -1,4 +1,12 @@
+import { useMemo, useCallback } from "react";
 import { useSeguridad } from "../../hooks/useSeguridad";
+
+/**
+ * SeguridadPermisos — SJ‑2026 Premium
+ * - Permisos dinámicos por módulo
+ * - Glass‑UI
+ * - Render optimizado
+ */
 
 export default function SeguridadPermisos() {
   const { permisos = [], ficha, asignarPermisos } = useSeguridad();
@@ -8,39 +16,44 @@ export default function SeguridadPermisos() {
   const empleado = ficha.empleado;
   const permisosEmpleado = ficha.permisos_modulo_dict || {};
 
-  // Agrupar permisos globales por módulo
-  const permisosGlobales = permisos.reduce((acc, p) => {
-    if (!acc[p.modulo]) acc[p.modulo] = [];
-    acc[p.modulo].push(p.permiso);
-    return acc;
-  }, {});
+  // Agrupar permisos globales por módulo (optimizado)
+  const permisosGlobales = useMemo(() => {
+    return permisos.reduce((acc, p) => {
+      if (!acc[p.modulo]) acc[p.modulo] = [];
+      acc[p.modulo].push(p.permiso);
+      return acc;
+    }, {});
+  }, [permisos]);
 
-  const cambiarPermiso = (modulo, permiso) => {
-    const nuevo = { ...permisosEmpleado };
+  const cambiarPermiso = useCallback(
+    (modulo, permiso) => {
+      const nuevo = { ...permisosEmpleado };
 
-    if (!nuevo[modulo]) nuevo[modulo] = [];
+      if (!nuevo[modulo]) nuevo[modulo] = [];
 
-    if (nuevo[modulo].includes(permiso)) {
-      nuevo[modulo] = nuevo[modulo].filter((p) => p !== permiso);
-    } else {
-      nuevo[modulo] = [...nuevo[modulo], permiso];
-    }
+      if (nuevo[modulo].includes(permiso)) {
+        nuevo[modulo] = nuevo[modulo].filter((p) => p !== permiso);
+      } else {
+        nuevo[modulo] = [...nuevo[modulo], permiso];
+      }
 
-    asignarPermisos(empleado.id, nuevo);
-  };
+      asignarPermisos(empleado.id, nuevo);
+    },
+    [permisosEmpleado, asignarPermisos, empleado.id]
+  );
 
   return (
     <div
       className="
         bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
-        shadow-xl p-6 space-y-6
+        shadow-xl p-6 space-y-6 text-white animate-fade-in
       "
     >
-      <h2 className="text-xl font-semibold text-white drop-shadow mb-2">
+      <h2 className="text-xl font-semibold drop-shadow mb-2">
         Permisos por módulo (dinámicos)
       </h2>
 
-      <ul className="space-y-6 text-white">
+      <ul className="space-y-6">
         {Object.entries(permisosGlobales).map(([modulo, permsDisponibles]) => (
           <li key={modulo}>
             <strong className="text-lg">{modulo}</strong>
@@ -58,7 +71,10 @@ export default function SeguridadPermisos() {
                     type="checkbox"
                     checked={permisosEmpleado[modulo]?.includes(perm) || false}
                     onChange={() => cambiarPermiso(modulo, perm)}
-                    className="accent-purple-500 h-4 w-4 cursor-pointer"
+                    className="
+                      accent-purple-500 h-4 w-4 cursor-pointer transition
+                      active:scale-[0.97]
+                    "
                   />
                   {perm}
                 </label>

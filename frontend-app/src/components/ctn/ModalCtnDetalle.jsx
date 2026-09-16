@@ -3,14 +3,12 @@ import { useEffect } from "react";
 export default function ModalCtnDetalle({ open, onClose, notaria, firmas }) {
   if (!open) return null;
 
-  // Cerrar con ESC
   useEffect(() => {
     const handler = (e) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, [onClose]);
 
-  // Construir dirección para Google Maps
   const direccionTexto = [
     notaria?.direccion,
     notaria?.municipio,
@@ -24,17 +22,19 @@ export default function ModalCtnDetalle({ open, onClose, notaria, firmas }) {
   )}&output=embed`;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
       <div
-        className="bg-white rounded-lg shadow-xl p-6 w-[650px] max-h-[85vh] overflow-y-auto"
+        className="
+          bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
+          shadow-2xl p-6 w-[650px] max-h-[85vh] overflow-y-auto text-white
+        "
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="text-xl font-bold mb-4">
+        <h2 className="text-2xl font-bold mb-4 drop-shadow">
           Detalle Notaría #{notaria?.id}
         </h2>
 
-        {/* Datos principales */}
-        <div className="space-y-2 text-sm">
+        <div className="space-y-2 text-sm text-white/80">
           <p><strong>Código:</strong> {notaria?.codigo}</p>
           <p><strong>Nombre:</strong> {notaria?.nombre} {notaria?.apellidos}</p>
           <p><strong>NIF:</strong> {notaria?.nif}</p>
@@ -48,25 +48,22 @@ export default function ModalCtnDetalle({ open, onClose, notaria, firmas }) {
           <p><strong>Observación:</strong> {notaria?.observacion || "Sin observaciones"}</p>
         </div>
 
-        {/* Mapa */}
         <div className="mt-6">
-          <h3 className="text-lg font-semibold mb-2">Ubicación</h3>
-          <div className="border rounded overflow-hidden">
+          <h3 className="text-lg font-semibold mb-2 drop-shadow">Ubicación</h3>
+          <div className="border border-white/20 rounded-xl overflow-hidden shadow-xl">
             <iframe
               src={mapaUrl}
               width="100%"
               height="250"
               style={{ border: 0 }}
               loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
             ></iframe>
           </div>
         </div>
 
-        {/* Firmas */}
         {firmas && (
-          <div className="mt-6 border-t pt-4 space-y-2 text-sm">
-            <h3 className="text-lg font-semibold">Firmas</h3>
+          <div className="mt-6 border-t border-white/20 pt-4 space-y-2 text-sm text-white/80">
+            <h3 className="text-lg font-semibold drop-shadow">Firmas</h3>
             <p><strong>Total:</strong> {firmas.total_firmas}</p>
             <p><strong>VC:</strong> {firmas.total_vc}</p>
             <p><strong>Presencial:</strong> {firmas.total_presencial}</p>
@@ -75,13 +72,15 @@ export default function ModalCtnDetalle({ open, onClose, notaria, firmas }) {
 
         <button
           onClick={onClose}
-          className="mt-6 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          className="
+            mt-6 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
+            text-white shadow-lg transition
+          "
         >
           Cerrar
         </button>
       </div>
 
-      {/* Cerrar al hacer clic fuera */}
       <div className="absolute inset-0" onClick={onClose}></div>
     </div>
   );

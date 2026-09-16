@@ -797,9 +797,9 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
         </div>
       )}
 
-    </section>   {/* ← cierre sección seguridad */}
-  </div>        {/* ← cierre wrapper seguridad */}
-)}              {/* ← cierre condicional seguridad */}
+    </section>   
+  </div>        
+)}              
 
     
 {/* TAB 5: AUDITORÍA */}

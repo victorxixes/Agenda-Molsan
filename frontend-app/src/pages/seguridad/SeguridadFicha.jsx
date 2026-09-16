@@ -516,81 +516,85 @@ export default function SeguridadFicha() {
         </div>
 
         {/* TABLA AUDITORÍA */}
-        <table
-          className="
-            w-full text-sm bg-white/5 border border-white/10 rounded-xl
-            text-white
-          "
-        >
-          <thead>
-            <tr className="bg-white/10 border-b border-white/20">
-              <th
-                className="p-2 cursor-pointer hover:text-blue-300 transition"
-                onClick={() => ordenarAud("fecha")}
-              >
-                Fecha {ordenAud.campo === "fecha" ? (ordenAud.asc ? "▲" : "▼") : ""}
-              </th>
-              <th
-                className="p-2 cursor-pointer hover:text-blue-300 transition"
-                onClick={() => ordenarAud("modulo")}
-              >
-                Módulo {ordenAud.campo === "modulo" ? (ordenAud.asc ? "▲" : "▼") : ""}
-              </th>
-              <th
-                className="p-2 cursor-pointer hover:text-blue-300 transition"
-                onClick={() => ordenarAud("accion")}
-              >
-                Acción {ordenAud.campo === "accion" ? (ordenAud.asc ? "▲" : "▼") : ""}
-              </th>
-              <th className="p-2">Descripción            </tr>
-          </thead>
+<table
+  className="
+    w-full text-sm bg-white/5 border border-white/10 rounded-xl
+    text-white
+  "
+>
+  <thead>
+    <tr className="bg-white/10 border-b border-white/20">
+      <th
+        className="p-2 cursor-pointer hover:text-blue-300 transition"
+        onClick={() => ordenarAud("fecha")}
+      >
+        Fecha {ordenAud.campo === "fecha" ? (ordenAud.asc ? "▲" : "▼") : ""}
+      </th>
 
-          <tbody>
-            {auditoriaPaginada.map((a) => (
-              <tr
-                key={a.id}
-                className="
-                  border-b border-white/10 hover:bg-white/5 transition
-                "
-              >
-                <td className="p-2">{a.fecha}</td>
-                <td className="p-2">{a.modulo}</td>
-                <td className="p-2">
-                  {iconosAccion[a.accion] || iconosAccion.default} {a.accion}
-                </td>
-                <td className="p-2">{a.descripcion}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <th
+        className="p-2 cursor-pointer hover:text-blue-300 transition"
+        onClick={() => ordenarAud("modulo")}
+      >
+        Módulo {ordenAud.campo === "modulo" ? (ordenAud.asc ? "▲" : "▼") : ""}
+      </th>
 
-        {/* PAGINACIÓN AUDITORÍA */}
-        <div className="flex items-center gap-3 mt-4 text-white">
-          <button
-            disabled={paginaAud === 0}
-            onClick={() => setPaginaAud(paginaAud - 1)}
-            className="
-              px-3 py-1 bg-white/10 border border-white/20 rounded-xl
-              disabled:opacity-40 hover:bg-white/20 transition
-            "
-          >
-            ← Anterior
-          </button>
+      <th
+        className="p-2 cursor-pointer hover:text-blue-300 transition"
+        onClick={() => ordenarAud("accion")}
+      >
+        Acción {ordenAud.campo === "accion" ? (ordenAud.asc ? "▲" : "▼") : ""}
+      </th>
 
-          <span className="text-sm text-white/70">Página {paginaAud + 1}</span>
+      <th className="p-2">Descripción</th>
+    </tr>
+  </thead>
 
-          <button
-            disabled={(paginaAud + 1) * pageSizeAud >= auditoriaOrdenada.length}
-            onClick={() => setPaginaAud(paginaAud + 1)}
-            className="
-              px-3 py-1 bg-white/10 border border-white/20 rounded-xl
-              disabled:opacity-40 hover:bg-white/20 transition
-            "
-          >
-            Siguiente →
-          </button>
-        </div>
-      </div>
+  <tbody>
+    {auditoriaPaginada.map((a) => (
+      <tr
+        key={a.id}
+        className="
+          border-b border-white/10 hover:bg-white/5 transition
+        "
+      >
+        <td className="p-2">{a.fecha}</td>
+        <td className="p-2">{a.modulo}</td>
+        <td className="p-2">
+          {iconosAccion[a.accion] || iconosAccion.default} {a.accion}
+        </td>
+        <td className="p-2">{a.descripcion}</td>
+      </tr>
+    ))}
+  </tbody>
+</table>
+
+{/* PAGINACIÓN AUDITORÍA */}
+<div className="flex items-center gap-3 mt-4 text-white">
+  <button
+    disabled={paginaAud === 0}
+    onClick={() => setPaginaAud(paginaAud - 1)}
+    className="
+      px-3 py-1 bg-white/10 border border-white/20 rounded-xl
+      disabled:opacity-40 hover:bg-white/20 transition
+    "
+  >
+    ← Anterior
+  </button>
+
+  <span className="text-sm text-white/70">Página {paginaAud + 1}</span>
+
+  <button
+    disabled={(paginaAud + 1) * pageSizeAud >= auditoriaOrdenada.length}
+    onClick={() => setPaginaAud(paginaAud + 1)}
+    className="
+      px-3 py-1 bg-white/10 border border-white/20 rounded-xl
+      disabled:opacity-40 hover:bg-white/20 transition
+    "
+  >
+    Siguiente →
+  </button>
+</div>
+
 {/* LOGS DEL USUARIO */}
 <div
   className="

@@ -1,5 +1,16 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useSeguridad } from "../../hooks/useSeguridad";
+
+/**
+ * SeguridadResumen — SJ‑2026 Premium
+ * - Resumen completo de seguridad del empleado
+ * - Acciones rápidas
+ * - Módulos visibles
+ * - Permisos por módulo
+ * - Auditoría reciente
+ * - Logs recientes
+ * - Glass‑UI
+ */
 
 export default function SeguridadResumen({ empleadoId }) {
   const {
@@ -13,15 +24,16 @@ export default function SeguridadResumen({ empleadoId }) {
     asignarModulos,
     permisos,
     logs,
-    auditoria
+    auditoria,
   } = useSeguridad();
 
   const [nuevaPassword, setNuevaPassword] = useState("");
   const [nuevoRol, setNuevoRol] = useState("");
 
+  // Cargar ficha
   useEffect(() => {
     cargarFicha(empleadoId);
-  }, [empleadoId]);
+  }, [empleadoId, cargarFicha]);
 
   if (!ficha)
     return (
@@ -31,46 +43,57 @@ export default function SeguridadResumen({ empleadoId }) {
     );
 
   const empleado = ficha.empleado;
-  const modulosVisibles = empleado.modulos_visibles_list || [];
+  const modulosVisibles = ficha.empleado.modulos_visibles_list || [];
   const permisosEmpleado = ficha.permisos_modulo_dict || {};
 
-  const permisosGlobales = permisos.reduce((acc, p) => {
-    if (!acc[p.modulo]) acc[p.modulo] = [];
-    acc[p.modulo].push(p.permiso);
-    return acc;
-  }, {});
+  // Agrupar permisos globales por módulo (optimizado)
+  const permisosGlobales = useMemo(() => {
+    return permisos.reduce((acc, p) => {
+      if (!acc[p.modulo]) acc[p.modulo] = [];
+      acc[p.modulo].push(p.permiso);
+      return acc;
+    }, {});
+  }, [permisos]);
 
-  const cambiarPermiso = (modulo, permiso) => {
-    const nuevo = { ...permisosEmpleado };
+  // Cambiar permiso
+  const cambiarPermiso = useCallback(
+    (modulo, permiso) => {
+      const nuevo = { ...permisosEmpleado };
 
-    if (!nuevo[modulo]) nuevo[modulo] = [];
+      if (!nuevo[modulo]) nuevo[modulo] = [];
 
-    if (nuevo[modulo].includes(permiso)) {
-      nuevo[modulo] = nuevo[modulo].filter((p) => p !== permiso);
-    } else {
-      nuevo[modulo] = [...nuevo[modulo], permiso];
-    }
+      if (nuevo[modulo].includes(permiso)) {
+        nuevo[modulo] = nuevo[modulo].filter((p) => p !== permiso);
+      } else {
+        nuevo[modulo] = [...nuevo[modulo], permiso];
+      }
 
-    asignarPermisos(empleado.id, nuevo);
-  };
+      asignarPermisos(empleado.id, nuevo);
+    },
+    [permisosEmpleado, asignarPermisos, empleado.id]
+  );
 
-  const cambiarModulo = (modulo) => {
-    let nuevo;
+  // Cambiar módulo visible
+  const cambiarModulo = useCallback(
+    (modulo) => {
+      let nuevo;
 
-    if (modulosVisibles.includes(modulo)) {
-      nuevo = modulosVisibles.filter((m) => m !== modulo);
-    } else {
-      nuevo = [...modulosVisibles, modulo];
-    }
+      if (modulosVisibles.includes(modulo)) {
+        nuevo = modulosVisibles.filter((m) => m !== modulo);
+      } else {
+        nuevo = [...modulosVisibles, modulo];
+      }
 
-    asignarModulos(empleado.id, nuevo);
-  };
+      asignarModulos(empleado.id, nuevo);
+    },
+    [modulosVisibles, asignarModulos, empleado.id]
+  );
 
   return (
-    <div className="p-6 space-y-8">
+    <div className="p-6 space-y-8 text-white animate-fade-in">
 
       {/* HEADER PREMIUM */}
-      <h1 className="text-3xl font-bold text-white drop-shadow mb-4">
+      <h1 className="text-3xl font-bold drop-shadow mb-4">
         Resumen de seguridad — {empleado.nombre} ({empleado.usuario})
       </h1>
 
@@ -81,7 +104,7 @@ export default function SeguridadResumen({ empleadoId }) {
           shadow-xl p-6 space-y-4
         "
       >
-        <h2 className="text-xl font-semibold text-white drop-shadow mb-3">
+        <h2 className="text-xl font-semibold drop-shadow mb-3">
           Datos básicos
         </h2>
 
@@ -89,7 +112,10 @@ export default function SeguridadResumen({ empleadoId }) {
           <img
             src={empleado.foto}
             alt="Foto empleado"
-            className="w-32 h-32 rounded-xl border border-white/20 object-cover shadow-lg"
+            className="
+              w-32 h-32 rounded-xl border border-white/20 object-cover shadow-xl
+              transition hover:scale-[1.03]
+            "
           />
 
           <div className="grid grid-cols-2 gap-2 text-white/90 text-sm">
@@ -116,7 +142,7 @@ export default function SeguridadResumen({ empleadoId }) {
             <button
               className="
                 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700
-                text-white shadow-lg transition text-sm
+                text-white shadow-lg transition text-sm active:scale-[0.97]
               "
               onClick={() => bloquear(empleado.id)}
             >
@@ -126,7 +152,7 @@ export default function SeguridadResumen({ empleadoId }) {
             <button
               className="
                 px-4 py-2 rounded-xl bg-green-600 hover:bg-green-700
-                text-white shadow-lg transition text-sm
+                text-white shadow-lg transition text-sm active:scale-[0.97]
               "
               onClick={() => desbloquear(empleado.id)}
             >
@@ -143,7 +169,7 @@ export default function SeguridadResumen({ empleadoId }) {
           shadow-xl p-6
         "
       >
-        <h2 className="text-xl font-semibold text-white drop-shadow mb-3">
+        <h2 className="text-xl font-semibold drop-shadow mb-3">
           Acciones rápidas
         </h2>
 
@@ -166,7 +192,7 @@ export default function SeguridadResumen({ empleadoId }) {
             <button
               className="
                 mt-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
-                text-white shadow-lg transition text-sm
+                text-white shadow-lg transition text-sm active:scale-[0.97]
               "
               onClick={() => {
                 resetPassword(empleado.id, nuevaPassword);
@@ -194,7 +220,7 @@ export default function SeguridadResumen({ empleadoId }) {
             <button
               className="
                 mt-2 px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700
-                text-white shadow-lg transition text-sm
+                text-white shadow-lg transition text-sm active:scale-[0.97]
               "
               onClick={() => {
                 asignarRol(empleado.id, Number(nuevoRol));
@@ -214,7 +240,7 @@ export default function SeguridadResumen({ empleadoId }) {
           shadow-xl p-6
         "
       >
-        <h2 className="text-xl font-semibold text-white drop-shadow mb-3">
+        <h2 className="text-xl font-semibold drop-shadow mb-3">
           Módulos visibles
         </h2>
 
@@ -233,7 +259,9 @@ export default function SeguridadResumen({ empleadoId }) {
                 type="checkbox"
                 checked={modulosVisibles.includes(modulo)}
                 onChange={() => cambiarModulo(modulo)}
-                className="h-5 w-5 accent-blue-500 cursor-pointer"
+                className="
+                  h-5 w-5 accent-blue-500 cursor-pointer transition active:scale-[0.97]
+                "
               />
             </li>
           ))}
@@ -247,7 +275,7 @@ export default function SeguridadResumen({ empleadoId }) {
           shadow-xl p-6
         "
       >
-        <h2 className="text-xl font-semibold text-white drop-shadow mb-3">
+        <h2 className="text-xl font-semibold drop-shadow mb-3">
           Permisos por módulo
         </h2>
 
@@ -269,7 +297,10 @@ export default function SeguridadResumen({ empleadoId }) {
                       type="checkbox"
                       checked={permisosEmpleado[modulo]?.includes(perm) || false}
                       onChange={() => cambiarPermiso(modulo, perm)}
-                      className="accent-purple-500"
+                      className="
+                        accent-purple-500 h-4 w-4 cursor-pointer transition
+                        active:scale-[0.97]
+                      "
                     />
                     {perm}
                   </label>
@@ -287,7 +318,7 @@ export default function SeguridadResumen({ empleadoId }) {
           shadow-xl p-6
         "
       >
-        <h2 className="text-xl font-semibold text-white drop-shadow mb-3">
+        <h2 className="text-xl font-semibold drop-shadow mb-3">
           Auditoría reciente
         </h2>
 
@@ -295,7 +326,9 @@ export default function SeguridadResumen({ empleadoId }) {
           {auditoria.slice(0, 10).map((a) => (
             <li
               key={a.id}
-              className="border-b border-white/10 pb-1 hover:bg-white/5 transition"
+              className="
+                border-b border-white/10 pb-1 hover:bg-white/5 transition
+              "
             >
               <strong>{a.fecha}</strong> — {a.accion} ({a.modulo})
             </li>
@@ -310,7 +343,7 @@ export default function SeguridadResumen({ empleadoId }) {
           shadow-xl p-6
         "
       >
-        <h2 className="text-xl font-semibold text-white drop-shadow mb-3">
+        <h2 className="text-xl font-semibold drop-shadow mb-3">
           Logs recientes
         </h2>
 
@@ -318,7 +351,9 @@ export default function SeguridadResumen({ empleadoId }) {
           {logs.slice(0, 10).map((l) => (
             <li
               key={l.id}
-              className="border-b border-white/10 pb-1 hover:bg-white/5 transition"
+              className="
+                border-b border-white/10 pb-1 hover:bg-white/5 transition
+              "
             >
               <strong>{l.fecha}</strong> — {l.tipo}: {l.mensaje}
             </li>

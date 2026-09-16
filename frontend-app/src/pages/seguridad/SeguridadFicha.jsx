@@ -1,5 +1,3 @@
-
-
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useSeguridad } from "../../hooks/useSeguridad";
@@ -656,3 +654,6 @@ export default function SeguridadFicha() {
     </button>
   </div>
 </div>
+</div>   
+);       
+}       

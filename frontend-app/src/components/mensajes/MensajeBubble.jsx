@@ -1,17 +1,44 @@
+import { useMemo } from "react";
+
+/**
+ * MensajeBubble — SJ‑2026 Premium
+ * Burbuja de mensaje con soporte para:
+ * - Texto
+ * - Imágenes
+ * - PDFs
+ * - Archivos adjuntos
+ * - Avatar + estado online
+ * - Estética consistente con el módulo de Mensajes
+ */
+
 export default function MensajeBubble({ mensaje, usuarioId, avatarUrl, online }) {
   const propio = mensaje.remitente_id === usuarioId;
 
-  const esImagen = mensaje.archivo_url?.match(/\.(jpg|jpeg|png|gif)$/i);
-  const esPDF = mensaje.archivo_url?.match(/\.pdf$/i);
+  /**
+   * Normalización de URL completa del archivo
+   */
+  const archivoFullUrl = useMemo(() => {
+    if (!mensaje.archivo_url) return null;
+    return `${import.meta.env.VITE_API_URL}${mensaje.archivo_url}`;
+  }, [mensaje.archivo_url]);
 
-  const archivoFullUrl = mensaje.archivo_url
-    ? `${import.meta.env.VITE_API_URL}${mensaje.archivo_url}`
-    : null;
+  /**
+   * Detección de tipo de archivo
+   */
+  const tipoArchivo = useMemo(() => {
+    if (!mensaje.archivo_url) return null;
+
+    if (/\.(jpg|jpeg|png|gif)$/i.test(mensaje.archivo_url)) return "imagen";
+    if (/\.pdf$/i.test(mensaje.archivo_url)) return "pdf";
+    return "otro";
+  }, [mensaje.archivo_url]);
 
   return (
     <div className={`flex items-start gap-2 my-2 ${propio ? "justify-end" : ""}`}>
+      
+      {/* AVATAR DEL OTRO */}
       {!propio && (
-        <div className="relative w-8 h-8 rounded-full overflow-hidden border bg-gray-200">
+        <div className="relative w-8 h-8 rounded-full overflow-hidden border bg-gray-200 shadow">
           <img
             src={avatarUrl || "/no-foto.png"}
             className="w-full h-full object-cover"
@@ -22,47 +49,57 @@ export default function MensajeBubble({ mensaje, usuarioId, avatarUrl, online })
         </div>
       )}
 
+      {/* BURBUJA */}
       <div
-        className={`p-2 rounded max-w-[70%] ${
-          propio ? "bg-blue-100 text-right" : "bg-gray-100"
-        }`}
+        className={`
+          p-2 rounded-xl max-w-[70%] shadow-sm
+          ${propio ? "bg-blue-100 text-right" : "bg-gray-100"}
+        `}
       >
-        {mensaje.contenido && <p>{mensaje.contenido}</p>}
+        {/* TEXTO */}
+        {mensaje.contenido && (
+          <p className="text-gray-800">{mensaje.contenido}</p>
+        )}
 
-        {esImagen && archivoFullUrl && (
+        {/* IMAGEN */}
+        {tipoArchivo === "imagen" && archivoFullUrl && (
           <img
             src={archivoFullUrl}
-            className="mt-2 rounded max-h-48 border"
+            className="mt-2 rounded max-h-48 border shadow"
           />
         )}
 
-        {esPDF && archivoFullUrl && (
+        {/* PDF */}
+        {tipoArchivo === "pdf" && archivoFullUrl && (
           <a
             href={archivoFullUrl}
             target="_blank"
-            className="text-blue-600 underline block mt-2"
+            className="text-blue-600 underline block mt-2 font-medium"
           >
             Ver PDF
           </a>
         )}
 
-        {!esImagen && !esPDF && archivoFullUrl && (
+        {/* OTRO ARCHIVO */}
+        {tipoArchivo === "otro" && archivoFullUrl && (
           <a
             href={archivoFullUrl}
             target="_blank"
-            className="text-blue-600 underline block mt-2"
+            className="text-blue-600 underline block mt-2 font-medium"
           >
             Archivo adjunto
           </a>
         )}
 
+        {/* FECHA */}
         <small className="text-gray-500 text-xs block mt-1">
           {mensaje.fecha}
         </small>
       </div>
 
+      {/* AVATAR PROPIO */}
       {propio && (
-        <div className="w-8 h-8 rounded-full overflow-hidden border bg-blue-200">
+        <div className="w-8 h-8 rounded-full overflow-hidden border bg-blue-200 shadow">
           <img
             src={avatarUrl || "/no-foto.png"}
             className="w-full h-full object-cover"

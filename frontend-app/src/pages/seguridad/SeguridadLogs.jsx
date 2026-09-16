@@ -58,7 +58,6 @@ export default function SeguridadLogs() {
     pagina * pageSize + pageSize
   );
 
-  // DESCARGA EXCEL
   const descargarExcel = () => {
     const encabezados = ["ID", "Evento", "Detalle", "Fecha", "IP"];
     const filas = logsOrdenados.map((l) => [
@@ -86,21 +85,28 @@ export default function SeguridadLogs() {
 
   return (
     <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold mb-4">Logs del sistema</h1>
 
-      {/* BOTÓN EXCEL */}
+      <h1 className="text-3xl font-bold text-white drop-shadow mb-4">
+        Logs del sistema — SJ‑2026
+      </h1>
+
       <button
         onClick={descargarExcel}
-        className="px-3 py-2 bg-green-600 text-white rounded mb-4"
+        className="
+          px-4 py-2 rounded-xl bg-green-600 hover:bg-green-700
+          text-white shadow-lg transition
+        "
       >
         Descargar Excel
       </button>
 
-      {/* FILTROS */}
       <div className="flex flex-col md:flex-row gap-4 mb-4">
         <input
           type="text"
-          className="border rounded px-3 py-2 w-full md:w-1/2"
+          className="
+            w-full md:w-1/2 bg-white/10 border border-white/20 rounded-xl px-3 py-2
+            text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+          "
           placeholder="Buscar por evento, detalle o fecha..."
           value={busqueda}
           onChange={(e) => {
@@ -111,7 +117,10 @@ export default function SeguridadLogs() {
 
         <input
           type="date"
-          className="border rounded px-3 py-2 w-full md:w-1/3"
+          className="
+            w-full md:w-1/3 bg-white/10 border border-white/20 rounded-xl px-3 py-2
+            text-white focus:ring-2 focus:ring-blue-400
+          "
           value={filtroFecha}
           onChange={(e) => {
             setFiltroFecha(e.target.value);
@@ -120,53 +129,83 @@ export default function SeguridadLogs() {
         />
       </div>
 
-      {/* TABLA */}
-      <table className="w-full border rounded bg-white text-sm">
-        <thead>
-          <tr className="bg-gray-100 text-left">
-            <th className="p-2 cursor-pointer" onClick={() => ordenar("fecha")}>
-              Fecha {orden.campo === "fecha" ? (orden.asc ? "▲" : "▼") : ""}
-            </th>
-            <th className="p-2 cursor-pointer" onClick={() => ordenar("evento")}>
-              Evento {orden.campo === "evento" ? (orden.asc ? "▲" : "▼") : ""}
-            </th>
-            <th className="p-2 cursor-pointer" onClick={() => ordenar("detalle")}>
-              Detalle {orden.campo === "detalle" ? (orden.asc ? "▲" : "▼") : ""}
-            </th>
-            <th className="p-2">IP</th>
-          </tr>
-        </thead>
+      <div
+        className="
+          bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
+          shadow-xl overflow-hidden
+        "
+      >
+        <table className="w-full text-sm text-white">
+          <thead className="bg-white/10 border-b border-white/20">
+            <tr>
+              <th
+                className="p-3 cursor-pointer"
+                onClick={() => ordenar("fecha")}
+              >
+                Fecha {orden.campo === "fecha" ? (orden.asc ? "▲" : "▼") : ""}
+              </th>
 
-        <tbody>
-          {logsPaginados.map((l) => (
-            <tr key={l.id} className="border-b">
-              <td className="p-2">{l.fecha}</td>
-              <td className="p-2">
-                {iconosEvento[l.evento] || iconosEvento.default} {l.evento}
-              </td>
-              <td className="p-2">{l.detalle || "-"}</td>
-              <td className="p-2">{l.ip || "-"}</td>
+              <th
+                className="p-3 cursor-pointer"
+                onClick={() => ordenar("evento")}
+              >
+                Evento {orden.campo === "evento" ? (orden.asc ? "▲" : "▼") : ""}
+              </th>
+
+              <th
+                className="p-3 cursor-pointer"
+                onClick={() => ordenar("detalle")}
+              >
+                Detalle {orden.campo === "detalle" ? (orden.asc ? "▲" : "▼") : ""}
+              </th>
+
+              <th className="p-3">IP</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
 
-      {/* PAGINACIÓN */}
-      <div className="flex items-center gap-3 mt-4">
+          <tbody>
+            {logsPaginados.map((l) => (
+              <tr
+                key={l.id}
+                className="border-b border-white/10 hover:bg-white/5 transition"
+              >
+                <td className="p-3">{l.fecha}</td>
+
+                <td className="p-3">
+                  {iconosEvento[l.evento] || iconosEvento.default} {l.evento}
+                </td>
+
+                <td className="p-3">{l.detalle || "-"}</td>
+                <td className="p-3">{l.ip || "-"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="flex items-center gap-3 mt-4 text-white">
         <button
           disabled={pagina === 0}
           onClick={() => setPagina(pagina - 1)}
-          className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
+          className="
+            px-3 py-1 bg-white/10 border border-white/20 rounded-xl
+            disabled:opacity-40 hover:bg-white/20 transition
+          "
         >
           ← Anterior
         </button>
 
-        <span className="text-sm text-gray-600">Página {pagina + 1}</span>
+        <span className="text-sm text-white/70">
+          Página {pagina + 1}
+        </span>
 
         <button
           disabled={(pagina + 1) * pageSize >= logsOrdenados.length}
           onClick={() => setPagina(pagina + 1)}
-          className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
+          className="
+            px-3 py-1 bg-white/10 border border-white/20 rounded-xl
+            disabled:opacity-40 hover:bg-white/20 transition
+          "
         >
           Siguiente →
         </button>

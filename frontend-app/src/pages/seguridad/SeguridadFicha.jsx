@@ -717,10 +717,9 @@ export default function SeguridadFicha() {
       Siguiente →
     </button>
   </div>
-</div>   {/* cierre del bloque LOGS */}
+</div>   
 
-</div>   {/* cierre del contenedor principal p-6 space-y-6 */}
+</div>   
 
-);        {/* cierre del return */}
-
+);  
 }         {/* cierre del componente SeguridadFicha */}

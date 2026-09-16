@@ -427,45 +427,44 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
                     </div>
 
                    {/* Observaciones */}
-<div className="col-span-2">
-  <span className="block mb-1 text-gray-700">Observaciones</span>
-  <textarea
-    className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
-    rows={3}
-    value={empleado.observaciones || ""}
-    onChange={(e) =>
-      handleEmpleadoChange("observaciones", e.target.value)
-    }
-  />
-</div>
-
-{/* Foto + subida */}
-<div className="mt-4 flex items-center gap-4">
-  {empleado.foto && (
-    <img
-      src={`${API_BASE}${empleado.foto}?v=${Date.now()}`}
-      alt="Foto empleado"
-      className="w-20 h-20 rounded object-cover border border-gray-300"
-    />
-  )}
-
-  <label className="text-xs text-gray-700">
-    Subir nueva foto:
-    <input
-      type="file"
-      className="block mt-1 text-xs"
-      onChange={handleFoto}
-    />
-  </label>
-</div>
-
-<button
-  className="mt-4 px-3 py-1 bg-blue-600 text-white rounded text-xs"
-  onClick={guardarEmpleado}
->
-  Guardar datos personales
-</button>
-
+                      <div className="col-span-2">
+                        <span className="block mb-1 text-gray-700">Observaciones</span>
+                        <textarea
+                          className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
+                          rows={3}
+                          value={empleado.observaciones || ""}
+                          onChange={(e) =>
+                            handleEmpleadoChange("observaciones", e.target.value)
+                          }
+                        />
+                      </div>
+                      
+                      {/* Foto + subida */}
+                      <div className="mt-4 flex items-center gap-4">
+                        {empleado.foto && (
+                          <img
+                            src={`${API_BASE}${empleado.foto}?v=${Date.now()}`}
+                            alt="Foto empleado"
+                            className="w-20 h-20 rounded object-cover border border-gray-300"
+                          />
+                        )}
+                      
+                        <label className="text-xs text-gray-700">
+                          Subir nueva foto:
+                          <input
+                            type="file"
+                            className="block mt-1 text-xs"
+                            onChange={handleFoto}
+                          />
+                        </label>
+                      </div>
+                      
+                      <button
+                        className="mt-4 px-3 py-1 bg-blue-600 text-white rounded text-xs"
+                        onClick={guardarEmpleado}
+                      >
+                        Guardar datos personales
+                      </button>
 
             {/* TAB 3: DATOS LABORALES */}
             {!loading && tab === "laborales" && (

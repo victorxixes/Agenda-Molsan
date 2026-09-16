@@ -507,7 +507,14 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
                         w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
                         text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
                       "
-                      value={empleado.cargo_id ||
+                      value={empleado.cargo_id || ""}
+onChange={(e) =>
+  handleEmpleadoChange(
+    "cargo_id",
+    Number(e.target.value) || null
+  )
+}
+/>
 
                         {/* ============================
     TAB 2: DATOS PERSONALES — SaaS Premium

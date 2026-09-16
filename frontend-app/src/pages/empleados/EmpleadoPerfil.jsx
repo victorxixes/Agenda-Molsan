@@ -21,7 +21,12 @@ export default function EmpleadoPerfil({ id }) {
     });
   }, [id]);
 
-  if (!data) return <div>Cargando perfil...</div>;
+  if (!data)
+    return (
+      <div className="text-white/70 animate-pulse p-6">
+        Cargando perfil…
+      </div>
+    );
 
   const empleado = empleadoEdit;
 
@@ -56,134 +61,165 @@ export default function EmpleadoPerfil({ id }) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 text-white">
 
-      {/* TABS */}
-      <div className="flex gap-4 border-b pb-2">
-        <button
-          className={tab === "basicos" ? "font-bold text-blue-600" : ""}
-          onClick={() => setTab("basicos")}
-        >
-          Datos básicos
-        </button>
-
-        <button
-          className={tab === "personales" ? "font-bold text-blue-600" : ""}
-          onClick={() => setTab("personales")}
-        >
-          Datos personales
-        </button>
-
-        <button
-          className={tab === "laborales" ? "font-bold text-blue-600" : ""}
-          onClick={() => setTab("laborales")}
-        >
-          Datos laborales
-        </button>
-
-        <button
-          className={tab === "auditoria" ? "font-bold text-blue-600" : ""}
-          onClick={() => setTab("auditoria")}
-        >
-          Auditoría
-        </button>
+      {/* TABS PREMIUM */}
+      <div className="flex gap-6 border-b border-white/20 pb-3">
+        {["basicos", "personales", "laborales", "auditoria"].map((t) => (
+          <button
+            key={t}
+            className={`
+              pb-2 transition-all
+              ${tab === t
+                ? "text-blue-300 font-semibold border-b-2 border-blue-400"
+                : "text-white/60 hover:text-white"}
+            `}
+            onClick={() => setTab(t)}
+          >
+            {t === "basicos" && "Datos básicos"}
+            {t === "personales" && "Datos personales"}
+            {t === "laborales" && "Datos laborales"}
+            {t === "auditoria" && "Auditoría"}
+          </button>
+        ))}
       </div>
 
       {/* ============================
           DATOS BÁSICOS (EDITABLE)
       ============================ */}
       {tab === "basicos" && (
-        <section className="border p-4 rounded bg-white shadow">
-          <h2 className="text-lg font-semibold mb-3">Datos básicos</h2>
+        <section
+          className="
+            bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
+            p-6 shadow-xl space-y-6
+          "
+        >
+          <h2 className="text-xl font-semibold drop-shadow mb-4">
+            Datos básicos
+          </h2>
 
-          <div className="grid grid-cols-2 gap-2 text-sm">
+          <div className="grid grid-cols-2 gap-4 text-sm">
 
             <div>
-              <strong>Nombre:</strong>
+              <strong className="text-white/80">Nombre:</strong>
               <input
-                className="border rounded p-1 w-full"
+                className="
+                  w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                  text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                "
                 value={empleado.nombre || ""}
                 onChange={(e) => handleChange("nombre", e.target.value)}
               />
             </div>
 
             <div>
-              <strong>Apellidos:</strong>
+              <strong className="text-white/80">Apellidos:</strong>
               <input
-                className="border rounded p-1 w-full"
+                className="
+                  w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                  text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                "
                 value={empleado.apellidos || ""}
                 onChange={(e) => handleChange("apellidos", e.target.value)}
               />
             </div>
 
             <div>
-              <strong>DNI:</strong>
+              <strong className="text-white/80">DNI:</strong>
               <input
-                className="border rounded p-1 w-full"
+                className="
+                  w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                  text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                "
                 value={empleado.dni || ""}
                 onChange={(e) => handleChange("dni", e.target.value)}
               />
             </div>
 
             <div>
-              <strong>Teléfono:</strong>
+              <strong className="text-white/80">Teléfono:</strong>
               <input
-                className="border rounded p-1 w-full"
+                className="
+                  w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                  text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                "
                 value={empleado.telefono || ""}
                 onChange={(e) => handleChange("telefono", e.target.value)}
               />
             </div>
 
             <div>
-              <strong>Email personal:</strong>
+              <strong className="text-white/80">Email personal:</strong>
               <input
-                className="border rounded p-1 w-full"
+                className="
+                  w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                  text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                "
                 value={empleado.email_personal || ""}
                 onChange={(e) => handleChange("email_personal", e.target.value)}
               />
             </div>
 
             <div>
-              <strong>Email empresa:</strong>
+              <strong className="text-white/80">Email empresa:</strong>
               <input
-                className="border rounded p-1 w-full"
+                className="
+                  w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                  text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                "
                 value={empleado.email_empresa || ""}
                 onChange={(e) => handleChange("email_empresa", e.target.value)}
               />
             </div>
 
             <div>
-              <strong>Usuario:</strong>
+              <strong className="text-white/80">Usuario:</strong>
               <input
-                className="border rounded p-1 w-full"
+                className="
+                  w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                  text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                "
                 value={empleado.usuario || ""}
                 onChange={(e) => handleChange("usuario", e.target.value)}
               />
             </div>
 
             <div>
-              <strong>Rol actual:</strong>
-              <div>{empleado.rol?.nombre || "—"}</div>
+              <strong className="text-white/80">Rol actual:</strong>
+              <div className="text-white/90 mt-1">
+                {empleado.rol?.nombre || "—"}
+              </div>
             </div>
           </div>
 
-          <div className="mt-4 flex items-center gap-4">
+          {/* FOTO */}
+          <div className="mt-6 flex items-center gap-6">
             {(fotoPreview || empleado.foto) && (
               <img
                 src={fotoPreview || `${API_BASE}${empleado.foto}`}
                 alt="Foto empleado"
-                className="w-24 h-24 rounded object-cover border"
+                className="
+                  w-28 h-28 rounded-full object-cover border border-white/20
+                  shadow-xl
+                "
               />
             )}
 
-            <label className="text-sm">
+            <label className="text-sm text-white/80">
               Subir nueva foto:
-              <input type="file" className="block mt-1" onChange={handleFoto} />
+              <input
+                type="file"
+                className="block mt-2 text-white"
+                onChange={handleFoto}
+              />
             </label>
           </div>
 
           <button
-            className="mt-4 px-3 py-1 bg-blue-600 text-white rounded text-sm"
+            className="
+              mt-4 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
+              text-white shadow-lg transition
+            "
             onClick={guardarCambios}
           >
             Guardar cambios
@@ -195,88 +231,122 @@ export default function EmpleadoPerfil({ id }) {
           DATOS PERSONALES (EDITABLE)
       ============================ */}
       {tab === "personales" && (
-        <section className="border p-4 rounded bg-white shadow">
-          <h2 className="text-lg font-semibold mb-3">Datos personales</h2>
+        <section
+          className="
+            bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
+            p-6 shadow-xl space-y-6
+          "
+        >
+          <h2 className="text-xl font-semibold drop-shadow mb-4">
+            Datos personales
+          </h2>
 
-          <div className="grid grid-cols-2 gap-2 text-sm">
+          <div className="grid grid-cols-2 gap-4 text-sm">
 
             <div>
-              <strong>Dirección:</strong>
+              <strong className="text-white/80">Dirección:</strong>
               <input
-                className="border rounded p-1 w-full"
+                className="
+                  w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                  text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                "
                 value={empleado.direccion || ""}
                 onChange={(e) => handleChange("direccion", e.target.value)}
               />
             </div>
 
             <div>
-              <strong>Código postal:</strong>
+              <strong className="text-white/80">Código postal:</strong>
               <input
-                className="border rounded p-1 w-full"
+                className="
+                  w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                  text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                "
                 value={empleado.codigo_postal || ""}
                 onChange={(e) => handleChange("codigo_postal", e.target.value)}
               />
             </div>
 
             <div>
-              <strong>Población:</strong>
+              <strong className="text-white/80">Población:</strong>
               <input
-                className="border rounded p-1 w-full"
+                className="
+                  w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                  text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                "
                 value={empleado.poblacion || ""}
                 onChange={(e) => handleChange("poblacion", e.target.value)}
               />
             </div>
 
             <div>
-              <strong>Provincia:</strong>
+              <strong className="text-white/80">Provincia:</strong>
               <input
-                className="border rounded p-1 w-full"
+                className="
+                  w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                  text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                "
                 value={empleado.provincia || ""}
                 onChange={(e) => handleChange("provincia", e.target.value)}
               />
             </div>
 
             <div>
-              <strong>Fecha nacimiento:</strong>
+              <strong className="text-white/80">Fecha nacimiento:</strong>
               <input
                 type="date"
-                className="border rounded p-1 w-full"
+                className="
+                  w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                  text-white focus:ring-2 focus:ring-blue-400
+                "
                 value={empleado.fecha_nacimiento || ""}
                 onChange={(e) => handleChange("fecha_nacimiento", e.target.value)}
               />
             </div>
 
             <div>
-              <strong>Alergias:</strong>
+              <strong className="text-white/80">Alergias:</strong>
               <input
-                className="border rounded p-1 w-full"
+                className="
+                  w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                  text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                "
                 value={empleado.alergias || ""}
                 onChange={(e) => handleChange("alergias", e.target.value)}
               />
             </div>
 
             <div>
-              <strong>Persona contacto:</strong>
+              <strong className="text-white/80">Persona contacto:</strong>
               <input
-                className="border rounded p-1 w-full"
+                className="
+                  w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                  text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                "
                 value={empleado.persona_contacto || ""}
                 onChange={(e) => handleChange("persona_contacto", e.target.value)}
               />
             </div>
 
             <div>
-              <strong>Teléfono contacto:</strong>
+              <strong className="text-white/80">Teléfono contacto:</strong>
               <input
-                className="border rounded p-1 w-full"
+                className="
+                  w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                  text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                "
                 value={empleado.telefono_contacto || ""}
                 onChange={(e) => handleChange("telefono_contacto", e.target.value)}
               />
             </div>
 
             <div className="col-span-2">
-              <strong>Observaciones:</strong>
+              <strong className="text-white/80">Observaciones:</strong>
               <textarea
-                className="border rounded p-1 w-full"
+                className="
+                  w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                  text-white text-sm focus:ring-2 focus:ring-blue-400
+                "
                 rows={3}
                 value={empleado.observaciones || ""}
                 onChange={(e) => handleChange("observaciones", e.target.value)}
@@ -285,7 +355,10 @@ export default function EmpleadoPerfil({ id }) {
           </div>
 
           <button
-            className="mt-4 px-3 py-1 bg-blue-600 text-white rounded text-sm"
+            className="
+              mt-4 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
+              text-white shadow-lg transition
+            "
             onClick={guardarCambios}
           >
             Guardar cambios
@@ -297,66 +370,93 @@ export default function EmpleadoPerfil({ id }) {
           DATOS LABORALES (EDITABLE)
       ============================ */}
       {tab === "laborales" && (
-        <section className="border p-4 rounded bg-white shadow">
-          <h2 className="text-lg font-semibold mb-3">Datos laborales</h2>
+        <section
+          className="
+            bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
+            p-6 shadow-xl space-y-6
+          "
+        >
+          <h2 className="text-xl font-semibold drop-shadow mb-4">
+            Datos laborales
+          </h2>
 
-          <div className="grid grid-cols-2 gap-2 text-sm">
+          <div className="grid grid-cols-2 gap-4 text-sm">
 
             <div>
-              <strong>Departamento ID:</strong>
+              <strong className="text-white/80">Departamento ID:</strong>
               <input
-                className="border rounded p-1 w-full"
+                className="
+                  w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                  text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                "
                 value={empleado.departamento_id || ""}
                 onChange={(e) => handleChange("departamento_id", e.target.value)}
               />
             </div>
 
             <div>
-              <strong>Sección ID:</strong>
+              <strong className="text-white/80">Sección ID:</strong>
               <input
-                className="border rounded p-1 w-full"
+                className="
+                  w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                  text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                "
                 value={empleado.seccion_id || ""}
                 onChange={(e) => handleChange("seccion_id", e.target.value)}
               />
             </div>
 
             <div>
-              <strong>Cargo ID:</strong>
+              <strong className="text-white/80">Cargo ID:</strong>
               <input
-                className="border rounded p-1 w-full"
+                className="
+                  w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                  text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                "
                 value={empleado.cargo_id || ""}
                 onChange={(e) => handleChange("cargo_id", e.target.value)}
               />
             </div>
 
             <div>
-              <strong>Fecha alta:</strong>
+              <strong className="text-white/80">Fecha alta:</strong>
               <input
                 type="date"
-                className="border rounded p-1 w-full"
+                className="
+                  w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                  text-white focus:ring-2 focus:ring-blue-400
+                "
                 value={empleado.fecha_alta || ""}
                 onChange={(e) => handleChange("fecha_alta", e.target.value)}
               />
             </div>
 
             <div>
-              <strong>Fecha baja:</strong>
+              <strong className="text-white/80">Fecha baja:</strong>
               <input
                 type="date"
-                className="border rounded p-1 w-full"
+                className="
+                  w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                  text-white focus:ring-2 focus:ring-blue-400
+                "
                 value={empleado.fecha_baja || ""}
                 onChange={(e) => handleChange("fecha_baja", e.target.value)}
               />
             </div>
 
             <div>
-              <strong>Activo:</strong>
-              <div>{empleado.activo ? "Sí" : "No"}</div>
+              <strong className="text-white/80">Activo:</strong>
+              <div className="mt-1 text-white/90">
+                {empleado.activo ? "Sí" : "No"}
+              </div>
             </div>
           </div>
 
           <button
-            className="mt-4 px-3 py-1 bg-blue-600 text-white rounded text-sm"
+            className="
+              mt-4 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
+              text-white shadow-lg transition
+            "
             onClick={guardarCambios}
           >
             Guardar cambios
@@ -368,16 +468,29 @@ export default function EmpleadoPerfil({ id }) {
           AUDITORÍA (SOLO LECTURA)
       ============================ */}
       {tab === "auditoria" && (
-        <section className="border p-4 rounded bg-white shadow">
-          <h2 className="text-lg font-semibold mb-3">Auditoría</h2>
+        <section
+          className="
+            bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
+            p-6 shadow-xl space-y-6
+          "
+        >
+          <h2 className="text-xl font-semibold drop-shadow mb-4">
+            Auditoría
+          </h2>
 
-          <div className="space-y-2 text-sm">
+          <div className="space-y-3 text-sm">
             {data.auditoria.map((item) => (
-              <div key={item.id} className="border rounded p-2 bg-gray-50">
-                <div><strong>Fecha:</strong> {item.fecha}</div>
-                <div><strong>Módulo:</strong> {item.modulo}</div>
-                <div><strong>Acción:</strong> {item.accion}</div>
-                <div><strong>Descripción:</strong> {item.descripcion}</div>
+              <div
+                key={item.id}
+                className="
+                  bg-white/5 border border-white/20 rounded-xl p-4
+                  shadow-md backdrop-blur-md
+                "
+              >
+                <div><strong className="text-white/80">Fecha:</strong> {item.fecha}</div>
+                <div><strong className="text-white/80">Módulo:</strong> {item.modulo}</div>
+                <div><strong className="text-white/80">Acción:</strong> {item.accion}</div>
+                <div><strong className="text-white/80">Descripción:</strong> {item.descripcion}</div>
               </div>
             ))}
           </div>

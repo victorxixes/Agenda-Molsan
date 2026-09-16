@@ -8,12 +8,24 @@ import {
   listarApoderados,
 } from "../api/empleados";
 
+/**
+ * Store de Empleados — Versión SJ‑2026 Premium
+ * Gestiona:
+ * - Listado de empleados
+ * - Listado de apoderados
+ * - CRUD de empleados
+ * - Estado de carga y error
+ */
+
 export const useEmpleadosStore = create((set, get) => ({
   empleados: [],
   apoderados: [],
   cargando: false,
   error: null,
 
+  // ---------------------------------------------------------
+  // CARGAR EMPLEADOS
+  // ---------------------------------------------------------
   cargarEmpleados: async () => {
     try {
       set({ cargando: true });
@@ -28,6 +40,9 @@ export const useEmpleadosStore = create((set, get) => ({
     }
   },
 
+  // ---------------------------------------------------------
+  // CARGAR APODERADOS
+  // ---------------------------------------------------------
   cargarApoderados: async () => {
     try {
       set({ cargando: true });
@@ -42,23 +57,39 @@ export const useEmpleadosStore = create((set, get) => ({
     }
   },
 
+  // ---------------------------------------------------------
+  // OBTENER EMPLEADO
+  // ---------------------------------------------------------
   obtener: async (id) => {
-    const res = await obtenerEmpleado(id);
-    return res.data || null;
+    try {
+      const res = await obtenerEmpleado(id);
+      return res.data || null;
+    } catch {
+      return null;
+    }
   },
 
+  // ---------------------------------------------------------
+  // CREAR EMPLEADO
+  // ---------------------------------------------------------
   crear: async (payload) => {
     const res = await crearEmpleado(payload);
     await get().cargarEmpleados();
     return res.data || null;
   },
 
+  // ---------------------------------------------------------
+  // EDITAR EMPLEADO
+  // ---------------------------------------------------------
   editar: async (id, payload) => {
     const res = await editarEmpleado(id, payload);
     await get().cargarEmpleados();
     return res.data || null;
   },
 
+  // ---------------------------------------------------------
+  // ELIMINAR EMPLEADO
+  // ---------------------------------------------------------
   eliminar: async (id) => {
     await eliminarEmpleado(id);
     await get().cargarEmpleados();

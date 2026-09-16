@@ -6,18 +6,18 @@ export default function LogsAvanzados() {
   const [busqueda, setBusqueda] = useState("");
 
   useEffect(() => {
-    getLogs().then((res) => setLogs(res.data));
+    getLogs().then((res) => setLogs(res.data || []));
   }, []);
 
-  const filtrados = logs.filter((l) =>
-    JSON.stringify(l).toLowerCase().includes(busqueda.toLowerCase())
-  );
+  const filtrados = logs.filter((l) => {
+    const texto = `${l.evento} ${l.detalle} ${l.ip}`.toLowerCase();
+    return texto.includes(busqueda.toLowerCase());
+  });
 
   return (
     <div className="p-6 space-y-6">
       <h1 className="text-2xl font-bold">Logs Técnicos</h1>
 
-      {/* BUSCADOR */}
       <input
         type="text"
         placeholder="Buscar en logs..."
@@ -26,7 +26,6 @@ export default function LogsAvanzados() {
         onChange={(e) => setBusqueda(e.target.value)}
       />
 
-      {/* TABLA PRINCIPAL */}
       <section className="border p-4 rounded bg-white shadow">
         <h2 className="text-xl font-semibold mb-3">Últimos registros</h2>
 
@@ -43,7 +42,7 @@ export default function LogsAvanzados() {
           <tbody>
             {filtrados.map((l) => (
               <tr key={l.id} className="border-b">
-                <td>{l.fecha}</td>
+                <td>{new Date(l.fecha).toLocaleString("es-ES")}</td>
                 <td>{l.evento}</td>
                 <td>{l.detalle}</td>
                 <td>{l.ip}</td>

@@ -49,6 +49,12 @@ os.makedirs(TMP_MENSAJES, exist_ok=True)
 app.mount("/static/mensajes", StaticFiles(directory=TMP_MENSAJES), name="mensajes")
 
 # ---------------------------------------------------------
+# STATIC FILES - FOTOS EMPLEADOS
+# ---------------------------------------------------------
+FOTOS_DIR = os.path.join(os.path.dirname(__file__), "static", "fotos")
+app.mount("/api/fotos", StaticFiles(directory=FOTOS_DIR), name="fotos")
+
+# ---------------------------------------------------------
 # IMPORTAR ROUTERS
 # ---------------------------------------------------------
 from backend.app.auth.router import router as auth_router

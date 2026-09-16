@@ -580,7 +580,7 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
               </div>
             )}
 
-           {/* TAB 4: SEGURIDAD */}
+         {/* TAB 4: SEGURIDAD */}
 {!loading && tab === "seguridad" && (
   <div className="transition-all duration-200 ease-out transform">
     <section className="border border-gray-300 bg-white p-4 rounded-xl shadow-sm">
@@ -588,72 +588,69 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
         Seguridad interna
       </h3>
 
-    {/* Usuario */}
-<div className="grid grid-cols-3 gap-3 text-xs mb-4">
-  <div>
-    <span className="block mb-1 text-gray-700">Usuario</span>
-    <input
-      className="w-full bg-gray-100 border border-gray-300 rounded-md px-2 py-1 text-gray-600 text-xs"
-      value={empleado.usuario || ""}
-      readOnly
-    />
-  </div>
+      {/* Usuario */}
+      <div className="grid grid-cols-3 gap-3 text-xs mb-4">
+        <div>
+          <span className="block mb-1 text-gray-700">Usuario</span>
+          <input
+            className="w-full bg-gray-100 border border-gray-300 rounded-md px-2 py-1 text-gray-600 text-xs"
+            value={empleado.usuario || ""}
+            readOnly
+          />
+        </div>
 
-  <div>
-    <span className="block mb-1 text-gray-700">Password</span>
-    <input
-      className="w-full bg-gray-100 border border-gray-300 rounded-md px-2 py-1 text-gray-600 text-xs"
-      value="********"
-      readOnly
-    />
-  </div>
-</div>
+        <div>
+          <span className="block mb-1 text-gray-700">Password</span>
+          <input
+            className="w-full bg-gray-100 border border-gray-300 rounded-md px-2 py-1 text-gray-600 text-xs"
+            value="********"
+            readOnly
+          />
+        </div>
+      </div>
 
-{/* Panel: Rol del empleado */}
-<div className="border border-gray-300 rounded-lg p-4 bg-white mb-4">
-  <h4 className="font-semibold text-xs mb-3 text-gray-900 flex items-center gap-3">
-    Rol del empleado
+      {/* Panel: Rol del empleado */}
+      <div className="border border-gray-300 rounded-lg p-4 bg-white mb-4">
+        <h4 className="font-semibold text-xs mb-3 text-gray-900 flex items-center gap-3">
+          Rol del empleado
+          <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">
+            Actual: <strong>{empleado?.rol?.nombre || "Sin rol"}</strong>
+          </span>
+        </h4>
 
-    {/* ⭐ Indicador del rol actual */}
-    <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">
-      Actual: <strong>{empleado?.rol?.nombre || "Sin rol"}</strong>
-    </span>
-  </h4>
+        <div className="flex items-center gap-3 text-xs">
+          <select
+            className="bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
+            value={empleado?.rol?.id || ""}
+            onChange={(e) => {
+              const id = Number(e.target.value);
+              const rolObj = roles.find(r => r.id === id) || null;
+              handleEmpleadoChange("rol", rolObj);
+            }}
+          >
+            <option value="">Sin rol</option>
+            {roles.map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.nombre}
+              </option>
+            ))}
+          </select>
 
-  <div className="flex items-center gap-3 text-xs">
-    <select
-      className="bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 text-xs"
-      value={empleado?.rol?.id || ""}
-      onChange={(e) => {
-        const id = Number(e.target.value);
-        const rolObj = roles.find(r => r.id === id) || null;
+          <button
+            className="px-3 py-1 bg-blue-600 text-white rounded text-xs"
+            onClick={guardarRol}
+          >
+            Guardar rol
+          </button>
 
-        handleEmpleadoChange("rol", rolObj);
-      }}
-    >
-      <option value="">Sin rol</option>
-      {roles.map((r) => (
-        <option key={r.id} value={r.id}>
-          {r.nombre}
-        </option>
-      ))}
-    </select>
-
-    <button
-      className="px-3 py-1 bg-blue-600 text-white rounded text-xs"
-      onClick={guardarRol}
-    >
-      Guardar rol
-    </button>
-
-    <button
-      className="px-3 py-1 bg-red-600 text-white rounded text-xs"
-      onClick={() => handleEmpleadoChange("rol", null)}
-    >
-      Reset rol
-    </button>
-  </div>
-</div>
+          <button
+            className="px-3 py-1 bg-red-600 text-white rounded text-xs"
+            onClick={() => handleEmpleadoChange("rol", null)}
+          >
+            Reset rol
+          </button>
+        </div>
+      </div>
 
       {/* Botón reset contraseña */}
       <button
@@ -742,63 +739,68 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
         </div>
       )}
 
-     {/* Permisos por módulo */}
-{seguridadTab === "permisos" && (
-  <div className="border border-gray-300 rounded-lg p-4 bg-white">
-    <h4 className="font-semibold text-xs mb-3 text-gray-900">
-      Permisos por módulo
-    </h4>
+      {/* Permisos por módulo */}
+      {seguridadTab === "permisos" && (
+        <div className="border border-gray-300 rounded-lg p-4 bg-white">
+          <h4 className="font-semibold text-xs mb-3 text-gray-900">
+            Permisos por módulo
+          </h4>
 
-    {Object.keys(permisos).map((mod) => (
-      <div key={mod} className="mb-4">
-        <span className="block font-semibold text-gray-800 mb-2 text-xs">
-          {mod.toUpperCase()}
-        </span>
+          {Object.keys(permisos).map((mod) => (
+            <div key={mod} className="mb-4">
+              <span className="block font-semibold text-gray-800 mb-2 text-xs">
+                {mod.toUpperCase()}
+              </span>
 
-        <div className="grid grid-cols-4 gap-2 text-xs">
-          {["ver", "crear", "editar", "eliminar"].map((perm) => (
-            <label key={perm} className="flex items-center gap-2 text-gray-700">
-              <input
-                type="checkbox"
-                checked={permisos[mod]?.includes(perm)}
-                onChange={(e) => {
-                  const actual = permisos[mod] || [];
-                  let nuevo;
+              <div className="grid grid-cols-4 gap-2 text-xs">
+                {["ver", "crear", "editar", "eliminar"].map((perm) => (
+                  <label key={perm} className="flex items-center gap-2 text-gray-700">
+                    <input
+                      type="checkbox"
+                      checked={permisos[mod]?.includes(perm)}
+                      onChange={(e) => {
+                        const actual = permisos[mod] || [];
+                        let nuevo;
 
-                  if (e.target.checked) {
-                    nuevo = [...actual, perm];
-                  } else {
-                    nuevo = actual.filter((p) => p !== perm);
-                  }
+                        if (e.target.checked) {
+                          nuevo = [...actual, perm];
+                        } else {
+                          nuevo = actual.filter((p) => p !== perm);
+                        }
 
-                  setPermisos({
-                    ...permisos,
-                    [mod]: nuevo,
-                  });
-                }}
-              />
-              {perm}
-            </label>
+                        setPermisos({
+                          ...permisos,
+                          [mod]: nuevo,
+                        });
+                      }}
+                    />
+                    {perm}
+                  </label>
+                ))}
+              </div>
+            </div>
           ))}
+
+          <button
+            className="mt-4 px-3 py-1 bg-blue-600 text-white rounded text-xs"
+            onClick={guardarPermisos}
+          >
+            Guardar permisos
+          </button>
+
+          <button
+            className="mt-2 px-3 py-1 bg-red-600 text-white rounded text-xs"
+            onClick={() => setPermisos({})}
+          >
+            Reset permisos
+          </button>
         </div>
-      </div>
-    ))}
+      )}
 
-    <button
-      className="mt-4 px-3 py-1 bg-blue-600 text-white rounded text-xs"
-      onClick={guardarPermisos}
-    >
-      Guardar permisos
-    </button>
+    </section>   {/* ← cierre sección seguridad */}
+  </div>        {/* ← cierre wrapper seguridad */}
+)}              {/* ← cierre condicional seguridad */}
 
-    <button
-      className="mt-2 px-3 py-1 bg-red-600 text-white rounded text-xs"
-      onClick={() => setPermisos({})}
-    >
-      Reset permisos
-    </button>
-  </div>
-)}  
     
 {/* TAB 5: AUDITORÍA */}
 {!loading && tab === "auditoria" && (

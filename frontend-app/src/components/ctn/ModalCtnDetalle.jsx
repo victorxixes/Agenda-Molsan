@@ -1,39 +1,66 @@
-import { useEffect } from "react";
+import { useEffect, useMemo, useCallback } from "react";
+
+/**
+ * ModalCtnDetalle — SJ‑2026 Premium
+ * Muestra detalle de notaría + mapa + firmas.
+ * - Glass‑UI
+ * - Cierre por ESC
+ * - Cierre por click‑outside
+ * - Datos normalizados
+ */
 
 export default function ModalCtnDetalle({ open, onClose, notaria, firmas }) {
   if (!open) return null;
 
+  /**
+   * Cerrar con tecla ESC
+   */
   useEffect(() => {
     const handler = (e) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, [onClose]);
 
-  const direccionTexto = [
-    notaria?.direccion,
-    notaria?.municipio,
-    notaria?.provincia,
-  ]
-    .filter(Boolean)
-    .join(" ");
+  /**
+   * Dirección completa para Google Maps
+   */
+  const direccionTexto = useMemo(() => {
+    return [notaria?.direccion, notaria?.municipio, notaria?.provincia]
+      .filter(Boolean)
+      .join(" ");
+  }, [notaria]);
 
-  const mapaUrl = `https://www.google.com/maps?q=${encodeURIComponent(
-    direccionTexto || ""
-  )}&output=embed`;
+  const mapaUrl = useMemo(() => {
+    return `https://www.google.com/maps?q=${encodeURIComponent(
+      direccionTexto || ""
+    )}&output=embed`;
+  }, [direccionTexto]);
+
+  /**
+   * Evitar recrear funciones en cada render
+   */
+  const stopPropagation = useCallback((e) => e.stopPropagation(), []);
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+    <div
+      className="
+        fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50
+      "
+      onClick={onClose}
+    >
       <div
         className="
           bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
           shadow-2xl p-6 w-[650px] max-h-[85vh] overflow-y-auto text-white
         "
-        onClick={(e) => e.stopPropagation()}
+        onClick={stopPropagation}
       >
+        {/* TÍTULO */}
         <h2 className="text-2xl font-bold mb-4 drop-shadow">
           Detalle Notaría #{notaria?.id}
         </h2>
 
+        {/* DATOS PRINCIPALES */}
         <div className="space-y-2 text-sm text-white/80">
           <p><strong>Código:</strong> {notaria?.codigo}</p>
           <p><strong>Nombre:</strong> {notaria?.nombre} {notaria?.apellidos}</p>
@@ -48,8 +75,10 @@ export default function ModalCtnDetalle({ open, onClose, notaria, firmas }) {
           <p><strong>Observación:</strong> {notaria?.observacion || "Sin observaciones"}</p>
         </div>
 
+        {/* MAPA */}
         <div className="mt-6">
           <h3 className="text-lg font-semibold mb-2 drop-shadow">Ubicación</h3>
+
           <div className="border border-white/20 rounded-xl overflow-hidden shadow-xl">
             <iframe
               src={mapaUrl}
@@ -57,10 +86,11 @@ export default function ModalCtnDetalle({ open, onClose, notaria, firmas }) {
               height="250"
               style={{ border: 0 }}
               loading="lazy"
-            ></iframe>
+            />
           </div>
         </div>
 
+        {/* FIRMAS */}
         {firmas && (
           <div className="mt-6 border-t border-white/20 pt-4 space-y-2 text-sm text-white/80">
             <h3 className="text-lg font-semibold drop-shadow">Firmas</h3>
@@ -70,6 +100,7 @@ export default function ModalCtnDetalle({ open, onClose, notaria, firmas }) {
           </div>
         )}
 
+        {/* BOTÓN CERRAR */}
         <button
           onClick={onClose}
           className="
@@ -80,8 +111,6 @@ export default function ModalCtnDetalle({ open, onClose, notaria, firmas }) {
           Cerrar
         </button>
       </div>
-
-      <div className="absolute inset-0" onClick={onClose}></div>
     </div>
   );
 }

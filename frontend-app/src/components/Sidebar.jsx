@@ -43,18 +43,22 @@ export default function Sidebar() {
         `
       }
     >
-      <IconRound name={iconName} active={isActive} />
+      {({ isActive }) => (
+        <>
+          <IconRound name={iconName} active={isActive} />
 
-      {!collapsed && (
-        <div className="flex items-center gap-2">
-          <span className="font-medium">{label}</span>
+          {!collapsed && (
+            <div className="flex items-center gap-2">
+              <span className="font-medium">{label}</span>
 
-          {badge > 0 && (
-            <span className="px-2 py-0.5 text-xs bg-red-500 text-white rounded-full shadow">
-              {badge}
-            </span>
+              {badge > 0 && (
+                <span className="px-2 py-0.5 text-xs bg-red-500 text-white rounded-full shadow">
+                  {badge}
+                </span>
+              )}
+            </div>
           )}
-        </div>
+        </>
       )}
     </NavLink>
   );

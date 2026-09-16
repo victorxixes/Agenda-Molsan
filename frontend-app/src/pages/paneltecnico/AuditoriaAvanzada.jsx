@@ -7,13 +7,14 @@ export default function AuditoriaAvanzada() {
   const [busqueda, setBusqueda] = useState("");
 
   useEffect(() => {
-    getAuditoria().then((res) => setRegistros(res.data));
-    getAuditoriaMetricas().then((res) => setMetricas(res.data));
+    getAuditoria().then((res) => setRegistros(res.data || []));
+    getAuditoriaMetricas().then((res) => setMetricas(res.data || null));
   }, []);
 
-  const filtrados = registros.filter((r) =>
-    JSON.stringify(r).toLowerCase().includes(busqueda.toLowerCase())
-  );
+  const filtrados = registros.filter((r) => {
+    const texto = `${r.usuario} ${r.modulo} ${r.accion} ${r.descripcion}`.toLowerCase();
+    return texto.includes(busqueda.toLowerCase());
+  });
 
   return (
     <div className="p-6 space-y-6">
@@ -30,7 +31,7 @@ export default function AuditoriaAvanzada() {
             <div>
               <h3 className="font-semibold mb-2">Por módulo</h3>
               <ul>
-                {metricas.por_modulo.map((m, i) => (
+                {(metricas.por_modulo || []).map((m, i) => (
                   <li key={i}>
                     {m.modulo}: {m.cantidad}
                   </li>
@@ -41,7 +42,7 @@ export default function AuditoriaAvanzada() {
             <div>
               <h3 className="font-semibold mb-2">Por acción</h3>
               <ul>
-                {metricas.por_accion.map((a, i) => (
+                {(metricas.por_accion || []).map((a, i) => (
                   <li key={i}>
                     {a.accion}: {a.cantidad}
                   </li>
@@ -53,9 +54,9 @@ export default function AuditoriaAvanzada() {
           <div className="mt-4">
             <h3 className="font-semibold mb-2">Últimos logins</h3>
             <ul>
-              {metricas.ultimos_logins.map((l, i) => (
+              {(metricas.ultimos_logins || []).map((l, i) => (
                 <li key={i}>
-                  {l.usuario} — {l.fecha}
+                  {l.usuario} — {new Date(l.fecha).toLocaleString("es-ES")}
                 </li>
               ))}
             </ul>
@@ -91,7 +92,7 @@ export default function AuditoriaAvanzada() {
           <tbody>
             {filtrados.map((r) => (
               <tr key={r.id} className="border-b">
-                <td>{r.fecha}</td>
+                <td>{new Date(r.fecha).toLocaleString("es-ES")}</td>
                 <td>{r.usuario}</td>
                 <td>{r.modulo}</td>
                 <td>{r.accion}</td>

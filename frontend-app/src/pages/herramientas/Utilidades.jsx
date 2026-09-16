@@ -3,41 +3,49 @@ import { Link } from "react-router-dom";
 export default function Utilidades() {
   return (
     <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold mb-4">Utilidades del sistema</h1>
+
+      <h1 className="text-3xl font-bold text-white drop-shadow mb-4">
+        Utilidades del sistema
+      </h1>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-        <Link
-          to="/herramientas/importar-ctn"
-          className="border rounded p-4 bg-white shadow hover:bg-gray-50"
-        >
-          <h2 className="text-lg font-semibold mb-2">Importar CTN</h2>
-          <p className="text-sm text-gray-600">
-            Importar fichero Excel con notarias.
-          </p>
-        </Link>
+        <Card
+          titulo="Importar CTN"
+          descripcion="Importar fichero Excel con notarias."
+          link="/herramientas/importar-ctn"
+        />
 
-        <Link
-          to="/herramientas/utilidades/crear-noticia"
-          className="border rounded p-4 bg-white shadow hover:bg-gray-50"
-        >
-          <h2 className="text-lg font-semibold mb-2">Crear noticia</h2>
-          <p className="text-sm text-gray-600">
-            Publicar una noticia en la intranet.
-          </p>
-        </Link>
+        <Card
+          titulo="Crear noticia"
+          descripcion="Publicar una noticia en la intranet."
+          link="/herramientas/utilidades/crear-noticia"
+        />
 
-        <Link
-          to="/herramientas/utilidades/subir-documento"
-          className="border rounded p-4 bg-white shadow hover:bg-gray-50"
-        >
-          <h2 className="text-lg font-semibold mb-2">Subir documento</h2>
-          <p className="text-sm text-gray-600">
-            Subir documentos a la intranet.
-          </p>
-        </Link>
+        <Card
+          titulo="Subir documento"
+          descripcion="Subir documentos a la intranet."
+          link="/herramientas/utilidades/subir-documento"
+        />
 
       </div>
     </div>
+  );
+}
+
+function Card({ titulo, descripcion, link }) {
+  return (
+    <Link
+      to={link}
+      className="
+        bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
+        p-6 shadow-xl hover:bg-white/20 transition block
+      "
+    >
+      <h2 className="text-xl font-semibold text-white drop-shadow mb-2">
+        {titulo}
+      </h2>
+      <p className="text-sm text-white/70">{descripcion}</p>
+    </Link>
   );
 }

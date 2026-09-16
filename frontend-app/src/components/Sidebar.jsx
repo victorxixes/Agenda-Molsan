@@ -7,10 +7,10 @@ import { useMensajesStore } from "../store/mensajesStore";
 const IconRound = ({ name, active }) => (
   <div
     className={`
-      w-10 h-10 flex items-center justify-center rounded-full transition-all duration-300
+      w-10 h-10 flex items-center justify-center rounded-xl transition-all duration-300
       ${active
         ? "bg-blue-600 text-white shadow-lg scale-110"
-        : "bg-gray-200 text-gray-600 group-hover:bg-blue-100 group-hover:text-blue-600 group-hover:scale-105"}
+        : "bg-white/10 text-white/70 backdrop-blur-sm border border-white/10 group-hover:bg-white/20 group-hover:text-white group-hover:scale-105"}
     `}
   >
     <svg className="w-5 h-5 transition-transform duration-300 group-hover:rotate-6">
@@ -39,7 +39,7 @@ export default function Sidebar() {
       className={({ isActive }) =>
         `
         group flex items-center gap-4 px-3 py-2 rounded-xl transition-all duration-300
-        ${isActive ? "bg-blue-100 text-blue-700 shadow-sm" : "text-gray-700 hover:bg-gray-100"}
+        ${isActive ? "bg-white/20 text-white shadow-sm" : "text-white/80 hover:bg-white/10"}
         ${collapsed ? "justify-center" : ""}
         `
       }
@@ -67,7 +67,7 @@ export default function Sidebar() {
   return (
     <aside
       className={`
-        backdrop-blur-xl bg-white/70 border-r shadow-lg p-4 space-y-6 transition-all duration-300
+        backdrop-blur-xl bg-white/10 border-r border-white/10 shadow-xl p-4 space-y-6 transition-all duration-300
         ${collapsed ? "w-24" : "w-72"}
       `}
       onMouseEnter={() => !fixed && setCollapsed(false)}
@@ -77,16 +77,16 @@ export default function Sidebar() {
       {/* HEADER */}
       <div className="flex items-center justify-between mb-2">
         {!collapsed && (
-          <h2 className="text-2xl font-bold text-gray-800 tracking-tight">
+          <h2 className="text-xl font-bold text-white tracking-tight drop-shadow">
             Agenda Molsan
           </h2>
         )}
 
         <button
           onClick={() => setFixed(!fixed)}
-          className="p-2 rounded-full hover:bg-gray-200 transition"
+          className="p-2 rounded-full hover:bg-white/10 transition"
         >
-          <svg className="w-5 h-5 text-gray-600">
+          <svg className="w-5 h-5 text-white">
             <use href={`/icons/icons.svg#${fixed ? "pin-off" : "pin"}`} />
           </svg>
         </button>
@@ -95,7 +95,7 @@ export default function Sidebar() {
       {/* MINI AVATAR CUANDO ESTÁ COLAPSADO */}
       {collapsed && (
         <div className="flex justify-center mb-4">
-          <div className="relative w-12 h-12 rounded-full overflow-hidden border border-gray-300 shadow-md animate-[fadeIn_0.4s_ease]">
+          <div className="relative w-12 h-12 rounded-full overflow-hidden border border-white/20 shadow-lg animate-[fadeIn_0.4s_ease]">
             <img
               src={safeUser.foto || "/icons/user-default.png"}
               className="w-full h-full object-cover"
@@ -107,7 +107,7 @@ export default function Sidebar() {
 
       {/* SECCIÓN: GENERAL */}
       {!collapsed && (
-        <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider px-2">
+        <h3 className="text-xs font-semibold text-white/60 uppercase tracking-wider px-2">
           General
         </h3>
       )}
@@ -119,7 +119,7 @@ export default function Sidebar() {
 
       {/* SECCIÓN: GESTIÓN */}
       {!collapsed && (
-        <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider px-2 mt-4">
+        <h3 className="text-xs font-semibold text-white/60 uppercase tracking-wider px-2 mt-4">
           Gestión
         </h3>
       )}
@@ -135,7 +135,7 @@ export default function Sidebar() {
 
       {/* SECCIÓN: SISTEMA */}
       {!collapsed && (
-        <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider px-2 mt-4">
+        <h3 className="text-xs font-semibold text-white/60 uppercase tracking-wider px-2 mt-4">
           Sistema
         </h3>
       )}
@@ -147,15 +147,15 @@ export default function Sidebar() {
 
       {/* PERFIL EXPANDIDO */}
       {!collapsed && (
-        <div className="mt-auto pt-4 border-t border-gray-200">
+        <div className="mt-auto pt-4 border-t border-white/10">
           <button
             onClick={() => setPerfilModal(safeUser.id)}
             className="
               flex items-center gap-4 px-3 py-2 rounded-xl transition-all duration-300
-              text-gray-700 hover:bg-gray-100 w-full
+              text-white/80 hover:bg-white/10 w-full
             "
           >
-            <div className="relative w-12 h-12 rounded-full overflow-hidden border border-gray-300 shadow-md">
+            <div className="relative w-12 h-12 rounded-full overflow-hidden border border-white/20 shadow-lg">
               <img
                 src={safeUser.foto || "/icons/user-default.png"}
                 className="w-full h-full object-cover"
@@ -164,10 +164,10 @@ export default function Sidebar() {
             </div>
 
             <div className="flex flex-col">
-              <span className="whitespace-nowrap font-semibold text-gray-800">
+              <span className="whitespace-nowrap font-semibold text-white">
                 {safeUser.nombre}
               </span>
-              <span className="text-xs text-gray-500 flex items-center gap-1">
+              <span className="text-xs text-white/60 flex items-center gap-1">
                 Online
               </span>
             </div>
@@ -178,15 +178,15 @@ export default function Sidebar() {
             onClick={() => useAuthStore.getState().logout()}
             className="
               mt-3 flex items-center gap-3 px-3 py-2 rounded-xl w-full
-              text-red-600 hover:bg-red-100 transition-all duration-300
+              text-red-300 hover:bg-red-500/20 transition-all duration-300
               group
             "
           >
             <div
               className="
-                w-10 h-10 flex items-center justify-center rounded-full
-                bg-red-200 text-red-700
-                group-hover:bg-red-300 group-hover:scale-105
+                w-10 h-10 flex items-center justify-center rounded-xl
+                bg-red-500/20 text-red-300
+                group-hover:bg-red-500/30 group-hover:scale-105
                 transition-all duration-300
               "
             >
@@ -203,7 +203,7 @@ export default function Sidebar() {
       {/* PERFIL MINI + LOGOUT MINI */}
       {collapsed && (
         <div className="mt-auto flex flex-col items-center gap-4 pb-2">
-          <div className="relative w-12 h-12 rounded-full overflow-hidden border border-gray-300 shadow-md">
+          <div className="relative w-12 h-12 rounded-full overflow-hidden border border-white/20 shadow-lg">
             <img
               src={safeUser.foto || "/icons/user-default.png"}
               className="w-full h-full object-cover"
@@ -214,9 +214,9 @@ export default function Sidebar() {
           <button
             onClick={() => useAuthStore.getState().logout()}
             className="
-              w-10 h-10 flex items-center justify-center rounded-full
-              bg-red-200 text-red-700
-              hover:bg-red-300 hover:scale-110
+              w-10 h-10 flex items-center justify-center rounded-xl
+              bg-red-500/20 text-red-300
+              hover:bg-red-500/30 hover:scale-110
               transition-all duration-300
             "
           >

@@ -1,9 +1,13 @@
 import axios from "./axios";
 
-/* ============================
-   CRUD EMPLEADOS (BLINDADO)
-============================ */
+/**
+ * API Empleados — Versión SJ‑2026 Premium
+ * CRUD blindado + seguridad + foto + apoderados
+ */
 
+/* ---------------------------------------------------------
+   CRUD EMPLEADOS
+--------------------------------------------------------- */
 export const buscarEmpleados = async (params) => {
   const res = await axios.get("/empleados/search", { params });
   return { data: Array.isArray(res.data) ? res.data : [] };
@@ -34,10 +38,9 @@ export const eliminarEmpleado = async (id) => {
   return { data: res.data || null };
 };
 
-/* ============================
+/* ---------------------------------------------------------
    FOTO EMPLEADO
-============================ */
-
+--------------------------------------------------------- */
 export const subirFotoEmpleado = async (id, file) => {
   const formData = new FormData();
   formData.append("archivo", file);
@@ -49,10 +52,9 @@ export const subirFotoEmpleado = async (id, file) => {
   return { data: res.data || null };
 };
 
-/* ============================
-   SEGURIDAD
-============================ */
-
+/* ---------------------------------------------------------
+   SEGURIDAD: MÓDULOS VISIBLES
+--------------------------------------------------------- */
 export const actualizarModulosVisibles = async (id, modulos_visibles_list) => {
   const res = await axios.put(`/empleados/${id}/modulos`, {
     modulos_visibles_list,
@@ -60,6 +62,9 @@ export const actualizarModulosVisibles = async (id, modulos_visibles_list) => {
   return { data: res.data || null };
 };
 
+/* ---------------------------------------------------------
+   SEGURIDAD: PERMISOS POR MÓDULO
+--------------------------------------------------------- */
 export const actualizarPermisosModulo = async (id, permisos_modulo_dict) => {
   const res = await axios.put(`/empleados/${id}/permisos`, {
     permisos_modulo_dict,
@@ -67,24 +72,25 @@ export const actualizarPermisosModulo = async (id, permisos_modulo_dict) => {
   return { data: res.data || null };
 };
 
+/* ---------------------------------------------------------
+   FICHA COMPLETA
+--------------------------------------------------------- */
 export const obtenerFichaCompleta = async (id) => {
   const res = await axios.get(`/seguridad/empleado/${id}/ficha-completa`);
   return { data: res.data || null };
 };
 
-/* ============================
-   RESET PASSWORD (NUEVO)
-============================ */
-
+/* ---------------------------------------------------------
+   RESET PASSWORD
+--------------------------------------------------------- */
 export const resetPasswordEmpleado = async (id) => {
   const res = await axios.post(`/empleados/${id}/reset-password`);
   return { data: res.data || null };
 };
 
-/* ============================
-   APODERADOS (BLINDADO)
-============================ */
-
+/* ---------------------------------------------------------
+   APODERADOS
+--------------------------------------------------------- */
 export const listarApoderados = async () => {
   const res = await listarEmpleados();
 

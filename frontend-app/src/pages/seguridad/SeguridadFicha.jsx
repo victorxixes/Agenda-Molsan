@@ -691,7 +691,7 @@ export default function SeguridadFicha() {
     </tbody>
   </table>
 
-  {/* PAGINACIÓN LOGS */}
+    {/* PAGINACIÓN LOGS */}
   <div className="flex items-center gap-3 mt-4 text-white">
     <button
       disabled={paginaLog === 0}
@@ -717,9 +717,10 @@ export default function SeguridadFicha() {
       Siguiente →
     </button>
   </div>
-</div>
-</div>
-);       
-}        
+</div>   {/* cierre del bloque LOGS */}
 
-              
+</div>   {/* cierre del contenedor principal p-6 space-y-6 */}
+
+);        {/* cierre del return */}
+
+}         {/* cierre del componente SeguridadFicha */}

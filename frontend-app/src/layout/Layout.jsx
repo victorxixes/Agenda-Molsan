@@ -3,6 +3,15 @@ import { Outlet } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
 import EmpleadoPerfilModal from "../components/EmpleadoPerfilModal";
 
+/**
+ * Layout — SJ‑2026 Premium
+ * Estructura principal del ERP:
+ * - Sidebar glass‑UI
+ * - Header premium
+ * - Modal de perfil
+ * - Fondo degradado profesional
+ */
+
 export default function Layout() {
   const perfilModalId = useAuthStore((s) => s.perfilModalId);
   const setPerfilModal = useAuthStore((s) => s.setPerfilModal);
@@ -15,7 +24,6 @@ export default function Layout() {
         text-gray-100
       "
     >
-
       {/* MODAL PERFIL */}
       {perfilModalId && (
         <EmpleadoPerfilModal

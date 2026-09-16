@@ -49,28 +49,24 @@ export default function EmpleadoFicha({ empleadoId }) {
 
   /* ⭐ NUEVO: Guardar rol del empleado */
   const guardarRol = async () => {
-    try {
-      await fetch(`${API_BASE}/seguridad/permisos/asignar-rol`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          empleado_id: empleado.id,
-          rol_id: rolId,
-        }),
-      });
+  try {
+    await fetch(`${API_BASE}/seguridad/asignar/empleado/${empleado.id}/rol/${rolId}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" }
+    });
 
-      alert("Rol actualizado correctamente");
+    alert("Rol actualizado correctamente");
 
-      // Recargar ficha
-      const res = await obtenerFichaCompleta(empleado.id);
-      setData(res.data);
-      setRolId(res.data.empleado?.rol?.id || null);
+    const res = await obtenerFichaCompleta(empleado.id);
+    setData(res.data);
+    setRolId(res.data.empleado?.rol?.id || null);
 
-    } catch (err) {
-      console.error(err);
-      alert("Error al actualizar el rol");
-    }
-  };
+  } catch (err) {
+    console.error(err);
+    alert("Error al actualizar el rol");
+  }
+};
+
 
   return (
     <div className="space-y-6">

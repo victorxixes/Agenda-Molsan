@@ -1,24 +1,42 @@
+/* ============================================================
+   ERP SJ‑2026 — Inputs y formularios premium
+   ============================================================ */
+
 .input-sj {
   width: 100%;
   padding: 10px 14px;
   min-height: 42px;
   border: 1px solid var(--sj-gris-azulado);
   border-radius: var(--sj-radius);
-  transition: 0.2s;
+  background: var(--sj-blanco);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.input-sj:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
 }
 
 .input-sj:focus {
   border-color: var(--sj-azul);
   outline: none;
-  box-shadow: 0 0 0 2px rgba(31, 58, 95, 0.2);
+  box-shadow: 0 0 0 2px rgba(31, 58, 95, 0.25);
 }
 
-.input-sj.error { border-color: #d32f2f; }
-.input-sj.success { border-color: #2e7d32; }
+.input-sj.error {
+  border-color: #d32f2f;
+  box-shadow: 0 0 0 2px rgba(211, 47, 47, 0.25);
+}
+
+.input-sj.success {
+  border-color: #2e7d32;
+  box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.25);
+}
 
 .input-sj:disabled {
-  opacity: 0.6;
+  opacity: 0.55;
   cursor: not-allowed;
+  background: #f1f4f8;
 }
 
 .label-sj {
@@ -26,6 +44,7 @@
   margin-bottom: 6px;
   display: block;
   color: var(--sj-azul);
+  letter-spacing: 0.2px;
 }
 
 .select-sj {
@@ -35,4 +54,5 @@
 .textarea-sj {
   @apply input-sj;
   min-height: 120px;
+  resize: vertical;
 }

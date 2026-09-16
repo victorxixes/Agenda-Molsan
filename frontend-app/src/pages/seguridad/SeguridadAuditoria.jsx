@@ -92,21 +92,31 @@ export default function SeguridadAuditoria() {
 
   return (
     <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold mb-4">Auditoría del sistema</h1>
 
-      {/* BOTÓN EXCEL */}
+      {/* HEADER PREMIUM */}
+      <h1 className="text-3xl font-bold text-white drop-shadow mb-4">
+        Auditoría del sistema — SJ‑2026
+      </h1>
+
+      {/* BOTÓN EXCEL PREMIUM */}
       <button
         onClick={descargarExcel}
-        className="px-3 py-2 bg-green-600 text-white rounded mb-4"
+        className="
+          px-4 py-2 rounded-xl bg-green-600 hover:bg-green-700
+          text-white shadow-lg transition
+        "
       >
         Descargar Excel
       </button>
 
-      {/* FILTROS */}
+      {/* FILTROS PREMIUM */}
       <div className="flex flex-col md:flex-row gap-4 mb-4">
         <input
           type="text"
-          className="border rounded px-3 py-2 w-full md:w-1/2"
+          className="
+            w-full md:w-1/2 bg-white/10 border border-white/20 rounded-xl px-3 py-2
+            text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+          "
           placeholder="Buscar por usuario, módulo, acción o descripción..."
           value={busqueda}
           onChange={(e) => {
@@ -117,7 +127,10 @@ export default function SeguridadAuditoria() {
 
         <input
           type="date"
-          className="border rounded px-3 py-2 w-full md:w-1/3"
+          className="
+            w-full md:w-1/3 bg-white/10 border border-white/20 rounded-xl px-3 py-2
+            text-white focus:ring-2 focus:ring-blue-400
+          "
           value={filtroFecha}
           onChange={(e) => {
             setFiltroFecha(e.target.value);
@@ -126,57 +139,94 @@ export default function SeguridadAuditoria() {
         />
       </div>
 
-      {/* TABLA */}
-      <table className="w-full border rounded bg-white text-sm">
-        <thead>
-          <tr className="bg-gray-100 text-left">
-            <th className="p-2 cursor-pointer" onClick={() => ordenar("fecha")}>
-              Fecha {orden.campo === "fecha" ? (orden.asc ? "▲" : "▼") : ""}
-            </th>
-            <th className="p-2 cursor-pointer" onClick={() => ordenar("usuario")}>
-              Usuario {orden.campo === "usuario" ? (orden.asc ? "▲" : "▼") : ""}
-            </th>
-            <th className="p-2 cursor-pointer" onClick={() => ordenar("modulo")}>
-              Módulo {orden.campo === "modulo" ? (orden.asc ? "▲" : "▼") : ""}
-            </th>
-            <th className="p-2 cursor-pointer" onClick={() => ordenar("accion")}>
-              Acción {orden.campo === "accion" ? (orden.asc ? "▲" : "▼") : ""}
-            </th>
-            <th className="p-2">Descripción</th>
-          </tr>
-        </thead>
+      {/* TABLA PREMIUM */}
+      <div
+        className="
+          bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
+          shadow-xl overflow-hidden
+        "
+      >
+        <table className="w-full text-sm text-white">
+          <thead className="bg-white/10 border-b border-white/20">
+            <tr>
+              <th
+                className="p-3 cursor-pointer"
+                onClick={() => ordenar("fecha")}
+              >
+                Fecha {orden.campo === "fecha" ? (orden.asc ? "▲" : "▼") : ""}
+              </th>
 
-        <tbody>
-          {auditoriaPaginada.map((a) => (
-            <tr key={a.id} className="border-b">
-              <td className="p-2">{a.fecha}</td>
-              <td className="p-2">{a.usuario}</td>
-              <td className="p-2">{a.modulo}</td>
-              <td className="p-2">
-                {iconosAccion[a.accion] || iconosAccion.default} {a.accion}
-              </td>
-              <td className="p-2">{a.descripcion}</td>
+              <th
+                className="p-3 cursor-pointer"
+                onClick={() => ordenar("usuario")}
+              >
+                Usuario {orden.campo === "usuario" ? (orden.asc ? "▲" : "▼") : ""}
+              </th>
+
+              <th
+                className="p-3 cursor-pointer"
+                onClick={() => ordenar("modulo")}
+              >
+                Módulo {orden.campo === "modulo" ? (orden.asc ? "▲" : "▼") : ""}
+              </th>
+
+              <th
+                className="p-3 cursor-pointer"
+                onClick={() => ordenar("accion")}
+              >
+                Acción {orden.campo === "accion" ? (orden.asc ? "▲" : "▼") : ""}
+              </th>
+
+              <th className="p-3">Descripción</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
 
-      {/* PAGINACIÓN */}
-      <div className="flex items-center gap-3 mt-4">
+          <tbody>
+            {auditoriaPaginada.map((a) => (
+              <tr
+                key={a.id}
+                className="border-b border-white/10 hover:bg-white/5 transition"
+              >
+                <td className="p-3">{a.fecha}</td>
+                <td className="p-3">{a.usuario}</td>
+                <td className="p-3">{a.modulo}</td>
+
+                <td className="p-3">
+                  {iconosAccion[a.accion] || iconosAccion.default}{" "}
+                  {a.accion}
+                </td>
+
+                <td className="p-3">{a.descripcion}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* PAGINACIÓN PREMIUM */}
+      <div className="flex items-center gap-3 mt-4 text-white">
         <button
           disabled={pagina === 0}
           onClick={() => setPagina(pagina - 1)}
-          className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
+          className="
+            px-3 py-1 bg-white/10 border border-white/20 rounded-xl
+            disabled:opacity-40 hover:bg-white/20 transition
+          "
         >
           ← Anterior
         </button>
 
-        <span className="text-sm text-gray-600">Página {pagina + 1}</span>
+        <span className="text-sm text-white/70">
+          Página {pagina + 1}
+        </span>
 
         <button
           disabled={(pagina + 1) * pageSize >= auditoriaOrdenada.length}
           onClick={() => setPagina(pagina + 1)}
-          className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
+          className="
+            px-3 py-1 bg-white/10 border border-white/20 rounded-xl
+            disabled:opacity-40 hover:bg-white/20 transition
+          "
         >
           Siguiente →
         </button>

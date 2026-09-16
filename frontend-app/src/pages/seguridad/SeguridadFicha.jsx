@@ -708,4 +708,4 @@ export default function SeguridadFicha() {
   </div>
 </div>
 
-</div> 
+</div>

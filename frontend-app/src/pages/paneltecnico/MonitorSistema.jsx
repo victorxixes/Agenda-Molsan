@@ -9,7 +9,9 @@ export default function MonitorSistema({ baseUrl }) {
   const [contenido, setContenido] = useState([]);
 
   useEffect(() => {
-    listarTablas().then((res) => setTablas(res.data.tablas));
+    listarTablas().then((res) => {
+      setTablas(res.data?.tablas || []);
+    });
   }, []);
 
   const cargarTabla = async (tabla) => {
@@ -18,8 +20,8 @@ export default function MonitorSistema({ baseUrl }) {
     const cols = await describirTabla(tabla);
     const cont = await obtenerContenidoTabla(tabla);
 
-    setColumnas(cols.data.columnas);
-    setContenido(cont.data.filas);
+    setColumnas(cols.data?.columnas || []);
+    setContenido(cont.data?.filas || []);
   };
 
   return (

@@ -1,3 +1,7 @@
+/* ============================================================
+   ERP SJ‑2026 — Tabs premium
+   ============================================================ */
+
 .tabs-sj {
   display: flex;
   gap: 12px;
@@ -11,15 +15,21 @@
   color: var(--sj-azul);
   cursor: pointer;
   font-weight: 600;
-  transition: 0.2s;
+  transition: background-color 0.25s ease, color 0.25s ease,
+              transform 0.25s ease, box-shadow 0.25s ease;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
 }
 
 .tab-sj:hover {
   background-color: var(--sj-azul-claro);
   color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.10);
 }
 
 .tab-sj.active {
   background-color: var(--sj-azul);
   color: white;
+  box-shadow: 0 8px 22px rgba(31, 58, 95, 0.25);
+  transform: translateY(-2px);
 }

@@ -34,11 +34,11 @@ function getMatrix(fechaBase) {
 function colorPorTipo(tipo) {
   switch (tipo) {
     case "Firma notarial":
-      return "bg-blue-50 text-blue-800 border-blue-200";
+      return "bg-blue-500/20 border-blue-400 text-blue-200";
     case "Reunión":
-      return "bg-green-50 text-green-800 border-green-200";
+      return "bg-green-500/20 border-green-400 text-green-200";
     default:
-      return "bg-gray-50 text-gray-800 border-gray-200";
+      return "bg-white/10 border-white/20 text-white";
   }
 }
 
@@ -50,23 +50,32 @@ export default function VistaMes({ year, month, citas, onDiaClick, onCitaClick }
   const matrix = getMatrix(fechaBase);
 
   return (
-    <div className="text-xs">
-      <div className="grid grid-cols-5 mb-2">
+    <div className="text-xs text-white">
+
+      {/* Cabecera días */}
+      <div className="grid grid-cols-5 mb-3">
         {DIAS_SEMANA.map((d) => (
-          <div key={d} className="text-center font-semibold text-gray-700">
+          <div
+            key={d}
+            className="text-center font-semibold text-white/80 tracking-wide"
+          >
             {d}
           </div>
         ))}
       </div>
 
-      <div className="grid grid-cols-5 gap-1">
+      {/* Calendario */}
+      <div className="grid grid-cols-5 gap-2">
         {matrix.map((week, wi) =>
           week.map((day, di) => {
             if (!day) {
               return (
                 <div
                   key={`${wi}-${di}`}
-                  className="h-24 border border-gray-100 bg-gray-50"
+                  className="
+                    h-28 rounded-xl bg-white/5 border border-white/10 
+                    backdrop-blur-xl shadow-inner
+                  "
                 />
               );
             }
@@ -81,26 +90,32 @@ export default function VistaMes({ year, month, citas, onDiaClick, onCitaClick }
             return (
               <div
                 key={`${wi}-${di}`}
-                className="h-24 border border-gray-100 bg-white rounded hover:bg-gray-50 cursor-pointer flex flex-col p-1"
+                className="
+                  h-28 rounded-xl bg-white/5 border border-white/10 
+                  backdrop-blur-xl shadow-lg p-2 flex flex-col cursor-pointer
+                  hover:bg-white/10 transition-all duration-300
+                "
                 onClick={() => onDiaClick(fechaStr)}
               >
-                <div className="text-right text-[11px] font-semibold text-gray-700">
+                {/* Número del día */}
+                <div className="text-right text-[12px] font-semibold text-white/90">
                   {day.getDate()}
                 </div>
 
-                {/* ⭐ Mostrar TODAS las citas del día */}
+                {/* Citas */}
                 <div className="mt-1 space-y-1 overflow-y-auto max-h-20 pr-1">
                   {citasDia.map((c) => (
                     <div
                       key={c.id}
                       className={`
-                        text-[11px] px-1 py-0.5 rounded border cursor-pointer truncate
+                        text-[11px] px-2 py-1 rounded-lg border truncate
                         ${colorPorTipo(c.tipo_cita)}
+                        backdrop-blur-md shadow-md
                         transition-all duration-300
                         ${
                           resaltadaId === c.id
-                            ? "ring-2 ring-yellow-400 bg-yellow-50 shadow-md"
-                            : ""
+                            ? "ring-2 ring-yellow-400 bg-yellow-500/20 scale-[1.03]"
+                            : "hover:scale-[1.02]"
                         }
                       `}
                       onClick={(e) => {
@@ -112,15 +127,15 @@ export default function VistaMes({ year, month, citas, onDiaClick, onCitaClick }
                         {c.tipo_cita} — {c.hora_inicio} → {c.hora_fin}
                       </div>
 
-                      <div className="truncate">
+                      <div className="truncate text-white/80">
                         Notario: {c.notario_nombre || "—"}
                       </div>
 
-                      <div className="truncate">
+                      <div className="truncate text-white/80">
                         Firma: {c.tipo_firma}
                       </div>
 
-                      <div className="truncate">
+                      <div className="truncate text-white/80">
                         Apoderado: {c.apoderado_nombre || "—"}
                       </div>
                     </div>

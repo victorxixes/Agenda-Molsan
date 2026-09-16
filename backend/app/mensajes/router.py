@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, UploadFile, File
 from sqlalchemy.orm import Session
 from uuid import uuid4
 import os
+from datetime import datetime
 
 from backend.app.empleados.models import Empleado
 from backend.app.database import get_db
@@ -47,11 +48,13 @@ def conectados(db: Session = Depends(get_db)):
 
 # =========================================================
 # ENVIAR MENSAJE (REST)
-# CORS FIX → NO USAR "/"
 # =========================================================
-@router.post("")   # <── IMPORTANTE: sin barra final
+@router.post("")   # sin barra final
 def enviar(datos: MensajeCreate, db: Session = Depends(get_db)):
-    return enviar_mensaje(db, datos.dict())
+    d = datos.dict()
+    d["fecha"] = datetime.now()
+    d["leido"] = False
+    return enviar_mensaje(db, d)
 
 # =========================================================
 # SUBIR ARCHIVO
@@ -69,14 +72,15 @@ def subir_archivo(file: UploadFile = File(...)):
 
     nombre = f"{uuid4()}.{ext}"
 
-    carpeta = "/tmp/mensajes"
-    os.makedirs(carpeta, exist_ok=True)
+    carpeta_tmp = "/tmp/mensajes"
+    os.makedirs(carpeta_tmp, exist_ok=True)
 
-    ruta = f"{carpeta}/{nombre}"
+    ruta_tmp = f"{carpeta_tmp}/{nombre}"
 
-    with open(ruta, "wb") as f:
+    with open(ruta_tmp, "wb") as f:
         f.write(file.file.read())
 
+    # La URL pública que usará el frontend
     archivo_url = f"/static/mensajes/{nombre}"
 
     return {

@@ -27,52 +27,54 @@ export default function Dashboard() {
 
       {!loading && data && (
         <>
-          {/* BLOQUES RESUMEN */}
-          <div className="grid grid-cols-3 gap-4 mb-6">
+          
+          {/* BLOQUES RESUMEN — 4 columnas alineadas */}
+<div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
 
-            {/* Próximas citas */}
-            <div className="bg-blue-600/20 border border-blue-600/30 p-4 rounded-xl shadow-lg backdrop-blur-xl">
-              <div className="flex items-center gap-2 mb-1">
-                <IconCalendar className="w-5 h-5 text-blue-300" />
-                <h3 className="text-blue-200 font-semibold">Próximas</h3>
-              </div>
-              <p className="text-3xl font-bold text-blue-100">
-                {data.proximas.length}
-              </p>
-            </div>
+  {/* Próximas citas */}
+  <div className="bg-blue-600/20 border border-blue-600/30 p-4 rounded-xl shadow-lg backdrop-blur-xl">
+    <div className="flex items-center gap-2 mb-1">
+      <IconCalendar className="w-5 h-5 text-blue-300" />
+      <h3 className="text-blue-200 font-semibold">Próximas</h3>
+    </div>
+    <p className="text-3xl font-bold text-blue-100">
+      {data.proximas.length}
+    </p>
+  </div>
 
-            {/* Realizadas VC */}
-            <div className="bg-green-600/20 border border-green-600/30 p-4 rounded-xl shadow-lg backdrop-blur-xl">
-              <div className="flex items-center gap-2 mb-1">
-                <IconWeek className="w-5 h-5 text-green-300" />
-                <h3 className="text-green-200 font-semibold">VC realizadas</h3>
-              </div>
-              <p className="text-3xl font-bold text-green-100">
-                {data.realizadasVC.length}
-              </p>
-            </div>
+  {/* VC realizadas */}
+  <div className="bg-green-600/20 border border-green-600/30 p-4 rounded-xl shadow-lg backdrop-blur-xl">
+    <div className="flex items-center gap-2 mb-1">
+      <IconWeek className="w-5 h-5 text-green-300" />
+      <h3 className="text-green-200 font-semibold">VC realizadas</h3>
+    </div>
+    <p className="text-3xl font-bold text-green-100">
+      {data.realizadasVC.length}
+    </p>
+  </div>
 
-            {/* Realizadas Presencial */}
-            <div className="bg-purple-600/20 border border-purple-600/30 p-4 rounded-xl shadow-lg backdrop-blur-xl">
-              <div className="flex items-center gap-2 mb-1">
-                <IconMonth className="w-5 h-5 text-purple-300" />
-                <h3 className="text-purple-200 font-semibold">Presencial realizadas</h3>
-              </div>
-              <p className="text-3xl font-bold text-purple-100">
-                {data.realizadasPresencial.length}
-              </p>
-            </div>
-          </div>
+  {/* Presencial realizadas */}
+  <div className="bg-purple-600/20 border border-purple-600/30 p-4 rounded-xl shadow-lg backdrop-blur-xl">
+    <div className="flex items-center gap-2 mb-1">
+      <IconMonth className="w-5 h-5 text-purple-300" />
+      <h3 className="text-purple-200 font-semibold">Presencial realizadas</h3>
+    </div>
+    <p className="text-3xl font-bold text-purple-100">
+      {data.realizadasPresencial.length}
+    </p>
+  </div>
 
-          {/* TOTAL MES */}
-          <div className="bg-white/10 p-4 rounded-xl border border-white/20 shadow-xl backdrop-blur-xl mb-6">
-            <h3 className="text-xl mb-2 font-semibold text-white drop-shadow">
-              Total mes
-            </h3>
-            <p className="text-3xl font-bold text-white">
-              {data.totalMes}
-            </p>
-          </div>
+  {/* Total mes — ahora alineado */}
+  <div className="bg-white/10 p-4 rounded-xl border border-white/20 shadow-xl backdrop-blur-xl">
+    <h3 className="text-xl mb-2 font-semibold text-white drop-shadow">
+      Total mes
+    </h3>
+    <p className="text-3xl font-bold text-white">
+      {data.totalMes}
+    </p>
+  </div>
+
+</div>
 
           {/* PRÓXIMAS CITAS */}
           <div className="bg-white/10 p-4 rounded-xl border border-white/20 shadow-xl backdrop-blur-xl">

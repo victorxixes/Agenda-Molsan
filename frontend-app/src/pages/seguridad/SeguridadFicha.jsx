@@ -54,6 +54,7 @@ export default function SeguridadFicha({ empleadoId }) {
     acc[p.modulo].push(p.permiso);
     return acc;
   }, {});
+
   const cambiarPermiso = (modulo, permiso) => {
     const nuevo = { ...permisosEmpleado };
 
@@ -79,6 +80,7 @@ export default function SeguridadFicha({ empleadoId }) {
 
     asignarModulos(empleado.id, nuevo);
   };
+
   return (
     <div className="p-6 space-y-8">
 
@@ -132,6 +134,7 @@ export default function SeguridadFicha({ empleadoId }) {
           )}
         </div>
       </div>
+
       {/* SEGURIDAD — SJ‑2026 */}
       <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl shadow-xl p-6 space-y-6">
 
@@ -187,6 +190,7 @@ export default function SeguridadFicha({ empleadoId }) {
           </button>
         </div>
       </div>
+
       {/* MÓDULOS VISIBLES — SJ‑2026 */}
       <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl shadow-xl p-6">
         <button
@@ -216,6 +220,7 @@ export default function SeguridadFicha({ empleadoId }) {
           </ul>
         )}
       </div>
+
       {/* PERMISOS POR MÓDULO — SJ‑2026 */}
       <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl shadow-xl p-6">
         <button
@@ -252,6 +257,7 @@ export default function SeguridadFicha({ empleadoId }) {
           </ul>
         )}
       </div>
+
       {/* AUDITORÍA DEL USUARIO — SJ‑2026 */}
       <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl shadow-xl p-6 space-y-4">
         <button
@@ -394,39 +400,39 @@ export default function SeguridadFicha({ empleadoId }) {
               <thead>
                 <tr className="bg-white/10 border-b border-white/20">
                   <th className="p-2 cursor-pointer hover:text-purple-300 transition" onClick={() => ordenarLog("fecha")}>
-                                      Fecha{" "}
-                  {ordenLog.campo === "fecha"
-                    ? ordenLog.asc
-                      ? "▲"
-                      : "▼"
-                    : ""}
-                </th>
+                    Fecha{" "}
+                    {ordenLog.campo === "fecha"
+                      ? ordenLog.asc
+                        ? "▲"
+                        : "▼"
+                      : ""}
+                  </th>
 
-                <th
-                  className="p-2 cursor-pointer hover:text-purple-300 transition"
-                  onClick={() => ordenarLog("evento")}
-                >
-                  Evento{" "}
-                  {ordenLog.campo === "evento"
-                    ? ordenLog.asc
-                      ? "▲"
-                      : "▼"
-                    : ""}
-                </th>
+                  <th
+                    className="p-2 cursor-pointer hover:text-purple-300 transition"
+                    onClick={() => ordenarLog("evento")}
+                  >
+                    Evento{" "}
+                    {ordenLog.campo === "evento"
+                      ? ordenLog.asc
+                        ? "▲"
+                        : "▼"
+                      : ""}
+                  </th>
 
-                <th className="p-2">Detalle</th>
-                <th className="p-2">IP</th>
-              </tr>
-            </thead>
+                  <th className="p-2">Detalle</th>
+                  <th className="p-2">IP</th>
+                </tr>
+              </thead>
 
-            <tbody>
-              {logsPaginados.map((l) => (
-                <tr
-                  key={l.id}
-                  className="
-                    border-b border-white/10 hover:bg-white/5 transition
-                  "
-                >
+              <tbody>
+                {logsPaginados.map((l) => (
+                  <tr
+                    key={l.id}
+                    className="
+                      border-b border-white/10 hover:bg-white/5 transition
+                    "
+                  >
                   <td className="p-2">{l.fecha}</td>
                   <td className="p-2">
                     {iconosEvento[l.evento] || iconosEvento.default} {l.evento}
@@ -468,8 +474,9 @@ export default function SeguridadFicha({ empleadoId }) {
           </div>
         </>
         )}
-      </div>
+      </div> {/* cierre bloque LOGS */}
 
-    </div> 
-  );
-} 
+    </div> {/* cierre contenedor principal p-6 space-y-8 */}
+  );        // cierre del return
+}           // cierre del componente SeguridadFicha
+

@@ -3,7 +3,7 @@ import { useCtn } from "../../hooks/useCtn";
 import ModalCtnDetalle from "../../components/ctn/ModalCtnDetalle";
 
 export default function CtnListadoPage() {
-  const { items, total, page, page_size, cargarNotarias, loading } = useCtn();
+  const { items, total, cargarNotarias, loading } = useCtn();
 
   const [filtros, setFiltros] = useState({
     provincia: "",
@@ -16,10 +16,7 @@ export default function CtnListadoPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [selected, setSelected] = useState(null);
 
-  // ⭐ Página local (controlada por el componente)
   const [pagina, setPagina] = useState(1);
-
-  // ⭐ Tamaño de página fijo a 15
   const PAGE_SIZE = 15;
 
   // Cargar inicial
@@ -28,7 +25,7 @@ export default function CtnListadoPage() {
   }, [cargarNotarias, filtros, pagina]);
 
   const aplicarFiltros = useCallback(() => {
-    setPagina(1); // Reiniciar a página 1
+    setPagina(1);
     cargarNotarias(filtros, 1, PAGE_SIZE);
   }, [filtros, cargarNotarias]);
 
@@ -39,43 +36,94 @@ export default function CtnListadoPage() {
 
   const filtrosKeys = useMemo(() => Object.keys(filtros), [filtros]);
 
-  // ⭐ Total de páginas
   const totalPaginas = Math.ceil(total / PAGE_SIZE);
 
- const descargarExcel = useCallback(async () => {
-  try {
-    const params = new URLSearchParams();
+  // ⭐ Descargar Excel
+  const descargarExcel = useCallback(async () => {
+    try {
+      const params = new URLSearchParams();
 
-    // Añadir solo filtros que tengan valor
-    Object.entries(filtros).forEach(([key, value]) => {
-      if (value && value.trim() !== "") {
-        params.append(key, value);
-      }
-    });
+      Object.entries(filtros).forEach(([key, value]) => {
+        if (value && value.trim() !== "") {
+          params.append(key, value);
+        }
+      });
 
-    const urlExcel = `${import.meta.env.VITE_API_URL}/ctn/exportar-excel?${params.toString()}`;
+      const urlExcel = `${import.meta.env.VITE_API_URL}/ctn/exportar-excel?${params.toString()}`;
 
-    const res = await fetch(urlExcel, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    });
+      const res = await fetch(urlExcel, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
 
-    const blob = await res.blob();
-    const url = window.URL.createObjectURL(blob);
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
 
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "notarias.xlsx";
-    a.click();
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "notarias.xlsx";
+      a.click();
 
-    window.URL.revokeObjectURL(url);
-  } catch (err) {
-    console.error("Error descargando Excel:", err);
-  }
-}, [filtros]);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Error descargando Excel:", err);
+    }
+  }, [filtros]);
 
+  return (
+    <div className="space-y-6">
+
+      {/* Filtros Premium */}
+      <div
+        className="
+          bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-xl
+          grid grid-cols-5 gap-4
+        "
+      >
+        {filtrosKeys.map((key) => (
+          <input
+            key={key}
+            className="
+              bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white
+              placeholder-white/40 focus:ring-2 focus:ring-blue-400
+            "
+            placeholder={
+              key === "q"
+                ? "Buscar nombre, apellidos, código, NIF…"
+                : key.charAt(0).toUpperCase() + key.slice(1)
+            }
+            value={filtros[key]}
+            onChange={(e) =>
+              setFiltros((prev) => ({ ...prev, [key]: e.target.value }))
+            }
+          />
+        ))}
+      </div>
+
+      {/* Botones */}
+      <div className="flex gap-3">
+        <button
+          className="
+            px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
+            text-white shadow-lg transition active:scale-[0.97]
+          "
+          onClick={aplicarFiltros}
+        >
+          Aplicar filtros
+        </button>
+
+        <button
+          className="
+            px-4 py-2 rounded-xl bg-green-600 hover:bg-green-700
+            text-white shadow-lg transition active:scale-[0.97]
+          "
+          onClick={descargarExcel}
+        >
+          Descargar Excel
+        </button>
+      </div>
 
       {/* Tabla Premium */}
       {loading ? (
@@ -132,7 +180,6 @@ export default function CtnListadoPage() {
 
           {/* ⭐ Paginación Premium */}
           <div className="flex items-center justify-between mt-4 text-white/80 text-sm">
-
             <button
               className="
                 px-3 py-2 rounded-xl bg-white/10 border border-white/20

@@ -1,6 +1,6 @@
 // frontend-app/src/panel/SeguridadUsuario.jsx
 import { useEffect, useState, useMemo } from "react";
-import { useSeguridad } from "../hooks/useSeguridad";
+import { useSeguridad } from "../../hooks/useSeguridad";
 import EmpleadosListado from "../panel/empleados/EmpleadosListado"; // ajusta la ruta si es distinta
 import { API_BASE } from "../api/config";
 

@@ -4,38 +4,19 @@ import { buscarEmpleados } from "../../api/empleados";
 import { useEmpleadosWS } from "../../hooks/useEmpleadosWS";
 import { API_BASE } from "../../api/config";
 
-// 🔒 Función de sanitización total SJ‑2026
+// Sanitizador seguro SJ‑2026
 const safe = (value) => {
   if (value === null || value === undefined) return "-";
-
-  // Si es un objeto → convertir a JSON o extraer value
-  if (typeof value === "object") {
-    if ("value" in value) return String(value.value);
-    if (Array.isArray(value)) return value.join(", ");
-    try {
-      return JSON.stringify(value);
-    } catch {
-      return "-";
-    }
-  }
-
-  // Si es número → convertir a string
-  if (typeof value === "number") return String(value);
-
-  // Si es boolean → convertir a Sí/No
+  if (typeof value === "object") return "-"; // 🔥 evitar JSON en keys y src
   if (typeof value === "boolean") return value ? "Sí" : "No";
-
-  // Si es string → devolver limpio
   return String(value);
 };
 
-export default function EmpleadosListado({ onSeleccionar }) {
+export default function EmpleadosListado({ onSeleccionar = () => {} }) {
   const location = useLocation();
 
-  // ⭐ 1. Si NO estamos en la ruta de empleados → NO renderizar nada
-  if (!location.pathname.startsWith("/panel/empleados")) {
-    return null;
-  }
+  // 🔥 NO devolver null → React 300
+  const rutaValida = location.pathname.includes("/panel/empleados");
 
   const [empleados, setEmpleados] = useState([]);
   const [q, setQ] = useState("");
@@ -43,14 +24,12 @@ export default function EmpleadosListado({ onSeleccionar }) {
 
   const cargar = useCallback(() => {
     buscarEmpleados({ q: q || undefined, activo }).then((res) => {
-      // ⭐ 2. Blindar la respuesta: siempre array
       const lista = Array.isArray(res.data)
         ? res.data
         : Array.isArray(res.data?.empleados)
         ? res.data.empleados
         : [];
 
-      // ⭐ 3. Sanitizar cada empleado
       const listaSegura = lista.map((e) => ({
         id: safe(e.id),
         nombre: safe(e.nombre),
@@ -62,7 +41,7 @@ export default function EmpleadosListado({ onSeleccionar }) {
         departamento_nombre: safe(e.departamento_nombre),
         seccion_nombre: safe(e.seccion_nombre),
         cargo_nombre: safe(e.cargo_nombre),
-        foto: safe(e.foto),
+        foto: typeof e.foto === "string" ? e.foto : "-", // 🔥 evitar objetos
         usuario: safe(e.usuario),
       }));
 
@@ -74,21 +53,19 @@ export default function EmpleadosListado({ onSeleccionar }) {
     cargar();
   }, [cargar]);
 
-  // ⭐ 4. WebSocket solo funciona en la ruta correcta
   useEmpleadosWS((evento) => {
-    if (location.pathname.startsWith("/panel/empleados")) {
-      if (evento.tipo === "empleado_actualizado") cargar();
+    if (rutaValida && evento.tipo === "empleado_actualizado") {
+      cargar();
     }
   });
 
-  // ⭐ 5. Blindar el memo
   const empleadosMemo = useMemo(() => {
     return Array.isArray(empleados) ? empleados : [];
   }, [empleados]);
 
   return (
     <div className="space-y-6 animate-fade-in">
-      {/* BUSCADOR PREMIUM */}
+      {/* BUSCADOR */}
       <div className="flex gap-3 bg-white/10 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-xl">
         <input
           className="flex-1 bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400"
@@ -114,18 +91,18 @@ export default function EmpleadosListado({ onSeleccionar }) {
         </select>
       </div>
 
-      {/* TARJETAS PREMIUM */}
+      {/* TARJETAS */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {empleadosMemo.map((e) => (
           <div
-            key={e.id}
+            key={String(e.id)} // 🔥 key siempre string simple
             className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-5 shadow-xl hover:shadow-2xl transition cursor-pointer active:scale-[0.98]"
-            onClick={() => onSeleccionar?.(e.id)}
+            onClick={() => onSeleccionar(e.id)}
           >
             <div className="flex items-center gap-4">
               <img
                 src={
-                  e.foto && typeof e.foto === "string" && e.foto !== "-"
+                  e.foto && e.foto !== "-"
                     ? `${API_BASE}${e.foto}`
                     : "/no-foto.png"
                 }
@@ -135,19 +112,19 @@ export default function EmpleadosListado({ onSeleccionar }) {
 
               <div>
                 <div className="font-semibold text-white text-lg drop-shadow">
-                  {safe(e.nombre)} {safe(e.apellidos)}
+                  {e.nombre} {e.apellidos}
                 </div>
-                <div className="text-xs text-white/70">ID: {safe(e.id)}</div>
+                <div className="text-xs text-white/70">ID: {e.id}</div>
               </div>
             </div>
 
             <div className="mt-4 text-sm text-white/80 space-y-1">
-              <div><strong>Tel:</strong> {safe(e.telefono)}</div>
-              <div><strong>Email:</strong> {safe(e.email_empresa)}</div>
-              <div><strong>Extensión:</strong> {safe(e.extension)}</div>
-              <div><strong>Departamento:</strong> {safe(e.departamento_nombre)}</div>
-              <div><strong>Sección:</strong> {safe(e.seccion_nombre)}</div>
-              <div><strong>Cargo:</strong> {safe(e.cargo_nombre)}</div>
+              <div><strong>Tel:</strong> {e.telefono}</div>
+              <div><strong>Email:</strong> {e.email_empresa}</div>
+              <div><strong>Extensión:</strong> {e.extension}</div>
+              <div><strong>Departamento:</strong> {e.departamento_nombre}</div>
+              <div><strong>Sección:</strong> {e.seccion_nombre}</div>
+              <div><strong>Cargo:</strong> {e.cargo_nombre}</div>
             </div>
 
             <div className="mt-4">

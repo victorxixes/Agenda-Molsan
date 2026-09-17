@@ -14,7 +14,7 @@ export default function SeguridadFicha({ empleadoId }) {
     asignarModulos,
     permisos,
     logs,
-    auditoria,
+    auditoria
   } = useSeguridad();
 
   // Estados SJ‑2026
@@ -35,9 +35,7 @@ export default function SeguridadFicha({ empleadoId }) {
   const [paginaLog, setPaginaLog] = useState(0);
 
   useEffect(() => {
-    if (empleadoId) {
-      cargarFicha(empleadoId);
-    }
+    if (empleadoId) cargarFicha(empleadoId);
   }, [empleadoId, cargarFicha]);
 
   // Protección total SJ‑2026
@@ -54,8 +52,9 @@ export default function SeguridadFicha({ empleadoId }) {
     );
   }
 
+  const empleado = ficha.empleado;
 
-  // Protección extra: evitar render si empleado no tiene campos válidos
+  // Protección extra
   if (!empleado.id || !empleado.nombre) {
     return (
       <div className="p-6 text-white/70 animate-pulse">
@@ -72,7 +71,6 @@ export default function SeguridadFicha({ empleadoId }) {
     acc[p.modulo].push(p.permiso);
     return acc;
   }, {});
-
   const cambiarPermiso = (modulo, permiso) => {
     const nuevo = { ...permisosEmpleado };
 
@@ -98,16 +96,10 @@ export default function SeguridadFicha({ empleadoId }) {
 
     asignarModulos(empleado.id, nuevo);
   };
-
   return (
     <div className="p-6 space-y-8">
-      {/* …resto de tu JSX (cabecera, seguridad, módulos, permisos, auditoría, logs)… */}
-    </div>
-  );
-}
 
-
-      {/* CABECERA SJ‑2026 */}
+      {/* CABECERA */}
       <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl shadow-xl p-6">
         <h1 className="text-3xl font-bold text-white drop-shadow mb-4">
           Ficha de seguridad — SJ‑2026 · {empleado.nombre} ({empleado.usuario})
@@ -157,8 +149,7 @@ export default function SeguridadFicha({ empleadoId }) {
           )}
         </div>
       </div>
-
-      {/* SEGURIDAD — SJ‑2026 */}
+      {/* SEGURIDAD */}
       <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl shadow-xl p-6 space-y-6">
 
         {/* RESET PASSWORD */}
@@ -213,8 +204,7 @@ export default function SeguridadFicha({ empleadoId }) {
           </button>
         </div>
       </div>
-
-      {/* MÓDULOS VISIBLES — SJ‑2026 */}
+      {/* MÓDULOS VISIBLES */}
       <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl shadow-xl p-6">
         <button
           className="text-xl font-semibold text-white drop-shadow mb-3 w-full text-left hover:text-blue-300 transition"
@@ -243,8 +233,7 @@ export default function SeguridadFicha({ empleadoId }) {
           </ul>
         )}
       </div>
-
-      {/* PERMISOS POR MÓDULO — SJ‑2026 */}
+      {/* PERMISOS POR MÓDULO */}
       <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl shadow-xl p-6">
         <button
           className="text-xl font-semibold text-white drop-shadow mb-3 w-full text-left hover:text-purple-300 transition"
@@ -280,7 +269,6 @@ export default function SeguridadFicha({ empleadoId }) {
           </ul>
         )}
       </div>
-
       {/* AUDITORÍA DEL USUARIO — SJ‑2026 */}
       <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl shadow-xl p-6 space-y-4">
         <button
@@ -299,7 +287,7 @@ export default function SeguridadFicha({ empleadoId }) {
               Descargar Excel
             </button>
 
-            {/* FILTROS */}
+            {/* FILTROS AUDITORÍA */}
             <div className="flex flex-col md:flex-row gap-4 mb-4">
               <input
                 type="text"
@@ -327,15 +315,27 @@ export default function SeguridadFicha({ empleadoId }) {
             <table className="w-full text-sm bg-white/5 border border-white/10 rounded-xl text-white overflow-hidden">
               <thead>
                 <tr className="bg-white/10 border-b border-white/20">
-                  <th className="p-2 cursor-pointer hover:text-blue-300 transition" onClick={() => ordenarAud("fecha")}>
+                  <th
+                    className="p-2 cursor-pointer hover:text-blue-300 transition"
+                    onClick={() => ordenarAud("fecha")}
+                  >
                     Fecha {ordenAud.campo === "fecha" ? (ordenAud.asc ? "▲" : "▼") : ""}
                   </th>
-                  <th className="p-2 cursor-pointer hover:text-blue-300 transition" onClick={() => ordenarAud("modulo")}>
+
+                  <th
+                    className="p-2 cursor-pointer hover:text-blue-300 transition"
+                    onClick={() => ordenarAud("modulo")}
+                  >
                     Módulo {ordenAud.campo === "modulo" ? (ordenAud.asc ? "▲" : "▼") : ""}
                   </th>
-                  <th className="p-2 cursor-pointer hover:text-blue-300 transition" onClick={() => ordenarAud("accion")}>
+
+                  <th
+                    className="p-2 cursor-pointer hover:text-blue-300 transition"
+                    onClick={() => ordenarAud("accion")}
+                  >
                     Acción {ordenAud.campo === "accion" ? (ordenAud.asc ? "▲" : "▼") : ""}
                   </th>
+
                   <th className="p-2">Descripción</th>
                 </tr>
               </thead>
@@ -362,7 +362,9 @@ export default function SeguridadFicha({ empleadoId }) {
                 ← Anterior
               </button>
 
-              <span className="text-sm text-white/70">Página {paginaAud + 1}</span>
+              <span className="text-sm text-white/70">
+                Página {paginaAud + 1}
+              </span>
 
               <button
                 disabled={(paginaAud + 1) * pageSizeAud >= auditoriaOrdenada.length}
@@ -394,7 +396,7 @@ export default function SeguridadFicha({ empleadoId }) {
               Descargar Excel
             </button>
 
-            {/* FILTROS */}
+            {/* FILTROS LOGS */}
             <div className="flex flex-col md:flex-row gap-4 mb-4">
               <input
                 type="text"
@@ -422,25 +424,18 @@ export default function SeguridadFicha({ empleadoId }) {
             <table className="w-full text-sm bg-white/5 border border-white/10 rounded-xl text-white overflow-hidden">
               <thead>
                 <tr className="bg-white/10 border-b border-white/20">
-                  <th className="p-2 cursor-pointer hover:text-purple-300 transition" onClick={() => ordenarLog("fecha")}>
-                    Fecha{" "}
-                    {ordenLog.campo === "fecha"
-                      ? ordenLog.asc
-                        ? "▲"
-                        : "▼"
-                      : ""}
+                  <th
+                    className="p-2 cursor-pointer hover:text-purple-300 transition"
+                    onClick={() => ordenarLog("fecha")}
+                  >
+                    Fecha {ordenLog.campo === "fecha" ? (ordenLog.asc ? "▲" : "▼") : ""}
                   </th>
 
                   <th
                     className="p-2 cursor-pointer hover:text-purple-300 transition"
                     onClick={() => ordenarLog("evento")}
                   >
-                    Evento{" "}
-                    {ordenLog.campo === "evento"
-                      ? ordenLog.asc
-                        ? "▲"
-                        : "▼"
-                      : ""}
+                    Evento {ordenLog.campo === "evento" ? (ordenLog.asc ? "▲" : "▼") : ""}
                   </th>
 
                   <th className="p-2">Detalle</th>
@@ -450,56 +445,44 @@ export default function SeguridadFicha({ empleadoId }) {
 
               <tbody>
                 {logsPaginados.map((l) => (
-                  <tr
-                    key={l.id}
-                    className="
-                      border-b border-white/10 hover:bg-white/5 transition
-                    "
-                  >
-                  <td className="p-2">{l.fecha}</td>
-                  <td className="p-2">
-                    {iconosEvento[l.evento] || iconosEvento.default} {l.evento}
-                  </td>
-                  <td className="p-2">{l.detalle || "-"}</td>
-                  <td className="p-2">{l.ip || "-"}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  <tr key={l.id} className="border-b border-white/10 hover:bg-white/5 transition">
+                    <td className="p-2">{l.fecha}</td>
+                    <td className="p-2">
+                      {iconosEvento[l.evento] || iconosEvento.default} {l.evento}
+                    </td>
+                    <td className="p-2">{l.detalle || "-"}</td>
+                    <td className="p-2">{l.ip || "-"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
 
-          {/* PAGINACIÓN LOGS */}
-          <div className="flex items-center gap-3 mt-4 text-white">
-            <button
-              disabled={paginaLog === 0}
-              onClick={() => setPaginaLog(paginaLog - 1)}
-              className="
-                px-3 py-1 bg-white/10 border border-white/20 rounded-xl
-                disabled:opacity-40 hover:bg-white/20 transition active:scale-[0.97]
-              "
-            >
-              ← Anterior
-            </button>
+            {/* PAGINACIÓN LOGS */}
+            <div className="flex items-center gap-3 mt-4 text-white">
+              <button
+                disabled={paginaLog === 0}
+                onClick={() => setPaginaLog(paginaLog - 1)}
+                className="px-3 py-1 bg-white/10 border border-white/20 rounded-xl disabled:opacity-40 hover:bg-white/20 transition active:scale-[0.97]"
+              >
+                ← Anterior
+              </button>
 
-            <span className="text-sm text-white/70">
-              Página {paginaLog + 1}
-            </span>
+              <span className="text-sm text-white/70">
+                Página {paginaLog + 1}
+              </span>
 
-            <button
-              disabled={(paginaLog + 1) * pageSizeLog >= logsOrdenados.length}
-              onClick={() => setPaginaLog(paginaLog + 1)}
-              className="
-                px-3 py-1 bg-white/10 border border-white/20 rounded-xl
-                disabled:opacity-40 hover:bg-white/20 transition active:scale-[0.97]
-              "
-            >
-              Siguiente →
-            </button>
-          </div>
-        </>
+              <button
+                disabled={(paginaLog + 1) * pageSizeLog >= logsOrdenados.length}
+                onClick={() => setPaginaLog(paginaLog + 1)}
+                className="px-3 py-1 bg-white/10 border border-white/20 rounded-xl disabled:opacity-40 hover:bg-white/20 transition active:scale-[0.97]"
+              >
+                Siguiente →
+              </button>
+            </div>
+          </>
         )}
-      </div> 
-      
-    </div> 
-  );        
-}           
+      </div>
 
+    </div>
+  );
+}

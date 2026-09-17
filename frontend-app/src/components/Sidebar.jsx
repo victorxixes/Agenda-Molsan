@@ -57,7 +57,7 @@ const SidebarItem = ({ to, label, icon, collapsed, badge }) => (
 );
 
 /**
- * Sidebar SJ‑2026 Premium — Oculto + Glass
+ * Sidebar SJ‑2026 Premium — Oculto + Glass + Hover Expand
  */
 export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(true);
@@ -83,13 +83,14 @@ export default function Sidebar() {
     <aside
       className={`
         fixed left-0 top-0 h-full z-50
-        backdrop-blur-xl bg-white/10 border-r border-white/10 shadow-xl
-        p-4 space-y-6 transition-all duration-300
+        transition-all duration-300 ease-in-out
         ${collapsed ? "w-0 overflow-hidden" : "w-72"}
+        ${collapsed ? "" : "backdrop-blur-xl bg-white/10 border-r border-white/10 shadow-xl p-4 space-y-6"}
       `}
       onMouseEnter={() => !fixed && setCollapsed(false)}
       onMouseLeave={() => !fixed && setCollapsed(true)}
     >
+
       {/* HEADER */}
       {!collapsed && (
         <div className="flex items-center justify-between mb-2">

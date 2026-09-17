@@ -43,45 +43,53 @@ export default function Intranet() {
     );
   }
 
-  // FILTROS
+  // FILTROS DOCUMENTOS
   const docsFiltrados = useMemo(() => {
-    return documentos.filter((d) => {
-      const concepto = typeof d.concepto === "string" ? d.concepto : "";
+    const lista = Array.isArray(documentos) ? documentos : [];
+
+    return lista.filter((d) => {
+      const concepto =
+        typeof d.concepto === "string" ? d.concepto : String(d.concepto || "");
       const okConcepto =
-        filtroConcepto === "" ||
+        !filtroConcepto ||
         concepto.toLowerCase().includes(filtroConcepto.toLowerCase());
 
       const fechaStr =
-        typeof d.fecha_publicacion === "string" ? d.fecha_publicacion : "";
+        typeof d.fecha_publicacion === "string"
+          ? d.fecha_publicacion
+          : String(d.fecha_publicacion || "");
       const okFecha =
-        filtroFecha === "" ||
+        !filtroFecha ||
         (fechaStr &&
+          !Number.isNaN(new Date(fechaStr).getTime()) &&
           new Date(fechaStr).toISOString().slice(0, 10) === filtroFecha);
 
       return okConcepto && okFecha;
     });
   }, [documentos, filtroConcepto, filtroFecha]);
 
-  // ORDENACIÓN
+  // ORDENACIÓN DOCUMENTOS
   const docsOrdenados = useMemo(() => {
     const campo = orden.campo;
     const dir = orden.dir === "asc" ? 1 : -1;
 
     return [...docsFiltrados].sort((a, b) => {
       if (campo === "fecha") {
-        const aFecha =
-          typeof a.fecha_publicacion === "string"
-            ? new Date(a.fecha_publicacion).getTime()
-            : 0;
-        const bFecha =
-          typeof b.fecha_publicacion === "string"
-            ? new Date(b.fecha_publicacion).getTime()
-            : 0;
+        const aFecha = !Number.isNaN(
+          new Date(a.fecha_publicacion || 0).getTime()
+        )
+          ? new Date(a.fecha_publicacion || 0).getTime()
+          : 0;
+        const bFecha = !Number.isNaN(
+          new Date(b.fecha_publicacion || 0).getTime()
+        )
+          ? new Date(b.fecha_publicacion || 0).getTime()
+          : 0;
         return (aFecha - bFecha) * dir;
       }
 
-      const aVal = typeof a[campo] === "string" ? a[campo] : "";
-      const bVal = typeof b[campo] === "string" ? b[campo] : "";
+      const aVal = typeof a[campo] === "string" ? a[campo] : String(a[campo] || "");
+      const bVal = typeof b[campo] === "string" ? b[campo] : String(b[campo] || "");
       return aVal.localeCompare(bVal) * dir;
     });
   }, [docsFiltrados, orden]);
@@ -93,7 +101,7 @@ export default function Intranet() {
     }));
   }, []);
 
-  // PAGINACIÓN
+  // PAGINACIÓN DOCUMENTOS
   const totalPaginas = useMemo(
     () => Math.max(1, Math.ceil(docsOrdenados.length / pageSize)),
     [docsOrdenados.length, pageSize]
@@ -102,6 +110,9 @@ export default function Intranet() {
   const docsVisibles = useMemo(() => {
     return docsOrdenados.slice((pagina - 1) * pageSize, pagina * pageSize);
   }, [docsOrdenados, pagina, pageSize]);
+
+  // Noticias seguras
+  const noticiasSeguras = Array.isArray(noticias) ? noticias : [];
 
   return (
     <div className="p-6 space-y-8 text-white animate-fade-in">
@@ -149,26 +160,31 @@ export default function Intranet() {
               Noticias
             </h2>
 
-            {noticias.length === 0 && (
+            {noticiasSeguras.length === 0 && (
               <p className="text-white/70">No hay noticias.</p>
             )}
 
-            {noticias.map((n) => (
+            {noticiasSeguras.map((n) => (
               <div
-                key={n.id}
+                key={n.id ?? `noticia-${Math.random()}`}
                 className="
                   bg-white/5 border border-white/20 rounded-xl p-4
                   shadow-md backdrop-blur-md space-y-2
                 "
               >
                 <h3 className="font-semibold text-xl text-white drop-shadow">
-                  {n.titulo}
+                  {typeof n.titulo === "string" ? n.titulo : String(n.titulo || "")}
                 </h3>
 
-                <p className="text-white/80">{n.descripcion}</p>
+                <p className="text-white/80">
+                  {typeof n.descripcion === "string"
+                    ? n.descripcion
+                    : String(n.descripcion || "")}
+                </p>
 
                 <p className="text-sm text-white/60">
-                  {n.fecha_publicacion && n.fecha_publicacion !== "-"
+                  {n.fecha_publicacion &&
+                  !Number.isNaN(new Date(n.fecha_publicacion).getTime())
                     ? new Date(n.fecha_publicacion).toLocaleString("es-ES")
                     : "Sin fecha"}
                 </p>
@@ -232,7 +248,9 @@ export default function Intranet() {
                       className="cursor-pointer"
                       onClick={() => ordenar("titulo")}
                     >
-                      Título {orden.campo === "titulo" && (orden.dir === "asc" ? "↑" : "↓")}
+                      Título{" "}
+                      {orden.campo === "titulo" &&
+                        (orden.dir === "asc" ? "↑" : "↓")}
                     </th>
 
                     <th>Concepto</th>
@@ -241,7 +259,9 @@ export default function Intranet() {
                       className="cursor-pointer"
                       onClick={() => ordenar("fecha")}
                     >
-                      Fecha {orden.campo === "fecha" && (orden.dir === "asc" ? "↑" : "↓")}
+                      Fecha{" "}
+                      {orden.campo === "fecha" &&
+                        (orden.dir === "asc" ? "↑" : "↓")}
                     </th>
 
                     <th></th>
@@ -250,19 +270,33 @@ export default function Intranet() {
 
                 <tbody>
                   {docsVisibles.map((d) => (
-                    <tr key={d.id} className="border-b border-white/10">
-                      <td className="py-2">{d.id}</td>
-                      <td className="py-2">{d.titulo}</td>
-                      <td className="py-2">{d.concepto}</td>
+                    <tr key={d.id ?? `doc-${Math.random()}`} className="border-b border-white/10">
+                      <td className="py-2">
+                        {typeof d.id === "string" || typeof d.id === "number"
+                          ? d.id
+                          : String(d.id || "")}
+                      </td>
+                      <td className="py-2">
+                        {typeof d.titulo === "string"
+                          ? d.titulo
+                          : String(d.titulo || "")}
+                      </td>
+                      <td className="py-2">
+                        {typeof d.concepto === "string"
+                          ? d.concepto
+                          : String(d.concepto || "")}
+                      </td>
 
                       <td className="py-2">
-                        {d.fecha_publicacion && d.fecha_publicacion !== "-"
+                        {d.fecha_publicacion &&
+                        !Number.isNaN(
+                          new Date(d.fecha_publicacion).getTime()
+                        )
                           ? new Date(d.fecha_publicacion).toLocaleString("es-ES")
                           : "Sin fecha"}
                       </td>
 
                       <td className="py-2 flex gap-3">
-
                         <button
                           onClick={() => setPdfUrl(d.fichero)}
                           className="

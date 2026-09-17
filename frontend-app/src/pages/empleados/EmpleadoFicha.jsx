@@ -7,14 +7,17 @@ import {
   subirFotoEmpleado,
 } from "../../api/empleados";
 
-/**
- * EmpleadoFicha — SJ‑2026 Premium
- * - Glass‑UI
- * - Gestión de rol, módulos y permisos
- * - Render optimizado
- */
+// Sanitizador SJ‑2026
+const safe = (v) => {
+  if (v === null || v === undefined) return "-";
+  if (typeof v === "object") return "-";
+  if (typeof v === "boolean") return v ? "Sí" : "No";
+  return String(v);
+};
 
 export default function EmpleadoFicha({ empleadoId }) {
+  const idNum = Number(empleadoId);
+
   const [data, setData] = useState(null);
   const [modulos, setModulos] = useState([]);
   const [permisos, setPermisos] = useState({});
@@ -22,98 +25,93 @@ export default function EmpleadoFicha({ empleadoId }) {
 
   // Cargar ficha completa
   useEffect(() => {
-    if (!empleadoId) return;
+    if (!Number.isFinite(idNum)) return;
 
-    obtenerFichaCompleta(empleadoId).then((res) => {
-      setData(res.data);
-      setModulos(res.data.modulos_visibles || []);
-      setPermisos(res.data.permisos_modulo || {});
-      setRolId(res.data.empleado?.rol?.id || null);
+    obtenerFichaCompleta(idNum).then((res) => {
+      const d = res.data || {};
+
+      setData(d);
+      setModulos(Array.isArray(d.modulos_visibles) ? d.modulos_visibles : []);
+      setPermisos(typeof d.permisos_modulo === "object" ? d.permisos_modulo : {});
+      setRolId(d.empleado?.rol?.id ?? null);
     });
-  }, [empleadoId]);
+  }, [idNum]);
 
-  if (!empleadoId)
-    return <div className="text-white/70">Selecciona un empleado.</div>;
+  if (!Number.isFinite(idNum))
+    return <div className="text-white/70">Selecciona un empleado válido.</div>;
 
   if (!data)
     return <div className="text-white/70 animate-pulse">Cargando ficha…</div>;
 
-  const empleado = data?.empleado ?? {};
-  const rol = empleado?.rol ?? {};
+  const empleado = data?.empleado || {};
+  const rol = empleado?.rol || {};
 
   // SUBIR FOTO
-  const handleFoto = useCallback(async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+  const handleFoto = useCallback(
+    async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
 
-    await subirFotoEmpleado(empleado.id, file);
+      await subirFotoEmpleado(idNum, file);
 
-    const res = await obtenerFichaCompleta(empleado.id);
-    setData(res.data);
-  }, [empleado.id]);
+      const res = await obtenerFichaCompleta(idNum);
+      setData(res.data);
+    },
+    [idNum]
+  );
 
   // GUARDAR MÓDULOS
   const guardarModulos = useCallback(async () => {
-    await actualizarModulosVisibles(empleado.id, modulos);
+    await actualizarModulosVisibles(idNum, modulos);
     alert("Módulos visibles guardados");
-  }, [empleado.id, modulos]);
+  }, [idNum, modulos]);
 
   // GUARDAR PERMISOS
   const guardarPermisos = useCallback(async () => {
-    await actualizarPermisosModulo(empleado.id, permisos);
+    await actualizarPermisosModulo(idNum, permisos);
     alert("Permisos guardados");
-  }, [empleado.id, permisos]);
+  }, [idNum, permisos]);
 
   // GUARDAR ROL
   const guardarRol = useCallback(async () => {
     try {
-      await fetch(
-        `${API_BASE}/seguridad/asignar/empleado/${empleado.id}/rol/${rolId}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+      await fetch(`${API_BASE}/seguridad/asignar/empleado/${idNum}/rol/${rolId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
 
       alert("Rol actualizado correctamente");
 
-      const res = await obtenerFichaCompleta(empleado.id);
+      const res = await obtenerFichaCompleta(idNum);
       setData(res.data);
       setRolId(res.data.empleado?.rol?.id || null);
     } catch (err) {
       console.error(err);
       alert("Error al actualizar el rol");
     }
-  }, [empleado.id, rolId]);
+  }, [idNum, rolId]);
 
-  const fotoUrl = useMemo(
-    () => (empleado.foto ? `${API_BASE}${empleado.foto}` : null),
-    [empleado.foto]
-  );
+  const fotoUrl = useMemo(() => {
+    const f = empleado.foto;
+    return typeof f === "string" && f !== "-" ? `${API_BASE}${f}` : null;
+  }, [empleado.foto]);
 
   return (
     <div className="space-y-8 text-white animate-fade-in">
 
-      {/* DATOS BÁSICOS PREMIUM */}
-      <section
-        className="
-          bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl
-          p-6 shadow-xl
-        "
-      >
-        <h2 className="text-xl font-semibold mb-4 drop-shadow">
-          Datos básicos
-        </h2>
+      {/* DATOS BÁSICOS */}
+      <section className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-xl">
+        <h2 className="text-xl font-semibold mb-4 drop-shadow">Datos básicos</h2>
 
         <div className="grid grid-cols-2 gap-4 text-sm text-white/80">
-          <div><strong>Nombre:</strong> {empleado.nombre}</div>
-          <div><strong>Apellidos:</strong> {empleado.apellidos}</div>
-          <div><strong>DNI:</strong> {empleado.dni}</div>
-          <div><strong>Teléfono:</strong> {empleado.telefono}</div>
-          <div><strong>Email personal:</strong> {empleado.email_personal}</div>
-          <div><strong>Email empresa:</strong> {empleado.email_empresa}</div>
-          <div><strong>Usuario:</strong> {empleado.usuario}</div>
-          <div><strong>Rol actual:</strong> {rol?.nombre}</div>
+          <div><strong>Nombre:</strong> {safe(empleado.nombre)}</div>
+          <div><strong>Apellidos:</strong> {safe(empleado.apellidos)}</div>
+          <div><strong>DNI:</strong> {safe(empleado.dni)}</div>
+          <div><strong>Teléfono:</strong> {safe(empleado.telefono)}</div>
+          <div><strong>Email personal:</strong> {safe(empleado.email_personal)}</div>
+          <div><strong>Email empresa:</strong> {safe(empleado.email_empresa)}</div>
+          <div><strong>Usuario:</strong> {safe(empleado.usuario)}</div>
+          <div><strong>Rol actual:</strong> {safe(rol.nombre)}</div>
         </div>
 
         <div className="mt-6 flex items-center gap-6">
@@ -121,10 +119,7 @@ export default function EmpleadoFicha({ empleadoId }) {
             <img
               src={fotoUrl}
               alt="Foto empleado"
-              className="
-                w-28 h-28 rounded-full object-cover border border-white/20
-                shadow-xl
-              "
+              className="w-28 h-28 rounded-full object-cover border border-white/20 shadow-xl"
             />
           )}
 
@@ -139,23 +134,13 @@ export default function EmpleadoFicha({ empleadoId }) {
         </div>
       </section>
 
-      {/* ROL PREMIUM */}
-      <section
-        className="
-          bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl
-          p-6 shadow-xl
-        "
-      >
-        <h2 className="text-xl font-semibold mb-4 drop-shadow">
-          Rol del empleado
-        </h2>
+      {/* ROL */}
+      <section className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-xl">
+        <h2 className="text-xl font-semibold mb-4 drop-shadow">Rol del empleado</h2>
 
         <div className="flex items-center gap-4">
           <select
-            className="
-              bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white
-              focus:ring-2 focus:ring-blue-400
-            "
+            className="bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white focus:ring-2 focus:ring-blue-400"
             value={rolId || ""}
             onChange={(e) => setRolId(Number(e.target.value))}
           >
@@ -166,10 +151,7 @@ export default function EmpleadoFicha({ empleadoId }) {
           </select>
 
           <button
-            className="
-              px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
-              text-white shadow-lg transition active:scale-[0.97]
-            "
+            className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-lg transition active:scale-[0.97]"
             onClick={guardarRol}
           >
             Guardar rol
@@ -177,72 +159,48 @@ export default function EmpleadoFicha({ empleadoId }) {
         </div>
       </section>
 
-      {/* MÓDULOS VISIBLES PREMIUM */}
-      <section
-        className="
-          bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl
-          p-6 shadow-xl
-        "
-      >
-        <h2 className="text-xl font-semibold mb-4 drop-shadow">
-          Módulos visibles
-        </h2>
+      {/* MÓDULOS */}
+      <section className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-xl">
+        <h2 className="text-xl font-semibold mb-4 drop-shadow">Módulos visibles</h2>
 
         <textarea
-          className="
-            w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white
-            text-xs scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent
-          "
+          className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white text-xs"
           rows={4}
           value={JSON.stringify(modulos, null, 2)}
           onChange={(e) => {
             try {
-              setModulos(JSON.parse(e.target.value));
+              const parsed = JSON.parse(e.target.value);
+              if (Array.isArray(parsed)) setModulos(parsed);
             } catch {}
           }}
         />
 
         <button
-          className="
-            mt-3 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
-            text-white shadow-lg transition active:scale-[0.97]
-          "
+          className="mt-3 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-lg transition active:scale-[0.97]"
           onClick={guardarModulos}
         >
           Guardar módulos visibles
         </button>
       </section>
 
-      {/* PERMISOS PREMIUM */}
-      <section
-        className="
-          bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl
-          p-6 shadow-xl
-        "
-      >
-        <h2 className="text-xl font-semibold mb-4 drop-shadow">
-          Permisos por módulo
-        </h2>
+      {/* PERMISOS */}
+      <section className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-xl">
+        <h2 className="text-xl font-semibold mb-4 drop-shadow">Permisos por módulo</h2>
 
         <textarea
-          className="
-            w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white
-            text-xs scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent
-          "
+          className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white text-xs"
           rows={6}
           value={JSON.stringify(permisos, null, 2)}
           onChange={(e) => {
             try {
-              setPermisos(JSON.parse(e.target.value));
+              const parsed = JSON.parse(e.target.value);
+              if (typeof parsed === "object") setPermisos(parsed);
             } catch {}
           }}
         />
 
         <button
-          className="
-            mt-3 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
-            text-white shadow-lg transition active:scale-[0.97]
-          "
+          className="mt-3 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-lg transition active:scale-[0.97]"
           onClick={guardarPermisos}
         >
           Guardar permisos

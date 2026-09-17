@@ -1,35 +1,43 @@
 import { useMemo, useCallback } from "react";
 import { useSeguridad } from "../../hooks/useSeguridad";
 
-/**
- * SeguridadPermisos — SJ‑2026 Premium
- * - Permisos dinámicos por módulo
- * - Glass‑UI
- * - Render optimizado
- */
-
 export default function SeguridadPermisos() {
   const { permisos = [], ficha, asignarPermisos } = useSeguridad();
 
-  if (!ficha) return null;
+  if (!ficha || typeof ficha !== "object") return null;
 
   const empleado = ficha.empleado;
   const permisosEmpleado = ficha.permisos_modulo_dict || {};
 
-  // Agrupar permisos globales por módulo (optimizado)
+  // Agrupar permisos globales por módulo (blindado)
   const permisosGlobales = useMemo(() => {
+    if (!Array.isArray(permisos)) return {};
+
     return permisos.reduce((acc, p) => {
+      // Validación estricta
+      if (
+        !p ||
+        typeof p !== "object" ||
+        typeof p.modulo !== "string" ||
+        typeof p.permiso !== "string"
+      ) {
+        return acc; // ignorar elementos corruptos
+      }
+
       if (!acc[p.modulo]) acc[p.modulo] = [];
       acc[p.modulo].push(p.permiso);
+
       return acc;
     }, {});
   }, [permisos]);
 
   const cambiarPermiso = useCallback(
     (modulo, permiso) => {
+      if (typeof modulo !== "string" || typeof permiso !== "string") return;
+
       const nuevo = { ...permisosEmpleado };
 
-      if (!nuevo[modulo]) nuevo[modulo] = [];
+      if (!Array.isArray(nuevo[modulo])) nuevo[modulo] = [];
 
       if (nuevo[modulo].includes(permiso)) {
         nuevo[modulo] = nuevo[modulo].filter((p) => p !== permiso);
@@ -39,7 +47,7 @@ export default function SeguridadPermisos() {
 
       asignarPermisos(empleado.id, nuevo);
     },
-    [permisosEmpleado, asignarPermisos, empleado.id]
+    [permisosEmpleado, asignarPermisos, empleado?.id]
   );
 
   return (

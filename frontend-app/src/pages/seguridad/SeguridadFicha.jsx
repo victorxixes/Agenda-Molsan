@@ -474,9 +474,9 @@ export default function SeguridadFicha({ empleadoId }) {
           </div>
         </>
         )}
-      </div> {/* cierre bloque LOGS */}
-
-    </div> {/* cierre contenedor principal p-6 space-y-8 */}
-  );        // cierre del return
-}           // cierre del componente SeguridadFicha
+      </div> 
+      
+    </div> 
+  );        
+}           
 

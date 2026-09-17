@@ -128,7 +128,7 @@ export default function ModalNuevaCita({
       hora_fin: form.hora_fin || null,
       tipo_cita: form.tipo_cita || "",
       notario_id: form.notario_id || null,
-      tipo_firma: form.tipo_firma || null,
+      tipo_firma: form.tipo_firma || "",
       apoderado: form.apoderado_visible || "",
       observaciones: form.observaciones || "",
     };

@@ -54,7 +54,6 @@ export default function SeguridadFicha({ empleadoId }) {
     );
   }
 
-  const empleado = ficha.empleado;
 
   // Protección extra: evitar render si empleado no tiene campos válidos
   if (!empleado.id || !empleado.nombre) {

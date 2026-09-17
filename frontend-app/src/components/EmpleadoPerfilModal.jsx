@@ -1,28 +1,22 @@
 import { useEffect, useCallback } from "react";
 import EmpleadoPerfil from "../pages/empleados/EmpleadoPerfil";
 
-/**
- * EmpleadoPerfilModal — SJ‑2026 Premium
- * Modal glass‑UI para mostrar el perfil completo del empleado.
- * - Cierre por ESC
- * - Cierre por click‑outside
- * - Animación fade‑in
- * - Sin re‑renders innecesarios
- */
-
 export default function EmpleadoPerfilModal({ id, onClose }) {
-  /**
-   * Cerrar con tecla ESC
-   */
+  // Blindar ID
+  const idNum = Number(id);
+  const idValido = Number.isFinite(idNum) && idNum > 0;
+
+  // Si el ID no es válido, NO montar el modal
+  if (!idValido) return null;
+
+  // Cerrar con ESC
   useEffect(() => {
     const handleEsc = (e) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", handleEsc);
     return () => window.removeEventListener("keydown", handleEsc);
   }, [onClose]);
 
-  /**
-   * Evita recrear la función en cada render
-   */
+  // Cerrar al hacer click fuera
   const handleOverlayClick = useCallback(
     (e) => {
       if (e.target === e.currentTarget) onClose();
@@ -56,7 +50,7 @@ export default function EmpleadoPerfilModal({ id, onClose }) {
         </button>
 
         {/* PERFIL PREMIUM */}
-        <EmpleadoPerfil id={id} />
+        <EmpleadoPerfil id={idNum} />
       </div>
     </div>
   );

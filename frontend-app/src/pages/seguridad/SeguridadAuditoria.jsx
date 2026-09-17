@@ -1,15 +1,6 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { useSeguridad } from "../../hooks/useSeguridad";
 
-/**
- * SeguridadAuditoria — SJ‑2026 Premium
- * - Filtros avanzados
- * - Ordenación premium
- * - Paginación premium
- * - Exportación Excel
- * - Glass‑UI
- */
-
 export default function SeguridadAuditoria() {
   const { auditoria = [], cargarTodo } = useSeguridad();
 
@@ -46,16 +37,34 @@ export default function SeguridadAuditoria() {
     cargarTodo();
   }, [cargarTodo]);
 
+  // BLINDAJE: limpiar auditoría corrupta
+  const auditoriaSegura = useMemo(() => {
+    if (!Array.isArray(auditoria)) return [];
+
+    return auditoria.filter((a) => {
+      return (
+        a &&
+        typeof a === "object" &&
+        typeof a.id !== "undefined" &&
+        typeof a.fecha === "string" &&
+        typeof a.usuario === "string" &&
+        typeof a.modulo === "string" &&
+        typeof a.accion === "string" &&
+        typeof a.descripcion === "string"
+      );
+    });
+  }, [auditoria]);
+
   const auditoriaFiltrada = useMemo(() => {
     const texto = busqueda.toLowerCase();
 
-    return auditoria.filter((a) => {
+    return auditoriaSegura.filter((a) => {
       const coincideBusqueda =
-        a.usuario?.toLowerCase().includes(texto) ||
-        a.modulo?.toLowerCase().includes(texto) ||
-        a.accion?.toLowerCase().includes(texto) ||
-        a.descripcion?.toLowerCase().includes(texto) ||
-        a.fecha?.toLowerCase().includes(texto);
+        a.usuario.toLowerCase().includes(texto) ||
+        a.modulo.toLowerCase().includes(texto) ||
+        a.accion.toLowerCase().includes(texto) ||
+        a.descripcion.toLowerCase().includes(texto) ||
+        a.fecha.toLowerCase().includes(texto);
 
       const coincideFecha = filtroFecha
         ? a.fecha.startsWith(filtroFecha)
@@ -63,15 +72,18 @@ export default function SeguridadAuditoria() {
 
       return coincideBusqueda && coincideFecha;
     });
-  }, [auditoria, busqueda, filtroFecha]);
+  }, [auditoriaSegura, busqueda, filtroFecha]);
 
   const auditoriaOrdenada = useMemo(() => {
     const { campo, asc } = orden;
     const dir = asc ? 1 : -1;
 
     return [...auditoriaFiltrada].sort((a, b) => {
-      if (a[campo] < b[campo]) return -1 * dir;
-      if (a[campo] > b[campo]) return 1 * dir;
+      const va = a[campo];
+      const vb = b[campo];
+
+      if (va < vb) return -1 * dir;
+      if (va > vb) return 1 * dir;
       return 0;
     });
   }, [auditoriaFiltrada, orden]);
@@ -118,7 +130,6 @@ export default function SeguridadAuditoria() {
         Auditoría del sistema — SJ‑2026
       </h1>
 
-      {/* BOTÓN EXCEL */}
       <button
         onClick={descargarExcel}
         className="
@@ -129,7 +140,6 @@ export default function SeguridadAuditoria() {
         Descargar Excel
       </button>
 
-      {/* FILTROS PREMIUM */}
       <div className="flex flex-col md:flex-row gap-4 mb-4">
         <input
           type="text"
@@ -159,7 +169,6 @@ export default function SeguridadAuditoria() {
         />
       </div>
 
-      {/* TABLA PREMIUM */}
       <div
         className="
           bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
@@ -169,31 +178,19 @@ export default function SeguridadAuditoria() {
         <table className="w-full text-sm text-white">
           <thead className="bg-white/10 border-b border-white/20">
             <tr>
-              <th
-                className="p-3 cursor-pointer"
-                onClick={() => ordenar("fecha")}
-              >
+              <th className="p-3 cursor-pointer" onClick={() => ordenar("fecha")}>
                 Fecha {orden.campo === "fecha" ? (orden.asc ? "▲" : "▼") : ""}
               </th>
 
-              <th
-                className="p-3 cursor-pointer"
-                onClick={() => ordenar("usuario")}
-              >
+              <th className="p-3 cursor-pointer" onClick={() => ordenar("usuario")}>
                 Usuario {orden.campo === "usuario" ? (orden.asc ? "▲" : "▼") : ""}
               </th>
 
-              <th
-                className="p-3 cursor-pointer"
-                onClick={() => ordenar("modulo")}
-              >
+              <th className="p-3 cursor-pointer" onClick={() => ordenar("modulo")}>
                 Módulo {orden.campo === "modulo" ? (orden.asc ? "▲" : "▼") : ""}
               </th>
 
-              <th
-                className="p-3 cursor-pointer"
-                onClick={() => ordenar("accion")}
-              >
+              <th className="p-3 cursor-pointer" onClick={() => ordenar("accion")}>
                 Acción {orden.campo === "accion" ? (orden.asc ? "▲" : "▼") : ""}
               </th>
 
@@ -204,7 +201,7 @@ export default function SeguridadAuditoria() {
           <tbody>
             {auditoriaPaginada.map((a) => (
               <tr
-                key={a.id}
+                key={String(a.id)}
                 className="border-b border-white/10 hover:bg-white/5 transition"
               >
                 <td className="p-3">{a.fecha}</td>
@@ -222,7 +219,6 @@ export default function SeguridadAuditoria() {
         </table>
       </div>
 
-      {/* PAGINACIÓN PREMIUM */}
       <div className="flex items-center gap-3 mt-4 text-white">
         <button
           disabled={pagina === 0}

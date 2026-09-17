@@ -470,6 +470,6 @@ export default function SeguridadFicha({ empleadoId }) {
         )}
       </div>
 
-    </div> {/* ← cierre contenedor principal p-6 space-y-8 */}
+    </div> 
   );
-} {/* ← cierre del componente SeguridadFicha */}
+} 

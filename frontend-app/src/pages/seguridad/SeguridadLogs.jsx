@@ -1,15 +1,6 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { useSeguridad } from "../../hooks/useSeguridad";
 
-/**
- * SeguridadLogs — SJ‑2026 Premium
- * - Filtros avanzados
- * - Ordenación premium
- * - Paginación premium
- * - Exportación Excel
- * - Glass‑UI
- */
-
 export default function SeguridadLogs() {
   const { logs = [], cargarTodo } = useSeguridad();
 
@@ -44,14 +35,31 @@ export default function SeguridadLogs() {
     cargarTodo();
   }, [cargarTodo]);
 
+  // BLINDAJE: limpiar logs corruptos
+  const logsSeguros = useMemo(() => {
+    if (!Array.isArray(logs)) return [];
+
+    return logs.filter((l) => {
+      return (
+        l &&
+        typeof l === "object" &&
+        typeof l.id !== "undefined" &&
+        typeof l.evento === "string" &&
+        typeof l.detalle === "string" &&
+        typeof l.fecha === "string" &&
+        (typeof l.ip === "string" || typeof l.ip === "undefined")
+      );
+    });
+  }, [logs]);
+
   const logsFiltrados = useMemo(() => {
     const texto = busqueda.toLowerCase();
 
-    return logs.filter((l) => {
+    return logsSeguros.filter((l) => {
       const coincideBusqueda =
-        l.evento?.toLowerCase().includes(texto) ||
-        l.detalle?.toLowerCase().includes(texto) ||
-        l.fecha?.toLowerCase().includes(texto);
+        l.evento.toLowerCase().includes(texto) ||
+        l.detalle.toLowerCase().includes(texto) ||
+        l.fecha.toLowerCase().includes(texto);
 
       const coincideFecha = filtroFecha
         ? l.fecha.startsWith(filtroFecha)
@@ -59,15 +67,18 @@ export default function SeguridadLogs() {
 
       return coincideBusqueda && coincideFecha;
     });
-  }, [logs, busqueda, filtroFecha]);
+  }, [logsSeguros, busqueda, filtroFecha]);
 
   const logsOrdenados = useMemo(() => {
     const { campo, asc } = orden;
     const dir = asc ? 1 : -1;
 
     return [...logsFiltrados].sort((a, b) => {
-      if (a[campo] < b[campo]) return -1 * dir;
-      if (a[campo] > b[campo]) return 1 * dir;
+      const va = a[campo];
+      const vb = b[campo];
+
+      if (va < vb) return -1 * dir;
+      if (va > vb) return 1 * dir;
       return 0;
     });
   }, [logsFiltrados, orden]);
@@ -113,7 +124,6 @@ export default function SeguridadLogs() {
         Logs del sistema — SJ‑2026
       </h1>
 
-      {/* BOTÓN EXCEL */}
       <button
         onClick={descargarExcel}
         className="
@@ -124,7 +134,6 @@ export default function SeguridadLogs() {
         Descargar Excel
       </button>
 
-      {/* FILTROS PREMIUM */}
       <div className="flex flex-col md:flex-row gap-4 mb-4">
         <input
           type="text"
@@ -154,7 +163,6 @@ export default function SeguridadLogs() {
         />
       </div>
 
-      {/* TABLA PREMIUM */}
       <div
         className="
           bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
@@ -164,24 +172,15 @@ export default function SeguridadLogs() {
         <table className="w-full text-sm text-white">
           <thead className="bg-white/10 border-b border-white/20">
             <tr>
-              <th
-                className="p-3 cursor-pointer"
-                onClick={() => ordenar("fecha")}
-              >
+              <th className="p-3 cursor-pointer" onClick={() => ordenar("fecha")}>
                 Fecha {orden.campo === "fecha" ? (orden.asc ? "▲" : "▼") : ""}
               </th>
 
-              <th
-                className="p-3 cursor-pointer"
-                onClick={() => ordenar("evento")}
-              >
+              <th className="p-3 cursor-pointer" onClick={() => ordenar("evento")}>
                 Evento {orden.campo === "evento" ? (orden.asc ? "▲" : "▼") : ""}
               </th>
 
-              <th
-                className="p-3 cursor-pointer"
-                onClick={() => ordenar("detalle")}
-              >
+              <th className="p-3 cursor-pointer" onClick={() => ordenar("detalle")}>
                 Detalle {orden.campo === "detalle" ? (orden.asc ? "▲" : "▼") : ""}
               </th>
 
@@ -192,7 +191,7 @@ export default function SeguridadLogs() {
           <tbody>
             {logsPaginados.map((l) => (
               <tr
-                key={l.id}
+                key={String(l.id)}
                 className="border-b border-white/10 hover:bg-white/5 transition"
               >
                 <td className="p-3">{l.fecha}</td>
@@ -209,7 +208,6 @@ export default function SeguridadLogs() {
         </table>
       </div>
 
-      {/* PAGINACIÓN PREMIUM */}
       <div className="flex items-center gap-3 mt-4 text-white">
         <button
           disabled={pagina === 0}

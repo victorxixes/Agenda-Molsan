@@ -8,14 +8,27 @@ import {
   listarApoderados,
 } from "../api/empleados";
 
-/**
- * Store de Empleados — Versión SJ‑2026 Premium
- * Gestiona:
- * - Listado de empleados
- * - Listado de apoderados
- * - CRUD de empleados
- * - Estado de carga y error
- */
+const safe = (v) => {
+  if (v === null || v === undefined) return "-";
+  if (typeof v === "object") {
+    try { return JSON.stringify(v); } catch { return "-" }
+  }
+  return String(v);
+};
+
+const safeEmpleado = (e) => ({
+  id: Number(e.id),
+  nombre: safe(e.nombre),
+  apellidos: safe(e.apellidos),
+  telefono: safe(e.telefono),
+  email_empresa: safe(e.email_empresa),
+  activo: Boolean(e.activo),
+  departamento_nombre: safe(e.departamento_nombre),
+  seccion_nombre: safe(e.seccion_nombre),
+  cargo_nombre: safe(e.cargo_nombre),
+  foto: safe(e.foto),
+  usuario: safe(e.usuario),
+});
 
 export const useEmpleadosStore = create((set, get) => ({
   empleados: [],
@@ -23,15 +36,14 @@ export const useEmpleadosStore = create((set, get) => ({
   cargando: false,
   error: null,
 
-  // ---------------------------------------------------------
-  // CARGAR EMPLEADOS
-  // ---------------------------------------------------------
   cargarEmpleados: async () => {
     try {
       set({ cargando: true });
 
       const res = await listarEmpleados();
-      const lista = Array.isArray(res.data) ? res.data : [];
+      const lista = Array.isArray(res.data)
+        ? res.data.map(safeEmpleado)
+        : [];
 
       set({ empleados: lista, cargando: false });
     } catch (err) {
@@ -40,15 +52,14 @@ export const useEmpleadosStore = create((set, get) => ({
     }
   },
 
-  // ---------------------------------------------------------
-  // CARGAR APODERADOS
-  // ---------------------------------------------------------
   cargarApoderados: async () => {
     try {
       set({ cargando: true });
 
       const res = await listarApoderados();
-      const lista = Array.isArray(res.data) ? res.data : [];
+      const lista = Array.isArray(res.data)
+        ? res.data.map(safeEmpleado)
+        : [];
 
       set({ apoderados: lista, cargando: false });
     } catch (err) {
@@ -57,39 +68,27 @@ export const useEmpleadosStore = create((set, get) => ({
     }
   },
 
-  // ---------------------------------------------------------
-  // OBTENER EMPLEADO
-  // ---------------------------------------------------------
   obtener: async (id) => {
     try {
       const res = await obtenerEmpleado(id);
-      return res.data || null;
+      return res.data ? safeEmpleado(res.data) : null;
     } catch {
       return null;
     }
   },
 
-  // ---------------------------------------------------------
-  // CREAR EMPLEADO
-  // ---------------------------------------------------------
   crear: async (payload) => {
     const res = await crearEmpleado(payload);
     await get().cargarEmpleados();
-    return res.data || null;
+    return res.data ? safeEmpleado(res.data) : null;
   },
 
-  // ---------------------------------------------------------
-  // EDITAR EMPLEADO
-  // ---------------------------------------------------------
   editar: async (id, payload) => {
     const res = await editarEmpleado(id, payload);
     await get().cargarEmpleados();
-    return res.data || null;
+    return res.data ? safeEmpleado(res.data) : null;
   },
 
-  // ---------------------------------------------------------
-  // ELIMINAR EMPLEADO
-  // ---------------------------------------------------------
   eliminar: async (id) => {
     await eliminarEmpleado(id);
     await get().cargarEmpleados();

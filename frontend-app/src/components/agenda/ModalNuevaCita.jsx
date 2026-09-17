@@ -1,12 +1,9 @@
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback } from "react";
 import AutocompleteNotario from "./AutocompleteNotario";
 import { obtenerNotaria } from "../../api/ctn";
 
 const TIPOS_CITA = ["Firma notarial", "Reunión", "Visita", "Otros"];
 
-/**
- * Normaliza el tipo de firma según el valor de VC
- */
 const normalizarTipoFirma = (vc) => {
   const v = vc?.toUpperCase();
   return v === "SI" || v === "VC" || v === "VIDEOCONFERENCIA"
@@ -14,9 +11,6 @@ const normalizarTipoFirma = (vc) => {
     : "Presencial";
 };
 
-/**
- * Normaliza un notario recibido desde API o Autocomplete
- */
 const normalizarNotario = (n, tipoFirmaOverride = null) => ({
   id: n.id,
   codigo: n.codigo || "",
@@ -56,33 +50,23 @@ export default function ModalNuevaCita({
 
   const [notarioSeleccionado, setNotarioSeleccionado] = useState(null);
 
-  /**
-   * handleChange — estable y sin recrearse
-   */
   const handleChange = useCallback((campo, valor) => {
     setForm((f) => ({ ...f, [campo]: valor }));
   }, []);
 
-  /**
-   * ============================
-   * MODO EDITAR
-   * ============================
-   */
   useEffect(() => {
     if (modo !== "editar" || !cita) return;
 
-    // Rellenar formulario base
     setForm({
       hora_inicio: cita.hora_inicio || "",
       hora_fin: cita.hora_fin || "",
       tipo_cita: cita.tipo_cita || "",
       notario_id: cita.notario_id || null,
-      tipo_firma: cita.tipo_firma || "",
+      tipo_firma: typeof cita.tipo_firma === "string" ? cita.tipo_firma : "",
       apoderado_visible: cita.apoderado_nombre || "",
       observaciones: cita.observaciones || "",
     });
 
-    // Cargar notario si existe
     if (cita.notario_id) {
       obtenerNotaria(cita.notario_id).then((res) => {
         const n = res.data;
@@ -98,22 +82,12 @@ export default function ModalNuevaCita({
     }
   }, [modo, cita, handleChange]);
 
-  /**
-   * ============================
-   * Rellenar apoderado al seleccionar notario
-   * ============================
-   */
   useEffect(() => {
     if (notarioSeleccionado) {
       handleChange("apoderado_visible", notarioSeleccionado.apoderado || "");
     }
   }, [notarioSeleccionado, handleChange]);
 
-  /**
-   * ============================
-   * Guardar cita
-   * ============================
-   */
   const guardar = useCallback(async () => {
     setLoading(true);
 
@@ -124,11 +98,11 @@ export default function ModalNuevaCita({
 
     const payload = {
       fecha: fechaNormalizada,
-      hora_inicio: form.hora_inicio || null,
-      hora_fin: form.hora_fin || null,
+      hora_inicio: form.hora_inicio || "",
+      hora_fin: form.hora_fin || "",
       tipo_cita: form.tipo_cita || "",
       notario_id: form.notario_id || null,
-      tipo_firma: form.tipo_firma || "",
+      tipo_firma: typeof form.tipo_firma === "string" ? form.tipo_firma : "",
       apoderado: form.apoderado_visible || "",
       observaciones: form.observaciones || "",
     };
@@ -145,25 +119,14 @@ export default function ModalNuevaCita({
 
   if (!fecha) return null;
 
-  /**
-   * ============================
-   * MODAL PREMIUM SJ‑2026
-   * ============================
-   */
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
-      <div
-        className="
-          bg-white/10 backdrop-blur-xl border border-white/20
-          rounded-2xl shadow-2xl w-full max-w-xl p-6 text-white
-        "
-      >
+      <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl w-full max-w-xl p-6 text-white">
         <h2 className="text-2xl font-semibold mb-4 drop-shadow">
           {modo === "crear" ? "Nueva cita" : "Editar cita"} — {fecha}
         </h2>
 
         <div className="grid grid-cols-2 gap-4 text-sm">
-
           {/* Hora inicio */}
           <div>
             <label className="block mb-1 text-white/80">Hora inicio</label>
@@ -223,9 +186,7 @@ export default function ModalNuevaCita({
 
           {/* Tarjeta del notario */}
           {notarioSeleccionado && (
-            <div className="
-              col-span-2 border border-white/20 rounded-xl p-4 bg-white/5 backdrop-blur-xl shadow-lg
-            ">
+            <div className="col-span-2 border border-white/20 rounded-xl p-4 bg-white/5 backdrop-blur-xl shadow-lg">
               <h4 className="font-semibold text-sm mb-2 text-white">
                 {notarioSeleccionado.nombre} {notarioSeleccionado.apellidos}
               </h4>
@@ -290,10 +251,7 @@ export default function ModalNuevaCita({
         <div className="mt-6 flex justify-end gap-3">
           {modo === "editar" && onDelete && (
             <button
-              className="
-                px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700
-                text-white transition shadow-lg
-              "
+              className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white transition shadow-lg"
               onClick={onDelete}
             >
               Eliminar
@@ -301,20 +259,14 @@ export default function ModalNuevaCita({
           )}
 
           <button
-            className="
-              px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20
-              text-white transition shadow-lg
-            "
+            className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition shadow-lg"
             onClick={onClose}
           >
             Cancelar
           </button>
 
           <button
-            className="
-              px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
-              text-white transition shadow-lg
-            "
+            className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white transition shadow-lg"
             onClick={guardar}
             disabled={loading}
           >

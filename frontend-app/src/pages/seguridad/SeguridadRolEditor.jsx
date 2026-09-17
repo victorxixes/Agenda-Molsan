@@ -1,15 +1,22 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useSeguridad } from "../../hooks/useSeguridad";
-
-/**
- * SeguridadRolEditor — SJ‑2026 Premium
- * - Crear / editar roles
- * - Glass‑UI
- * - Render optimizado
- */
 
 export default function SeguridadRolEditor() {
   const { roles = [], cargarTodo } = useSeguridad();
+
+  // Filtrar SOLO roles válidos
+  const rolesSeguros = useMemo(() => {
+    if (!Array.isArray(roles)) return [];
+
+    return roles.filter((r) => {
+      return (
+        r &&
+        typeof r === "object" &&
+        typeof r.id !== "undefined" &&
+        typeof r.nombre === "string"
+      );
+    });
+  }, [roles]);
 
   const [modo, setModo] = useState("lista");
   const [rolEditando, setRolEditando] = useState(null);
@@ -25,6 +32,8 @@ export default function SeguridadRolEditor() {
   }, []);
 
   const iniciarEditar = useCallback((rol) => {
+    if (!rol || typeof rol.nombre !== "string") return;
+
     setModo("editar");
     setRolEditando(rol);
     setNombreRol(rol.nombre);
@@ -49,7 +58,7 @@ export default function SeguridadRolEditor() {
       });
     }
 
-    if (modo === "editar") {
+    if (modo === "editar" && rolEditando?.id) {
       await fetch(`${url}/${rolEditando.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -116,14 +125,14 @@ export default function SeguridadRolEditor() {
             </thead>
 
             <tbody>
-              {(roles || []).map((r) => (
+              {rolesSeguros.map((r) => (
                 <tr
-                  key={r.id}
+                  key={String(r.id)}
                   className="
                     border-b border-white/10 hover:bg-white/5 transition
                   "
                 >
-                  <td className="p-3">{r.id}</td>
+                  <td className="p-3">{String(r.id)}</td>
                   <td className="p-3">{r.nombre}</td>
 
                   <td className="p-3 space-x-2">
@@ -165,7 +174,7 @@ export default function SeguridadRolEditor() {
           <h2 className="text-xl font-semibold drop-shadow mb-2">
             {modo === "crear"
               ? "Crear nuevo rol"
-              : `Editar rol #${rolEditando.id}`}
+              : `Editar rol #${rolEditando?.id}`}
           </h2>
 
           <label className="block text-sm text-white/80 mb-1">

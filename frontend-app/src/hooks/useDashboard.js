@@ -1,10 +1,7 @@
 import { useState, useCallback } from "react";
 import axios from "../api/axios";
 
-/**
- * Normalizador de citas — igual que AgendaStore
- * Garantiza que el Dashboard muestre las mismas citas que el calendario.
- */
+// Normalizador idéntico al de Agenda
 function normalizarCita(c) {
   if (!c || typeof c !== "object") return null;
 
@@ -21,13 +18,6 @@ function normalizarCita(c) {
   };
 }
 
-/**
- * useDashboard — Hook Premium SJ‑2026
- * - Carga datos del panel corporativo
- * - Normaliza citas próximas
- * - Sin re-renders innecesarios
- * - Compatible con Render y Vite
- */
 export function useDashboard() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -37,38 +27,62 @@ export function useDashboard() {
 
     try {
       const res = await axios.get("/dashboard");
-
       const d = res?.data || {};
 
-      const proximasNormalizadas = Array.isArray(d.proximas)
-        ? d.proximas
-            .map(normalizarCita)
-            .filter(Boolean) // elimina nulls
+      const proximas = Array.isArray(d.proximas)
+        ? d.proximas.map(normalizarCita).filter(Boolean)
         : [];
+
+      // Fecha de hoy y mañana
+      const hoy = new Date().toISOString().slice(0, 10);
+      const mañana = new Date(Date.now() + 86400000)
+        .toISOString()
+        .slice(0, 10);
+
+      const citasHoy = proximas.filter((c) => c.fecha === hoy);
+      const citasMañana = proximas.filter((c) => c.fecha === mañana);
+
+      // Semana (7 días)
+      const semanaLimite = new Date(Date.now() + 7 * 86400000)
+        .toISOString()
+        .slice(0, 10);
+
+      const citasSemana = proximas.filter((c) => c.fecha <= semanaLimite);
+
+      // Agrupación por notario
+      const porNotario = {};
+      proximas.forEach((c) => {
+        const key = c.notario || "Sin notario";
+        if (!porNotario[key]) porNotario[key] = [];
+        porNotario[key].push(c);
+      });
+
+      // Agrupación por tipo_firma
+      const porTipoFirma = {};
+      proximas.forEach((c) => {
+        const key = c.tipo_firma || "Sin tipo";
+        if (!porTipoFirma[key]) porTipoFirma[key] = [];
+        porTipoFirma[key].push(c);
+      });
 
       setData({
         hoy: d.hoy ?? 0,
         semana: d.semana ?? 0,
         mes: d.mes ?? 0,
-        proximas: proximasNormalizadas,
+        proximas,
+        citasHoy,
+        citasMañana,
+        citasSemana,
+        porNotario,
+        porTipoFirma,
       });
     } catch (err) {
       console.error("Error cargando dashboard:", err);
-
-      setData({
-        hoy: 0,
-        semana: 0,
-        mes: 0,
-        proximas: [],
-      });
+      setData(null);
     }
 
     setLoading(false);
   }, []);
 
-  return {
-    data,
-    loading,
-    cargarDashboard,
-  };
+  return { data, loading, cargarDashboard };
 }

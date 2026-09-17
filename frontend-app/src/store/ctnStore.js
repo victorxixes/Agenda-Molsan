@@ -14,7 +14,7 @@ export const useCtnStore = create((set) => ({
   items: [],
   total: 0,
   page: 1,
-  page_size: 50,
+  page_size: 15,
   notaria: null,
   firmas: null,
   loading: false,

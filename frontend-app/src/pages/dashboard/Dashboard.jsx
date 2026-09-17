@@ -1,5 +1,5 @@
 import { useEffect, useCallback, useMemo } from "react";
-import { useDashboard } from "../hooks/useDashboard";
+import { useDashboard } from "../hooks/useDashboard.js";
 
 export default function Dashboard() {
   const { data, loading, cargarDashboard } = useDashboard();

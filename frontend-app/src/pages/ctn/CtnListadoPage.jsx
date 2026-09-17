@@ -2,14 +2,6 @@ import { useEffect, useState, useCallback, useMemo } from "react";
 import { useCtn } from "../../hooks/useCtn";
 import ModalCtnDetalle from "../../components/ctn/ModalCtnDetalle";
 
-/**
- * Listado CTN — SJ‑2026 Premium
- * - Filtros premium
- * - Tabla glass‑UI
- * - Modal premium
- * - Funciones estabilizadas
- */
-
 export default function CtnListadoPage() {
   const { items, total, page, page_size, cargarNotarias, loading } = useCtn();
 
@@ -24,13 +16,20 @@ export default function CtnListadoPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [selected, setSelected] = useState(null);
 
+  // ⭐ Página local (controlada por el componente)
+  const [pagina, setPagina] = useState(1);
+
+  // ⭐ Tamaño de página fijo a 15
+  const PAGE_SIZE = 15;
+
   // Cargar inicial
   useEffect(() => {
-    cargarNotarias();
-  }, [cargarNotarias]);
+    cargarNotarias(filtros, pagina, PAGE_SIZE);
+  }, [cargarNotarias, filtros, pagina]);
 
   const aplicarFiltros = useCallback(() => {
-    cargarNotarias(filtros);
+    setPagina(1); // Reiniciar a página 1
+    cargarNotarias(filtros, 1, PAGE_SIZE);
   }, [filtros, cargarNotarias]);
 
   const abrirDetalle = useCallback((notaria) => {
@@ -39,6 +38,9 @@ export default function CtnListadoPage() {
   }, []);
 
   const filtrosKeys = useMemo(() => Object.keys(filtros), [filtros]);
+
+  // ⭐ Total de páginas
+  const totalPaginas = Math.ceil(total / PAGE_SIZE);
 
   return (
     <div className="space-y-6">
@@ -133,8 +135,38 @@ export default function CtnListadoPage() {
             </tbody>
           </table>
 
+          {/* ⭐ Paginación Premium */}
+          <div className="flex items-center justify-between mt-4 text-white/80 text-sm">
+
+            <button
+              className="
+                px-3 py-2 rounded-xl bg-white/10 border border-white/20
+                hover:bg-white/20 transition
+              "
+              disabled={pagina <= 1}
+              onClick={() => setPagina((p) => p - 1)}
+            >
+              ← Anterior
+            </button>
+
+            <span>
+              Página {pagina} de {totalPaginas}
+            </span>
+
+            <button
+              className="
+                px-3 py-2 rounded-xl bg-white/10 border border-white/20
+                hover:bg-white/20 transition
+              "
+              disabled={pagina >= totalPaginas}
+              onClick={() => setPagina((p) => p + 1)}
+            >
+              Siguiente →
+            </button>
+          </div>
+
           <p className="text-white/60 text-sm mt-3">
-            Página {page} — {items.length} de {total}
+            Mostrando {items.length} notarías — Total: {total}
           </p>
         </div>
       )}

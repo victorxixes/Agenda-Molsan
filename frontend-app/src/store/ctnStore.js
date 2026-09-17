@@ -22,23 +22,34 @@ export const useCtnStore = create((set) => ({
   // ---------------------------------------------------------
   // CARGAR NOTARIAS (LISTADO + PAGINACIÓN)
   // ---------------------------------------------------------
-  cargarNotarias: async (filtros = {}) => {
-    set({ loading: true });
+  cargarNotarias: async (filtros = {}, page = 1, page_size = 15) => {
+  set({ loading: true });
 
-    try {
-      const res = await api.listarNotarias(filtros);
+  try {
+    const res = await api.listarNotarias({
+      ...filtros,
+      page,
+      page_size,
+    });
 
-      set({
-        items: res.data.items,
-        total: res.data.total,
-        page: res.data.page,
-        page_size: res.data.page_size,
-        loading: false,
-      });
-    } catch {
-      set({ items: [], loading: false });
-    }
-  },
+    set({
+      items: res.data.items || [],
+      total: res.data.total || 0,
+      page: res.data.page || page,
+      page_size: res.data.page_size || page_size,
+      loading: false,
+    });
+  } catch {
+    set({
+      items: [],
+      total: 0,
+      page,
+      page_size,
+      loading: false,
+    });
+  }
+},
+
 
   // ---------------------------------------------------------
   // CARGAR NOTARIA (DETALLE)

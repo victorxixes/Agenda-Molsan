@@ -1,11 +1,10 @@
-import { useEffect, useCallback, useMemo } from "react";
+import { useEffect, useCallback } from "react";
 import { useDashboard } from "../../hooks/useDashboard";
 
-// Iconos locales (si usas tu sistema de SVGs)
-import IconCalendar from "../../icons/IconCalendar";
-import IconWeek from "../../icons/IconWeek";
-import IconMonth from "../../icons/IconMonth";
-import IconClock from "../../icons/IconClock";
+import IconCalendar from "../../icons/IconCalendar.jsx";
+import IconWeek from "../../icons/IconWeek.jsx";
+import IconMonth from "../../icons/IconMonth.jsx";
+import IconClock from "../../icons/IconClock.jsx";
 
 export default function Dashboard() {
   const { data, loading, cargarDashboard } = useDashboard();
@@ -18,18 +17,6 @@ export default function Dashboard() {
     cargar();
   }, [cargar]);
 
-  const citasHoy = useMemo(() => {
-    const p = data?.proximas;
-    if (!Array.isArray(p)) return [];
-
-    return p.filter(
-      (c) =>
-        c &&
-        typeof c === "object" &&
-        typeof c.tipo_firma === "string"
-    );
-  }, [data?.proximas]);
-
   return (
     <div className="p-6 text-white">
       <h1 className="text-3xl font-bold mb-6 drop-shadow">
@@ -38,42 +25,53 @@ export default function Dashboard() {
 
       {loading && <p>Cargando…</p>}
 
-      {!loading && (
+      {!loading && data && (
         <>
           {/* BLOQUES RESUMEN */}
           <div className="grid grid-cols-3 gap-4 mb-6">
-            {/* Hoy */}
+
+            {/* Próximas citas */}
             <div className="bg-blue-600/20 border border-blue-600/30 p-4 rounded-xl shadow-lg backdrop-blur-xl">
               <div className="flex items-center gap-2 mb-1">
                 <IconCalendar className="w-5 h-5 text-blue-300" />
-                <h3 className="text-blue-200 font-semibold">Hoy</h3>
+                <h3 className="text-blue-200 font-semibold">Próximas</h3>
               </div>
               <p className="text-3xl font-bold text-blue-100">
-                {data?.hoy ?? 0}
+                {data.proximas.length}
               </p>
             </div>
 
-            {/* Semana */}
+            {/* Realizadas VC */}
             <div className="bg-green-600/20 border border-green-600/30 p-4 rounded-xl shadow-lg backdrop-blur-xl">
               <div className="flex items-center gap-2 mb-1">
                 <IconWeek className="w-5 h-5 text-green-300" />
-                <h3 className="text-green-200 font-semibold">Semana</h3>
+                <h3 className="text-green-200 font-semibold">VC realizadas</h3>
               </div>
               <p className="text-3xl font-bold text-green-100">
-                {data?.semana ?? 0}
+                {data.realizadasVC.length}
               </p>
             </div>
 
-            {/* Mes */}
+            {/* Realizadas Presencial */}
             <div className="bg-purple-600/20 border border-purple-600/30 p-4 rounded-xl shadow-lg backdrop-blur-xl">
               <div className="flex items-center gap-2 mb-1">
                 <IconMonth className="w-5 h-5 text-purple-300" />
-                <h3 className="text-purple-200 font-semibold">Mes</h3>
+                <h3 className="text-purple-200 font-semibold">Presencial realizadas</h3>
               </div>
               <p className="text-3xl font-bold text-purple-100">
-                {data?.mes ?? 0}
+                {data.realizadasPresencial.length}
               </p>
             </div>
+          </div>
+
+          {/* TOTAL MES */}
+          <div className="bg-white/10 p-4 rounded-xl border border-white/20 shadow-xl backdrop-blur-xl mb-6">
+            <h3 className="text-xl mb-2 font-semibold text-white drop-shadow">
+              Total mes
+            </h3>
+            <p className="text-3xl font-bold text-white">
+              {data.totalMes}
+            </p>
           </div>
 
           {/* PRÓXIMAS CITAS */}
@@ -82,19 +80,19 @@ export default function Dashboard() {
               Próximas citas
             </h3>
 
-            {citasHoy.length === 0 && (
+            {data.proximas.length === 0 && (
               <p className="text-white/70">No hay citas próximas.</p>
             )}
 
             <ul className="space-y-4">
-              {citasHoy.map((c, i) => (
+              {data.proximas.map((c, i) => (
                 <li
                   key={i}
                   className="bg-white/10 border border-white/10 rounded-xl p-4 shadow-lg backdrop-blur-xl hover:bg-white/20 transition"
                 >
                   <div className="flex justify-between mb-2">
                     <span className="font-semibold text-white">
-                      {c.tipo_firma}
+                      {c.tipo_firma || "—"}
                     </span>
                     <span className="text-sm text-white/70">{c.fecha}</span>
                   </div>

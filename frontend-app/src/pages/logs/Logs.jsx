@@ -1,15 +1,6 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useLogs } from "../../hooks/useLogs";
 
-/**
- * Logs — SJ‑2026 Premium
- * - Filtros avanzados
- * - Ordenación estable
- * - Paginación premium
- * - Glass‑UI
- * - Exportación CSV
- */
-
 export default function Logs() {
   const { logs, cargarLogs, loading } = useLogs();
 
@@ -115,7 +106,7 @@ export default function Logs() {
   return (
     <div className="p-6 space-y-8 text-white animate-fade-in">
 
-      {/* TÍTULO PREMIUM */}
+      {/* TÍTULO */}
       <div className="
         bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
         p-6 shadow-xl
@@ -126,26 +117,20 @@ export default function Logs() {
         </p>
       </div>
 
-      {/* FILTROS PREMIUM */}
+      {/* FILTROS */}
       <div className="
         bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
         p-6 shadow-xl grid grid-cols-4 gap-4
       ">
         <input
-          className="
-            bg-white/10 border border-white/20 rounded-xl px-3 py-2
-            text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
-          "
+          className="bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400"
           placeholder="Tipo (error, security, info...)"
           value={tipo}
           onChange={(e) => setTipo(e.target.value)}
         />
 
         <input
-          className="
-            bg-white/10 border border-white/20 rounded-xl px-3 py-2
-            text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
-          "
+          className="bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400"
           placeholder="Buscar texto..."
           value={texto}
           onChange={(e) => setTexto(e.target.value)}
@@ -153,36 +138,43 @@ export default function Logs() {
 
         <input
           type="date"
-          className="
-            bg-white/10 border border-white/20 rounded-xl px-3 py-2
-            text-white focus:ring-2 focus:ring-blue-400
-          "
+          className="bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white focus:ring-2 focus:ring-blue-400"
           value={fechaDesde}
           onChange={(e) => setFechaDesde(e.target.value)}
         />
 
         <input
           type="date"
-          className="
-            bg-white/10 border border-white/20 rounded-xl px-3 py-2
-            text-white focus:ring-2 focus:ring-blue-400
-          "
+          className="bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white focus:ring-2 focus:ring-blue-400"
           value={fechaHasta}
           onChange={(e) => setFechaHasta(e.target.value)}
         />
+      </div>
 
+      {/* BOTONES COMO CTN */}
+      <div className="flex gap-3">
         <button
           className="
-            col-span-4 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
+            px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
             text-white shadow-lg transition active:scale-[0.97]
           "
           onClick={aplicarFiltros}
         >
           Aplicar filtros
         </button>
+
+        <button
+          className="
+            px-4 py-2 rounded-xl bg-green-600 hover:bg-green-700
+            text-white shadow-lg transition active:scale-[0.97]
+          "
+          onClick={exportarExcel}
+        >
+          Exportar Excel
+        </button>
       </div>
 
-      {/* TABLA PREMIUM */}
+      {/* TABLA */}
       <div className="
         bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
         p-6 shadow-xl overflow-hidden
@@ -204,9 +196,7 @@ export default function Logs() {
               {visibles.map((log) => (
                 <tr
                   key={log.id}
-                  className="
-                    border-b border-white/10 hover:bg-white/5 transition
-                  "
+                  className="border-b border-white/10 hover:bg-white/5 transition"
                 >
                   <td className="py-2">{log.id}</td>
 
@@ -227,62 +217,36 @@ export default function Logs() {
         )}
       </div>
 
-      {/* PAGINACIÓN + EXPORTAR PREMIUM */}
-      <div className="
-        bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
-        p-6 shadow-xl flex items-center justify-between
-      ">
-        <div className="flex items-center gap-3">
-          <button
-            className="
-              px-3 py-2 rounded-xl bg-white/10 border border-white/20
-              text-white hover:bg-white/20 transition active:scale-[0.97]
-            "
-            disabled={pagina <= 1}
-            onClick={() => setPagina((p) => p - 1)}
-          >
-            ← Anterior
-          </button>
-
-          <span className="text-white/70 text-sm">
-            Página {pagina} de {totalPaginas}
-          </span>
-
-          <button
-            className="
-              px-3 py-2 rounded-xl bg-white/10 border border-white/20
-              text-white hover:bg-white/20 transition active:scale-[0.97]
-            "
-            disabled={pagina >= totalPaginas}
-            onClick={() => setPagina((p) => p + 1)}
-          >
-            Siguiente →
-          </button>
-        </div>
-
-        <select
-          className="
-            bg-white/10 border border-white/20 rounded-xl px-3 py-2
-            text-white focus:ring-2 focus:ring-blue-400
-          "
-          value={pageSize}
-          onChange={(e) => setPageSize(Number(e.target.value))}
-        >
-          <option value={20}>20 por página</option>
-          <option value={50}>50 por página</option>
-          <option value={100}>100 por página</option>
-        </select>
+      {/* PAGINACIÓN COMO CTN */}
+      <div className="flex items-center justify-between mt-4 text-white/80 text-sm">
 
         <button
-          onClick={exportarExcel}
           className="
-            px-4 py-2 rounded-xl bg-green-600 hover:bg-green-700
-            text-white shadow-lg transition active:scale-[0.97]
+            px-3 py-2 rounded-xl bg-white/10 border border-white/20
+            hover:bg-white/20 transition
           "
+          disabled={pagina <= 1}
+          onClick={() => setPagina((p) => p - 1)}
         >
-          Exportar Excel
+          ← Anterior
+        </button>
+
+        <span>
+          Página {pagina} de {totalPaginas}
+        </span>
+
+        <button
+          className="
+            px-3 py-2 rounded-xl bg-white/10 border border-white/20
+            hover:bg-white/20 transition
+          "
+          disabled={pagina >= totalPaginas}
+          onClick={() => setPagina((p) => p + 1)}
+        >
+          Siguiente →
         </button>
       </div>
+
     </div>
   );
 }

@@ -2,7 +2,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { useSeguridad } from "../../hooks/useSeguridad";
 import EmpleadosListado from "../empleados/EmpleadosListado"; // ajusta la ruta si es distinta
-import { API_BASE } from "../api/config";
+import { API_BASE } from "../../api/config";
 
 export default function SeguridadUsuario() {
   const {

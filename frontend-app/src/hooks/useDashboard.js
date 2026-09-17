@@ -26,59 +26,43 @@ export function useDashboard() {
     setLoading(true);
 
     try {
+      // Fecha actual
       const hoyDate = new Date();
       const year = hoyDate.getFullYear();
       const month = hoyDate.getMonth() + 1;
 
+      // 1️⃣ Cargar citas del mes actual (igual que el calendario)
       const resAgenda = await axios.get(`/agenda/mes/${year}/${month}`);
 
-      // ⭐ FILTRAR SOLO CITAS (evita error React #31)
+      // ⭐ FILTRAR SOLO CITAS VÁLIDAS (evita error React #31)
       const soloCitas = Array.isArray(resAgenda.data)
         ? resAgenda.data.filter((c) => c.fecha && c.hora_inicio)
         : [];
 
       const citasMes = soloCitas.map(normalizarCita).filter(Boolean);
 
-      // Métricas
+      // 2️⃣ Próximas citas (fecha >= hoy)
       const hoy = hoyDate.toISOString().slice(0, 10);
-      const mañana = new Date(Date.now() + 86400000)
-        .toISOString()
-        .slice(0, 10);
+      const proximas = citasMes.filter((c) => c.fecha >= hoy);
 
-      const citasHoy = citasMes.filter((c) => c.fecha === hoy);
-      const citasMañana = citasMes.filter((c) => c.fecha === mañana);
+      // 3️⃣ Citas realizadas por tipo
+      const realizadasVC = citasMes.filter(
+        (c) => c.fecha < hoy && c.tipo_firma === "Videoconferencia"
+      );
 
-      const semanaLimite = new Date(Date.now() + 7 * 86400000)
-        .toISOString()
-        .slice(0, 10);
+      const realizadasPresencial = citasMes.filter(
+        (c) => c.fecha < hoy && c.tipo_firma === "Presencial"
+      );
 
-      const citasSemana = citasMes.filter((c) => c.fecha <= semanaLimite);
+      // 4️⃣ Total del mes
+      const totalMes = citasMes.length;
 
-      // Agrupaciones
-      const porNotario = {};
-      citasMes.forEach((c) => {
-        const key = c.notario || "Sin notario";
-        if (!porNotario[key]) porNotario[key] = [];
-        porNotario[key].push(c);
-      });
-
-      const porTipoFirma = {};
-      citasMes.forEach((c) => {
-        const key = c.tipo_firma || "Sin tipo";
-        if (!porTipoFirma[key]) porTipoFirma[key] = [];
-        porTipoFirma[key].push(c);
-      });
-
+      // 5️⃣ Guardar datos
       setData({
-        hoy: citasHoy.length,
-        semana: citasSemana.length,
-        mes: citasMes.length,
-        proximas: citasMes,
-        citasHoy,
-        citasMañana,
-        citasSemana,
-        porNotario,
-        porTipoFirma,
+        proximas,
+        realizadasVC,
+        realizadasPresencial,
+        totalMes,
       });
     } catch (err) {
       console.error("Error cargando dashboard:", err);

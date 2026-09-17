@@ -42,45 +42,40 @@ export default function CtnListadoPage() {
   // ⭐ Total de páginas
   const totalPaginas = Math.ceil(total / PAGE_SIZE);
 
-  return (
-    <div className="space-y-6">
+ const descargarExcel = useCallback(async () => {
+  try {
+    const params = new URLSearchParams();
 
-      {/* Filtros Premium */}
-      <div
-        className="
-          bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-xl
-          grid grid-cols-5 gap-4
-        "
-      >
-        {filtrosKeys.map((key) => (
-          <input
-            key={key}
-            className="
-              bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white
-              placeholder-white/40 focus:ring-2 focus:ring-blue-400
-            "
-            placeholder={
-              key === "q"
-                ? "Buscar nombre, apellidos, código, NIF…"
-                : key.charAt(0).toUpperCase() + key.slice(1)
-            }
-            value={filtros[key]}
-            onChange={(e) =>
-              setFiltros((prev) => ({ ...prev, [key]: e.target.value }))
-            }
-          />
-        ))}
-      </div>
+    // Añadir solo filtros que tengan valor
+    Object.entries(filtros).forEach(([key, value]) => {
+      if (value && value.trim() !== "") {
+        params.append(key, value);
+      }
+    });
 
-      <button
-        className="
-          px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
-          text-white shadow-lg transition active:scale-[0.97]
-        "
-        onClick={aplicarFiltros}
-      >
-        Aplicar filtros
-      </button>
+    const urlExcel = `${import.meta.env.VITE_API_URL}/ctn/exportar-excel?${params.toString()}`;
+
+    const res = await fetch(urlExcel, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "notarias.xlsx";
+    a.click();
+
+    window.URL.revokeObjectURL(url);
+  } catch (err) {
+    console.error("Error descargando Excel:", err);
+  }
+}, [filtros]);
+
 
       {/* Tabla Premium */}
       {loading ? (

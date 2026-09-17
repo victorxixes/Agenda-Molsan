@@ -46,15 +46,17 @@ export default function Intranet() {
   // FILTROS
   const docsFiltrados = useMemo(() => {
     return documentos.filter((d) => {
+      const concepto = typeof d.concepto === "string" ? d.concepto : "";
       const okConcepto =
         filtroConcepto === "" ||
-        d.concepto.toLowerCase().includes(filtroConcepto.toLowerCase());
+        concepto.toLowerCase().includes(filtroConcepto.toLowerCase());
 
+      const fechaStr =
+        typeof d.fecha_publicacion === "string" ? d.fecha_publicacion : "";
       const okFecha =
         filtroFecha === "" ||
-        (d.fecha_publicacion &&
-          new Date(d.fecha_publicacion).toISOString().slice(0, 10) ===
-            filtroFecha);
+        (fechaStr &&
+          new Date(fechaStr).toISOString().slice(0, 10) === filtroFecha);
 
       return okConcepto && okFecha;
     });
@@ -67,12 +69,20 @@ export default function Intranet() {
 
     return [...docsFiltrados].sort((a, b) => {
       if (campo === "fecha") {
-        return (
-          (new Date(a.fecha_publicacion || 0) -
-            new Date(b.fecha_publicacion || 0)) * dir
-        );
+        const aFecha =
+          typeof a.fecha_publicacion === "string"
+            ? new Date(a.fecha_publicacion).getTime()
+            : 0;
+        const bFecha =
+          typeof b.fecha_publicacion === "string"
+            ? new Date(b.fecha_publicacion).getTime()
+            : 0;
+        return (aFecha - bFecha) * dir;
       }
-      return a[campo].localeCompare(b[campo]) * dir;
+
+      const aVal = typeof a[campo] === "string" ? a[campo] : "";
+      const bVal = typeof b[campo] === "string" ? b[campo] : "";
+      return aVal.localeCompare(bVal) * dir;
     });
   }, [docsFiltrados, orden]);
 
@@ -85,7 +95,7 @@ export default function Intranet() {
 
   // PAGINACIÓN
   const totalPaginas = useMemo(
-    () => Math.ceil(docsOrdenados.length / pageSize),
+    () => Math.max(1, Math.ceil(docsOrdenados.length / pageSize)),
     [docsOrdenados.length, pageSize]
   );
 
@@ -155,12 +165,12 @@ export default function Intranet() {
                   {n.titulo}
                 </h3>
 
-                {/* CORREGIDO: antes usabas n.concepto */}
                 <p className="text-white/80">{n.descripcion}</p>
 
-                {/* CORREGIDO: antes usabas n.fecha */}
                 <p className="text-sm text-white/60">
-                  {new Date(n.fecha_publicacion).toLocaleString("es-ES")}
+                  {n.fecha_publicacion && n.fecha_publicacion !== "-"
+                    ? new Date(n.fecha_publicacion).toLocaleString("es-ES")
+                    : "Sin fecha"}
                 </p>
 
                 <button
@@ -176,6 +186,7 @@ export default function Intranet() {
             ))}
           </div>
         )}
+
         {/* DOCUMENTOS PREMIUM */}
         {(tipoVista === "todos" || tipoVista === "documentos") && (
           <div className="
@@ -245,7 +256,7 @@ export default function Intranet() {
                       <td className="py-2">{d.concepto}</td>
 
                       <td className="py-2">
-                        {d.fecha_publicacion
+                        {d.fecha_publicacion && d.fecha_publicacion !== "-"
                           ? new Date(d.fecha_publicacion).toLocaleString("es-ES")
                           : "Sin fecha"}
                       </td>

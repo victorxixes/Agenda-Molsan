@@ -26,17 +26,20 @@ export function useDashboard() {
     setLoading(true);
 
     try {
-      // 1️⃣ Cargar citas del mes actual (igual que el calendario)
       const hoyDate = new Date();
       const year = hoyDate.getFullYear();
       const month = hoyDate.getMonth() + 1;
 
       const resAgenda = await axios.get(`/agenda/mes/${year}/${month}`);
-      const citasMes = Array.isArray(resAgenda.data)
-        ? resAgenda.data.map(normalizarCita).filter(Boolean)
+
+      // ⭐ FILTRAR SOLO CITAS (evita error React #31)
+      const soloCitas = Array.isArray(resAgenda.data)
+        ? resAgenda.data.filter((c) => c.fecha && c.hora_inicio)
         : [];
 
-      // 2️⃣ Calcular métricas
+      const citasMes = soloCitas.map(normalizarCita).filter(Boolean);
+
+      // Métricas
       const hoy = hoyDate.toISOString().slice(0, 10);
       const mañana = new Date(Date.now() + 86400000)
         .toISOString()
@@ -51,7 +54,7 @@ export function useDashboard() {
 
       const citasSemana = citasMes.filter((c) => c.fecha <= semanaLimite);
 
-      // 3️⃣ Agrupaciones
+      // Agrupaciones
       const porNotario = {};
       citasMes.forEach((c) => {
         const key = c.notario || "Sin notario";
@@ -66,7 +69,6 @@ export function useDashboard() {
         porTipoFirma[key].push(c);
       });
 
-      // 4️⃣ Guardar datos
       setData({
         hoy: citasHoy.length,
         semana: citasSemana.length,

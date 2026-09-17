@@ -11,9 +11,9 @@ export const useDashboardStore = create((set) => ({
     try {
       const res = await api.obtenerDashboard();
 
-      const d = res?.data;
+      // Render devuelve: res.data = { status, data }
+      const d = res?.data?.data;
 
-      // VALIDACIÓN SJ‑2026 — evita React error #310
       const dataValida =
         d && typeof d === "object"
           ? {
@@ -37,7 +37,6 @@ export const useDashboardStore = create((set) => ({
 
       set({ data: dataValida, loading: false });
     } catch {
-      // fallback seguro
       set({
         data: {
           hoy: 0,

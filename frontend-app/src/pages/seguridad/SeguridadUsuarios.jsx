@@ -1,183 +1,261 @@
-import { useEffect, useState, useCallback, useMemo } from "react";
-import { Link } from "react-router-dom";
-import { useSeguridad } from "../../hooks/useSeguridad";
+// frontend-app/src/panel/SeguridadUsuario.jsx
+import { useEffect, useState, useMemo } from "react";
+import { useSeguridad } from "../hooks/useSeguridad";
+import EmpleadosListado from "../panel/empleados/EmpleadosListado"; // ajusta la ruta si es distinta
+import { API_BASE } from "../api/config";
 
-export default function SeguridadUsuarios() {
+export default function SeguridadUsuario() {
   const {
-    empleados,
     roles,
+    permisos,
+    empleados,
+    ficha,
+    auditoria,
+    logs,
+    loading,
     cargarTodo,
-    bloquear,
-    desbloquear,
-    resetPassword,
+    cargarFicha,
     asignarRol,
+    asignarPermisos,
+    asignarModulos,
+    resetPassword,
+    bloquear,
+    desbloquear
   } = useSeguridad();
 
-  const [passwordNueva, setPasswordNueva] = useState("");
-  const [empleadoSeleccionado, setEmpleadoSeleccionado] = useState(null);
-  const [rolNuevo, setRolNuevo] = useState("");
+  const [empleadoIdSeleccionado, setEmpleadoIdSeleccionado] = useState(null);
 
+  // Carga inicial de todo el módulo de seguridad
   useEffect(() => {
     cargarTodo();
   }, [cargarTodo]);
-  // ⭐ Blindaje total: empleados SIEMPRE array
-  const empleadosMemo = useMemo(() => {
-    if (!Array.isArray(empleados)) {
-      console.warn("⚠️ SeguridadUsuarios: empleados NO es array →", empleados);
-      return [];
+
+  // Cuando cambia el empleado seleccionado, cargamos su ficha completa
+  useEffect(() => {
+    if (empleadoIdSeleccionado != null) {
+      cargarFicha(empleadoIdSeleccionado);
     }
-    return empleados;
-  }, [empleados]);
+  }, [empleadoIdSeleccionado, cargarFicha]);
 
-  const onResetPassword = useCallback(
-    async (id) => {
-      if (!passwordNueva) return;
-      await resetPassword(id, passwordNueva);
-      setPasswordNueva("");
-    },
-    [passwordNueva, resetPassword]
-  );
+  // Blindar ficha: siempre objeto o null, nunca se renderiza directamente
+  const fichaSegura = useMemo(() => {
+    if (!ficha || typeof ficha !== "object") return null;
+    return ficha;
+  }, [ficha]);
 
-  const onBloquear = useCallback(async (id) => bloquear(id), [bloquear]);
-  const onDesbloquear = useCallback(async (id) => desbloquear(id), [desbloquear]);
+  // Buscar el empleado básico en la lista (para foto, nombre, etc.)
+  const empleadoBasico = useMemo(() => {
+    if (!empleadoIdSeleccionado || !Array.isArray(empleados)) return null;
+    return empleados.find((e) => e.id === empleadoIdSeleccionado) || null;
+  }, [empleadoIdSeleccionado, empleados]);
 
-  const onAsignarRol = useCallback(
-    async (id) => {
-      if (!rolNuevo) return;
-      await asignarRol(id, Number(rolNuevo));
-      setRolNuevo("");
-    },
-    [rolNuevo, asignarRol]
-  );
   return (
-    <div className="p-6 space-y-6 text-white animate-fade-in">
-      <h1 className="text-3xl font-bold drop-shadow mb-4">
-        Usuarios y seguridad — SJ‑2026
-      </h1>
-
-      <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl shadow-xl overflow-hidden">
-        <table className="w-full text-sm text-white">
-          <thead>
-            <tr className="bg-white/10 border-b border-white/20 text-white/70">
-              <th className="p-3">ID</th>
-              <th className="p-3">Nombre</th>
-              <th className="p-3">Usuario</th>
-              <th className="p-3">Estado</th>
-              <th className="p-3">Rol</th>
-              <th className="p-3">Acciones</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {empleadosMemo.map((e) => (
-              <tr key={e.id} className="border-b border-white/10 hover:bg-white/10 transition">
-                <td className="p-3">{e.id}</td>
-                <td className="p-3">{e.nombre}</td>
-                <td className="p-3">{e.usuario || "—"}</td>
-                <td className="p-3">
-                  {e.activo ? (
-                    <span className="px-3 py-1 bg-green-500/20 text-green-200 border border-green-400 rounded-xl text-xs">
-                      Activo
-                    </span>
-                  ) : (
-                    <span className="px-3 py-1 bg-red-500/20 text-red-200 border border-red-400 rounded-xl text-xs">
-                      Bloqueado
-                    </span>
-                  )}
-                </td>
-                <td className="p-3">{e.rol?.nombre || "—"}</td>
-                <td className="p-3 space-x-2">
-                  <Link
-                    to={`/seguridad/ficha/${e.id}`}
-                    className="px-2 py-1 text-xs bg-blue-600/20 text-blue-300 border border-blue-400 rounded transition hover:bg-blue-600/30 active:scale-[0.97]"
-                  >
-                    Ficha
-                  </Link>
-
-                  <button
-                    className="px-2 py-1 text-xs bg-red-600/20 text-red-300 border border-red-400 rounded transition hover:bg-red-600/30 active:scale-[0.97]"
-                    onClick={() => onBloquear(e.id)}
-                  >
-                    Bloquear
-                  </button>
-
-                  <button
-                    className="px-2 py-1 text-xs bg-green-600/20 text-green-300 border border-green-400 rounded transition hover:bg-green-600/30 active:scale-[0.97]"
-                    onClick={() => onDesbloquear(e.id)}
-                  >
-                    Desbloquear
-                  </button>
-
-                  <button
-                    className="px-2 py-1 text-xs bg-purple-600/20 text-purple-300 border border-purple-400 rounded transition hover:bg-purple-600/30 active:scale-[0.97]"
-                    onClick={() => setEmpleadoSeleccionado(e)}
-                  >
-                    Seguridad
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
+      {/* Columna izquierda: listado de empleados */}
+      <div className="lg:col-span-1">
+        <EmpleadosListado
+          onSeleccionar={(id) => {
+            // ⭐ Nunca pasamos el objeto empleado como hijo, solo el id
+            setEmpleadoIdSeleccionado(id);
+          }}
+        />
       </div>
-      {empleadoSeleccionado && (
-        <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-6 shadow-xl animate-fade-in">
-          <h2 className="text-xl font-semibold mb-4 drop-shadow">
-            Seguridad de {empleadoSeleccionado.nombre}
-          </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium mb-1 text-white/80">
-                Nueva contraseña
-              </label>
-              <input
-                type="password"
-                className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white focus:ring-2 focus:ring-blue-400"
-                value={passwordNueva}
-                onChange={(e) => setPasswordNueva(e.target.value)}
-              />
-              <button
-                className="mt-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-lg transition active:scale-[0.97]"
-                onClick={() => onResetPassword(empleadoSeleccionado.id)}
-              >
-                Resetear contraseña
-              </button>
+      {/* Columna derecha: ficha de seguridad */}
+      <div className="lg:col-span-2 space-y-6">
+        {/* Cabecera de ficha */}
+        <div className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-5 shadow-xl">
+          {loading && (
+            <div className="text-sm text-white/60 mb-3">
+              Cargando seguridad del usuario…
             </div>
-            <div>
-              <label className="block text-sm font-medium mb-1 text-white/80">
-                Nuevo rol
-              </label>
-              <select
-                className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white focus:ring-2 focus:ring-purple-400"
-                value={rolNuevo}
-                onChange={(e) => setRolNuevo(e.target.value)}
-              >
-                <option value="">Seleccionar rol…</option>
-                {(roles || []).map((r) => (
-                  <option key={r.id} value={r.id}>
-                    {r.nombre}
-                  </option>
-                ))}
-              </select>
+          )}
 
-              <button
-                className="mt-2 px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white shadow-lg transition active:scale-[0.97]"
-                onClick={() => onAsignarRol(empleadoSeleccionado.id)}
-              >
-                Asignar rol
-              </button>
+          {empleadoBasico ? (
+            <div className="flex items-center gap-4">
+              <img
+                src={
+                  empleadoBasico.foto
+                    ? `${API_BASE}${empleadoBasico.foto}`
+                    : "/no-foto.png"
+                }
+                alt="foto"
+                className="w-16 h-16 rounded-full object-cover border border-white/20 shadow-md"
+              />
+
+              <div>
+                <div className="font-semibold text-white text-lg drop-shadow">
+                  {empleadoBasico.nombre} {empleadoBasico.apellidos}
+                </div>
+                <div className="text-xs text-white/70">
+                  ID: {empleadoBasico.id}
+                </div>
+                <div className="text-xs text-white/70 mt-1">
+                  {empleadoBasico.departamento_nombre || "-"} ·{" "}
+                  {empleadoBasico.seccion_nombre || "-"} ·{" "}
+                  {empleadoBasico.cargo_nombre || "-"}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="text-sm text-white/70">
+              Selecciona un empleado en la columna izquierda para ver su ficha
+              de seguridad.
+            </div>
+          )}
+        </div>
+
+        {/* Ficha completa de seguridad */}
+        <div className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-5 shadow-xl space-y-4">
+          {fichaSegura ? (
+            <>
+              <h2 className="text-white font-semibold text-lg">
+                Ficha de seguridad
+              </h2>
+
+              {/* Datos básicos blindados */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-white/80">
+                <div>
+                  <strong>Teléfono:</strong>{" "}
+                  {fichaSegura.telefono || empleadoBasico?.telefono || "-"}
+                </div>
+                <div>
+                  <strong>Email empresa:</strong>{" "}
+                  {fichaSegura.email_empresa ||
+                    empleadoBasico?.email_empresa ||
+                    "-"}
+                </div>
+                <div>
+                  <strong>Extensión:</strong>{" "}
+                  {fichaSegura.extension || empleadoBasico?.extension || "-"}
+                </div>
+                <div>
+                  <strong>Estado:</strong>{" "}
+                  {fichaSegura.activo ?? empleadoBasico?.activo
+                    ? "Activo"
+                    : "Inactivo"}
+                </div>
+              </div>
+
+              {/* Roles y permisos */}
+              <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <h3 className="text-white font-semibold text-sm mb-2">
+                    Roles asignados
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {(Array.isArray(fichaSegura.roles)
+                      ? fichaSegura.roles
+                      : []
+                    ).map((rol) => (
+                      <span
+                        key={rol.id ?? rol.nombre}
+                        className="px-2 py-1 bg-blue-500/20 text-blue-100 border border-blue-400 rounded-xl text-xs"
+                      >
+                        {rol.nombre || "Rol"}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-white font-semibold text-sm mb-2">
+                    Permisos asignados
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {(Array.isArray(fichaSegura.permisos)
+                      ? fichaSegura.permisos
+                      : []
+                    ).map((perm) => (
+                      <span
+                        key={perm.id ?? perm.codigo ?? perm.nombre}
+                        className="px-2 py-1 bg-purple-500/20 text-purple-100 border border-purple-400 rounded-xl text-xs"
+                      >
+                        {perm.nombre || perm.codigo || "Permiso"}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Acciones de seguridad (ejemplo básico, sin lógica de UI compleja) */}
+              <div className="mt-4 flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  className="px-3 py-2 bg-red-600 text-white rounded-xl text-xs hover:bg-red-700 disabled:opacity-40"
+                  disabled={!empleadoIdSeleccionado}
+                  onClick={() =>
+                    empleadoIdSeleccionado && bloquear(empleadoIdSeleccionado)
+                  }
+                >
+                  Bloquear empleado
+                </button>
+
+                <button
+                  type="button"
+                  className="px-3 py-2 bg-green-600 text-white rounded-xl text-xs hover:bg-green-700 disabled:opacity-40"
+                  disabled={!empleadoIdSeleccionado}
+                  onClick={() =>
+                    empleadoIdSeleccionado &&
+                    desbloquear(empleadoIdSeleccionado)
+                  }
+                >
+                  Desbloquear empleado
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="text-sm text-white/70">
+              No hay ficha de seguridad cargada todavía.
+            </div>
+          )}
+        </div>
+
+        {/* Auditoría y logs (solo lectura, sin renderizar objetos crudos) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-xl">
+            <h3 className="text-white font-semibold text-sm mb-2">
+              Auditoría
+            </h3>
+            <div className="space-y-2 max-h-64 overflow-y-auto text-xs text-white/80">
+              {(Array.isArray(auditoria) ? auditoria : []).map((item) => (
+                <div
+                  key={item.id ?? `${item.fecha}-${item.accion}-${item.usuario}`}
+                  className="border border-white/10 rounded-xl px-3 py-2"
+                >
+                  <div className="font-semibold">
+                    {item.accion || "Acción"}
+                  </div>
+                  <div>{item.descripcion || "-"}</div>
+                  <div className="text-white/50">
+                    {item.fecha || ""} · {item.usuario || ""}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 
-          <button
-            className="mt-6 text-sm text-white/70 underline hover:text-white transition active:scale-[0.97]"
-            onClick={() => setEmpleadoSeleccionado(null)}
-          >
-            Cerrar panel
-          </button>
+          <div className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-xl">
+            <h3 className="text-white font-semibold text-sm mb-2">Logs</h3>
+            <div className="space-y-2 max-h-64 overflow-y-auto text-xs text-white/80">
+              {(Array.isArray(logs) ? logs : []).map((log) => (
+                <div
+                  key={log.id ?? `${log.fecha}-${log.tipo}-${log.mensaje}`}
+                  className="border border-white/10 rounded-xl px-3 py-2"
+                >
+                  <div className="font-semibold">
+                    {log.tipo || "Log"}
+                  </div>
+                  <div>{log.mensaje || "-"}</div>
+                  <div className="text-white/50">
+                    {log.fecha || ""} · {log.origen || ""}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }

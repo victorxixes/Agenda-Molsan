@@ -14,7 +14,7 @@ export default function SeguridadFicha({ empleadoId }) {
     asignarModulos,
     permisos,
     logs,
-    auditoria
+    auditoria,
   } = useSeguridad();
 
   // Estados SJ‑2026
@@ -35,21 +35,40 @@ export default function SeguridadFicha({ empleadoId }) {
   const [paginaLog, setPaginaLog] = useState(0);
 
   useEffect(() => {
-    cargarFicha(empleadoId);
-  }, [empleadoId]);
+    if (empleadoId) {
+      cargarFicha(empleadoId);
+    }
+  }, [empleadoId, cargarFicha]);
 
-  if (!ficha)
+  // Protección total SJ‑2026
+  if (
+    !ficha ||
+    typeof ficha !== "object" ||
+    !ficha.empleado ||
+    typeof ficha.empleado !== "object"
+  ) {
     return (
       <div className="p-6 text-white/70 animate-pulse">
         Cargando ficha…
       </div>
     );
+  }
 
   const empleado = ficha.empleado;
+
+  // Protección extra: evitar render si empleado no tiene campos válidos
+  if (!empleado.id || !empleado.nombre) {
+    return (
+      <div className="p-6 text-white/70 animate-pulse">
+        Datos de empleado no válidos…
+      </div>
+    );
+  }
+
   const modulosVisibles = empleado.modulos_visibles_list || [];
   const permisosEmpleado = ficha.permisos_modulo_dict || {};
 
-  const permisosGlobales = permisos.reduce((acc, p) => {
+  const permisosGlobales = (permisos || []).reduce((acc, p) => {
     if (!acc[p.modulo]) acc[p.modulo] = [];
     acc[p.modulo].push(p.permiso);
     return acc;
@@ -83,6 +102,11 @@ export default function SeguridadFicha({ empleadoId }) {
 
   return (
     <div className="p-6 space-y-8">
+      {/* …resto de tu JSX (cabecera, seguridad, módulos, permisos, auditoría, logs)… */}
+    </div>
+  );
+}
+
 
       {/* CABECERA SJ‑2026 */}
       <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl shadow-xl p-6">

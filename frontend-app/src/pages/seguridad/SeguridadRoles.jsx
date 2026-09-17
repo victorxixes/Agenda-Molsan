@@ -1,17 +1,22 @@
 import { useMemo } from "react";
 import { useSeguridad } from "../../hooks/useSeguridad";
 
-/**
- * SeguridadRoles — SJ‑2026 Premium
- * - Tabla de roles
- * - Glass‑UI
- * - Render optimizado
- */
-
 export default function SeguridadRoles() {
   const { roles = [] } = useSeguridad();
 
-  const rolesMemo = useMemo(() => roles || [], [roles]);
+  // Filtramos SOLO objetos válidos con nombre string
+  const rolesMemo = useMemo(() => {
+    if (!Array.isArray(roles)) return [];
+
+    return roles.filter((r) => {
+      return (
+        r &&
+        typeof r === "object" &&
+        typeof r.id !== "undefined" &&
+        typeof r.nombre === "string"
+      );
+    });
+  }, [roles]);
 
   return (
     <div
@@ -35,12 +40,10 @@ export default function SeguridadRoles() {
         <tbody>
           {rolesMemo.map((r) => (
             <tr
-              key={r.id}
-              className="
-                border-b border-white/10 hover:bg-white/5 transition
-              "
+              key={String(r.id)}
+              className="border-b border-white/10 hover:bg-white/5 transition"
             >
-              <td className="p-3">{r.id}</td>
+              <td className="p-3">{String(r.id)}</td>
               <td className="p-3">{r.nombre}</td>
             </tr>
           ))}

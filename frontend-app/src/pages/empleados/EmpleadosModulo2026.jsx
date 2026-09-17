@@ -2,24 +2,23 @@ import { useState, useCallback } from "react";
 import EmpleadosListado from "./EmpleadosListado";
 import ModalEmpleado from "../../components/empleados/ModalEmpleado";
 
-/**
- * EmpleadosModulo2026 — SJ‑2026 Premium
- * - Glass‑UI
- * - Modal premium
- * - Render optimizado
- */
-
 export default function EmpleadosModulo2026() {
   const [seleccionado, setSeleccionado] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
 
   const abrirFicha = useCallback((id) => {
-    setSeleccionado(id);
+    const idNum = Number(id);
+
+    // 🔥 Blindar ID: solo abrir modal si es un número válido
+    if (!Number.isFinite(idNum)) return;
+
+    setSeleccionado(idNum);
     setModalOpen(true);
   }, []);
 
   const cerrarModal = useCallback(() => {
     setModalOpen(false);
+    setSeleccionado(null);
   }, []);
 
   return (
@@ -47,7 +46,7 @@ export default function EmpleadosModulo2026() {
       </div>
 
       {/* MODAL PREMIUM */}
-      {modalOpen && seleccionado && (
+      {modalOpen && Number.isFinite(seleccionado) && (
         <ModalEmpleado
           open={modalOpen}
           onClose={cerrarModal}

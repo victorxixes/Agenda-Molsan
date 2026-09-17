@@ -57,13 +57,18 @@ export function useAgendaWS() {
           case "crear":
             addCita(data.cita);
             marcarResaltada(data.cita.id);
-            notify(`Nueva cita creada: ${data.cita.tipo_cita} — ${data.cita.hora_inicio}`);
+            notify(
+              `Nueva cita creada: ${data.cita.tipo_cita} — ${data.cita.hora_inicio}`
+            );
+            // refrescarVista sin parámetros → usa fechaActual del store
             await refrescarVista();
             break;
 
           case "editar":
             updateCita(data.cita);
-            notify(`Cita actualizada: ${data.cita.tipo_cita} — ${data.cita.hora_inicio}`);
+            notify(
+              `Cita actualizada: ${data.cita.tipo_cita} — ${data.cita.hora_inicio}`
+            );
             await refrescarVista();
             break;
 
@@ -83,5 +88,5 @@ export function useAgendaWS() {
         ws.close();
       } catch {}
     };
-  }, []);
+  }, [addCita, updateCita, removeCita, marcarResaltada, notify, refrescarVista]);
 }

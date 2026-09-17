@@ -12,12 +12,12 @@ export function useAgendaData(year, month) {
   const citas = useAgendaStore((s) => s.citas);
   const cargarMes = useAgendaStore((s) => s.cargarMes);
 
-  // WebSocket premium: solo una vez
+  // WebSocket premium: solo una vez (a nivel de componente que use este hook)
   useAgendaWS();
 
   useEffect(() => {
     cargarMes(year, month);
-  }, [year, month]);
+  }, [year, month, cargarMes]);
 
   return { citas };
 }

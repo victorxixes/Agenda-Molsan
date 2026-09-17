@@ -4,6 +4,31 @@ import { buscarEmpleados } from "../../api/empleados";
 import { useEmpleadosWS } from "../../hooks/useEmpleadosWS";
 import { API_BASE } from "../../api/config";
 
+// 🔒 Función de sanitización total SJ‑2026
+const safe = (value) => {
+  if (value === null || value === undefined) return "-";
+
+  // Si es un objeto → convertir a JSON o extraer value
+  if (typeof value === "object") {
+    if ("value" in value) return String(value.value);
+    if (Array.isArray(value)) return value.join(", ");
+    try {
+      return JSON.stringify(value);
+    } catch {
+      return "-";
+    }
+  }
+
+  // Si es número → convertir a string
+  if (typeof value === "number") return String(value);
+
+  // Si es boolean → convertir a Sí/No
+  if (typeof value === "boolean") return value ? "Sí" : "No";
+
+  // Si es string → devolver limpio
+  return String(value);
+};
+
 export default function EmpleadosListado({ onSeleccionar }) {
   const location = useLocation();
 
@@ -25,7 +50,23 @@ export default function EmpleadosListado({ onSeleccionar }) {
         ? res.data.empleados
         : [];
 
-      setEmpleados(lista);
+      // ⭐ 3. Sanitizar cada empleado
+      const listaSegura = lista.map((e) => ({
+        id: safe(e.id),
+        nombre: safe(e.nombre),
+        apellidos: safe(e.apellidos),
+        telefono: safe(e.telefono),
+        email_empresa: safe(e.email_empresa),
+        extension: safe(e.extension),
+        activo: Boolean(e.activo),
+        departamento_nombre: safe(e.departamento_nombre),
+        seccion_nombre: safe(e.seccion_nombre),
+        cargo_nombre: safe(e.cargo_nombre),
+        foto: safe(e.foto),
+        usuario: safe(e.usuario),
+      }));
+
+      setEmpleados(listaSegura);
     });
   }, [q, activo]);
 
@@ -33,14 +74,14 @@ export default function EmpleadosListado({ onSeleccionar }) {
     cargar();
   }, [cargar]);
 
-  // ⭐ 3. WebSocket solo funciona en la ruta correcta
+  // ⭐ 4. WebSocket solo funciona en la ruta correcta
   useEmpleadosWS((evento) => {
     if (location.pathname.startsWith("/panel/empleados")) {
       if (evento.tipo === "empleado_actualizado") cargar();
     }
   });
 
-  // ⭐ 4. Blindar el memo
+  // ⭐ 5. Blindar el memo
   const empleadosMemo = useMemo(() => {
     return Array.isArray(empleados) ? empleados : [];
   }, [empleados]);
@@ -83,26 +124,30 @@ export default function EmpleadosListado({ onSeleccionar }) {
           >
             <div className="flex items-center gap-4">
               <img
-                src={e.foto ? `${API_BASE}${e.foto}` : "/no-foto.png"}
+                src={
+                  e.foto && typeof e.foto === "string" && e.foto !== "-"
+                    ? `${API_BASE}${e.foto}`
+                    : "/no-foto.png"
+                }
                 alt="foto"
                 className="w-16 h-16 rounded-full object-cover border border-white/20 shadow-md"
               />
 
               <div>
                 <div className="font-semibold text-white text-lg drop-shadow">
-                  {e.nombre} {e.apellidos}
+                  {safe(e.nombre)} {safe(e.apellidos)}
                 </div>
-                <div className="text-xs text-white/70">ID: {e.id}</div>
+                <div className="text-xs text-white/70">ID: {safe(e.id)}</div>
               </div>
             </div>
 
             <div className="mt-4 text-sm text-white/80 space-y-1">
-              <div><strong>Tel:</strong> {e.telefono || "-"}</div>
-              <div><strong>Email:</strong> {e.email_empresa || "-"}</div>
-              <div><strong>Extensión:</strong> {e.extension || "-"}</div>
-              <div><strong>Departamento:</strong> {e.departamento_nombre || "-"}</div>
-              <div><strong>Sección:</strong> {e.seccion_nombre || "-"}</div>
-              <div><strong>Cargo:</strong> {e.cargo_nombre || "-"}</div>
+              <div><strong>Tel:</strong> {safe(e.telefono)}</div>
+              <div><strong>Email:</strong> {safe(e.email_empresa)}</div>
+              <div><strong>Extensión:</strong> {safe(e.extension)}</div>
+              <div><strong>Departamento:</strong> {safe(e.departamento_nombre)}</div>
+              <div><strong>Sección:</strong> {safe(e.seccion_nombre)}</div>
+              <div><strong>Cargo:</strong> {safe(e.cargo_nombre)}</div>
             </div>
 
             <div className="mt-4">

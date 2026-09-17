@@ -57,7 +57,7 @@ const SidebarItem = ({ to, label, icon, collapsed, badge }) => (
 );
 
 /**
- * Sidebar SJ‑2026 Premium — Oculto + Glass + Hover Expand + Glow lateral
+ * Sidebar SJ‑2026 Premium — Oculto + Glass + Hover Expand + Glow + Hotspot
  */
 export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(true);
@@ -81,6 +81,15 @@ export default function Sidebar() {
 
   return (
     <>
+      {/* ⭐ HOTSPOT — área invisible que activa el sidebar */}
+      <div
+        className="
+          fixed left-0 top-0 h-full w-3 z-50
+          cursor-pointer
+        "
+        onMouseEnter={() => !fixed && setCollapsed(false)}
+      ></div>
+
       {/* ⭐ Glow lateral cuando está oculto */}
       {collapsed && (
         <div
@@ -98,7 +107,6 @@ export default function Sidebar() {
           transition-all duration-300 ease-in-out
           ${collapsed ? "w-0 overflow-hidden" : "w-72 backdrop-blur-xl bg-white/10 border-r border-white/10 shadow-xl p-4 space-y-6"}
         `}
-        onMouseEnter={() => !fixed && setCollapsed(false)}
         onMouseLeave={() => !fixed && setCollapsed(true)}
       >
 

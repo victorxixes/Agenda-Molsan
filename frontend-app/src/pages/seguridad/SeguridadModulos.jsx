@@ -1,28 +1,41 @@
 import { useCallback, useMemo } from "react";
 import { useSeguridad } from "../../hooks/useSeguridad";
 
-/**
- * SeguridadModulos — SJ‑2026 Premium
- * - Módulos visibles dinámicos
- * - Glass‑UI
- * - Render optimizado
- */
-
 export default function SeguridadModulos() {
   const { permisos = [], ficha, asignarModulos } = useSeguridad();
 
-  if (!ficha) return null;
+  if (!ficha || typeof ficha !== "object") return null;
 
-  const empleado = ficha.empleado;
-  const modulosVisibles = empleado.modulos_visibles_list || [];
+  const empleado = ficha.empleado || {};
+  const modulosVisiblesRaw = empleado.modulos_visibles_list || [];
 
-  const modulosGlobales = useMemo(
-    () => [...new Set(permisos.map((p) => p.modulo))],
-    [permisos]
-  );
+  // Blindar lista de módulos visibles
+  const modulosVisibles = useMemo(() => {
+    return Array.isArray(modulosVisiblesRaw)
+      ? modulosVisiblesRaw.filter((m) => typeof m === "string")
+      : [];
+  }, [modulosVisiblesRaw]);
+
+  // Blindar permisos → solo módulos válidos (strings)
+  const modulosGlobales = useMemo(() => {
+    if (!Array.isArray(permisos)) return [];
+
+    const lista = permisos
+      .filter(
+        (p) =>
+          p &&
+          typeof p === "object" &&
+          typeof p.modulo === "string"
+      )
+      .map((p) => p.modulo);
+
+    return [...new Set(lista)];
+  }, [permisos]);
 
   const cambiarModulo = useCallback(
     (modulo) => {
+      if (typeof modulo !== "string") return;
+
       let nuevo;
 
       if (modulosVisibles.includes(modulo)) {
@@ -33,7 +46,7 @@ export default function SeguridadModulos() {
 
       asignarModulos(empleado.id, nuevo);
     },
-    [modulosVisibles, asignarModulos, empleado.id]
+    [modulosVisibles, asignarModulos, empleado?.id]
   );
 
   return (

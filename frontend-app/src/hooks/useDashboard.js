@@ -26,50 +26,52 @@ export function useDashboard() {
     setLoading(true);
 
     try {
-      const res = await axios.get("/dashboard");
-      const d = res?.data || {};
+      // 1️⃣ Cargar citas del mes actual (igual que el calendario)
+      const hoyDate = new Date();
+      const year = hoyDate.getFullYear();
+      const month = hoyDate.getMonth() + 1;
 
-      const proximas = Array.isArray(d.proximas)
-        ? d.proximas.map(normalizarCita).filter(Boolean)
+      const resAgenda = await axios.get(`/agenda/mes/${year}/${month}`);
+      const citasMes = Array.isArray(resAgenda.data)
+        ? resAgenda.data.map(normalizarCita).filter(Boolean)
         : [];
 
-      // Fecha de hoy y mañana
-      const hoy = new Date().toISOString().slice(0, 10);
+      // 2️⃣ Calcular métricas
+      const hoy = hoyDate.toISOString().slice(0, 10);
       const mañana = new Date(Date.now() + 86400000)
         .toISOString()
         .slice(0, 10);
 
-      const citasHoy = proximas.filter((c) => c.fecha === hoy);
-      const citasMañana = proximas.filter((c) => c.fecha === mañana);
+      const citasHoy = citasMes.filter((c) => c.fecha === hoy);
+      const citasMañana = citasMes.filter((c) => c.fecha === mañana);
 
-      // Semana (7 días)
       const semanaLimite = new Date(Date.now() + 7 * 86400000)
         .toISOString()
         .slice(0, 10);
 
-      const citasSemana = proximas.filter((c) => c.fecha <= semanaLimite);
+      const citasSemana = citasMes.filter((c) => c.fecha <= semanaLimite);
 
-      // Agrupación por notario
+      // 3️⃣ Agrupaciones
       const porNotario = {};
-      proximas.forEach((c) => {
+      citasMes.forEach((c) => {
         const key = c.notario || "Sin notario";
         if (!porNotario[key]) porNotario[key] = [];
         porNotario[key].push(c);
       });
 
-      // Agrupación por tipo_firma
       const porTipoFirma = {};
-      proximas.forEach((c) => {
+      citasMes.forEach((c) => {
         const key = c.tipo_firma || "Sin tipo";
         if (!porTipoFirma[key]) porTipoFirma[key] = [];
         porTipoFirma[key].push(c);
       });
 
+      // 4️⃣ Guardar datos
       setData({
-        hoy: d.hoy ?? 0,
-        semana: d.semana ?? 0,
-        mes: d.mes ?? 0,
-        proximas,
+        hoy: citasHoy.length,
+        semana: citasSemana.length,
+        mes: citasMes.length,
+        proximas: citasMes,
         citasHoy,
         citasMañana,
         citasSemana,

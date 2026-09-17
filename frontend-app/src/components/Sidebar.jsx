@@ -23,9 +23,10 @@ const IconRound = ({ name, active }) => (
 );
 
 /**
- * Item de navegación SJ‑2026
+ * Item de navegación SJ‑2026 — CORREGIDO
+ * (children de NavLink ya no provoca React #300)
  */
-const SidebarItem = ({ to, label, icon, collapsed, badge }) => (
+const SidebarItem = ({ to, label, icon, collapsed, badge = 0 }) => (
   <NavLink
     to={to}
     className={({ isActive }) =>

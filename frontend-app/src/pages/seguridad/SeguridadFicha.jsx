@@ -130,7 +130,7 @@ export default function SeguridadResumen({ empleadoId }) {
           </button>
         )}
       </div>
-    </div>
+
 
     {/* SEGURIDAD — SJ‑2026 */}
     <div
@@ -176,11 +176,6 @@ export default function SeguridadResumen({ empleadoId }) {
           </button>
         </div>
 
-      </div>
-    </div>
-
-  </div>
-);
 
 
     {/* ASIGNAR ROL */}
@@ -212,8 +207,8 @@ export default function SeguridadResumen({ empleadoId }) {
         Asignar rol
       </button>
     </div>
-  </div>
-</div>
+
+
 {/* MÓDULOS VISIBLES — SJ‑2026 */}
 <div
   className="
@@ -308,6 +303,7 @@ export default function SeguridadResumen({ empleadoId }) {
     </ul>
   )}
 </div>
+
 {/* AUDITORÍA DEL USUARIO — SJ‑2026 */}
 <div
   className="
@@ -427,6 +423,7 @@ export default function SeguridadResumen({ empleadoId }) {
       ))}
     </tbody>
   </table>
+</div>
 
   {/* PAGINACIÓN AUDITORÍA */}
   <div className="flex items-center gap-3 mt-4 text-white">
@@ -456,7 +453,7 @@ export default function SeguridadResumen({ empleadoId }) {
       Siguiente →
     </button>
   </div>
-</div>
+
 
 {/* LOGS DEL USUARIO — SJ‑2026 */}
 <div
@@ -566,6 +563,7 @@ export default function SeguridadResumen({ empleadoId }) {
       ))}
     </tbody>
   </table>
+</div>
 
   {/* PAGINACIÓN LOGS */}
   <div className="flex items-center gap-3 mt-4 text-white">
@@ -596,3 +594,6 @@ export default function SeguridadResumen({ empleadoId }) {
     </button>
   </div>
 </div>
+</div>
+);
+}

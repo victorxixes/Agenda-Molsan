@@ -10,7 +10,7 @@ export default function Logs() {
   const [fechaHasta, setFechaHasta] = useState("");
 
   const [pagina, setPagina] = useState(1);
-  const pageSize = 50; // Fijo, igual que CTN
+  const PAGE_SIZE = 50; // Fijo, igual que CTN
 
   const [orden, setOrden] = useState({ campo: "fecha", dir: "desc" });
 
@@ -21,7 +21,7 @@ export default function Logs() {
       fecha_desde: fechaDesde || undefined,
       fecha_hasta: fechaHasta || undefined,
       pagina,
-      page_size: pageSize,
+      page_size: PAGE_SIZE,
     });
   }, [tipo, texto, fechaDesde, fechaHasta, pagina, cargarLogs]);
 
@@ -71,10 +71,10 @@ export default function Logs() {
     });
   }, [logs, orden]);
 
-  const totalPaginas = Math.ceil(logsOrdenados.length / pageSize);
+  const totalPaginas = Math.ceil(logsOrdenados.length / PAGE_SIZE);
 
   const visibles = useMemo(
-    () => logsOrdenados.slice((pagina - 1) * pageSize, pagina * pageSize),
+    () => logsOrdenados.slice((pagina - 1) * PAGE_SIZE, pagina * PAGE_SIZE),
     [logsOrdenados, pagina]
   );
 
@@ -184,7 +184,7 @@ export default function Logs() {
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-white/70 border-b border-white/10">
+              <tr className="text-white/80 border-b border-white/20">
                 <th className="cursor-pointer py-2" onClick={() => ordenar("id")}>ID</th>
                 <th className="cursor-pointer py-2" onClick={() => ordenar("tipo")}>Tipo</th>
                 <th className="cursor-pointer py-2" onClick={() => ordenar("mensaje")}>Mensaje</th>
@@ -196,7 +196,9 @@ export default function Logs() {
               {visibles.map((log) => (
                 <tr
                   key={log.id}
-                  className="border-b border-white/10 hover:bg-white/5 transition"
+                  className="
+                    border-b border-white/10 hover:bg-white/10 transition cursor-pointer
+                  "
                 >
                   <td className="py-2">{log.id}</td>
 
@@ -214,38 +216,41 @@ export default function Logs() {
               ))}
             </tbody>
           </table>
-        )}
-      </div>
 
-      {/* ⭐ Paginación Premium (igual que CTN) */}
-      <div className="flex items-center justify-between mt-4 text-white/80 text-sm">
+          {/* ⭐ Paginación Premium (idéntica a CTN) */}
+          <div className="flex items-center justify-between mt-4 text-white/80 text-sm">
+            <button
+              className="
+                px-3 py-2 rounded-xl bg-white/10 border border-white/20
+                hover:bg-white/20 transition
+              "
+              disabled={pagina <= 1}
+              onClick={() => setPagina((p) => p - 1)}
+            >
+              ← Anterior
+            </button>
 
-        <button
-          className="
-            px-3 py-2 rounded-xl bg-white/10 border border-white/20
-            hover:bg-white/20 transition
-          "
-          disabled={pagina <= 1}
-          onClick={() => setPagina((p) => p - 1)}
-        >
-          ← Anterior
-        </button>
+            <span>
+              Página {pagina} de {totalPaginas}
+            </span>
 
-        <span>
-          Página {pagina} de {totalPaginas}
-        </span>
+            <button
+              className="
+                px-3 py-2 rounded-xl bg-white/10 border border-white/20
+                hover:bg-white/20 transition
+              "
+              disabled={pagina >= totalPaginas}
+              onClick={() => setPagina((p) => p + 1)}
+            >
+              Siguiente →
+            </button>
+          </div>
 
-        <button
-          className="
-            px-3 py-2 rounded-xl bg-white/10 border border-white/20
-            hover:bg-white/20 transition
-          "
-          disabled={pagina >= totalPaginas}
-          onClick={() => setPagina((p) => p + 1)}
-        >
-          Siguiente →
-        </button>
-      </div>
+          <p className="text-white/60 text-sm mt-3">
+            Mostrando {visibles.length} logs — Total: {logsOrdenados.length}
+          </p>
+        </div>
+      )}
 
     </div>
   );

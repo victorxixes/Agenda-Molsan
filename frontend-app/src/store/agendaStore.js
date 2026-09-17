@@ -40,6 +40,7 @@ export const useAgendaStore = create((set, get) => ({
   citas: [],
   cargando: false,
   vista: "mes",
+  // fechaActual en formato YYYY-MM-DD (sv-SE)
   fechaActual: new Date().toLocaleDateString("sv-SE"),
 
   // ---------------------------------------------------------
@@ -92,8 +93,21 @@ export const useAgendaStore = create((set, get) => ({
   // ---------------------------------------------------------
   // REFRESCAR VISTA ACTUAL
   // ---------------------------------------------------------
+  // Soporta:
+  // - refrescarVista(year, month) desde Agenda.jsx (CRUD)
+  // - refrescarVista() sin parámetros desde WebSocket (useAgendaWS)
   refrescarVista: async (year, month) => {
-    return get().cargarMes(year, month);
+    let y = year;
+    let m = month;
+
+    if (!y || !m) {
+      const fecha = get().fechaActual; // "YYYY-MM-DD"
+      const [fy, fm] = fecha.split("-");
+      y = parseInt(fy, 10);
+      m = parseInt(fm, 10);
+    }
+
+    return get().cargarMes(y, m);
   },
 
   // ---------------------------------------------------------

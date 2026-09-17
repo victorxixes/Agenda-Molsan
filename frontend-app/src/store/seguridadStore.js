@@ -24,33 +24,38 @@ export const useSeguridadStore = create((set, get) => ({
   logs: [],
   loading: false,
 
-  // ---------------------------------------------------------
-  // CARGA INICIAL (roles, permisos, empleados, auditoría, logs)
-  // ---------------------------------------------------------
-  cargarTodo: async () => {
-    set({ loading: true });
+ // ---------------------------------------------------------
+// CARGA INICIAL (roles, permisos, empleados, auditoría, logs)
+// ---------------------------------------------------------
+cargarTodo: async () => {
+  set({ loading: true });
 
-    try {
-      const [roles, permisos, empleados, auditoria, logs] = await Promise.all([
-        axios.get(`${API}/seguridad/roles`),
-        axios.get(`${API}/seguridad/permisos`),
-        axios.get(`${API}/empleados`),
-        axios.get(`${API}/seguridad/auditoria`),
-        axios.get(`${API}/seguridad/logs`)
-      ]);
+  try {
+    const [roles, permisos, empleados, auditoria, logs] = await Promise.all([
+      axios.get(`${API}/seguridad/roles`),
+      axios.get(`${API}/seguridad/permisos`),
+      axios.get(`${API}/empleados`),
+      axios.get(`${API}/seguridad/auditoria`),
+      axios.get(`${API}/seguridad/logs`)
+    ]);
 
-      set({
-        roles: roles.data || [],
-        permisos: permisos.data || [],
-        empleados: empleados.data || [],
-        auditoria: auditoria.data || [],
-        logs: logs.data || [],
-        loading: false
-      });
-    } catch {
-      set({ loading: false });
-    }
-  },
+    set({
+      roles: Array.isArray(roles.data) ? roles.data : [],
+      permisos: Array.isArray(permisos.data) ? permisos.data : [],
+      empleados: Array.isArray(empleados.data)
+        ? empleados.data
+        : Array.isArray(empleados.data?.empleados)
+        ? empleados.data.empleados
+        : [],
+      auditoria: Array.isArray(auditoria.data) ? auditoria.data : [],
+      logs: Array.isArray(logs.data) ? logs.data : [],
+      loading: false
+    });
+  } catch {
+    set({ loading: false });
+  }
+},
+
 
   // ---------------------------------------------------------
   // FICHA COMPLETA DEL EMPLEADO

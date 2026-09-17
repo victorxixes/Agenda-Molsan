@@ -204,194 +204,171 @@ export default function Intranet() {
         )}
 
         {/* DOCUMENTOS PREMIUM */}
-        {(tipoVista === "todos" || tipoVista === "documentos") && (
-          <div className="
-            bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
-            p-6 shadow-xl space-y-4
-          ">
-            <h2 className="text-2xl font-semibold drop-shadow mb-2">
-              Documentos
-            </h2>
+{(tipoVista === "todos" || tipoVista === "documentos") && (
+  <div className="
+    bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
+    p-6 shadow-xl space-y-4
+  ">
+    <h2 className="text-2xl font-semibold drop-shadow mb-2">
+      Documentos
+    </h2>
 
-            {/* FILTROS PREMIUM */}
-            <div className="grid grid-cols-2 gap-3">
-              <input
-                className="
-                  bg-white/10 border border-white/20 rounded-xl px-3 py-2
-                  text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
-                "
-                placeholder="Filtrar por concepto..."
-                value={filtroConcepto}
-                onChange={(e) => setFiltroConcepto(e.target.value)}
-              />
+    {/* FILTROS PREMIUM */}
+    <div className="grid grid-cols-2 gap-3">
+      <input
+        className="
+          bg-white/10 border border-white/20 rounded-xl px-3 py-2
+          text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+        "
+        placeholder="Filtrar por concepto..."
+        value={filtroConcepto}
+        onChange={(e) => setFiltroConcepto(e.target.value)}
+      />
 
-              <input
-                type="date"
-                className="
-                  bg-white/10 border border-white/20 rounded-xl px-3 py-2
-                  text-white focus:ring-2 focus:ring-blue-400
-                "
-                value={filtroFecha}
-                onChange={(e) => setFiltroFecha(e.target.value)}
-              />
-            </div>
-
-            {docsVisibles.length === 0 ? (
-              <p className="text-white/70">No hay documentos.</p>
-            ) : (
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-white/70 border-b border-white/10">
-                    <th>ID</th>
-
-                    <th
-                      className="cursor-pointer"
-                      onClick={() => ordenar("titulo")}
-                    >
-                      Título{" "}
-                      {orden.campo === "titulo" &&
-                        (orden.dir === "asc" ? "↑" : "↓")}
-                    </th>
-
-                    <th>Concepto</th>
-
-                    <th
-                      className="cursor-pointer"
-                      onClick={() => ordenar("fecha")}
-                    >
-                      Fecha{" "}
-                      {orden.campo === "fecha" &&
-                        (orden.dir === "asc" ? "↑" : "↓")}
-                    </th>
-
-                    <th></th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {docsVisibles.map((d) => (
-                    <tr key={d.id ?? `doc-${Math.random()}`} className="border-b border-white/10">
-                      <td className="py-2">
-                        {typeof d.id === "string" || typeof d.id === "number"
-                          ? d.id
-                          : String(d.id || "")}
-                      </td>
-                      <td className="py-2">
-                        {typeof d.titulo === "string"
-                          ? d.titulo
-                          : String(d.titulo || "")}
-                      </td>
-                      <td className="py-2">
-                        {typeof d.concepto === "string"
-                          ? d.concepto
-                          : String(d.concepto || "")}
-                      </td>
-
-                      <td className="py-2">
-                        {d.fecha_publicacion &&
-                        !Number.isNaN(
-                          new Date(d.fecha_publicacion).getTime()
-                        )
-                          ? new Date(d.fecha_publicacion).toLocaleString("es-ES")
-                          : "Sin fecha"}
-                      </td>
-
-                      <td className="py-2 flex gap-3">
-                        <button
-                          onClick={() => setPdfUrl(d.fichero)}
-                          className="
-                            text-blue-400 hover:text-blue-300 text-sm
-                            transition
-                          "
-                        >
-                          Ver PDF
-                        </button>
-
-                        <button
-                          onClick={() => eliminarDocumento(d.id)}
-                          className="
-                            text-red-400 hover:text-red-300 text-sm
-                            transition
-                          "
-                        >
-                          Eliminar
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-
-            {/* PAGINACIÓN PREMIUM */}
-            <div className="flex items-center justify-between mt-4">
-              <button
-                className="
-                  px-3 py-2 rounded-xl bg-white/10 border border-white/20
-                  text-white hover:bg-white/20 transition
-                "
-                disabled={pagina <= 1}
-                onClick={() => setPagina((p) => p - 1)}
-              >
-                ← Anterior
-              </button>
-
-              <span className="text-white/70 text-sm">
-                Página {pagina} de {totalPaginas}
-              </span>
-
-              <button
-                className="
-                  px-3 py-2 rounded-xl bg-white/10 border border-white/20
-                  text-white hover:bg-white/20 transition
-                "
-                disabled={pagina >= totalPaginas}
-                onClick={() => setPagina((p) => p + 1)}
-              >
-                Siguiente →
-              </button>
-
-              <select
-                className="
-                  bg-white/10 border border-white/20 rounded-xl px-3 py-2
-                  text-white focus:ring-2 focus:ring-blue-400
-                "
-                value={pageSize}
-                onChange={(e) => setPageSize(Number(e.target.value))}
-              >
-                <option value={10}>10 por página</option>
-                <option value={20}>20 por página</option>
-                <option value={50}>50 por página</option>
-              </select>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* MODAL PDF PREMIUM */}
-      {pdfUrl && (
-        <div
-          className="
-            fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center
-            justify-center z-50 animate-fade-in
-          "
-          onClick={() => setPdfUrl(null)}
-        >
-          <div
-            className="
-              bg-white rounded-2xl shadow-2xl p-4 w-[80vw] h-[80vh]
-            "
-            onClick={(e) => e.stopPropagation()}
-          >
-            <iframe
-              src={pdfUrl}
-              className="w-full h-full rounded-xl"
-              title="Vista previa PDF"
-            ></iframe>
-          </div>
-        </div>
-      )}
-
+      <input
+        type="date"
+        className="
+          bg-white/10 border border-white/20 rounded-xl px-3 py-2
+          text-white focus:ring-2 focus:ring-blue-400
+        "
+        value={filtroFecha}
+        onChange={(e) => setFiltroFecha(e.target.value)}
+      />
     </div>
-  );
-}
+
+    {docsVisibles.length === 0 ? (
+      <p className="text-white/70">No hay documentos.</p>
+    ) : (
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="text-white/70 border-b border-white/10">
+            <th>ID</th>
+
+            <th
+              className="cursor-pointer"
+              onClick={() => ordenar("titulo")}
+            >
+              Título{" "}
+              {orden.campo === "titulo" &&
+                (orden.dir === "asc" ? "↑" : "↓")}
+            </th>
+
+            <th>Concepto</th>
+
+            <th
+              className="cursor-pointer"
+              onClick={() => ordenar("fecha")}
+            >
+              Fecha{" "}
+              {orden.campo === "fecha" &&
+                (orden.dir === "asc" ? "↑" : "↓")}
+            </th>
+
+            <th></th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {docsVisibles.map((d) => {
+            const id = typeof d.id === "number" || typeof d.id === "string"
+              ? String(d.id)
+              : "-";
+
+            const titulo = typeof d.titulo === "string"
+              ? d.titulo
+              : String(d.titulo || "-");
+
+            const concepto = typeof d.concepto === "string"
+              ? d.concepto
+              : String(d.concepto || "-");
+
+            const fechaValida =
+              d.fecha_publicacion &&
+              !Number.isNaN(new Date(d.fecha_publicacion).getTime());
+
+            const fichero =
+              typeof d.fichero === "string" ? d.fichero : null;
+
+            return (
+              <tr key={id} className="border-b border-white/10">
+                <td className="py-2">{id}</td>
+                <td className="py-2">{titulo}</td>
+                <td className="py-2">{concepto}</td>
+
+                <td className="py-2">
+                  {fechaValida
+                    ? new Date(d.fecha_publicacion).toLocaleString("es-ES")
+                    : "Sin fecha"}
+                </td>
+
+                <td className="py-2 flex gap-3">
+                  <button
+                    onClick={() => fichero && setPdfUrl(fichero)}
+                    className="
+                      text-blue-400 hover:text-blue-300 text-sm
+                      transition
+                    "
+                  >
+                    Ver PDF
+                  </button>
+
+                  <button
+                    onClick={() => eliminarDocumento(id)}
+                    className="
+                      text-red-400 hover:text-red-300 text-sm
+                      transition
+                    "
+                  >
+                    Eliminar
+                  </button>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    )}
+
+    {/* PAGINACIÓN PREMIUM */}
+    <div className="flex items-center justify-between mt-4">
+      <button
+        className="
+          px-3 py-2 rounded-xl bg-white/10 border border-white/20
+          text-white hover:bg-white/20 transition
+        "
+        disabled={pagina <= 1}
+        onClick={() => setPagina((p) => p - 1)}
+      >
+        ← Anterior
+      </button>
+
+      <span className="text-white/70 text-sm">
+        Página {pagina} de {totalPaginas}
+      </span>
+
+      <button
+        className="
+          px-3 py-2 rounded-xl bg-white/10 border border-white/20
+          text-white hover:bg-white/20 transition
+        "
+        disabled={pagina >= totalPaginas}
+        onClick={() => setPagina((p) => p + 1)}
+      >
+        Siguiente →
+      </button>
+
+      <select
+        className="
+          bg-white/10 border border-white/20 rounded-xl px-3 py-2
+          text-white focus:ring-2 focus:ring-blue-400
+        "
+        value={pageSize}
+        onChange={(e) => setPageSize(Number(e.target.value))}
+      >
+        <option value={10}>10 por página</option>
+        <option value={20}>20 por página</option>
+        <option value={50}>50 por página</option>
+      </select>
+    </div>
+  </div>
+)}

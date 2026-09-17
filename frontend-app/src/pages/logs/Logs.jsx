@@ -10,7 +10,7 @@ export default function Logs() {
   const [fechaHasta, setFechaHasta] = useState("");
 
   const [pagina, setPagina] = useState(1);
-  const [pageSize, setPageSize] = useState(50);
+  const pageSize = 50; // Fijo, igual que CTN
 
   const [orden, setOrden] = useState({ campo: "fecha", dir: "desc" });
 
@@ -23,11 +23,11 @@ export default function Logs() {
       pagina,
       page_size: pageSize,
     });
-  }, [tipo, texto, fechaDesde, fechaHasta, pagina, pageSize, cargarLogs]);
+  }, [tipo, texto, fechaDesde, fechaHasta, pagina, cargarLogs]);
 
   useEffect(() => {
     aplicarFiltros();
-  }, [pagina, pageSize, aplicarFiltros]);
+  }, [pagina, aplicarFiltros]);
 
   const iconoTipo = useCallback((tipo) => {
     switch (tipo) {
@@ -75,7 +75,7 @@ export default function Logs() {
 
   const visibles = useMemo(
     () => logsOrdenados.slice((pagina - 1) * pageSize, pagina * pageSize),
-    [logsOrdenados, pagina, pageSize]
+    [logsOrdenados, pagina]
   );
 
   const exportarExcel = useCallback(() => {
@@ -217,7 +217,7 @@ export default function Logs() {
         )}
       </div>
 
-      {/* PAGINACIÓN COMO CTN */}
+      {/* ⭐ Paginación Premium (igual que CTN) */}
       <div className="flex items-center justify-between mt-4 text-white/80 text-sm">
 
         <button

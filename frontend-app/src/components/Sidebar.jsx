@@ -57,7 +57,7 @@ const SidebarItem = ({ to, label, icon, collapsed, badge }) => (
 );
 
 /**
- * Sidebar SJ‑2026 Premium
+ * Sidebar SJ‑2026 Premium — Oculto + Glass
  */
 export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(true);
@@ -82,40 +82,29 @@ export default function Sidebar() {
   return (
     <aside
       className={`
-        backdrop-blur-xl bg-white/10 border-r border-white/10 shadow-xl p-4 space-y-6 transition-all duration-300
-        ${collapsed ? "w-24" : "w-72"}
+        fixed left-0 top-0 h-full z-50
+        backdrop-blur-xl bg-white/10 border-r border-white/10 shadow-xl
+        p-4 space-y-6 transition-all duration-300
+        ${collapsed ? "w-0 overflow-hidden" : "w-72"}
       `}
       onMouseEnter={() => !fixed && setCollapsed(false)}
       onMouseLeave={() => !fixed && setCollapsed(true)}
     >
       {/* HEADER */}
-      <div className="flex items-center justify-between mb-2">
-        {!collapsed && (
+      {!collapsed && (
+        <div className="flex items-center justify-between mb-2">
           <h2 className="text-xl font-bold text-white tracking-tight drop-shadow">
             Agenda Molsan
           </h2>
-        )}
 
-        <button
-          onClick={() => setFixed(!fixed)}
-          className="p-2 rounded-full hover:bg-white/10 transition"
-        >
-          <svg className="w-5 h-5 text-white">
-            <use href={`/icons/icons.svg#${fixed ? "pin-off" : "pin"}`} />
-          </svg>
-        </button>
-      </div>
-
-      {/* MINI AVATAR */}
-      {collapsed && (
-        <div className="flex justify-center mb-4">
-          <div className="relative w-12 h-12 rounded-full overflow-hidden border border-white/20 shadow-lg animate-[fadeIn_0.4s_ease]">
-            <img
-              src={safeUser.foto}
-              className="w-full h-full object-cover"
-            />
-            <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border border-white rounded-full"></span>
-          </div>
+          <button
+            onClick={() => setFixed(!fixed)}
+            className="p-2 rounded-full hover:bg-white/10 transition"
+          >
+            <svg className="w-5 h-5 text-white">
+              <use href={`/icons/icons.svg#${fixed ? "pin-off" : "pin"}`} />
+            </svg>
+          </button>
         </div>
       )}
 
@@ -243,30 +232,6 @@ export default function Sidebar() {
             </div>
 
             <span className="font-medium">Cerrar sesión</span>
-          </button>
-        </div>
-      )}
-
-      {/* MINI PERFIL + LOGOUT */}
-      {collapsed && (
-        <div className="mt-auto flex flex-col items-center gap-4 pb-2">
-          <div className="relative w-12 h-12 rounded-full overflow-hidden border border-white/20 shadow-lg">
-            <img src={safeUser.foto} className="w-full h-full object-cover" />
-            <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border border-white rounded-full"></span>
-          </div>
-
-          <button
-            onClick={logout}
-            className="
-              w-10 h-10 flex items-center justify-center rounded-xl
-              bg-red-500/20 text-red-300
-              hover:bg-red-500/30 hover:scale-110
-              transition-all duration-300
-            "
-          >
-            <svg className="w-5 h-5">
-              <use href="/icons/icons.svg#logout" />
-            </svg>
           </button>
         </div>
       )}

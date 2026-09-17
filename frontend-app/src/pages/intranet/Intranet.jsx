@@ -155,10 +155,12 @@ export default function Intranet() {
                   {n.titulo}
                 </h3>
 
-                <p className="text-white/80">{n.concepto}</p>
+                {/* CORREGIDO: antes usabas n.concepto */}
+                <p className="text-white/80">{n.descripcion}</p>
 
+                {/* CORREGIDO: antes usabas n.fecha */}
                 <p className="text-sm text-white/60">
-                  {new Date(n.fecha).toLocaleString("es-ES")}
+                  {new Date(n.fecha_publicacion).toLocaleString("es-ES")}
                 </p>
 
                 <button
@@ -174,7 +176,6 @@ export default function Intranet() {
             ))}
           </div>
         )}
-
         {/* DOCUMENTOS PREMIUM */}
         {(tipoVista === "todos" || tipoVista === "documentos") && (
           <div className="

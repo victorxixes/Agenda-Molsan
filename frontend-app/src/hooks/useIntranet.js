@@ -5,6 +5,7 @@ const safe = (v) => {
   if (v === null || v === undefined) return "-";
   if (typeof v === "object") {
     if (Array.isArray(v)) return v.join(", ");
+    if (v.nombre) return v.nombre; // caso concepto { id, nombre }
     try { return JSON.stringify(v); } catch { return "-" }
   }
   return String(v);
@@ -14,7 +15,7 @@ const safe = (v) => {
 const safeDoc = (d) => ({
   id: safe(d.id),
   titulo: safe(d.titulo),
-  concepto: safe(d.concepto),
+  concepto: safe(d.concepto?.nombre || d.concepto || "-"),
   fecha_publicacion: safe(d.fecha_publicacion),
   fichero: safe(d.fichero),
 });

@@ -10,7 +10,7 @@ export default function Logs() {
   const [fechaHasta, setFechaHasta] = useState("");
 
   const [pagina, setPagina] = useState(1);
-  const PAGE_SIZE = 50; // Fijo, igual que CTN
+  const PAGE_SIZE = 50;
 
   const [orden, setOrden] = useState({ campo: "fecha", dir: "desc" });
 
@@ -151,7 +151,7 @@ export default function Logs() {
         />
       </div>
 
-      {/* BOTONES COMO CTN */}
+      {/* BOTONES */}
       <div className="flex gap-3">
         <button
           className="
@@ -182,76 +182,77 @@ export default function Logs() {
         {loading ? (
           <p className="text-white/70 text-sm animate-pulse">Cargando logs…</p>
         ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-white/80 border-b border-white/20">
-                <th className="cursor-pointer py-2" onClick={() => ordenar("id")}>ID</th>
-                <th className="cursor-pointer py-2" onClick={() => ordenar("tipo")}>Tipo</th>
-                <th className="cursor-pointer py-2" onClick={() => ordenar("mensaje")}>Mensaje</th>
-                <th className="cursor-pointer py-2" onClick={() => ordenar("fecha")}>Fecha</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {visibles.map((log) => (
-                <tr
-                  key={log.id}
-                  className="
-                    border-b border-white/10 hover:bg-white/10 transition cursor-pointer
-                  "
-                >
-                  <td className="py-2">{log.id}</td>
-
-                  <td className={`py-2 flex items-center gap-2 ${colorTipo(log.tipo)}`}>
-                    <span>{iconoTipo(log.tipo)}</span>
-                    <span>{log.tipo}</span>
-                  </td>
-
-                  <td className="py-2">{log.mensaje}</td>
-
-                  <td className="py-2">
-                    {new Date(log.fecha).toLocaleString("es-ES")}
-                  </td>
+          <>
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-white/80 border-b border-white/20">
+                  <th className="cursor-pointer py-2" onClick={() => ordenar("id")}>ID</th>
+                  <th className="cursor-pointer py-2" onClick={() => ordenar("tipo")}>Tipo</th>
+                  <th className="cursor-pointer py-2" onClick={() => ordenar("mensaje")}>Mensaje</th>
+                  <th className="cursor-pointer py-2" onClick={() => ordenar("fecha")}>Fecha</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
 
-          {/* ⭐ Paginación Premium (idéntica a CTN) */}
-          <div className="flex items-center justify-between mt-4 text-white/80 text-sm">
-            <button
-              className="
-                px-3 py-2 rounded-xl bg-white/10 border border-white/20
-                hover:bg-white/20 transition
-              "
-              disabled={pagina <= 1}
-              onClick={() => setPagina((p) => p - 1)}
-            >
-              ← Anterior
-            </button>
+              <tbody>
+                {visibles.map((log) => (
+                  <tr
+                    key={log.id}
+                    className="
+                      border-b border-white/10 hover:bg-white/10 transition cursor-pointer
+                    "
+                  >
+                    <td className="py-2">{log.id}</td>
 
-            <span>
-              Página {pagina} de {totalPaginas}
-            </span>
+                    <td className={`py-2 flex items-center gap-2 ${colorTipo(log.tipo)}`}>
+                      <span>{iconoTipo(log.tipo)}</span>
+                      <span>{log.tipo}</span>
+                    </td>
 
-            <button
-              className="
-                px-3 py-2 rounded-xl bg-white/10 border border-white/20
-                hover:bg-white/20 transition
-              "
-              disabled={pagina >= totalPaginas}
-              onClick={() => setPagina((p) => p + 1)}
-            >
-              Siguiente →
-            </button>
-          </div>
+                    <td className="py-2">{log.mensaje}</td>
 
-          <p className="text-white/60 text-sm mt-3">
-            Mostrando {visibles.length} logs — Total: {logsOrdenados.length}
-          </p>
-        </div>
-      )}
+                    <td className="py-2">
+                      {new Date(log.fecha).toLocaleString("es-ES")}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
 
+            {/* ⭐ Paginación Premium (idéntica a CTN) */}
+            <div className="flex items-center justify-between mt-4 text-white/80 text-sm">
+              <button
+                className="
+                  px-3 py-2 rounded-xl bg-white/10 border border-white/20
+                  hover:bg-white/20 transition
+                "
+                disabled={pagina <= 1}
+                onClick={() => setPagina((p) => p - 1)}
+              >
+                ← Anterior
+              </button>
+
+              <span>
+                Página {pagina} de {totalPaginas}
+              </span>
+
+              <button
+                className="
+                  px-3 py-2 rounded-xl bg-white/10 border border-white/20
+                  hover:bg-white/20 transition
+                "
+                disabled={pagina >= totalPaginas}
+                onClick={() => setPagina((p) => p + 1)}
+              >
+                Siguiente →
+              </button>
+            </div>
+
+            <p className="text-white/60 text-sm mt-3">
+              Mostrando {visibles.length} logs — Total: {logsOrdenados.length}
+            </p>
+          </>
+        )}
+      </div>
     </div>
   );
 }

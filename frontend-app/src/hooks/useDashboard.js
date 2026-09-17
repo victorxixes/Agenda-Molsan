@@ -14,18 +14,39 @@ const safe = (v) => {
 function normalizarCita(c) {
   if (!c || typeof c !== "object") return null;
 
+  // Si el notario es un objeto, convertirlo a "Nombre Apellidos"
+  let notario = "";
+  if (typeof c.notario === "object" && c.notario !== null) {
+    const nom = c.notario.nombre || "";
+    const ape = c.notario.apellidos || "";
+    notario = `${nom} ${ape}`.trim();
+  } else {
+    notario = c.notario || "";
+  }
+
+  // Si el apoderado es un objeto, convertirlo igual
+  let apoderado = "";
+  if (typeof c.apoderado === "object" && c.apoderado !== null) {
+    const nom = c.apoderado.nombre || "";
+    const ape = c.apoderado.apellidos || "";
+    apoderado = `${nom} ${ape}`.trim();
+  } else {
+    apoderado = c.apoderado || "";
+  }
+
   return {
-    id: safe(c.id),
-    fecha: safe(c.fecha),
-    hora_inicio: safe(c.hora_inicio),
-    hora_fin: safe(c.hora_fin),
-    tipo_cita: safe(c.tipo_cita),
-    tipo_firma: safe(c.tipo_firma),
-    notario: safe(c.notario),
-    apoderado: safe(c.apoderado),
-    observaciones: safe(c.observaciones),
+    id: c.id,
+    fecha: c.fecha || "",
+    hora_inicio: c.hora_inicio || "",
+    hora_fin: c.hora_fin || "",
+    tipo_cita: c.tipo_cita || "",
+    tipo_firma: typeof c.tipo_firma === "string" ? c.tipo_firma : "",
+    notario,
+    apoderado,
+    observaciones: c.observaciones || "",
   };
 }
+
 
 export function useDashboard() {
   const [data, setData] = useState({

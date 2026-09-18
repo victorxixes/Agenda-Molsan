@@ -27,6 +27,12 @@ export default function Mensajes({ usuarioId }) {
   const wsRef = useMensajesWS(usuarioId, otroId);
   const chatRef = useRef(null);
 
+  // 🔥 FILTRAR TU PROPIO USUARIO
+  const conectadosFiltrados = useMemo(
+    () => conectados.filter((c) => c.id !== usuarioId),
+    [conectados, usuarioId]
+  );
+
   // Cargar conversación al seleccionar usuario
   useEffect(() => {
     if (otroId) cargarConversacion(usuarioId, otroId);
@@ -120,8 +126,6 @@ export default function Mensajes({ usuarioId }) {
     [mensajes]
   );
 
-  const conectadosMemo = useMemo(() => conectados, [conectados]);
-
   return (
     <div className="p-6 grid grid-cols-3 gap-4 text-white">
 
@@ -134,14 +138,14 @@ export default function Mensajes({ usuarioId }) {
       >
         <h2 className="font-semibold text-lg mb-3 drop-shadow">Conectados</h2>
 
-        {conectadosMemo.length === 0 && (
+        {conectadosFiltrados.length === 0 && (
           <p className="text-sm text-white/60">
             No hay empleados conectados.
           </p>
         )}
 
         <div className="space-y-2">
-          {conectadosMemo.map((c) => (
+          {conectadosFiltrados.map((c) => (
             <button
               key={c.id}
               type="button"
@@ -187,7 +191,7 @@ export default function Mensajes({ usuarioId }) {
       >
         {otroId ? (
           <>
-            <MensajesHeader otroId={otroId} conectados={conectadosMemo} />
+            <MensajesHeader otroId={otroId} conectados={conectadosFiltrados} />
 
             <div
               ref={chatRef}
@@ -204,7 +208,7 @@ export default function Mensajes({ usuarioId }) {
                   </div>
 
                   {mensajesAgrupados[fecha].map((m) => {
-                    const remitente = conectadosMemo.find(
+                    const remitente = conectadosFiltrados.find(
                       (x) => x.id === m.remitente_id
                     );
 
@@ -212,7 +216,7 @@ export default function Mensajes({ usuarioId }) {
                       ? `${import.meta.env.VITE_API_URL}${remitente.foto}`
                       : "/no-foto.png";
 
-                    const online = conectadosMemo.some(
+                    const online = conectadosFiltrados.some(
                       (x) => x.id === m.remitente_id
                     );
 

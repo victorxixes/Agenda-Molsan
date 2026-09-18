@@ -124,12 +124,7 @@ export default function App() {
           <Route path="ctn/listado" element={<CtnListadoPage />} />
           <Route path="ctn/:id" element={<CtnDetallePage />} />
 
-          {/* EMPLEADOS */}
-          <Route path="panel/empleados" element={<EmpleadosModulo2026 />} />
-          <Route path="panel/empleados/listado" element={<EmpleadosListado />} />
-          <Route path="panel/empleados/:id" element={<EmpleadoFicha />} />
-          <Route path="panel/empleados/:id/editar" element={<EmpleadoEditar />} />
-
+          
           {/* INTRANET */}
           <Route path="intranet" element={<Intranet />} />
 
@@ -150,11 +145,11 @@ export default function App() {
           <Route path="notificaciones" element={<Notificaciones />} />
 
           {/* PANEL TÉCNICO */}
-          <Route path="panel-tecnico" element={<PanelTecnico />} />
-          <Route path="panel-tecnico/monitor-sistema" element={<MonitorSistema />} />
-          <Route path="panel-tecnico/monitor-realtime" element={<MonitorRealtime />} />
-          <Route path="panel-tecnico/auditoria-avanzada" element={<AuditoriaAvanzada />} />
-          <Route path="panel-tecnico/logs-avanzados" element={<LogsAvanzados />} />
+          <Route path="paneltecnico" element={<PanelTecnico />} />
+          <Route path="paneltecnico/monitor-sistema" element={<MonitorSistema />} />
+          <Route path="paneltecnico/monitor-realtime" element={<MonitorRealtime />} />
+          <Route path="paneltecnico/auditoria-avanzada" element={<AuditoriaAvanzada />} />
+          <Route path="paneltecnico/logs-avanzados" element={<LogsAvanzados />} />
 
           {/* SEGURIDAD */}
           <Route path="seguridad" element={<Seguridad />} />

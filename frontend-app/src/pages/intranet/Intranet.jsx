@@ -5,14 +5,13 @@ export default function Intranet() {
   const [noticias, setNoticias] = useState([]);
   const [documentos, setDocumentos] = useState([]);
   const [loading, setLoading] = useState(true);
-
   const [error, setError] = useState(null);
 
   useEffect(() => {
     async function cargar() {
       try {
-        setError(null);
         setLoading(true);
+        setError(null);
 
         const [resNoticias, resDocumentos] = await Promise.all([
           fetch("/api/intranet/noticias"),
@@ -40,11 +39,7 @@ export default function Intranet() {
   }, []);
 
   if (loading) {
-    return (
-      <div className="text-white/80">
-        Cargando intranet…
-      </div>
-    );
+    return <div className="text-white/80">Cargando intranet…</div>;
   }
 
   if (error) {
@@ -57,10 +52,12 @@ export default function Intranet() {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
       {/* Noticias */}
       <section className="bg-white/10 rounded-2xl p-4 shadow-lg border border-white/10">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-lg font-semibold text-white">Noticias internas</h2>
+
           <Link
             to="/herramientas/utilidades/crear-noticia"
             className="text-sm px-3 py-1 rounded-lg bg-blue-500/80 text-white hover:bg-blue-500 transition"
@@ -70,9 +67,7 @@ export default function Intranet() {
         </div>
 
         {noticias.length === 0 ? (
-          <p className="text-sm text-white/60">
-            No hay noticias publicadas.
-          </p>
+          <p className="text-sm text-white/60">No hay noticias publicadas.</p>
         ) : (
           <ul className="space-y-3">
             {noticias.map((n) => (
@@ -81,18 +76,16 @@ export default function Intranet() {
                 className="bg-white/5 rounded-xl p-3 border border-white/10"
               >
                 <div className="flex items-center justify-between mb-1">
-                  <span className="font-medium text-white">
-                    {n.titulo}
-                  </span>
+                  <span className="font-medium text-white">{n.titulo}</span>
+
                   {n.fecha_publicacion && (
                     <span className="text-xs text-white/50">
                       {new Date(n.fecha_publicacion).toLocaleString()}
                     </span>
                   )}
                 </div>
-                <p className="text-sm text-white/70">
-                  {n.descripcion}
-                </p>
+
+                <p className="text-sm text-white/70">{n.descripcion}</p>
               </li>
             ))}
           </ul>
@@ -103,6 +96,7 @@ export default function Intranet() {
       <section className="bg-white/10 rounded-2xl p-4 shadow-lg border border-white/10">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-lg font-semibold text-white">Documentos internos</h2>
+
           <Link
             to="/herramientas/utilidades/subir-documento"
             className="text-sm px-3 py-1 rounded-lg bg-green-500/80 text-white hover:bg-green-500 transition"
@@ -112,9 +106,7 @@ export default function Intranet() {
         </div>
 
         {documentos.length === 0 ? (
-          <p className="text-sm text-white/60">
-            No hay documentos disponibles.
-          </p>
+          <p className="text-sm text-white/60">No hay documentos disponibles.</p>
         ) : (
           <ul className="space-y-3">
             {documentos.map((d) => (
@@ -123,13 +115,10 @@ export default function Intranet() {
                 className="bg-white/5 rounded-xl p-3 border border-white/10 flex items-center justify-between"
               >
                 <div>
-                  <div className="font-medium text-white">
-                    {d.titulo}
-                  </div>
+                  <div className="font-medium text-white">{d.titulo}</div>
+
                   {d.concepto && (
-                    <div className="text-sm text-white/70">
-                      {d.concepto}
-                    </div>
+                    <div className="text-sm text-white/70">{d.concepto}</div>
                   )}
                 </div>
 

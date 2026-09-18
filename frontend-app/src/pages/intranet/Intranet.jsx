@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAuthStore } from "../../store/authStore";
 
-const API = "https://agenda-intranet-b.onrender.com/api/intranet";
+const API = "https://agenda-intranet-f.onrender.com/api/intranet";
 
 export default function Intranet() {
   const { token, usuario } = useAuthStore();

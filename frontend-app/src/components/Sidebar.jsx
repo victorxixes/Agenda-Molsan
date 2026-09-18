@@ -36,7 +36,6 @@ const SidebarItem = ({ to, label, icon, collapsed, badge = 0 }) => (
       `
     }
   >
-    {({ isActive }) => null /* eliminar render-prop */}
     <IconRound name={icon} active={false} />
 
     {!collapsed && (

@@ -9,6 +9,9 @@ import { useEffect } from "react";
 import RequireAuth from "./components/auth/RequireAuth";
 import { useAuthStore } from "./store/authStore";
 
+/* STORE MENSAJES */
+import { useMensajesStore } from "./store/mensajesStore";
+
 /* LAYOUT */
 import Layout from "./layout/Layout";
 
@@ -89,24 +92,34 @@ export default function App() {
   const init = useAuthStore((s) => s.init);
   const { authReady, token, empleado } = useAuthStore();
 
+  const setWsGlobal = useMensajesStore((s) => s.setWsGlobal);
+
   // 1️⃣ Hidratar sesión
   useEffect(() => {
     init();
   }, [init]);
 
-  // 2️⃣ WebSocket global de mensajes
+  // 2️⃣ WebSocket global de mensajes (solo uno por usuario)
   useEffect(() => {
     if (!authReady || !token || !empleado) return;
+
+    // Marcar WS global en el store
+    setWsGlobal(true);
 
     const ws = new WebSocket(
       `${import.meta.env.VITE_WS_URL}/ws/mensajes/${empleado.id}`
     );
 
-    ws.onopen = () => console.log("WS mensajes conectado:", empleado.id);
-    ws.onclose = () => console.log("WS mensajes desconectado:", empleado.id);
+    ws.onopen = () => console.log("WS global conectado:", empleado.id);
+    ws.onclose = () => console.log("WS global desconectado:", empleado.id);
 
-    return () => ws.close();
-  }, [authReady, token, empleado]);
+    return () => {
+      try {
+        ws.close();
+      } catch {}
+      setWsGlobal(false);
+    };
+  }, [authReady, token, empleado, setWsGlobal]);
 
   return (
     <div className="animate-fade-in">

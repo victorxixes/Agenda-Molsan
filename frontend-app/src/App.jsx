@@ -89,12 +89,12 @@ export default function App() {
   const init = useAuthStore((s) => s.init);
   const { authReady, token, empleado } = useAuthStore();
 
-  // 1️⃣ Primero hidratar sesión
+  // 1️⃣ Hidratar sesión
   useEffect(() => {
     init();
   }, [init]);
 
-  // 2️⃣ Después abrir WebSocket cuando la sesión ya está lista
+  // 2️⃣ WebSocket global de mensajes
   useEffect(() => {
     if (!authReady || !token || !empleado) return;
 
@@ -111,17 +111,8 @@ export default function App() {
   return (
     <div className="animate-fade-in">
       <Routes>
-        {/* ... resto de rutas */}
-      </Routes>
-    </div>
-  );
-}
-
-      <Routes>
-        {/* LOGIN fuera del layout y sin RequireAuth */}
         <Route path="/login" element={<LoginPage />} />
 
-        {/* ERP PROTEGIDO */}
         <Route
           path="/"
           element={
@@ -130,56 +121,44 @@ export default function App() {
             </RequireAuth>
           }
         >
-          {/* Index del ERP: Dashboard, NO /login */}
           <Route index element={<Dashboard />} />
 
-          {/* DASHBOARD */}
           <Route path="dashboard" element={<Dashboard />} />
 
-          {/* AGENDA */}
           <Route path="agenda" element={<Agenda />} />
           <Route path="agenda/dia" element={<VistaDia />} />
           <Route path="agenda/semana" element={<VistaSemana />} />
           <Route path="agenda/mes" element={<VistaMes />} />
 
-          {/* CTN */}
           <Route path="ctn" element={<Ctn />} />
           <Route path="ctn/listado" element={<CtnListadoPage />} />
           <Route path="ctn/:id" element={<CtnDetallePage />} />
 
-          {/* EMPLEADOS */}
           <Route path="empleados" element={<EmpleadosModulo2026 />} />
           <Route path="empleados/listado" element={<EmpleadosListado />} />
           <Route path="empleados/:id" element={<EmpleadoFicha />} />
           <Route path="empleados/:id/editar" element={<EmpleadoEditar />} />
 
-          {/* INTRANET */}
           <Route path="intranet" element={<Intranet />} />
 
-          {/* MENSAJES */}
           <Route path="mensajes" element={<MensajesWrapper />} />
 
-          {/* HERRAMIENTAS */}
           <Route path="herramientas" element={<Herramientas />} />
           <Route path="herramientas/importar-ctn" element={<ImportarCTN />} />
           <Route path="herramientas/utilidades" element={<Utilidades />} />
           <Route path="herramientas/utilidades/crear-noticia" element={<CrearNoticia />} />
           <Route path="herramientas/utilidades/subir-documento" element={<SubirDocumento />} />
 
-          {/* LOGS */}
           <Route path="logs" element={<Logs />} />
 
-          {/* NOTIFICACIONES */}
           <Route path="notificaciones" element={<Notificaciones />} />
 
-          {/* PANEL TÉCNICO */}
           <Route path="paneltecnico" element={<PanelTecnico />} />
           <Route path="paneltecnico/monitor-sistema" element={<MonitorSistema />} />
           <Route path="paneltecnico/monitor-realtime" element={<MonitorRealtime />} />
           <Route path="paneltecnico/auditoria-avanzada" element={<AuditoriaAvanzada />} />
           <Route path="paneltecnico/logs-avanzados" element={<LogsAvanzados />} />
 
-          {/* SEGURIDAD */}
           <Route path="seguridad" element={<Seguridad />} />
           <Route path="seguridad/usuarios" element={<SeguridadUsuarios />} />
           <Route path="seguridad/roles" element={<SeguridadRoles />} />
@@ -191,7 +170,6 @@ export default function App() {
           <Route path="seguridad/roles/editor" element={<SeguridadRolEditor />} />
         </Route>
 
-        {/* Fallback: cualquier ruta desconocida → login */}
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </div>

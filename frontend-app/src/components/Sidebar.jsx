@@ -36,25 +36,23 @@ const SidebarItem = ({ to, label, icon, collapsed, badge = 0 }) => (
       `
     }
   >
-    {({ isActive }) => (
-      <>
-        <IconRound name={icon} active={isActive} />
+    {({ isActive }) => null /* eliminar render-prop */}
+    <IconRound name={icon} active={false} />
 
-        {!collapsed && (
-          <div className="flex items-center gap-2">
-            <span className="font-medium">{label}</span>
+    {!collapsed && (
+      <div className="flex items-center gap-2">
+        <span className="font-medium">{label}</span>
 
-            {badge > 0 && (
-              <span className="px-2 py-0.5 text-xs bg-red-500 text-white rounded-full shadow animate-pulse">
-                {badge}
-              </span>
-            )}
-          </div>
+        {badge > 0 && (
+          <span className="px-2 py-0.5 text-xs bg-red-500 text-white rounded-full shadow animate-pulse">
+            {badge}
+          </span>
         )}
-      </>
+      </div>
     )}
   </NavLink>
 );
+
 
 /**
  * Sidebar SJ‑2026 Premium

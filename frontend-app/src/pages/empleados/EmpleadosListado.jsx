@@ -15,8 +15,6 @@ const safe = (value) => {
 export default function EmpleadosListado({ onSeleccionar = () => {} }) {
   const location = useLocation();
 
-  // 🔥 NO devolver null → React 300
-  const rutaValida = location.pathname.includes("/panel/empleados");
 
   const [empleados, setEmpleados] = useState([]);
   const [q, setQ] = useState("");

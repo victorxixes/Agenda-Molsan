@@ -652,6 +652,61 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
                   </div>
                 </div>
 
+                {/* ESTADO DEL EMPLEADO */}
+<div className="mt-4">
+  <span className="block mb-1 text-white/80">Estado actual</span>
+  {empleado.activo ? (
+    <span className="text-green-400 font-semibold">Activo</span>
+  ) : (
+    <span className="text-red-400 font-semibold">Bloqueado</span>
+  )}
+</div>
+
+{/* BOTONES BLOQUEAR / DESBLOQUEAR */}
+<div className="flex gap-4 mt-4">
+  {empleado.activo ? (
+    <button
+      className="
+        px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700
+        text-white shadow-lg transition active:scale-[0.97]
+      "
+      onClick={async () => {
+        await axios.post(
+          `${API_BASE}/seguridad/asignar/empleado/${empleado.id}/bloquear`
+        );
+
+        const res = await obtenerFichaCompleta(empleado.id);
+        const d = res.data;
+        setData(d);
+        setEmpleado(d.empleado || {});
+        mostrarToast("ok", "Empleado bloqueado");
+      }}
+    >
+      Bloquear empleado
+    </button>
+  ) : (
+    <button
+      className="
+        px-4 py-2 rounded-xl bg-green-600 hover:bg-green-700
+        text-white shadow-lg transition active:scale-[0.97]
+      "
+      onClick={async () => {
+        await axios.post(
+          `${API_BASE}/seguridad/asignar/empleado/${empleado.id}/desbloquear`
+        );
+
+        const res = await obtenerFichaCompleta(empleado.id);
+        const d = res.data;
+        setData(d);
+        setEmpleado(d.empleado || {});
+        mostrarToast("ok", "Empleado desbloqueado");
+      }}
+    >
+      Desbloquear empleado
+    </button>
+  )}
+</div>
+
                 <div
                   className="
                     bg-white/5 border border-white/20 rounded-xl p-4 shadow-md

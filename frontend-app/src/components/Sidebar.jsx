@@ -205,30 +205,7 @@ export default function Sidebar() {
           )}
         </nav>
 
-        {/* PERFIL EXPANDIDO */}
-        {!collapsed && (
-          <div className="mt-auto pt-4 border-t border-white/10">
-            <button
-              onClick={() => setPerfilModal(safeUser.id)}
-              className="
-                flex items-center gap-4 px-3 py-2 rounded-xl transition-all duration-300
-                text-white/80 hover:bg-white/10 w-full
-              "
-            >
-              <div className="relative w-12 h-12 rounded-full overflow-hidden border border-white/20 shadow-lg">
-                <img src={safeUser.foto} className="w-full h-full object-cover" />
-                <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border border-white rounded-full"></span>
-              </div>
-
-              <div className="flex flex-col">
-                <span className="whitespace-nowrap font-semibold text-white">
-                  {safeUser.nombre}
-                </span>
-                <span className="text-xs text-white/60 flex items-center gap-1">
-                  Online
-                </span>
-              </div>
-            </button>
+       
 
             {/* LOGOUT */}
             <button

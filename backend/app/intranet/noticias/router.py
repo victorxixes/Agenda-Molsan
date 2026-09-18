@@ -13,7 +13,7 @@ from backend.app.intranet.noticias.service import (
 
 # 🔥 Seguridad
 from backend.app.auth.auth import get_current_user
-from backend.app.auth.permisos import verificar_permiso
+from backend.app.auth.permissions import verificar_permiso
 
 # WebSockets
 from backend.app.websockets.intranet_ws import intranet_broadcast

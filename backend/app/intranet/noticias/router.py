@@ -13,7 +13,7 @@ from backend.app.intranet.noticias.service import (
 
 # Seguridad
 from backend.app.auth.dependencies import get_current_user
-from backend.app.auth.permissions import verificar_permiso
+from backend.app.auth.permissions import require_perm_modulo
 
 # WebSockets
 from backend.app.websockets.intranet_ws import intranet_broadcast
@@ -31,12 +31,12 @@ class NoticiaPayload(BaseModel):
 
 @router.get("/")
 def listar(search: str | None = None, db: Session = Depends(get_db), usuario = Depends(get_current_user)):
-    verificar_permiso(usuario, "intranet", "ver")
+    require_perm_modulo(usuario, "intranet", "ver")
     return listar_noticias(db, search)
 
 @router.post("/")
 async def crear(payload: NoticiaPayload, db: Session = Depends(get_db), usuario = Depends(get_current_user)):
-    verificar_permiso(usuario, "intranet", "crear")
+    require_perm_modulo(usuario, "intranet", "crear")
 
     noticia = crear_noticia(db, payload.titulo, payload.descripcion)
 
@@ -56,12 +56,12 @@ async def crear(payload: NoticiaPayload, db: Session = Depends(get_db), usuario 
 
 @router.get("/{noticia_id}")
 def obtener(noticia_id: int, db: Session = Depends(get_db), usuario = Depends(get_current_user)):
-    verificar_permiso(usuario, "intranet", "ver")
+    require_perm_modulo(usuario, "intranet", "ver")
     return obtener_noticia(db, noticia_id)
 
 @router.put("/{noticia_id}")
 async def actualizar(noticia_id: int, payload: NoticiaPayload, db: Session = Depends(get_db), usuario = Depends(get_current_user)):
-    verificar_permiso(usuario, "intranet", "editar")
+    require_perm_modulo(usuario, "intranet", "editar")
 
     noticia = actualizar_noticia(db, noticia_id, payload.titulo, payload.descripcion)
 
@@ -76,7 +76,7 @@ async def actualizar(noticia_id: int, payload: NoticiaPayload, db: Session = Dep
 
 @router.delete("/{noticia_id}")
 async def eliminar(noticia_id: int, db: Session = Depends(get_db), usuario = Depends(get_current_user)):
-    verificar_permiso(usuario, "intranet", "eliminar")
+    require_perm_modulo(usuario, "intranet", "eliminar")
 
     eliminar_noticia(db, noticia_id)
 

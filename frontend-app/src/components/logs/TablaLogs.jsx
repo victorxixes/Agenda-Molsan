@@ -122,7 +122,6 @@ export default function TablaLogs({
   return (
     <div className="space-y-4 text-white">
 
-      {/* Título / descripción */}
       <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-4 shadow-xl">
         <h2 className="text-2xl font-bold drop-shadow">{titulo}</h2>
         {descripcion && (
@@ -130,7 +129,6 @@ export default function TablaLogs({
         )}
       </div>
 
-      {/* Filtros */}
       {(enableSearch || enableDateFilter || enableExport) && (
         <div className="flex flex-col md:flex-row gap-4 items-center">
           {enableSearch && (
@@ -178,7 +176,6 @@ export default function TablaLogs({
         </div>
       )}
 
-      {/* Tabla */}
       <div
         className="
           bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
@@ -241,7 +238,6 @@ export default function TablaLogs({
         </table>
       </div>
 
-      {/* Paginación */}
       <div className="flex items-center gap-3 mt-2 text-white">
         <button
           disabled={pagina === 0}

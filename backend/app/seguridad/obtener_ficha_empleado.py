@@ -8,6 +8,30 @@ router = APIRouter(
     tags=["Seguridad - Ficha Completa Empleado"]
 )
 
+# ============================================================
+# PLANTILLA PERMISOS SJ‑2026 — SIEMPRE visible en ficha empleado
+# ============================================================
+
+PLANTILLA_PERMISOS = {
+    "ctn": ["ver","crear","editar","eliminar"],
+    "logs": ["ver","crear","editar","eliminar"],
+    "agenda": ["ver","crear","editar","eliminar"],
+    "intranet": ["ver","crear","editar","eliminar"],
+    "maestros": ["ver","crear","editar","eliminar"],
+    "mensajes": ["ver","crear","editar","eliminar"],
+    "noticias": ["ver","crear","editar","eliminar"],
+    "realtime": ["ver","crear","editar","eliminar"],
+    "auditoria": ["ver","crear","editar","eliminar"],
+    "dashboard": ["ver","crear","editar","eliminar"],
+    "empleados": ["ver","crear","editar","eliminar"],
+    "seguridad": ["ver","crear","editar","eliminar"],
+    "documentos": ["ver","crear","editar","eliminar"],
+    "utilidades": ["ver","crear","editar","eliminar"],
+    "herramientas": ["ver","crear","editar","eliminar"],
+    "panel-tecnico": ["ver","crear","editar","eliminar"],
+    "notificaciones": ["ver","crear","editar","eliminar"]
+}
+
 @router.get("/empleado/{empleado_id}/ficha-completa")
 def obtener_ficha_completa(empleado_id: int, db: Session = Depends(get_db)):
 
@@ -41,8 +65,15 @@ def obtener_ficha_completa(empleado_id: int, db: Session = Depends(get_db)):
             "nombre": rol.nombre
         }
 
-    # 🔥 AUDITORÍA POR USUARIO (CORRECTO)
+    # Auditoría
     auditoria = obtener_auditoria_empleado(db, empleado.usuario)
+
+    # ============================================================
+    # 🔥 CORRECCIÓN CRÍTICA:
+    # SI permisos_modulo_dict está vacío → devolver PLANTILLA_PERMISOS
+    # ============================================================
+
+    permisos_finales = empleado.permisos_modulo_dict or PLANTILLA_PERMISOS
 
     return {
         "empleado": {
@@ -74,7 +105,6 @@ def obtener_ficha_completa(empleado_id: int, db: Session = Depends(get_db)):
             "activo": empleado.activo
         },
         "modulos_visibles": empleado.modulos_visibles_list or [],
-        "permisos_modulo": empleado.permisos_modulo_dict or {},
-        "auditoria": auditoria   # ← 🔥 YA SALE EN EL FRONT
+        "permisos_modulo": permisos_finales,
+        "auditoria": auditoria
     }
-

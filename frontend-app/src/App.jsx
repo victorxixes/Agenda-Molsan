@@ -78,8 +78,19 @@ import SeguridadRolEditor from "./pages/seguridad/SeguridadRolEditor.jsx";
 
 function MensajesWrapper() {
   const empleado = useAuthStore((s) => s.empleado);
-  return <Mensajes usuarioId={empleado?.id} />;
+
+  // ⛔ Evita montar Mensajes antes de tener empleado.id
+  if (!empleado || !empleado.id) {
+    return (
+      <div className="p-6 text-white/70">
+        Cargando módulo de mensajes…
+      </div>
+    );
+  }
+
+  return <Mensajes usuarioId={empleado.id} />;
 }
+
 
 // ============================================================
 // App — Router principal SJ‑2026

@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
+const API = "https://agenda-intranet-b.onrender.com/api/intranet";
+
 export default function Intranet() {
   const [noticias, setNoticias] = useState([]);
   const [documentos, setDocumentos] = useState([]);
@@ -14,8 +16,8 @@ export default function Intranet() {
         setError(null);
 
         const [resNoticias, resDocumentos] = await Promise.all([
-          fetch("/api/intranet/noticias"),
-          fetch("/api/intranet/documentos"),
+          fetch(`${API}/noticias`),
+          fetch(`${API}/documentos`)
         ]);
 
         if (!resNoticias.ok || !resDocumentos.ok) {
@@ -123,7 +125,7 @@ export default function Intranet() {
                 </div>
 
                 <a
-                  href={`/api/intranet/documentos/descargar/${d.id}`}
+                  href={`${API}/documentos/descargar/${d.id}`}
                   className="text-xs px-3 py-1 rounded-lg bg-white/20 text-white hover:bg-white/30 transition"
                 >
                   Descargar

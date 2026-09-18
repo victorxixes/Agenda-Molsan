@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 
 const API = "https://agenda-intranet-b.onrender.com/api/intranet";
 
@@ -57,16 +56,9 @@ export default function Intranet() {
 
       {/* Noticias */}
       <section className="bg-white/10 rounded-2xl p-4 shadow-lg border border-white/10">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-semibold text-white">Noticias internas</h2>
-
-          <Link
-            to="/herramientas/utilidades/crear-noticia"
-            className="text-sm px-3 py-1 rounded-lg bg-blue-500/80 text-white hover:bg-blue-500 transition"
-          >
-            Nueva noticia
-          </Link>
-        </div>
+        <h2 className="text-lg font-semibold text-white mb-3">
+          Noticias internas
+        </h2>
 
         {noticias.length === 0 ? (
           <p className="text-sm text-white/60">No hay noticias publicadas.</p>
@@ -96,16 +88,9 @@ export default function Intranet() {
 
       {/* Documentos */}
       <section className="bg-white/10 rounded-2xl p-4 shadow-lg border border-white/10">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-semibold text-white">Documentos internos</h2>
-
-          <Link
-            to="/herramientas/utilidades/subir-documento"
-            className="text-sm px-3 py-1 rounded-lg bg-green-500/80 text-white hover:bg-green-500 transition"
-          >
-            Subir documento
-          </Link>
-        </div>
+        <h2 className="text-lg font-semibold text-white mb-3">
+          Documentos internos
+        </h2>
 
         {documentos.length === 0 ? (
           <p className="text-sm text-white/60">No hay documentos disponibles.</p>

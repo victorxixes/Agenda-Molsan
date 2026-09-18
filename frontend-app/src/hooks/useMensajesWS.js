@@ -4,14 +4,7 @@ import { useMensajesStore } from "../store/mensajesStore";
 export const useMensajesWS = (empleadoId, otroId) => {
   const wsRef = useRef(null);
   const pingInterval = useRef(null);
-
-  // Guardar tu ID en el store
-  useMensajesStore.setState({ usuarioId: empleadoId });
-
-  const wsGlobal = useMensajesStore.getState().wsGlobal;
-
-  // 🔥 Si ya existe un WS global → NO abrir otro
-  if (wsGlobal) return wsRef;
+  const reconnectTimeout = useRef(null);
 
   const cargarConversacion = useMensajesStore((s) => s.cargarConversacion);
   const cargarConectados = useMensajesStore((s) => s.cargarConectados);
@@ -19,9 +12,20 @@ export const useMensajesWS = (empleadoId, otroId) => {
   const setTyping = useMensajesStore((s) => s.setTyping);
   const clearTyping = useMensajesStore((s) => s.clearTyping);
 
+  // ✅ Guardar usuarioId SOLO cuando cambie
   useEffect(() => {
     if (!empleadoId) return;
 
+    useMensajesStore.setState((state) => {
+      if (state.usuarioId === empleadoId) return state;
+      return { ...state, usuarioId: empleadoId };
+    });
+  }, [empleadoId]);
+
+  useEffect(() => {
+    if (!empleadoId) return;
+
+    // Si ya hay un WS activo, no volver a conectar
     if (wsRef.current) return;
 
     let ws;
@@ -84,8 +88,11 @@ export const useMensajesWS = (empleadoId, otroId) => {
       ws.onclose = () => {
         clearInterval(pingInterval.current);
         pingInterval.current = null;
+        wsRef.current = null;
 
-        setTimeout(() => conectar(), 2000);
+        reconnectTimeout.current = setTimeout(() => {
+          if (empleadoId) conectar();
+        }, 2000);
       };
     };
 
@@ -99,9 +106,14 @@ export const useMensajesWS = (empleadoId, otroId) => {
       clearInterval(pingInterval.current);
       pingInterval.current = null;
 
+      if (reconnectTimeout.current) {
+        clearTimeout(reconnectTimeout.current);
+        reconnectTimeout.current = null;
+      }
+
       wsRef.current = null;
     };
-  }, [empleadoId, otroId]);
+  }, [empleadoId, otroId, cargarConectados, cargarConversacion, setConectadosWS, setTyping, clearTyping]);
 
   return wsRef;
 };

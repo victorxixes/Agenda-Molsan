@@ -409,5 +409,6 @@ export default function Intranet() {
     </div>
   </div>
 )}
-
-</div>
+</div>  
+  );           
+}             

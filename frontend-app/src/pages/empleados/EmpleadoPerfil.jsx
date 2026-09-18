@@ -328,7 +328,7 @@ export default function EmpleadoPerfil({ id }) {
     <div className="space-y-3 text-sm">
       {(Array.isArray(data.auditoria) ? data.auditoria : []).map((item) => (
         <div
-          key={item.id || Math.random()}  {/* 🔥 blindaje: evita undefined keys */}
+          key={item.id || Math.random()} 
           className="
             bg-white/5 border border-white/20 rounded-xl p-4
             shadow-md backdrop-blur-md transition-all duration-300

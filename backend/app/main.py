@@ -8,10 +8,7 @@ import os
 # ============================================================
 from backend.app.database import Base, engine
 
-# Importar modelos para registrar tablas
 from backend.app.mensajes.models import Mensaje
-
-# Crear tablas automáticamente (incluye mensajes)
 Base.metadata.create_all(bind=engine)
 
 # ============================================================
@@ -24,23 +21,34 @@ def root():
     return {"status": "ERP Molsan 2026 funcionando correctamente"}
 
 # ============================================================
-# CORS — CONFIGURACIÓN FINAL PARA RENDER
+# 🔥 CORS — CONFIGURACIÓN DEFINITIVA PARA RENDER
 # ============================================================
+
 origins = [
-    "https://agenda-intranet-f.onrender.com",
-    "https://agenda-intranet-b.onrender.com",
+    "https://agenda-intranet-f.onrender.com",  # Frontend
+    "https://agenda-intranet-b.onrender.com",  # Backend (Render redirects)
     "http://localhost:5173",
+    "http://localhost:3000",
 ]
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
+
+    # 🔥 Render necesita TODOS los métodos
     allow_methods=["*"],
+
+    # 🔥 Render necesita TODOS los headers
     allow_headers=["*"],
+
+    # 🔥 Render necesita exponer headers para evitar bloqueos
+    expose_headers=["*"]
 )
 
-# Ejecutar fix de schema
+# ============================================================
+# FIX SCHEMA
+# ============================================================
 from backend.app.agenda.fix_schema import fix_agenda_schema
 fix_agenda_schema()
 
@@ -54,7 +62,6 @@ TMP_MENSAJES = "/tmp/mensajes"
 os.makedirs(TMP_MENSAJES, exist_ok=True)
 app.mount("/static/mensajes", StaticFiles(directory=TMP_MENSAJES), name="mensajes")
 
-# Fotos empleados
 FOTOS_DIR = os.path.join(os.path.dirname(__file__), "static", "fotos")
 app.mount("/api/fotos", StaticFiles(directory=FOTOS_DIR), name="fotos")
 
@@ -62,7 +69,6 @@ app.mount("/api/fotos", StaticFiles(directory=FOTOS_DIR), name="fotos")
 # IMPORTAR ROUTERS
 # ============================================================
 
-# Auth
 from backend.app.auth.router import router as auth_router
 
 # Seguridad
@@ -96,7 +102,7 @@ from backend.app.websockets.intranet_ws import router as intranet_ws_router
 from backend.app.websockets.empleados_ws import router as empleados_ws_router
 from backend.app.websockets.agenda_ws import router as agenda_ws_router
 
-# Mensajes (REST + WS)
+# Mensajes
 from backend.app.mensajes.router import router as mensajes_router
 from backend.app.mensajes.router_ws import router as mensajes_ws_router
 
@@ -124,7 +130,6 @@ from backend.app.Utilidades.router import router as utilidades_router
 # INCLUIR ROUTERS
 # ============================================================
 
-# Auth
 app.include_router(auth_router, prefix="/api")
 
 # Seguridad

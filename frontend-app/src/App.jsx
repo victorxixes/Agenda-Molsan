@@ -131,7 +131,6 @@ export default function App() {
           <Route path="empleados/:id/editar" element={<EmpleadoEditar />} />
           
           {/* INTRANET */}
-          console.log("CARGANDO INTRANET:", Intranet);
           <Route path="intranet" element={<Intranet />} />
 
           {/* MENSAJES */}

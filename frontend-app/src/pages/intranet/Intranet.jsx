@@ -175,7 +175,7 @@ export default function Intranet() {
 
             {noticiasSeguras.map((n) => (
               <div
-                key={String(n.id)}   {/* 🔥 Key estable y segura */}
+                key={String(n.id)}  
                 className="
                   bg-white/5 border border-white/20 rounded-xl p-4
                   shadow-md backdrop-blur-md space-y-2

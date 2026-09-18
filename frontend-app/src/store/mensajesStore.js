@@ -3,12 +3,6 @@ import * as api from "../api/mensajes";
 
 /**
  * Store de Mensajes — Versión SJ‑2026 Premium
- * Gestiona:
- * - Conversación entre dos usuarios
- * - Usuarios conectados
- * - Estado typing
- * - Acciones REST
- * - Actualizaciones vía WebSocket
  */
 
 export const useMensajesStore = create((set, get) => ({
@@ -33,12 +27,16 @@ export const useMensajesStore = create((set, get) => ({
   },
 
   // ---------------------------------------------------------
-  // CARGAR CONECTADOS
+  // CARGAR CONECTADOS (🔥 FILTRADO)
   // ---------------------------------------------------------
   cargarConectados: async () => {
     try {
       const res = await api.obtenerConectados();
-      set({ conectados: res.data || [] });
+      const usuarioId = useMensajesStore.getState().usuarioId;
+
+      set({
+        conectados: (res.data || []).filter((e) => e.id !== usuarioId),
+      });
     } catch (err) {
       console.error("Error cargando conectados:", err);
       set({ error: "Error cargando conectados" });
@@ -46,10 +44,15 @@ export const useMensajesStore = create((set, get) => ({
   },
 
   // ---------------------------------------------------------
-  // WS: ACTUALIZAR LISTA DE CONECTADOS
+  // WS: ACTUALIZAR LISTA DE CONECTADOS (🔥 FILTRADO)
   // ---------------------------------------------------------
   setConectadosWS: (empleado) =>
     set((state) => {
+      const usuarioId = useMensajesStore.getState().usuarioId;
+
+      // No incluirte a ti mismo
+      if (empleado.id === usuarioId) return state;
+
       // Usuario desconectado
       if (empleado.offline) {
         return {

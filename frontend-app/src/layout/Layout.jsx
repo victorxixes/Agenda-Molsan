@@ -13,7 +13,8 @@ import EmpleadoPerfilModal from "../components/EmpleadoPerfilModal";
  */
 
 export default function Layout() {
-  const perfilModalId = useAuthStore((s) => s.perfilModalId);
+  // 🔥 Corrección crítica: el store usa "perfilModal", NO "perfilModalId"
+  const perfilModal = useAuthStore((s) => s.perfilModal);
   const setPerfilModal = useAuthStore((s) => s.setPerfilModal);
 
   return (
@@ -25,9 +26,9 @@ export default function Layout() {
       "
     >
       {/* MODAL PERFIL */}
-      {perfilModalId && (
+      {perfilModal && (
         <EmpleadoPerfilModal
-          id={perfilModalId}
+          id={perfilModal}
           onClose={() => setPerfilModal(null)}
         />
       )}

@@ -1,9 +1,10 @@
 import axios from "axios";
+import { useAuthStore } from "../store/authStore";
 
 /**
  * Axios SJ‑2026 Premium
  * - BaseURL desde VITE_API_URL
- * - Token JWT automático
+ * - Token JWT automático desde authStore
  * - Manejo de errores de red
  */
 
@@ -13,11 +14,11 @@ const instance = axios.create({
 });
 
 /* ---------------------------------------------------------
-   REQUEST INTERCEPTOR
+   REQUEST INTERCEPTOR — TOKEN CORRECTO
 --------------------------------------------------------- */
 instance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token");
+    const { token } = useAuthStore.getState();   // ← TOKEN CORRECTO
     if (token) config.headers.Authorization = `Bearer ${token}`;
     return config;
   },
@@ -30,7 +31,6 @@ instance.interceptors.request.use(
 instance.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Error sin respuesta → servidor caído o red caída
     if (!error.response) {
       return Promise.reject({
         status: 500,

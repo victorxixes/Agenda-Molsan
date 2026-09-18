@@ -17,14 +17,7 @@ function extraerIdDeToken(token) {
 
 /**
  * Store de Autenticación — Versión SJ‑2026 Premium
- * Gestiona:
- * - Sesión
- * - Token
- * - Ficha del empleado
- * - Persistencia localStorage
- * - Modal de perfil
  */
-
 export const useAuthStore = create((set) => ({
   empleado: null,
   token: null,
@@ -32,10 +25,10 @@ export const useAuthStore = create((set) => ({
   authReady: false,
 
   // ---------------------------------------------------------
-  // MODAL PERFIL
+  // MODAL PERFIL — 🔥 CORREGIDO
   // ---------------------------------------------------------
-  perfilModalId: null,
-  setPerfilModal: (id) => set({ perfilModalId: id }),
+  perfilModal: null,
+  setPerfilModal: (id) => set({ perfilModal: id }),
 
   // ---------------------------------------------------------
   // HIDRACIÓN INICIAL

@@ -10,8 +10,9 @@ export function useEmpleadosWS(onEvento) {
   const wsRef = useRef(null);
 
   useEffect(() => {
-    // Evitar doble conexión en StrictMode
-    if (wsRef.current) return;
+  return; // DESACTIVAR WS TEMPORALMENTE
+}, []);
+
 
     // Cerrar WS previo si existiera
     try {

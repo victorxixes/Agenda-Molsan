@@ -26,7 +26,7 @@ import VistaMes from "./pages/agenda/VistaMes.jsx";
 
 /* CTN */
 import Ctn from "./pages/ctn/Ctn.jsx";
-import CtnDetallePage from "./pages/ctn/CtnDetallePage.jsx;
+import CtnDetallePage from "./pages/ctn/CtnDetallePage.jsx";
 import CtnListadoPage from "./pages/ctn/CtnListadoPage.jsx";
 
 /* EMPLEADOS */

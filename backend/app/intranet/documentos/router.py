@@ -14,7 +14,7 @@ from backend.app.intranet.documentos.service import (
 
 # Seguridad
 from backend.app.auth.dependencies import get_current_user
-from backend.app.auth.permissions import verificar_permiso
+from backend.app.auth.permissions import require_perm_modulo
 
 # WebSockets
 from backend.app.websockets.intranet_ws import intranet_broadcast
@@ -28,12 +28,12 @@ router = APIRouter(
 
 @router.get("/")
 def listar(search: str | None = None, db: Session = Depends(get_db), usuario = Depends(get_current_user)):
-    verificar_permiso(usuario, "intranet", "ver")
+    require_perm_modulo(usuario, "intranet", "ver")
     return listar_documentos(db, search)
 
 @router.get("/{documento_id}")
 def obtener(documento_id: int, db: Session = Depends(get_db), usuario = Depends(get_current_user)):
-    verificar_permiso(usuario, "intranet", "ver")
+    require_perm_modulo(usuario, "intranet", "ver")
     return obtener_documento(db, documento_id)
 
 @router.post("/")
@@ -44,7 +44,7 @@ async def crear(
     db: Session = Depends(get_db),
     usuario = Depends(get_current_user)
 ):
-    verificar_permiso(usuario, "intranet", "crear")
+    require_perm_modulo(usuario, "intranet", "crear")
 
     documento = crear_documento(db, titulo, concepto, fichero)
 
@@ -70,7 +70,7 @@ async def actualizar(
     db: Session = Depends(get_db),
     usuario = Depends(get_current_user)
 ):
-    verificar_permiso(usuario, "intranet", "editar")
+    require_perm_modulo(usuario, "intranet", "editar")
 
     documento = actualizar_documento(db, documento_id, titulo, concepto)
 
@@ -85,7 +85,7 @@ async def actualizar(
 
 @router.delete("/{documento_id}")
 async def eliminar(documento_id: int, db: Session = Depends(get_db), usuario = Depends(get_current_user)):
-    verificar_permiso(usuario, "intranet", "eliminar")
+    require_perm_modulo(usuario, "intranet", "eliminar")
 
     eliminar_documento(db, documento_id)
 
@@ -103,7 +103,7 @@ async def eliminar(documento_id: int, db: Session = Depends(get_db), usuario = D
 
 @router.get("/descargar/{documento_id}")
 def descargar(documento_id: int, db: Session = Depends(get_db), usuario = Depends(get_current_user)):
-    verificar_permiso(usuario, "intranet", "ver")
+    require_perm_modulo(usuario, "intranet", "ver")
 
     doc = obtener_documento(db, documento_id)
     ruta = doc.fichero

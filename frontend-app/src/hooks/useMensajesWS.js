@@ -5,8 +5,13 @@ export const useMensajesWS = (empleadoId, otroId) => {
   const wsRef = useRef(null);
   const pingInterval = useRef(null);
 
-  // 🔥 Guardar tu ID en el store para filtrar conectados
+  // Guardar tu ID en el store
   useMensajesStore.setState({ usuarioId: empleadoId });
+
+  const wsGlobal = useMensajesStore.getState().wsGlobal;
+
+  // 🔥 Si ya existe un WS global → NO abrir otro
+  if (wsGlobal) return wsRef;
 
   const cargarConversacion = useMensajesStore((s) => s.cargarConversacion);
   const cargarConectados = useMensajesStore((s) => s.cargarConectados);

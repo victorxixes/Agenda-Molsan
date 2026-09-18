@@ -118,19 +118,17 @@ export default function App() {
           <Route path="agenda/dia" element={<VistaDia />} />
           <Route path="agenda/semana" element={<VistaSemana />} />
           <Route path="agenda/mes" element={<VistaMes />} />
+                    
+          {/* CTN */}
+          <Route path="ctn" element={<Ctn />} />
+          <Route path="ctn/listado" element={<CtnListadoPage />} />
+          <Route path="ctn/:id" element={<CtnDetallePage />} />
 
           {/* EMPLEADOS */}
           <Route path="empleados" element={<EmpleadosModulo2026 />} />
           <Route path="empleados/listado" element={<EmpleadosListado />} />
           <Route path="empleados/:id" element={<EmpleadoFicha />} />
           <Route path="empleados/:id/editar" element={<EmpleadoEditar />} />
-
-          
-          {/* CTN */}
-          <Route path="ctn" element={<Ctn />} />
-          <Route path="ctn/listado" element={<CtnListadoPage />} />
-          <Route path="ctn/:id" element={<CtnDetallePage />} />
-
           
           {/* INTRANET */}
           <Route path="intranet" element={<Intranet />} />

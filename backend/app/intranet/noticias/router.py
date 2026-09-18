@@ -11,6 +11,10 @@ from backend.app.intranet.noticias.service import (
     eliminar_noticia
 )
 
+# 🔥 Seguridad
+from backend.app.auth.auth import get_current_user
+from backend.app.auth.permisos import verificar_permiso
+
 # WebSockets
 from backend.app.websockets.intranet_ws import intranet_broadcast
 from backend.app.websockets.notificaciones_ws import broadcast_notificacion
@@ -29,17 +33,27 @@ class NoticiaPayload(BaseModel):
 # LISTAR NOTICIAS
 # ---------------------------------------------------------
 @router.get("/")
-def listar(search: str | None = None, db: Session = Depends(get_db)):
+def listar(
+    search: str | None = None,
+    db: Session = Depends(get_db),
+    usuario = Depends(get_current_user)
+):
+    verificar_permiso(usuario, "intranet", "ver")
     return listar_noticias(db, search)
 
 # ---------------------------------------------------------
 # CREAR NOTICIA
 # ---------------------------------------------------------
 @router.post("/")
-async def crear(payload: NoticiaPayload, db: Session = Depends(get_db)):
+async def crear(
+    payload: NoticiaPayload,
+    db: Session = Depends(get_db),
+    usuario = Depends(get_current_user)
+):
+    verificar_permiso(usuario, "intranet", "crear")
+
     noticia = crear_noticia(db, payload.titulo, payload.descripcion)
 
-    # 🔥 WebSocket: Intranet (tiempo real)
     await intranet_broadcast({
         "tipo": "nueva_noticia",
         "id": noticia.id,
@@ -47,7 +61,6 @@ async def crear(payload: NoticiaPayload, db: Session = Depends(get_db)):
         "descripcion": noticia.descripcion
     })
 
-    # 🔥 WebSocket: Notificaciones internas
     await broadcast_notificacion({
         "tipo": "nueva_noticia",
         "titulo": noticia.titulo
@@ -59,17 +72,28 @@ async def crear(payload: NoticiaPayload, db: Session = Depends(get_db)):
 # OBTENER NOTICIA
 # ---------------------------------------------------------
 @router.get("/{noticia_id}")
-def obtener(noticia_id: int, db: Session = Depends(get_db)):
+def obtener(
+    noticia_id: int,
+    db: Session = Depends(get_db),
+    usuario = Depends(get_current_user)
+):
+    verificar_permiso(usuario, "intranet", "ver")
     return obtener_noticia(db, noticia_id)
 
 # ---------------------------------------------------------
 # ACTUALIZAR NOTICIA
 # ---------------------------------------------------------
 @router.put("/{noticia_id}")
-async def actualizar(noticia_id: int, payload: NoticiaPayload, db: Session = Depends(get_db)):
+async def actualizar(
+    noticia_id: int,
+    payload: NoticiaPayload,
+    db: Session = Depends(get_db),
+    usuario = Depends(get_current_user)
+):
+    verificar_permiso(usuario, "intranet", "editar")
+
     noticia = actualizar_noticia(db, noticia_id, payload.titulo, payload.descripcion)
 
-    # 🔥 WebSocket: actualización en tiempo real
     await intranet_broadcast({
         "tipo": "noticia_actualizada",
         "id": noticia.id,
@@ -83,16 +107,20 @@ async def actualizar(noticia_id: int, payload: NoticiaPayload, db: Session = Dep
 # ELIMINAR NOTICIA
 # ---------------------------------------------------------
 @router.delete("/{noticia_id}")
-async def eliminar(noticia_id: int, db: Session = Depends(get_db)):
+async def eliminar(
+    noticia_id: int,
+    db: Session = Depends(get_db),
+    usuario = Depends(get_current_user)
+):
+    verificar_permiso(usuario, "intranet", "eliminar")
+
     eliminar_noticia(db, noticia_id)
 
-    # 🔥 WebSocket: eliminación en tiempo real
     await intranet_broadcast({
         "tipo": "noticia_eliminada",
         "id": noticia_id
     })
 
-    # 🔥 Notificación interna
     await broadcast_notificacion({
         "tipo": "noticia_eliminada",
         "id": noticia_id

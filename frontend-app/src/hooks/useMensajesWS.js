@@ -1,16 +1,12 @@
 import { useEffect, useRef } from "react";
 import { useMensajesStore } from "../store/mensajesStore";
 
-/**
- * WebSocket de Mensajes — Versión SJ‑2026 Premium
- * - Conexión blindada para Render/StrictMode
- * - Keep-alive automático
- * - Reconexión inteligente
- * - Manejo de online/offline, typing y nuevos mensajes
- */
 export const useMensajesWS = (empleadoId, otroId) => {
   const wsRef = useRef(null);
   const pingInterval = useRef(null);
+
+  // 🔥 Guardar tu ID en el store para filtrar conectados
+  useMensajesStore.setState({ usuarioId: empleadoId });
 
   const cargarConversacion = useMensajesStore((s) => s.cargarConversacion);
   const cargarConectados = useMensajesStore((s) => s.cargarConectados);
@@ -21,7 +17,6 @@ export const useMensajesWS = (empleadoId, otroId) => {
   useEffect(() => {
     if (!empleadoId) return;
 
-    // Evitar doble conexión
     if (wsRef.current) return;
 
     let ws;
@@ -35,7 +30,6 @@ export const useMensajesWS = (empleadoId, otroId) => {
       ws.onopen = () => {
         cargarConectados();
 
-        // Keep-alive premium
         pingInterval.current = setInterval(() => {
           if (ws.readyState === WebSocket.OPEN) {
             ws.send("ping");
@@ -55,7 +49,6 @@ export const useMensajesWS = (empleadoId, otroId) => {
 
         if (!data?.tipo) return;
 
-        // Estado online/offline
         if (data.tipo === "online") {
           setConectadosWS(data);
         }
@@ -64,13 +57,11 @@ export const useMensajesWS = (empleadoId, otroId) => {
           setConectadosWS({ id: data.id, offline: true });
         }
 
-        // Typing
         if (data.tipo === "typing") {
           setTyping(data.from);
           setTimeout(() => clearTyping(data.from), 1500);
         }
 
-        // Mensajes nuevos
         if (
           data.tipo === "mensaje" ||
           data.tipo === "archivo" ||
@@ -89,7 +80,6 @@ export const useMensajesWS = (empleadoId, otroId) => {
         clearInterval(pingInterval.current);
         pingInterval.current = null;
 
-        // Reconexión automática premium
         setTimeout(() => conectar(), 2000);
       };
     };

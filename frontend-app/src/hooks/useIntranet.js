@@ -1,26 +1,40 @@
 import { useIntranetStore } from "../store/intranetStore";
 
-// Sanitizador universal SJ‑2026
+// Sanitizador seguro SJ‑2026 (blindado)
 const safe = (v) => {
   if (v === null || v === undefined) return "-";
+
+  // Evitar objetos y JSON en el render
   if (typeof v === "object") {
     if (Array.isArray(v)) return v.join(", ");
-    if (v.nombre) return v.nombre; // caso concepto { id, nombre }
-    try { return JSON.stringify(v); } catch { return "-" }
+    if (typeof v.nombre === "string") return v.nombre;
+    return "-"; // nunca JSON.stringify
   }
+
+  if (typeof v === "boolean") return v ? "Sí" : "No";
+
   return String(v);
 };
 
-// Sanitizar documento
+// Sanitizar documento (blindado)
 const safeDoc = (d) => ({
   id: safe(d.id),
   titulo: safe(d.titulo),
-  concepto: safe(d.concepto?.nombre || d.concepto || "-"),
+  concepto: safe(
+    typeof d.concepto === "string"
+      ? d.concepto
+      : d.concepto?.nombre || "-"
+  ),
   fecha_publicacion: safe(d.fecha_publicacion),
-  fichero: safe(d.fichero),
+
+  // fichero debe ser SIEMPRE string o "-"
+  fichero:
+    typeof d.fichero === "string"
+      ? d.fichero
+      : "-",
 });
 
-// Sanitizar noticia
+// Sanitizar noticia (blindado)
 const safeNoticia = (n) => ({
   id: safe(n.id),
   titulo: safe(n.titulo),
@@ -32,8 +46,6 @@ export const useIntranet = () => {
   const store = useIntranetStore();
 
   return {
-    ...store,
-
     documentos: Array.isArray(store.documentos)
       ? store.documentos.map(safeDoc)
       : [],
@@ -41,5 +53,12 @@ export const useIntranet = () => {
     noticias: Array.isArray(store.noticias)
       ? store.noticias.map(safeNoticia)
       : [],
+
+    cargarDocumentos: store.cargarDocumentos,
+    cargarNoticias: store.cargarNoticias,
+    eliminarDocumento: store.eliminarDocumento,
+    eliminarNoticia: store.eliminarNoticia,
+    loading: store.loading,
+    error: store.error,
   };
 };

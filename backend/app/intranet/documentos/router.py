@@ -12,9 +12,9 @@ from backend.app.intranet.documentos.service import (
     eliminar_documento
 )
 
-# 🔥 Seguridad
-from backend.app.auth.auth import get_current_user
-from backend.app.auth.permisos import verificar_permiso
+# Seguridad
+from backend.app.auth.dependencies import get_current_user
+from backend.app.auth.permissions import verificar_permiso
 
 # WebSockets
 from backend.app.websockets.intranet_ws import intranet_broadcast
@@ -26,33 +26,16 @@ router = APIRouter(
     tags=["Documentos"]
 )
 
-# ---------------------------------------------------------
-# LISTAR DOCUMENTOS
-# ---------------------------------------------------------
 @router.get("/")
-def listar(
-    search: str | None = None,
-    db: Session = Depends(get_db),
-    usuario = Depends(get_current_user)
-):
+def listar(search: str | None = None, db: Session = Depends(get_db), usuario = Depends(get_current_user)):
     verificar_permiso(usuario, "intranet", "ver")
     return listar_documentos(db, search)
 
-# ---------------------------------------------------------
-# OBTENER DOCUMENTO
-# ---------------------------------------------------------
 @router.get("/{documento_id}")
-def obtener(
-    documento_id: int,
-    db: Session = Depends(get_db),
-    usuario = Depends(get_current_user)
-):
+def obtener(documento_id: int, db: Session = Depends(get_db), usuario = Depends(get_current_user)):
     verificar_permiso(usuario, "intranet", "ver")
     return obtener_documento(db, documento_id)
 
-# ---------------------------------------------------------
-# CREAR DOCUMENTO
-# ---------------------------------------------------------
 @router.post("/")
 async def crear(
     titulo: str = Form(...),
@@ -79,9 +62,6 @@ async def crear(
 
     return documento
 
-# ---------------------------------------------------------
-# ACTUALIZAR DOCUMENTO
-# ---------------------------------------------------------
 @router.put("/{documento_id}")
 async def actualizar(
     documento_id: int,
@@ -103,15 +83,8 @@ async def actualizar(
 
     return documento
 
-# ---------------------------------------------------------
-# ELIMINAR DOCUMENTO
-# ---------------------------------------------------------
 @router.delete("/{documento_id}")
-async def eliminar(
-    documento_id: int,
-    db: Session = Depends(get_db),
-    usuario = Depends(get_current_user)
-):
+async def eliminar(documento_id: int, db: Session = Depends(get_db), usuario = Depends(get_current_user)):
     verificar_permiso(usuario, "intranet", "eliminar")
 
     eliminar_documento(db, documento_id)
@@ -128,15 +101,8 @@ async def eliminar(
 
     return {"status": "ok", "id": documento_id}
 
-# ---------------------------------------------------------
-# DESCARGAR DOCUMENTO
-# ---------------------------------------------------------
 @router.get("/descargar/{documento_id}")
-def descargar(
-    documento_id: int,
-    db: Session = Depends(get_db),
-    usuario = Depends(get_current_user)
-):
+def descargar(documento_id: int, db: Session = Depends(get_db), usuario = Depends(get_current_user)):
     verificar_permiso(usuario, "intranet", "ver")
 
     doc = obtener_documento(db, documento_id)

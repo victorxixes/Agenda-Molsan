@@ -11,8 +11,8 @@ from backend.app.intranet.noticias.service import (
     eliminar_noticia
 )
 
-# 🔥 Seguridad
-from backend.app.auth.auth import get_current_user
+# Seguridad
+from backend.app.auth.dependencies import get_current_user
 from backend.app.auth.permissions import verificar_permiso
 
 # WebSockets
@@ -29,27 +29,13 @@ class NoticiaPayload(BaseModel):
     titulo: str
     descripcion: str
 
-# ---------------------------------------------------------
-# LISTAR NOTICIAS
-# ---------------------------------------------------------
 @router.get("/")
-def listar(
-    search: str | None = None,
-    db: Session = Depends(get_db),
-    usuario = Depends(get_current_user)
-):
+def listar(search: str | None = None, db: Session = Depends(get_db), usuario = Depends(get_current_user)):
     verificar_permiso(usuario, "intranet", "ver")
     return listar_noticias(db, search)
 
-# ---------------------------------------------------------
-# CREAR NOTICIA
-# ---------------------------------------------------------
 @router.post("/")
-async def crear(
-    payload: NoticiaPayload,
-    db: Session = Depends(get_db),
-    usuario = Depends(get_current_user)
-):
+async def crear(payload: NoticiaPayload, db: Session = Depends(get_db), usuario = Depends(get_current_user)):
     verificar_permiso(usuario, "intranet", "crear")
 
     noticia = crear_noticia(db, payload.titulo, payload.descripcion)
@@ -68,28 +54,13 @@ async def crear(
 
     return noticia
 
-# ---------------------------------------------------------
-# OBTENER NOTICIA
-# ---------------------------------------------------------
 @router.get("/{noticia_id}")
-def obtener(
-    noticia_id: int,
-    db: Session = Depends(get_db),
-    usuario = Depends(get_current_user)
-):
+def obtener(noticia_id: int, db: Session = Depends(get_db), usuario = Depends(get_current_user)):
     verificar_permiso(usuario, "intranet", "ver")
     return obtener_noticia(db, noticia_id)
 
-# ---------------------------------------------------------
-# ACTUALIZAR NOTICIA
-# ---------------------------------------------------------
 @router.put("/{noticia_id}")
-async def actualizar(
-    noticia_id: int,
-    payload: NoticiaPayload,
-    db: Session = Depends(get_db),
-    usuario = Depends(get_current_user)
-):
+async def actualizar(noticia_id: int, payload: NoticiaPayload, db: Session = Depends(get_db), usuario = Depends(get_current_user)):
     verificar_permiso(usuario, "intranet", "editar")
 
     noticia = actualizar_noticia(db, noticia_id, payload.titulo, payload.descripcion)
@@ -103,15 +74,8 @@ async def actualizar(
 
     return noticia
 
-# ---------------------------------------------------------
-# ELIMINAR NOTICIA
-# ---------------------------------------------------------
 @router.delete("/{noticia_id}")
-async def eliminar(
-    noticia_id: int,
-    db: Session = Depends(get_db),
-    usuario = Depends(get_current_user)
-):
+async def eliminar(noticia_id: int, db: Session = Depends(get_db), usuario = Depends(get_current_user)):
     verificar_permiso(usuario, "intranet", "eliminar")
 
     eliminar_noticia(db, noticia_id)

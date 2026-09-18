@@ -52,10 +52,10 @@ export default function EmpleadosListado({ onSeleccionar = () => {} }) {
   }, [cargar]);
 
   useEmpleadosWS((evento) => {
-    if (rutaValida && evento.tipo === "empleado_actualizado") {
-      cargar();
-    }
-  });
+  if (evento.tipo === "empleado_actualizado") {
+    cargar();
+  }
+});
 
   const empleadosMemo = useMemo(() => {
     return Array.isArray(empleados) ? empleados : [];

@@ -24,7 +24,6 @@ const IconRound = ({ name, active }) => (
 
 /**
  * Item de navegación SJ‑2026 — CORREGIDO
- * (children de NavLink ya no provoca React #300)
  */
 const SidebarItem = ({ to, label, icon, collapsed, badge = 0 }) => (
   <NavLink
@@ -58,7 +57,7 @@ const SidebarItem = ({ to, label, icon, collapsed, badge = 0 }) => (
 );
 
 /**
- * Sidebar SJ‑2026 Premium — Oculto + Glass + Hover Expand + Glow + Hotspot
+ * Sidebar SJ‑2026 Premium
  */
 export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(true);
@@ -66,7 +65,6 @@ export default function Sidebar() {
 
   const empleado = useAuthStore((s) => s.empleado);
   const logout = useAuthStore((s) => s.logout);
-  const setPerfilModal = useAuthStore((s) => s.setPerfilModal);
 
   const mensajesNoLeidos = useMensajesStore((s) => s.noLeidosTotal || 0);
 
@@ -82,7 +80,7 @@ export default function Sidebar() {
 
   return (
     <>
-      {/* ⭐ HOTSPOT — área invisible que activa el sidebar */}
+      {/* HOTSPOT */}
       <div
         className="
           fixed left-0 top-0 h-full w-3 z-50
@@ -91,7 +89,7 @@ export default function Sidebar() {
         onMouseEnter={() => !fixed && setCollapsed(false)}
       ></div>
 
-      {/* ⭐ Glow lateral cuando está oculto */}
+      {/* Glow lateral */}
       {collapsed && (
         <div
           className="
@@ -205,13 +203,14 @@ export default function Sidebar() {
           )}
         </nav>
 
-       
+        {/* SOLO LOGOUT */}
+        {!collapsed && (
+          <div className="mt-auto pt-4 border-t border-white/10">
 
-            {/* LOGOUT */}
             <button
               onClick={logout}
               className="
-                mt-3 flex items-center gap-3 px-3 py-2 rounded-xl w-full
+                flex items-center gap-3 px-3 py-2 rounded-xl w-full
                 text-red-300 hover:bg-red-500/20 transition-all duration-300
                 group
               "
@@ -231,6 +230,7 @@ export default function Sidebar() {
 
               <span className="font-medium">Cerrar sesión</span>
             </button>
+
           </div>
         )}
       </aside>

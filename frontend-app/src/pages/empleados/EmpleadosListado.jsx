@@ -7,14 +7,13 @@ import { API_BASE } from "../../api/config";
 // Sanitizador seguro SJ‑2026
 const safe = (value) => {
   if (value === null || value === undefined) return "-";
-  if (typeof value === "object") return "-"; // 🔥 evitar JSON en keys y src
+  if (typeof value === "object") return "-"; // evitar JSON en keys y src
   if (typeof value === "boolean") return value ? "Sí" : "No";
   return String(value);
 };
 
 export default function EmpleadosListado({ onSeleccionar = () => {} }) {
   const location = useLocation();
-
 
   const [empleados, setEmpleados] = useState([]);
   const [q, setQ] = useState("");
@@ -39,7 +38,7 @@ export default function EmpleadosListado({ onSeleccionar = () => {} }) {
         departamento_nombre: safe(e.departamento_nombre),
         seccion_nombre: safe(e.seccion_nombre),
         cargo_nombre: safe(e.cargo_nombre),
-        foto: typeof e.foto === "string" ? e.foto : "-", // 🔥 evitar objetos
+        foto: typeof e.foto === "string" ? e.foto : "-",
         usuario: safe(e.usuario),
       }));
 
@@ -51,11 +50,18 @@ export default function EmpleadosListado({ onSeleccionar = () => {} }) {
     cargar();
   }, [cargar]);
 
-  useEmpleadosWS((evento) => {
-  if (evento.tipo === "empleado_actualizado") {
-    cargar();
-  }
-});
+  // 🔥 CORREGIDO: callback estable para WS
+  const handleWS = useCallback(
+    (evento) => {
+      if (evento.tipo === "empleado_actualizado") {
+        cargar();
+      }
+    },
+    [cargar]
+  );
+
+  // 🔥 CORREGIDO: el WS se monta una sola vez
+  useEmpleadosWS(handleWS);
 
   const empleadosMemo = useMemo(() => {
     return Array.isArray(empleados) ? empleados : [];
@@ -93,8 +99,11 @@ export default function EmpleadosListado({ onSeleccionar = () => {} }) {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {empleadosMemo.map((e) => (
           <div
-            key={String(e.id)} // 🔥 key siempre string simple
-            className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-5 shadow-xl hover:shadow-2xl transition cursor-pointer active:scale-[0.98]"
+            key={String(e.id)} // key siempre string simple
+            className="
+              bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-5
+              shadow-xl hover:shadow-2xl transition cursor-pointer active:scale-[0.98]
+            "
             onClick={() => onSeleccionar(e.id)}
           >
             <div className="flex items-center gap-4">

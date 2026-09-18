@@ -35,3 +35,6 @@ useEffect(() => {
 
   cargar();
 }, [token, authReady]);
+
+export default Intranet;
+

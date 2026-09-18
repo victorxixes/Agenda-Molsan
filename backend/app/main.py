@@ -4,29 +4,17 @@ from fastapi.staticfiles import StaticFiles
 import os
 
 # ============================================================
-# BASE DE DATOS
-# ============================================================
-from backend.app.database import Base, engine
-
-from backend.app.mensajes.models import Mensaje
-Base.metadata.create_all(bind=engine)
-
-# ============================================================
 # APP
 # ============================================================
 app = FastAPI(title="Agenda Intranet Backend")
-
-@app.get("/")
-def root():
-    return {"status": "ERP Molsan 2026 funcionando correctamente"}
 
 # ============================================================
 # 🔥 CORS — CONFIGURACIÓN DEFINITIVA PARA RENDER
 # ============================================================
 
 origins = [
-    "https://agenda-intranet-f.onrender.com",  # Frontend
-    "https://agenda-intranet-b.onrender.com",  # Backend (Render redirects)
+    "https://agenda-intranet-f.onrender.com",   # Frontend
+    "https://agenda-intranet-b.onrender.com",   # Backend (Render redirects)
     "http://localhost:5173",
     "http://localhost:3000",
 ]
@@ -35,16 +23,22 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
-
-    # 🔥 Render necesita TODOS los métodos
     allow_methods=["*"],
-
-    # 🔥 Render necesita TODOS los headers
     allow_headers=["*"],
 
-    # 🔥 Render necesita exponer headers para evitar bloqueos
-    expose_headers=["*"]
+    # 🔥 Render necesita esto para evitar bloqueos
+    expose_headers=["*"],
+
+    # 🔥 Render necesita esto para preflight caching
+    max_age=86400,
 )
+
+# ============================================================
+# BASE DE DATOS
+# ============================================================
+from backend.app.database import Base, engine
+from backend.app.mensajes.models import Mensaje
+Base.metadata.create_all(bind=engine)
 
 # ============================================================
 # FIX SCHEMA
@@ -53,7 +47,7 @@ from backend.app.agenda.fix_schema import fix_agenda_schema
 fix_agenda_schema()
 
 # ============================================================
-# STATIC FILES
+# STATIC FILES (montar SIEMPRE después de CORS)
 # ============================================================
 STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
@@ -66,7 +60,7 @@ FOTOS_DIR = os.path.join(os.path.dirname(__file__), "static", "fotos")
 app.mount("/api/fotos", StaticFiles(directory=FOTOS_DIR), name="fotos")
 
 # ============================================================
-# IMPORTAR ROUTERS
+# IMPORTAR ROUTERS (SIEMPRE después de CORS)
 # ============================================================
 
 from backend.app.auth.router import router as auth_router
@@ -127,7 +121,7 @@ from backend.app.dashboard.router import router as dashboard_router
 from backend.app.Utilidades.router import router as utilidades_router
 
 # ============================================================
-# INCLUIR ROUTERS
+# INCLUIR ROUTERS (orden correcto)
 # ============================================================
 
 app.include_router(auth_router, prefix="/api")

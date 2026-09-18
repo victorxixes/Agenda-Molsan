@@ -82,6 +82,7 @@ export default function EmpleadoPerfil({ id }) {
 
   return (
     <div className="space-y-8 text-white animate-fade-in">
+      
       {/* TABS PREMIUM */}
       <div className="flex gap-6 border-b border-white/20 pb-3">
         {["basicos", "personales", "laborales", "auditoria"].map((t) => (
@@ -150,29 +151,29 @@ export default function EmpleadoPerfil({ id }) {
               </div>
             </div>
           </div>
+          
+         const fotoURL = empleado.foto?.replace(/^\/api\//, "/");
+          
+{/* FOTO */}
+<div className="mt-6 flex items-center gap-6">
+  {(fotoPreview || empleado.foto) && (
+    <img
+      src={fotoPreview || `${API_BASE}${fotoURL}`}
+      alt="Foto empleado"
+      className="w-28 h-28 rounded-full object-cover border border-white/20 shadow-xl"
+    />
+  )}
 
-          {/* FOTO */}
-          <div className="mt-6 flex items-center gap-6">
-            {(fotoPreview || empleado.foto) && (
-              <img
-                src={fotoPreview || `${API_BASE}${empleado.foto}`}
-                alt="Foto empleado"
-                className="
-                  w-28 h-28 rounded-full object-cover border border-white/20
-                  shadow-xl transition-all duration-300 hover:scale-[1.03]
-                "
-              />
-            )}
+  <label className="text-sm text-white/80">
+    Subir nueva foto:
+    <input
+      type="file"
+      className="block mt-2 text-white"
+      onChange={handleFoto}
+    />
+  </label>
+</div>
 
-            <label className="text-sm text-white/80">
-              Subir nueva foto:
-              <input
-                type="file"
-                className="block mt-2 text-white"
-                onChange={handleFoto}
-              />
-            </label>
-          </div>
 
           <button
             className="

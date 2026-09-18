@@ -1,60 +1,65 @@
 import { useEffect, useRef } from "react";
 
-/**
- * WebSocket de Empleados — Versión SJ‑2026 Premium
- * - Conexión blindada para evitar dobles WS en Render/StrictMode
- * - Recibe eventos del backend y los pasa al callback onEvento
- * - Cierre seguro y limpieza completa
- */
 export function useEmpleadosWS(onEvento) {
   const wsRef = useRef(null);
+  const reconnectTimeout = useRef(null);
 
-useEffect(() => {
-    // Evitar doble conexión en StrictMode
+  useEffect(() => {
     if (wsRef.current) return;
 
+    let ws;
 
-    // Cerrar WS previo si existiera
-    try {
-      wsRef.current?.close();
-    } catch {}
+    const conectar = () => {
+      ws = new WebSocket(`${import.meta.env.VITE_WS_URL}/ws/empleados`);
+      wsRef.current = ws;
 
-    // Crear conexión
-    const ws = new WebSocket(`${import.meta.env.VITE_WS_URL}/ws/empleados`);
-    wsRef.current = ws;
+      ws.onopen = () => {
+        ws.send(JSON.stringify({ tipo: "ping" }));
+      };
 
-    ws.onopen = () => {
-      ws.send(JSON.stringify({ tipo: "ping" }));
+      ws.onmessage = (ev) => {
+        if (!ev.data) return;
+
+        let data;
+        try {
+          data = JSON.parse(ev.data);
+        } catch {
+          return;
+        }
+
+        if (data?.tipo && onEvento) {
+          onEvento(data);
+        }
+      };
+
+      ws.onerror = () => {
+        console.warn("WS Empleados error.");
+      };
+
+      ws.onclose = () => {
+        console.warn("WS Empleados cerrado.");
+
+        wsRef.current = null;
+
+        reconnectTimeout.current = setTimeout(() => {
+          conectar();
+        }, 2000);
+      };
     };
 
-    ws.onmessage = (ev) => {
-      if (!ev.data) return;
-
-      let data;
-      try {
-        data = JSON.parse(ev.data);
-      } catch {
-        return;
-      }
-
-      if (data?.tipo && onEvento) {
-        onEvento(data);
-      }
-    };
-
-    ws.onerror = () => {
-      console.warn("WS Empleados error. Modo offline.");
-    };
-
-    ws.onclose = () => {
-      console.warn("WS Empleados cerrado.");
-    };
+    conectar();
 
     return () => {
       try {
         wsRef.current?.close();
       } catch {}
+
+      if (reconnectTimeout.current) {
+        clearTimeout(reconnectTimeout.current);
+        reconnectTimeout.current = null;
+      }
+
       wsRef.current = null;
     };
-  }, []);
+  }, [onEvento]);
 }

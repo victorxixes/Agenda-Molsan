@@ -1,22 +1,14 @@
 import { create } from "zustand";
 import * as api from "../api/mensajes";
 
-/**
- * Store de Mensajes — Versión SJ‑2026 Premium
- */
-
 export const useMensajesStore = create((set, get) => ({
   mensajes: [],
   conectados: [],
   typing: {},
   error: null,
 
-  // 🔥 ID del usuario para filtrar conectados
+  // ID del usuario para filtrar conectados
   usuarioId: null,
-
-  // 🔥 Flag para evitar doble WebSocket
-  wsGlobal: false,
-  setWsGlobal: (v) => set({ wsGlobal: v }),
 
   // ---------------------------------------------------------
   // CARGAR CONVERSACIÓN
@@ -34,7 +26,7 @@ export const useMensajesStore = create((set, get) => ({
   },
 
   // ---------------------------------------------------------
-  // CARGAR CONECTADOS (🔥 FILTRADO)
+  // CARGAR CONECTADOS (FILTRADO)
   // ---------------------------------------------------------
   cargarConectados: async () => {
     try {
@@ -51,23 +43,22 @@ export const useMensajesStore = create((set, get) => ({
   },
 
   // ---------------------------------------------------------
-  // WS: ACTUALIZAR LISTA DE CONECTADOS (🔥 FILTRADO)
+  // WS: ACTUALIZAR LISTA DE CONECTADOS
   // ---------------------------------------------------------
   setConectadosWS: (empleado) =>
     set((state) => {
       const usuarioId = get().usuarioId;
 
-      // No incluirte a ti mismo
+      if (!empleado || !empleado.id) return state;
+
       if (empleado.id === usuarioId) return state;
 
-      // Usuario desconectado
       if (empleado.offline) {
         return {
           conectados: state.conectados.filter((e) => e.id !== empleado.id),
         };
       }
 
-      // Usuario ya existe → actualizar
       const existe = state.conectados.some((e) => e.id === empleado.id);
 
       if (existe) {
@@ -78,7 +69,6 @@ export const useMensajesStore = create((set, get) => ({
         };
       }
 
-      // Usuario nuevo
       return {
         conectados: [...state.conectados, empleado],
       };

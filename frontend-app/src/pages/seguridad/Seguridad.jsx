@@ -36,21 +36,7 @@ export default function Seguridad() {
 
       {/* TARJETAS PREMIUM */}
       <div className="flex flex-wrap gap-6">
-
-        <Link
-          to="/seguridad/usuarios"
-          className="
-            bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
-            shadow-xl p-6 w-64 transition hover:bg-white/20 active:scale-[0.97]
-          "
-        >
-          <h2 className="text-xl font-semibold text-white drop-shadow mb-1">
-            Usuarios
-          </h2>
-          <p className="text-white/70 text-sm">
-            Bloqueo, contraseña, rol, módulos, permisos.
-          </p>
-        </Link>
+        
 
         <Link
           to="/seguridad/auditoria"

@@ -11,6 +11,13 @@ export const useMensajesStore = create((set, get) => ({
   typing: {},
   error: null,
 
+  // 🔥 ID del usuario para filtrar conectados
+  usuarioId: null,
+
+  // 🔥 Flag para evitar doble WebSocket
+  wsGlobal: false,
+  setWsGlobal: (v) => set({ wsGlobal: v }),
+
   // ---------------------------------------------------------
   // CARGAR CONVERSACIÓN
   // ---------------------------------------------------------
@@ -32,7 +39,7 @@ export const useMensajesStore = create((set, get) => ({
   cargarConectados: async () => {
     try {
       const res = await api.obtenerConectados();
-      const usuarioId = useMensajesStore.getState().usuarioId;
+      const usuarioId = get().usuarioId;
 
       set({
         conectados: (res.data || []).filter((e) => e.id !== usuarioId),
@@ -48,7 +55,7 @@ export const useMensajesStore = create((set, get) => ({
   // ---------------------------------------------------------
   setConectadosWS: (empleado) =>
     set((state) => {
-      const usuarioId = useMensajesStore.getState().usuarioId;
+      const usuarioId = get().usuarioId;
 
       // No incluirte a ti mismo
       if (empleado.id === usuarioId) return state;

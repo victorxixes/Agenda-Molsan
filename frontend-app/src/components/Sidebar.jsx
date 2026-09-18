@@ -153,7 +153,7 @@ export default function Sidebar() {
         <nav className="space-y-2">
           {puedeVerModulo("empleados") && (
             <SidebarItem
-              to="/panel/empleados"
+              to="/empleados"
               label="Empleados"
               icon="user-group"
               collapsed={collapsed}

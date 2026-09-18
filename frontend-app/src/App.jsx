@@ -26,7 +26,7 @@ import VistaMes from "./pages/agenda/VistaMes.jsx";
 
 /* CTN */
 import Ctn from "./pages/ctn/Ctn.jsx";
-import CtnDetallePage from "./pages/ctn/CtnDetallePage.jsx";
+import CtnDetallePage from "./pages/ctn/CtnDetallePage.jsx;
 import CtnListadoPage from "./pages/ctn/CtnListadoPage.jsx";
 
 /* EMPLEADOS */
@@ -46,7 +46,7 @@ import Herramientas from "./pages/herramientas/Herramientas.jsx";
 import ImportarCTN from "./pages/herramientas/ImportarCTN.jsx";
 import Utilidades from "./pages/herramientas/Utilidades.jsx";
 import CrearNoticia from "./pages/herramientas/CrearNoticia.jsx";
-import SubirDocumento from "./pages/herramientas/SubirDocumento.jsx";
+import SubirDocumento from "./pages/herramientas/SubirDocumento.jsx;
 
 /* LOGS */
 import Logs from "./pages/logs/Logs.jsx";
@@ -89,14 +89,13 @@ export default function App() {
   const init = useAuthStore((s) => s.init);
 
   useEffect(() => {
-    // 🔥 Inicialización de sesión (SJ‑2026)
     init();
-  }, []);
+  }, [init]);
 
   return (
     <div className="animate-fade-in">
       <Routes>
-        {/* LOGIN */}
+        {/* LOGIN fuera del layout y sin RequireAuth */}
         <Route path="/login" element={<LoginPage />} />
 
         {/* ERP PROTEGIDO */}
@@ -108,7 +107,8 @@ export default function App() {
             </RequireAuth>
           }
         >
-          <Route index element={<Navigate to="/login" replace />} />
+          {/* Index del ERP: Dashboard, NO /login */}
+          <Route index element={<Dashboard />} />
 
           {/* DASHBOARD */}
           <Route path="dashboard" element={<Dashboard />} />
@@ -118,7 +118,7 @@ export default function App() {
           <Route path="agenda/dia" element={<VistaDia />} />
           <Route path="agenda/semana" element={<VistaSemana />} />
           <Route path="agenda/mes" element={<VistaMes />} />
-                    
+
           {/* CTN */}
           <Route path="ctn" element={<Ctn />} />
           <Route path="ctn/listado" element={<CtnListadoPage />} />
@@ -129,7 +129,7 @@ export default function App() {
           <Route path="empleados/listado" element={<EmpleadosListado />} />
           <Route path="empleados/:id" element={<EmpleadoFicha />} />
           <Route path="empleados/:id/editar" element={<EmpleadoEditar />} />
-          
+
           {/* INTRANET */}
           <Route path="intranet" element={<Intranet />} />
 
@@ -167,6 +167,9 @@ export default function App() {
           <Route path="seguridad/logs" element={<SeguridadLogs />} />
           <Route path="seguridad/roles/editor" element={<SeguridadRolEditor />} />
         </Route>
+
+        {/* Fallback: cualquier ruta desconocida → login */}
+        <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </div>
   );

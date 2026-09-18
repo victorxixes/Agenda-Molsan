@@ -87,13 +87,36 @@ function MensajesWrapper() {
 
 export default function App() {
   const init = useAuthStore((s) => s.init);
+  const { authReady, token, empleado } = useAuthStore();
 
+  // 1️⃣ Primero hidratar sesión
   useEffect(() => {
     init();
   }, [init]);
 
+  // 2️⃣ Después abrir WebSocket cuando la sesión ya está lista
+  useEffect(() => {
+    if (!authReady || !token || !empleado) return;
+
+    const ws = new WebSocket(
+      `${import.meta.env.VITE_WS_URL}/ws/mensajes/${empleado.id}`
+    );
+
+    ws.onopen = () => console.log("WS mensajes conectado:", empleado.id);
+    ws.onclose = () => console.log("WS mensajes desconectado:", empleado.id);
+
+    return () => ws.close();
+  }, [authReady, token, empleado]);
+
   return (
     <div className="animate-fade-in">
+      <Routes>
+        {/* ... resto de rutas */}
+      </Routes>
+    </div>
+  );
+}
+
       <Routes>
         {/* LOGIN fuera del layout y sin RequireAuth */}
         <Route path="/login" element={<LoginPage />} />

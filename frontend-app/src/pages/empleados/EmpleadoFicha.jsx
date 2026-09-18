@@ -159,6 +159,54 @@ export default function EmpleadoFicha({ empleadoId }) {
         </div>
       </section>
 
+            {/* BLOQUEAR / DESBLOQUEAR */}
+      <section className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-xl">
+        <h2 className="text-xl font-semibold mb-4 drop-shadow">Estado del empleado</h2>
+
+        {/* Estado visual */}
+        <div className="text-sm mb-4">
+          {empleado.activo ? (
+            <span className="text-green-400 font-semibold">Activo</span>
+          ) : (
+            <span className="text-red-400 font-semibold">Bloqueado</span>
+          )}
+        </div>
+
+        <div className="flex items-center gap-4">
+          {empleado.activo ? (
+            <button
+              className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white shadow-lg transition active:scale-[0.97]"
+              onClick={async () => {
+                await fetch(`${API_BASE}/seguridad/asignar/empleado/${idNum}/bloquear`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                });
+
+                const res = await obtenerFichaCompleta(idNum);
+                setData(res.data);
+              }}
+            >
+              Bloquear empleado
+            </button>
+          ) : (
+            <button
+              className="px-4 py-2 rounded-xl bg-green-600 hover:bg-green-700 text-white shadow-lg transition active:scale-[0.97]"
+              onClick={async () => {
+                await fetch(`${API_BASE}/seguridad/asignar/empleado/${idNum}/desbloquear`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                });
+
+                const res = await obtenerFichaCompleta(idNum);
+                setData(res.data);
+              }}
+            >
+              Desbloquear empleado
+            </button>
+          )}
+        </div>
+      </section>
+
       {/* MÓDULOS */}
       <section className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-xl">
         <h2 className="text-xl font-semibold mb-4 drop-shadow">Módulos visibles</h2>

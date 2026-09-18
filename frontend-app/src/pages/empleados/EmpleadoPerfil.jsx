@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { API_BASE } from "../../api/config";
 import {
   obtenerFichaCompleta,
@@ -6,38 +6,43 @@ import {
   subirFotoEmpleado,
 } from "../../api/empleados";
 
-/**
- * EmpleadoPerfil — SJ‑2026 Premium
- * - Glass‑UI
- * - Tabs premium
- * - Edición completa del empleado
- * - Foto con preview
- * - Render optimizado
- */
-
 export default function EmpleadoPerfil({ id }) {
+  // Blindar ID
+  const idNum = Number(id);
+  const idValido = Number.isFinite(idNum) && idNum > 0;
+
   const [data, setData] = useState(null);
   const [empleadoEdit, setEmpleadoEdit] = useState({});
   const [fotoPreview, setFotoPreview] = useState(null);
   const [tab, setTab] = useState("basicos");
 
+  // Si el ID no es válido, no montar nada
+  if (!idValido) {
+    return (
+      <div className="text-white/70 p-6">
+        Selecciona un empleado válido.
+      </div>
+    );
+  }
+
   // Cargar ficha completa
   useEffect(() => {
-    if (!id) return;
-    obtenerFichaCompleta(id).then((res) => {
-      setData(res.data);
-      setEmpleadoEdit(res.data.empleado);
+    obtenerFichaCompleta(idNum).then((res) => {
+      const d = res.data || {};
+      setData(d);
+      setEmpleadoEdit(d.empleado || {});
     });
-  }, [id]);
+  }, [idNum]);
 
-  if (!data)
+  if (!data) {
     return (
       <div className="text-white/70 animate-pulse p-6">
         Cargando perfil…
       </div>
     );
+  }
 
-  const empleado = useMemo(() => empleadoEdit, [empleadoEdit]);
+  const empleado = empleadoEdit || {};
 
   // Cambiar campos
   const handleChange = useCallback((field, value) => {
@@ -47,17 +52,17 @@ export default function EmpleadoPerfil({ id }) {
   // Guardar cambios
   const guardarCambios = useCallback(async () => {
     try {
-      await editarEmpleado(empleado.id, empleadoEdit);
+      await editarEmpleado(idNum, empleadoEdit);
       alert("Cambios guardados correctamente");
 
-      const res = await obtenerFichaCompleta(empleado.id);
+      const res = await obtenerFichaCompleta(idNum);
       setData(res.data);
       setEmpleadoEdit(res.data.empleado);
     } catch (err) {
       console.error(err);
       alert("Error al guardar los cambios");
     }
-  }, [empleado.id, empleadoEdit]);
+  }, [idNum, empleadoEdit]);
 
   // Subir foto
   const handleFoto = useCallback(
@@ -67,17 +72,16 @@ export default function EmpleadoPerfil({ id }) {
 
       setFotoPreview(URL.createObjectURL(file));
 
-      await subirFotoEmpleado(empleado.id, file);
-      const res = await obtenerFichaCompleta(empleado.id);
+      await subirFotoEmpleado(idNum, file);
+      const res = await obtenerFichaCompleta(idNum);
       setData(res.data);
       setEmpleadoEdit(res.data.empleado);
     },
-    [empleado.id]
+    [idNum]
   );
 
   return (
     <div className="space-y-8 text-white animate-fade-in">
-
       {/* TABS PREMIUM */}
       <div className="flex gap-6 border-b border-white/20 pb-3">
         {["basicos", "personales", "laborales", "auditoria"].map((t) => (
@@ -101,7 +105,7 @@ export default function EmpleadoPerfil({ id }) {
         ))}
       </div>
 
-      {/* ============================
+      ============================
           DATOS BÁSICOS
       ============================ */}
       {tab === "basicos" && (

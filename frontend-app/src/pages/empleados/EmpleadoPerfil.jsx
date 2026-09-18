@@ -80,6 +80,9 @@ export default function EmpleadoPerfil({ id }) {
     [idNum]
   );
 
+  // 🔥 CORREGIDO: esta línea NO puede ir dentro del JSX
+  const fotoURL = empleado.foto?.replace(/^\/api\//, "/");
+
   return (
     <div className="space-y-8 text-white animate-fade-in">
       
@@ -106,9 +109,7 @@ export default function EmpleadoPerfil({ id }) {
         ))}
       </div>
 
-      ============================
-          DATOS BÁSICOS
-      ============================ */}
+      {/* ============================ DATOS BÁSICOS ============================ */}
       {tab === "basicos" && (
         <section
           className="
@@ -151,95 +152,25 @@ export default function EmpleadoPerfil({ id }) {
               </div>
             </div>
           </div>
-          
-         const fotoURL = empleado.foto?.replace(/^\/api\//, "/");
-          
-{/* FOTO */}
-<div className="mt-6 flex items-center gap-6">
-  {(fotoPreview || empleado.foto) && (
-    <img
-      src={fotoPreview || `${API_BASE}${fotoURL}`}
-      alt="Foto empleado"
-      className="w-28 h-28 rounded-full object-cover border border-white/20 shadow-xl"
-    />
-  )}
 
-  <label className="text-sm text-white/80">
-    Subir nueva foto:
-    <input
-      type="file"
-      className="block mt-2 text-white"
-      onChange={handleFoto}
-    />
-  </label>
-</div>
-
-
-          <button
-            className="
-              mt-4 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
-              text-white shadow-lg transition active:scale-[0.97]
-            "
-            onClick={guardarCambios}
-          >
-            Guardar cambios
-          </button>
-        </section>
-      )}
-
-      {/* ============================
-          DATOS PERSONALES
-      ============================ */}
-      {tab === "personales" && (
-        <section
-          className="
-            bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
-            p-6 shadow-xl space-y-6
-          "
-        >
-          <h2 className="text-xl font-semibold drop-shadow mb-4">
-            Datos personales
-          </h2>
-
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            {[
-              ["direccion", "Dirección"],
-              ["codigo_postal", "Código postal"],
-              ["poblacion", "Población"],
-              ["provincia", "Provincia"],
-              ["fecha_nacimiento", "Fecha nacimiento", "date"],
-              ["alergias", "Alergias"],
-              ["persona_contacto", "Persona contacto"],
-              ["telefono_contacto", "Teléfono contacto"],
-            ].map(([campo, label, tipo]) => (
-              <div key={campo}>
-                <strong className="text-white/80">{label}:</strong>
-                <input
-                  type={tipo || "text"}
-                  className="
-                    w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
-                    text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
-                    transition-all duration-300
-                  "
-                  value={empleado[campo] || ""}
-                  onChange={(e) => handleChange(campo, e.target.value)}
-                />
-              </div>
-            ))}
-
-            <div className="col-span-2">
-              <strong className="text-white/80">Observaciones:</strong>
-              <textarea
-                className="
-                  w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
-                  text-white text-sm focus:ring-2 focus:ring-blue-400
-                  scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent
-                "
-                rows={3}
-                value={empleado.observaciones || ""}
-                onChange={(e) => handleChange("observaciones", e.target.value)}
+          {/* FOTO */}
+          <div className="mt-6 flex items-center gap-6">
+            {(fotoPreview || empleado.foto) && (
+              <img
+                src={fotoPreview || `${API_BASE}${fotoURL}`}
+                alt="Foto empleado"
+                className="w-28 h-28 rounded-full object-cover border border-white/20 shadow-xl"
               />
-            </div>
+            )}
+
+            <label className="text-sm text-white/80">
+              Subir nueva foto:
+              <input
+                type="file"
+                className="block mt-2 text-white"
+                onChange={handleFoto}
+              />
+            </label>
           </div>
 
           <button
@@ -251,99 +182,180 @@ export default function EmpleadoPerfil({ id }) {
           >
             Guardar cambios
           </button>
-        </section>
-      )}
-
-      {/* ============================
-          DATOS LABORALES
-      ============================ */}
-      {tab === "laborales" && (
-        <section
-          className="
-            bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
-            p-6 shadow-xl space-y-6
-          "
-        >
-          <h2 className="text-xl font-semibold drop-shadow mb-4">
-            Datos laborales
-          </h2>
-
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            {[
-              ["departamento_id", "Departamento ID"],
-              ["seccion_id", "Sección ID"],
-              ["cargo_id", "Cargo ID"],
-              ["fecha_alta", "Fecha alta", "date"],
-              ["fecha_baja", "Fecha baja", "date"],
-            ].map(([campo, label, tipo]) => (
-              <div key={campo}>
-                <strong className="text-white/80">{label}:</strong>
-                <input
-                  type={tipo || "text"}
-                  className="
-                    w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
-                    text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
-                    transition-all duration-300
-                  "
-                  value={empleado[campo] || ""}
-                  onChange={(e) => handleChange(campo, e.target.value)}
-                />
-              </div>
-            ))}
-
-            <div>
-              <strong className="text-white/80">Activo:</strong>
-              <div className="mt-1 text-white/90">
-                {empleado.activo ? "Sí" : "No"}
-              </div>
-            </div>
-          </div>
-
-          <button
-            className="
-              mt-4 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
-              text-white shadow-lg transition active:scale-[0.97]
-            "
-            onClick={guardarCambios}
-          >
-            Guardar cambios
-          </button>
-        </section>
-      )}
-
-      {/* ============================
-          AUDITORÍA
-      ============================ */}
-      {tab === "auditoria" && (
-        <section
-          className="
-            bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
-            p-6 shadow-xl space-y-6
-          "
-        >
-          <h2 className="text-xl font-semibold drop-shadow mb-4">
-            Auditoría
-          </h2>
-
-          <div className="space-y-3 text-sm">
-            {data.auditoria.map((item) => (
-              <div
-                key={item.id}
-                className="
-                  bg-white/5 border border-white/20 rounded-xl p-4
-                  shadow-md backdrop-blur-md transition-all duration-300
-                  hover:scale-[1.01]
-                "
-              >
-                <div><strong className="text-white/80">Fecha:</strong> {item.fecha}</div>
-                <div><strong className="text-white/80">Módulo:</strong> {item.modulo}</div>
-                <div><strong className="text-white/80">Acción:</strong> {item.accion}</div>
-                <div><strong className="text-white/80">Descripción:</strong> {item.descripcion}</div>
-              </div>
-            ))}
-          </div>
         </section>
       )}
     </div>
   );
 }
+{/* ============================
+    DATOS PERSONALES
+============================ */}
+{tab === "personales" && (
+  <section
+    className="
+      bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
+      p-6 shadow-xl space-y-6
+    "
+  >
+    <h2 className="text-xl font-semibold drop-shadow mb-4">
+      Datos personales
+    </h2>
+
+    <div className="grid grid-cols-2 gap-4 text-sm">
+      {[
+        ["direccion", "Dirección"],
+        ["codigo_postal", "Código postal"],
+        ["poblacion", "Población"],
+        ["provincia", "Provincia"],
+        ["fecha_nacimiento", "Fecha nacimiento", "date"],
+        ["alergias", "Alergias"],
+        ["persona_contacto", "Persona contacto"],
+        ["telefono_contacto", "Teléfono contacto"],
+      ].map(([campo, label, tipo]) => (
+        <div key={campo}>
+          <strong className="text-white/80">{label}:</strong>
+          <input
+            type={tipo || "text"}
+            className="
+              w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+              text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+              transition-all duration-300
+            "
+            value={empleado[campo] || ""}
+            onChange={(e) => handleChange(campo, e.target.value)}
+          />
+        </div>
+      ))}
+
+      <div className="col-span-2">
+        <strong className="text-white/80">Observaciones:</strong>
+        <textarea
+          className="
+            w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+            text-white text-sm focus:ring-2 focus:ring-blue-400
+            scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent
+          "
+          rows={3}
+          value={empleado.observaciones || ""}
+          onChange={(e) => handleChange("observaciones", e.target.value)}
+        />
+      </div>
+    </div>
+
+    <button
+      className="
+        mt-4 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
+        text-white shadow-lg transition active:scale-[0.97]
+      "
+      onClick={guardarCambios}
+    >
+      Guardar cambios
+    </button>
+  </section>
+)}
+
+{/* ============================
+    DATOS LABORALES
+============================ */}
+{tab === "laborales" && (
+  <section
+    className="
+      bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
+      p-6 shadow-xl space-y-6
+    "
+  >
+    <h2 className="text-xl font-semibold drop-shadow mb-4">
+      Datos laborales
+    </h2>
+
+    <div className="grid grid-cols-2 gap-4 text-sm">
+      {[
+        ["departamento_id", "Departamento ID"],
+        ["seccion_id", "Sección ID"],
+        ["cargo_id", "Cargo ID"],
+        ["fecha_alta", "Fecha alta", "date"],
+        ["fecha_baja", "Fecha baja", "date"],
+      ].map(([campo, label, tipo]) => (
+        <div key={campo}>
+          <strong className="text-white/80">{label}:</strong>
+          <input
+            type={tipo || "text"}
+            className="
+              w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+              text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+              transition-all duration-300
+            "
+            value={empleado[campo] || ""}
+            onChange={(e) => handleChange(campo, e.target.value)}
+          />
+        </div>
+      ))}
+
+      <div>
+        <strong className="text-white/80">Activo:</strong>
+        <div className="mt-1 text-white/90">
+          {empleado.activo ? "Sí" : "No"}
+        </div>
+      </div>
+    </div>
+
+    <button
+      className="
+        mt-4 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
+        text-white shadow-lg transition active:scale-[0.97]
+      "
+      onClick={guardarCambios}
+    >
+      Guardar cambios
+    </button>
+  </section>
+)}
+
+{/* ============================
+    AUDITORÍA
+============================ */}
+{tab === "auditoria" && (
+  <section
+    className="
+      bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
+      p-6 shadow-xl space-y-6
+    "
+  >
+    <h2 className="text-xl font-semibold drop-shadow mb-4">
+      Auditoría
+    </h2>
+
+    <div className="space-y-3 text-sm">
+      {(Array.isArray(data.auditoria) ? data.auditoria : []).map((item) => (
+        <div
+          key={item.id || Math.random()}  {/* 🔥 blindaje: evita undefined keys */}
+          className="
+            bg-white/5 border border-white/20 rounded-xl p-4
+            shadow-md backdrop-blur-md transition-all duration-300
+            hover:scale-[1.01]
+          "
+        >
+          <div>
+            <strong className="text-white/80">Fecha:</strong>{" "}
+            {item.fecha || "—"}
+          </div>
+          <div>
+            <strong className="text-white/80">Módulo:</strong>{" "}
+            {item.modulo || "—"}
+          </div>
+          <div>
+            <strong className="text-white/80">Acción:</strong>{" "}
+            {item.accion || "—"}
+          </div>
+          <div>
+            <strong className="text-white/80">Descripción:</strong>{" "}
+            {item.descripcion || "—"}
+          </div>
+        </div>
+      ))}
+    </div>
+  </section>
+)}
+
+
+      

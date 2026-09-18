@@ -14,6 +14,29 @@ def get_db():
     finally:
         db.close()
 
+# ============================================================
+# PLANTILLA PERMISOS SJ‑2026 — SIEMPRE visible en ficha empleado
+# ============================================================
+
+PLANTILLA_PERMISOS = {
+    "ctn": ["ver","crear","editar","eliminar"],
+    "logs": ["ver","crear","editar","eliminar"],
+    "agenda": ["ver","crear","editar","eliminar"],
+    "intranet": ["ver","crear","editar","eliminar"],
+    "maestros": ["ver","crear","editar","eliminar"],
+    "mensajes": ["ver","crear","editar","eliminar"],
+    "noticias": ["ver","crear","editar","eliminar"],
+    "realtime": ["ver","crear","editar","eliminar"],
+    "auditoria": ["ver","crear","editar","eliminar"],
+    "dashboard": ["ver","crear","editar","eliminar"],
+    "empleados": ["ver","crear","editar","eliminar"],
+    "seguridad": ["ver","crear","editar","eliminar"],
+    "documentos": ["ver","crear","editar","eliminar"],
+    "utilidades": ["ver","crear","editar","eliminar"],
+    "herramientas": ["ver","crear","editar","eliminar"],
+    "panel-tecnico": ["ver","crear","editar","eliminar"],
+    "notificaciones": ["ver","crear","editar","eliminar"]
+}
 
 @router.get("/empleado/{empleado_id}/ficha-completa")
 def ficha_completa(empleado_id: int, db: Session = Depends(get_db)):
@@ -38,10 +61,17 @@ def ficha_completa(empleado_id: int, db: Session = Depends(get_db)):
     # Auditoría (si la quieres)
     auditoria = []  # Aquí puedes añadir tu sistema de logs
 
+    # ============================================================
+    # 🔥 CORRECCIÓN CRÍTICA:
+    # SI permisos_modulo_dict está vacío → devolver PLANTILLA_PERMISOS
+    # ============================================================
+
+    permisos_finales = empleado.permisos_modulo_dict or PLANTILLA_PERMISOS
+
     return {
         "empleado": empleado,
-        "modulos_visibles": empleado.modulos_visibles_list,
-        "permisos_modulo": empleado.permisos_modulo_dict,
+        "modulos_visibles": empleado.modulos_visibles_list or [],
+        "permisos_modulo": permisos_finales,
         "departamento": departamento,
         "seccion": seccion,
         "cargo": cargo,

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useAuthStore } from "../../store/authStore";
 
 const API = "https://agenda-intranet-b.onrender.com/api/intranet";
 
@@ -8,36 +9,77 @@ export default function Intranet() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    async function cargar() {
-      try {
-        setLoading(true);
-        setError(null);
+  const { token, user } = useAuthStore();
 
-        const [resNoticias, resDocumentos] = await Promise.all([
-          fetch(`${API}/noticias`),
-          fetch(`${API}/documentos`)
-        ]);
+  const esAdmin = user?.rol === "admin";
 
-        if (!resNoticias.ok || !resDocumentos.ok) {
-          throw new Error("Error cargando datos de intranet");
-        }
+  async function cargar() {
+    try {
+      setLoading(true);
+      setError(null);
 
-        const dataNoticias = await resNoticias.json();
-        const dataDocumentos = await resDocumentos.json();
+      const [resNoticias, resDocumentos] = await Promise.all([
+        fetch(`${API}/noticias`),
+        fetch(`${API}/documentos`)
+      ]);
 
-        setNoticias(dataNoticias || []);
-        setDocumentos(dataDocumentos || []);
-      } catch (e) {
-        console.error("Error cargando intranet", e);
-        setError(e.message || "Error inesperado");
-      } finally {
-        setLoading(false);
+      if (!resNoticias.ok || !resDocumentos.ok) {
+        throw new Error("Error cargando datos de intranet");
       }
-    }
 
+      setNoticias(await resNoticias.json());
+      setDocumentos(await resDocumentos.json());
+    } catch (e) {
+      console.error("Error cargando intranet", e);
+      setError(e.message || "Error inesperado");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
     cargar();
   }, []);
+
+  // -----------------------------
+  // ELIMINAR NOTICIA
+  // -----------------------------
+  async function eliminarNoticia(id) {
+    if (!esAdmin) return alert("No tienes permisos para eliminar noticias.");
+
+    const res = await fetch(`${API}/noticias/${id}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (!res.ok) {
+      return alert("Error eliminando noticia.");
+    }
+
+    setNoticias(noticias.filter(n => n.id !== id));
+  }
+
+  // -----------------------------
+  // ELIMINAR DOCUMENTO
+  // -----------------------------
+  async function eliminarDocumento(id) {
+    if (!esAdmin) return alert("No tienes permisos para eliminar documentos.");
+
+    const res = await fetch(`${API}/documentos/${id}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (!res.ok) {
+      return alert("Error eliminando documento.");
+    }
+
+    setDocumentos(documentos.filter(d => d.id !== id));
+  }
 
   if (loading) {
     return <div className="text-white/80">Cargando intranet…</div>;
@@ -79,7 +121,16 @@ export default function Intranet() {
                   )}
                 </div>
 
-                <p className="text-sm text-white/70">{n.descripcion}</p>
+                <p className="text-sm text-white/70 mb-2">{n.descripcion}</p>
+
+                {esAdmin && (
+                  <button
+                    onClick={() => eliminarNoticia(n.id)}
+                    className="text-xs px-3 py-1 rounded-lg bg-red-600/70 text-white hover:bg-red-700 transition"
+                  >
+                    Eliminar
+                  </button>
+                )}
               </li>
             ))}
           </ul>
@@ -109,12 +160,23 @@ export default function Intranet() {
                   )}
                 </div>
 
-                <a
-                  href={`${API}/documentos/descargar/${d.id}`}
-                  className="text-xs px-3 py-1 rounded-lg bg-white/20 text-white hover:bg-white/30 transition"
-                >
-                  Descargar
-                </a>
+                <div className="flex gap-2">
+                  <a
+                    href={`${API}/documentos/descargar/${d.id}`}
+                    className="text-xs px-3 py-1 rounded-lg bg-white/20 text-white hover:bg-white/30 transition"
+                  >
+                    Descargar
+                  </a>
+
+                  {esAdmin && (
+                    <button
+                      onClick={() => eliminarDocumento(d.id)}
+                      className="text-xs px-3 py-1 rounded-lg bg-red-600/70 text-white hover:bg-red-700 transition"
+                    >
+                      Eliminar
+                    </button>
+                  )}
+                </div>
               </li>
             ))}
           </ul>

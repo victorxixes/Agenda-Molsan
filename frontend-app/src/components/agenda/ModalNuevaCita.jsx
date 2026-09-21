@@ -36,6 +36,7 @@ export default function ModalNuevaCita({
   onGuardar,
   onDelete,
 }) {
+  const soloLectura = modo === "ver";
   const [loading, setLoading] = useState(false);
 
   const [form, setForm] = useState({
@@ -51,11 +52,13 @@ export default function ModalNuevaCita({
   const [notarioSeleccionado, setNotarioSeleccionado] = useState(null);
 
   const handleChange = useCallback((campo, valor) => {
+    if (soloLectura) return;
     setForm((f) => ({ ...f, [campo]: valor }));
-  }, []);
+  }, [soloLectura]);
 
   useEffect(() => {
-    if (modo !== "editar" || !cita) return;
+    if (modo === "crear") return;
+    if (!cita) return;
 
     setForm({
       hora_inicio: cita.hora_inicio || "",
@@ -82,13 +85,9 @@ export default function ModalNuevaCita({
     }
   }, [modo, cita, handleChange]);
 
-  useEffect(() => {
-    if (notarioSeleccionado) {
-      handleChange("apoderado_visible", notarioSeleccionado.apoderado || "");
-    }
-  }, [notarioSeleccionado, handleChange]);
-
   const guardar = useCallback(async () => {
+    if (soloLectura) return;
+
     setLoading(true);
 
     const fechaNormalizada =
@@ -111,28 +110,35 @@ export default function ModalNuevaCita({
       await onGuardar(payload);
     } catch (err) {
       console.error("ERROR AL GUARDAR CITA:", err);
-      console.log("DETALLE 422:", err.response?.data);
     }
 
     setLoading(false);
-  }, [fecha, form, onGuardar]);
+  }, [soloLectura, fecha, form, onGuardar]);
 
   if (!fecha) return null;
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
       <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl w-full max-w-xl p-6 text-white">
+
         <h2 className="text-2xl font-semibold mb-4 drop-shadow">
-          {modo === "crear" ? "Nueva cita" : "Editar cita"} — {fecha}
+          {modo === "crear"
+            ? "Nueva cita"
+            : modo === "editar"
+            ? "Editar cita"
+            : "Ver cita"}{" "}
+          — {fecha}
         </h2>
 
         <div className="grid grid-cols-2 gap-4 text-sm">
+
           {/* Hora inicio */}
           <div>
             <label className="block mb-1 text-white/80">Hora inicio</label>
             <input
               type="time"
-              className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white"
+              disabled={soloLectura}
+              className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white disabled:opacity-50"
               value={form.hora_inicio}
               onChange={(e) => handleChange("hora_inicio", e.target.value)}
             />
@@ -143,7 +149,8 @@ export default function ModalNuevaCita({
             <label className="block mb-1 text-white/80">Hora fin</label>
             <input
               type="time"
-              className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white"
+              disabled={soloLectura}
+              className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white disabled:opacity-50"
               value={form.hora_fin}
               onChange={(e) => handleChange("hora_fin", e.target.value)}
             />
@@ -153,7 +160,8 @@ export default function ModalNuevaCita({
           <div className="col-span-2">
             <label className="block mb-1 text-white/80">Tipo de cita</label>
             <select
-              className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white"
+              disabled={soloLectura}
+              className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white disabled:opacity-50"
               value={form.tipo_cita}
               onChange={(e) => handleChange("tipo_cita", e.target.value)}
             >
@@ -171,8 +179,11 @@ export default function ModalNuevaCita({
             <label className="block mb-1 text-white/80">Buscar notario</label>
 
             <AutocompleteNotario
+              disabled={soloLectura}
               value={notarioSeleccionado}
               onSelect={(n) => {
+                if (soloLectura) return;
+
                 const notarioCompleto = normalizarNotario(n);
                 setNotarioSeleccionado(notarioCompleto);
 
@@ -217,7 +228,8 @@ export default function ModalNuevaCita({
           <div>
             <label className="block mb-1 text-white/80">Tipo firma</label>
             <input
-              className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white"
+              disabled={soloLectura}
+              className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white disabled:opacity-50"
               value={form.tipo_firma}
               onChange={(e) => handleChange("tipo_firma", e.target.value)}
             />
@@ -227,9 +239,9 @@ export default function ModalNuevaCita({
           <div>
             <label className="block mb-1 text-white/80">Apoderado</label>
             <input
-              className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white"
-              value={form.apoderado_visible || ""}
               disabled
+              className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white disabled:opacity-50"
+              value={form.apoderado_visible || ""}
             />
           </div>
 
@@ -237,7 +249,8 @@ export default function ModalNuevaCita({
           <div className="col-span-2">
             <label className="block mb-1 text-white/80">Observaciones</label>
             <textarea
-              className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white"
+              disabled={soloLectura}
+              className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white disabled:opacity-50"
               rows={3}
               value={form.observaciones}
               onChange={(e) =>
@@ -249,7 +262,8 @@ export default function ModalNuevaCita({
 
         {/* Botones finales */}
         <div className="mt-6 flex justify-end gap-3">
-          {modo === "editar" && onDelete && (
+
+          {modo === "editar" && onDelete && !soloLectura && (
             <button
               className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white transition shadow-lg"
               onClick={onDelete}
@@ -262,16 +276,18 @@ export default function ModalNuevaCita({
             className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition shadow-lg"
             onClick={onClose}
           >
-            Cancelar
+            {soloLectura ? "Cerrar" : "Cancelar"}
           </button>
 
-          <button
-            className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white transition shadow-lg"
-            onClick={guardar}
-            disabled={loading}
-          >
-            {modo === "crear" ? "Crear cita" : "Guardar cambios"}
-          </button>
+          {!soloLectura && (
+            <button
+              className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white transition shadow-lg"
+              onClick={guardar}
+              disabled={loading}
+            >
+              {modo === "crear" ? "Crear cita" : "Guardar cambios"}
+            </button>
+          )}
         </div>
       </div>
     </div>

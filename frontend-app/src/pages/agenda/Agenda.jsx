@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useAgendaStore } from "../../store/agendaStore";
+import { useAuthStore } from "../../store/authStore";
 
 import VistaMes from "./VistaMes";
 import VistaSemana from "./VistaSemana";
@@ -13,19 +14,11 @@ const MESES = [
   "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
 ];
 
-/**
- * Agenda — SJ‑2026 Premium
- * - Glass‑UI
- * - Navegación estable
- * - Modal premium
- * - Vistas optimizadas
- */
-
 export default function Agenda() {
   const hoy = useMemo(() => new Date(), []);
   const [year, setYear] = useState(hoy.getFullYear());
   const [month, setMonth] = useState(hoy.getMonth() + 1);
-  const [vista, setVista] = useState("mes"); // mes | semana | dia
+  const [vista, setVista] = useState("mes");
 
   const {
     citas,
@@ -36,6 +29,11 @@ export default function Agenda() {
     marcarResaltada,
     notify,
   } = useAgendaStore();
+
+  // ⭐ PERMISOS DEL USUARIO
+  const permisosAgenda = useAuthStore(
+    (s) => s.permisos_modulo?.agenda || []
+  );
 
   const [mostrarModal, setMostrarModal] = useState(false);
   const [modalModo, setModalModo] = useState("crear");
@@ -49,15 +47,25 @@ export default function Agenda() {
 
   // Crear cita
   const abrirCrear = useCallback((fecha) => {
+    if (!permisosAgenda.includes("crear")) {
+      notify("No tienes permiso para crear citas.");
+      return;
+    }
+
     setModalModo("crear");
     setFechaSeleccionada(fecha);
     setCitaSeleccionada(null);
     setMostrarModal(true);
-  }, []);
+  }, [permisosAgenda, notify]);
 
   // Editar cita
   const abrirEditar = useCallback(
     async (cita) => {
+      if (!permisosAgenda.includes("editar")) {
+        notify("No tienes permiso para editar citas.");
+        return;
+      }
+
       try {
         const res = await fetch(
           `https://agenda-intranet-b.onrender.com/api/agenda/${cita.id}`
@@ -73,7 +81,7 @@ export default function Agenda() {
         notify("Error al cargar la cita.");
       }
     },
-    [notify]
+    [notify, permisosAgenda]
   );
 
   // Guardar cita
@@ -81,12 +89,22 @@ export default function Agenda() {
     async (payload) => {
       try {
         if (modalModo === "crear") {
+          if (!permisosAgenda.includes("crear")) {
+            notify("No tienes permiso para crear citas.");
+            return;
+          }
+
           const creada = await crear(payload, year, month);
           if (creada?.id) {
             marcarResaltada(creada.id);
             notify("Cita creada correctamente.");
           }
         } else if (citaSeleccionada) {
+          if (!permisosAgenda.includes("editar")) {
+            notify("No tienes permiso para editar citas.");
+            return;
+          }
+
           const editada = await editar(citaSeleccionada.id, payload, year, month);
           if (editada?.id) {
             marcarResaltada(editada.id);
@@ -100,12 +118,17 @@ export default function Agenda() {
         notify("Error al guardar la cita.");
       }
     },
-    [modalModo, citaSeleccionada, crear, editar, marcarResaltada, notify, year, month]
+    [modalModo, citaSeleccionada, crear, editar, marcarResaltada, notify, year, month, permisosAgenda]
   );
 
   // Eliminar cita
   const borrarCita = useCallback(async () => {
     if (!citaSeleccionada) return;
+
+    if (!permisosAgenda.includes("eliminar")) {
+      notify("No tienes permiso para eliminar citas.");
+      return;
+    }
 
     try {
       await eliminar(citaSeleccionada.id, year, month);
@@ -115,7 +138,7 @@ export default function Agenda() {
       console.error("ERROR AL ELIMINAR CITA:", err);
       notify("Error al eliminar la cita.");
     }
-  }, [citaSeleccionada, eliminar, notify, year, month]);
+  }, [citaSeleccionada, eliminar, notify, year, month, permisosAgenda]);
 
   // Navegación meses
   const mesAnterior = useCallback(() => {
@@ -143,13 +166,13 @@ export default function Agenda() {
   return (
     <div className="space-y-6 p-6 text-white animate-fade-in">
 
-      {/* CABECERA PREMIUM */}
+      {/* CABECERA */}
       <div className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-xl">
         <h1 className="text-3xl font-bold drop-shadow">Agenda corporativa</h1>
         <p className="text-white/70">Calendario de citas SJ‑2026.</p>
       </div>
 
-      {/* SELECTOR PREMIUM */}
+      {/* SELECTOR */}
       <div
         className="
           bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl
@@ -217,15 +240,15 @@ export default function Agenda() {
         </div>
       </div>
 
-      {/* VISTA PREMIUM */}
+      {/* VISTA */}
       <div className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-xl">
         {vista === "mes" && (
           <VistaMes
             year={year}
             month={month}
             citas={citasSeguras}
-            onDiaClick={abrirCrear}
-            onCitaClick={abrirEditar}
+            onDiaClick={permisosAgenda.includes("crear") ? abrirCrear : null}
+            onCitaClick={permisosAgenda.includes("editar") ? abrirEditar : null}
           />
         )}
 
@@ -233,8 +256,8 @@ export default function Agenda() {
           <VistaSemana
             fechaBase={`${year}-${String(month).padStart(2, "0")}-01`}
             citas={citasSeguras}
-            onCitaClick={abrirEditar}
-            onCrearCita={abrirCrear}
+            onCitaClick={permisosAgenda.includes("editar") ? abrirEditar : null}
+            onCrearCita={permisosAgenda.includes("crear") ? abrirCrear : null}
           />
         )}
 
@@ -242,13 +265,13 @@ export default function Agenda() {
           <VistaDia
             fechaDia={new Date()}
             citas={citasSeguras}
-            onCitaClick={abrirEditar}
-            onCrearCita={abrirCrear}
+            onCitaClick={permisosAgenda.includes("editar") ? abrirEditar : null}
+            onCrearCita={permisosAgenda.includes("crear") ? abrirCrear : null}
           />
         )}
       </div>
 
-      {/* MODAL PREMIUM */}
+      {/* MODAL */}
       {mostrarModal && (
         <ModalNuevaCita
           fecha={fechaSeleccionada}
@@ -256,11 +279,14 @@ export default function Agenda() {
           cita={citaSeleccionada}
           onClose={() => setMostrarModal(false)}
           onGuardar={guardarCita}
-          onDelete={modalModo === "editar" ? borrarCita : null}
+          onDelete={
+            modalModo === "editar" && permisosAgenda.includes("eliminar")
+              ? borrarCita
+              : null
+          }
         />
       )}
 
-      {/* TOAST PREMIUM */}
       <AgendaToast />
     </div>
   );

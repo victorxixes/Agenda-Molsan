@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { API_BASE } from "../../api/config";
-import jsPDF from "jspdf";
-import "jspdf-autotable";
 import Chart from "chart.js/auto";
 
 export default function Informes() {
@@ -71,25 +69,44 @@ const exportarExcel = () => {
   // -----------------------------
   // EXPORTAR A PDF
   // -----------------------------
-  const exportarPDF = () => {
-    const doc = new jsPDF();
-    doc.text(`Informe Apoderados — ${mes}/${año}`, 14, 14);
+const exportarPDF = () => {
+  const ventana = window.open("", "_blank");
+  const encabezados = ["Apoderado", "VC", "Presencial", "Km"];
 
-    const filas = tabla.map((t) => [
-      t.nombre,
-      t.vc,
-      t.presencial,
-      t.km,
-    ]);
+  const filas = tabla.map(t => `
+    <tr>
+      <td>${t.nombre}</td>
+      <td>${t.vc}</td>
+      <td>${t.presencial}</td>
+      <td>${t.km}</td>
+    </tr>
+  `).join("");
 
-    doc.autoTable({
-      head: [["Apoderado", "VC", "Presencial", "Km"]],
-      body: filas,
-      startY: 20,
-    });
+  ventana.document.write(`
+    <html>
+      <head>
+        <title>Informe ${mes}/${año}</title>
+        <style>
+          table { width: 100%; border-collapse: collapse; font-size: 14px; }
+          th, td { border: 1px solid #000; padding: 6px; text-align: left; }
+          th { background: #eee; }
+        </style>
+      </head>
+      <body>
+        <h2>Informe ${mes}/${año}</h2>
+        <table>
+          <thead>
+            <tr>${encabezados.map(h => `<th>${h}</th>`).join("")}</tr>
+          </thead>
+          <tbody>${filas}</tbody>
+        </table>
+      </body>
+    </html>
+  `);
 
-    doc.save(`informe_${mes}_${año}.pdf`);
-  };
+  ventana.document.close();
+  ventana.print();
+};
 
   // -----------------------------
   // GRÁFICOS SJ‑2026

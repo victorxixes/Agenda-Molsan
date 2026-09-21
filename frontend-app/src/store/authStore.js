@@ -16,7 +16,7 @@ function extraerIdDeToken(token) {
 }
 
 /**
- * Store de Autenticación — Versión SJ‑2026 Premium
+ * Store de Autenticación — Versión SJ‑2026 Ultra‑Stable
  */
 export const useAuthStore = create((set) => ({
   empleado: null,
@@ -25,26 +25,58 @@ export const useAuthStore = create((set) => ({
   authReady: false,
 
   // ---------------------------------------------------------
-  // MODAL PERFIL — 🔥 CORREGIDO
+  // MODAL PERFIL
   // ---------------------------------------------------------
   perfilModal: null,
   setPerfilModal: (id) => set({ perfilModal: id }),
 
   // ---------------------------------------------------------
-  // HIDRACIÓN INICIAL
+  // HIDRACIÓN INICIAL — 🔥 TOKEN VALIDADO CONTRA BACKEND
   // ---------------------------------------------------------
-  init: () => {
+  init: async () => {
     const token = localStorage.getItem("token");
-    const empleado = localStorage.getItem("empleado");
+    const empleadoLS = localStorage.getItem("empleado");
 
-    if (token && empleado) {
+    // Si no hay token → no autenticado
+    if (!token || !empleadoLS) {
       set({
-        token,
-        empleado: JSON.parse(empleado),
+        token: null,
+        empleado: null,
         loading: false,
         authReady: true,
       });
-    } else {
+      return;
+    }
+
+    // Intentar validar token contra backend
+    try {
+      const empleadoParsed = JSON.parse(empleadoLS);
+
+      // Obtener ficha completa desde backend
+      const ficha = await obtenerFichaCompleta(empleadoParsed.id);
+
+      const empleado = {
+        ...ficha.data.empleado,
+        foto: ficha.data.empleado.foto
+          ? `${API_BASE}${ficha.data.empleado.foto}`
+          : null,
+        modulos_visibles: ficha.data.modulos_visibles || [],
+        permisos_modulo: ficha.data.permisos_modulo || {},
+      };
+
+      set({
+        token,
+        empleado,
+        loading: false,
+        authReady: true,
+      });
+    } catch (err) {
+      // Si backend devuelve 401 → token inválido → logout automático
+      console.warn("Token inválido, cerrando sesión automáticamente.");
+
+      localStorage.removeItem("token");
+      localStorage.removeItem("empleado");
+
       set({
         token: null,
         empleado: null,

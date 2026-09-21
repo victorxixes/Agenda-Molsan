@@ -30,15 +30,23 @@ export default function Agenda() {
     notify,
   } = useAgendaStore();
 
-  // ⭐ PERMISOS DEL USUARIO
-  const permisosAgenda = useAuthStore(
-    (s) => s.permisos_modulo?.agenda || []
-  );
+  // ⭐ PERMISOS BLINDADOS
+  const permisosAgenda = useAuthStore((s) => {
+    const mod = s.permisos_modulo;
+    if (!mod) return [];
+    if (!Array.isArray(mod.agenda)) return [];
+    return mod.agenda;
+  });
 
   const puedeCrear = permisosAgenda.includes("crear");
   const puedeEditar = permisosAgenda.includes("editar");
   const puedeEliminar = permisosAgenda.includes("eliminar");
-  const puedeVer = permisosAgenda.includes("ver") || permisosAgenda.length > 0;
+
+  const puedeVer =
+    permisosAgenda.includes("ver") ||
+    permisosAgenda.includes("editar") ||
+    permisosAgenda.includes("crear") ||
+    permisosAgenda.includes("eliminar");
 
   const [mostrarModal, setMostrarModal] = useState(false);
   const [modalModo, setModalModo] = useState("crear"); // crear | editar | ver
@@ -88,7 +96,6 @@ export default function Agenda() {
     },
     [puedeEditar, notify]
   );
-
   // Guardar cita
   const guardarCita = useCallback(
     async (payload) => {
@@ -190,7 +197,6 @@ export default function Agenda() {
     },
     [abrirCrear]
   );
-
   return (
     <div className="space-y-6 p-6 text-white animate-fade-in">
 

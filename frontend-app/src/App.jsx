@@ -111,9 +111,9 @@ export default function App() {
         {/* LOGIN */}
         <Route path="/login" element={<LoginPage />} />
 
-        {/* 🔥 TODAS LAS RUTAS PRIVADAS VAN EN /app */}
+        {/* 🔥 TODAS LAS RUTAS PRIVADAS */}
         <Route
-          path="/app"
+          path="/"
           element={
             <RequireAuth>
               <Layout />
@@ -169,7 +169,6 @@ export default function App() {
           <Route path="seguridad/roles/editor" element={<SeguridadRolEditor />} />
         </Route>
 
-        {/* Cualquier ruta desconocida → login */}
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </div>

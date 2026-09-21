@@ -31,22 +31,24 @@ export default function Agenda() {
   } = useAgendaStore();
 
   // ⭐ PERMISOS BLINDADOS
-  const permisosAgenda = useAuthStore((s) => {
-    const mod = s.permisos_modulo;
-    if (!mod) return [];
-    if (!Array.isArray(mod.agenda)) return [];
-    return mod.agenda;
-  });
+// ⭐ PERMISOS BLINDADOS — CORREGIDO
+const permisosAgenda = useAuthStore((s) => {
+  const mod = s.empleado?.permisos_modulo;
+  if (!mod) return [];
+  if (!Array.isArray(mod.agenda)) return [];
+  return mod.agenda;
+});
 
-  const puedeCrear = permisosAgenda.includes("crear");
-  const puedeEditar = permisosAgenda.includes("editar");
-  const puedeEliminar = permisosAgenda.includes("eliminar");
+const puedeCrear = permisosAgenda.includes("crear");
+const puedeEditar = permisosAgenda.includes("editar");
+const puedeEliminar = permisosAgenda.includes("eliminar");
 
-  const puedeVer =
-    permisosAgenda.includes("ver") ||
-    permisosAgenda.includes("editar") ||
-    permisosAgenda.includes("crear") ||
-    permisosAgenda.includes("eliminar");
+const puedeVer =
+  permisosAgenda.includes("ver") ||
+  permisosAgenda.includes("editar") ||
+  permisosAgenda.includes("crear") ||
+  permisosAgenda.includes("eliminar");
+
 
   const [mostrarModal, setMostrarModal] = useState(false);
   const [modalModo, setModalModo] = useState("crear"); // crear | editar | ver

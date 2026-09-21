@@ -30,34 +30,46 @@ export default function Agenda() {
     notify,
   } = useAgendaStore();
 
+  // ⭐ PERMISOS DEL USUARIO
   const permisosAgenda = useAuthStore(
     (s) => s.permisos_modulo?.agenda || []
   );
 
+  const puedeCrear = permisosAgenda.includes("crear");
+  const puedeEditar = permisosAgenda.includes("editar");
+  const puedeEliminar = permisosAgenda.includes("eliminar");
+  const puedeVer = permisosAgenda.includes("ver");
+
   const [mostrarModal, setMostrarModal] = useState(false);
-  const [modalModo, setModalModo] = useState("crear");
+  const [modalModo, setModalModo] = useState("crear"); // crear | editar | ver
   const [fechaSeleccionada, setFechaSeleccionada] = useState(null);
   const [citaSeleccionada, setCitaSeleccionada] = useState(null);
 
+  // Cargar mes
   useEffect(() => {
     cargarMes(year, month);
   }, [year, month, cargarMes]);
 
-  const abrirCrear = useCallback((fecha) => {
-    if (!permisosAgenda.includes("crear")) {
-      notify("No tienes permiso para crear citas.");
-      return;
-    }
+  // Crear cita
+  const abrirCrear = useCallback(
+    (fecha) => {
+      if (!puedeCrear) {
+        notify("No tienes permiso para crear citas.");
+        return;
+      }
 
-    setModalModo("crear");
-    setFechaSeleccionada(fecha);
-    setCitaSeleccionada(null);
-    setMostrarModal(true);
-  }, [permisosAgenda, notify]);
+      setModalModo("crear");
+      setFechaSeleccionada(fecha);
+      setCitaSeleccionada(null);
+      setMostrarModal(true);
+    },
+    [puedeCrear, notify]
+  );
 
+  // Editar cita
   const abrirEditar = useCallback(
     async (cita) => {
-      if (!permisosAgenda.includes("editar")) {
+      if (!puedeEditar) {
         notify("No tienes permiso para editar citas.");
         return;
       }
@@ -77,31 +89,41 @@ export default function Agenda() {
         notify("Error al cargar la cita.");
       }
     },
-    [notify, permisosAgenda]
+    [puedeEditar, notify]
   );
 
-  const abrirVerCita = useCallback(async (cita) => {
-    try {
-      const res = await fetch(
-        `https://agenda-intranet-b.onrender.com/api/agenda/${cita.id}`
-      );
-      const citaCompleta = await res.json();
+  // Ver cita (solo lectura)
+  const abrirVerCita = useCallback(
+    async (cita) => {
+      if (!puedeVer && !puedeEditar) {
+        notify("No tienes permiso para ver citas.");
+        return;
+      }
 
-      setModalModo("ver");
-      setFechaSeleccionada(citaCompleta.fecha);
-      setCitaSeleccionada(citaCompleta);
-      setMostrarModal(true);
-    } catch (err) {
-      console.error("Error cargando cita completa:", err);
-      notify("Error al cargar la cita.");
-    }
-  }, [notify]);
+      try {
+        const res = await fetch(
+          `https://agenda-intranet-b.onrender.com/api/agenda/${cita.id}`
+        );
+        const citaCompleta = await res.json();
 
+        setModalModo("ver");
+        setFechaSeleccionada(citaCompleta.fecha);
+        setCitaSeleccionada(citaCompleta);
+        setMostrarModal(true);
+      } catch (err) {
+        console.error("Error cargando cita completa:", err);
+        notify("Error al cargar la cita.");
+      }
+    },
+    [puedeVer, puedeEditar, notify]
+  );
+
+  // Guardar cita
   const guardarCita = useCallback(
     async (payload) => {
       try {
         if (modalModo === "crear") {
-          if (!permisosAgenda.includes("crear")) {
+          if (!puedeCrear) {
             notify("No tienes permiso para crear citas.");
             return;
           }
@@ -111,8 +133,8 @@ export default function Agenda() {
             marcarResaltada(creada.id);
             notify("Cita creada correctamente.");
           }
-        } else if (citaSeleccionada) {
-          if (!permisosAgenda.includes("editar")) {
+        } else if (modalModo === "editar" && citaSeleccionada) {
+          if (!puedeEditar) {
             notify("No tienes permiso para editar citas.");
             return;
           }
@@ -122,6 +144,10 @@ export default function Agenda() {
             marcarResaltada(editada.id);
             notify("Cita actualizada correctamente.");
           }
+        } else if (modalModo === "ver") {
+          // En modo ver no se guarda nada
+          setMostrarModal(false);
+          return;
         }
 
         setMostrarModal(false);
@@ -130,13 +156,14 @@ export default function Agenda() {
         notify("Error al guardar la cita.");
       }
     },
-    [modalModo, citaSeleccionada, crear, editar, marcarResaltada, notify, year, month, permisosAgenda]
+    [modalModo, citaSeleccionada, crear, editar, marcarResaltada, notify, year, month, puedeCrear, puedeEditar]
   );
 
+  // Eliminar cita
   const borrarCita = useCallback(async () => {
     if (!citaSeleccionada) return;
 
-    if (!permisosAgenda.includes("eliminar")) {
+    if (!puedeEliminar) {
       notify("No tienes permiso para eliminar citas.");
       return;
     }
@@ -149,8 +176,9 @@ export default function Agenda() {
       console.error("ERROR AL ELIMINAR CITA:", err);
       notify("Error al eliminar la cita.");
     }
-  }, [citaSeleccionada, eliminar, notify, year, month, permisosAgenda]);
+  }, [citaSeleccionada, eliminar, notify, year, month, puedeEliminar]);
 
+  // Navegación meses
   const mesAnterior = useCallback(() => {
     setMonth((m) => {
       if (m === 1) {
@@ -173,14 +201,42 @@ export default function Agenda() {
 
   const citasSeguras = useMemo(() => (Array.isArray(citas) ? citas : []), [citas]);
 
+  // Handler seguro para clic en cita según permisos
+  const handleCitaClick = useCallback(
+    (cita) => {
+      if (puedeEditar) {
+        abrirEditar(cita);
+      } else if (puedeVer) {
+        abrirVerCita(cita);
+      } else {
+        notify("No tienes permiso para ver citas.");
+      }
+    },
+    [puedeEditar, puedeVer, abrirEditar, abrirVerCita, notify]
+  );
+
+  // Handler seguro para crear según permisos
+  const handleDiaClick = useCallback(
+    (fecha) => {
+      if (!puedeCrear) {
+        notify("No tienes permiso para crear citas.");
+        return;
+      }
+      abrirCrear(fecha);
+    },
+    [puedeCrear, abrirCrear, notify]
+  );
+
   return (
     <div className="space-y-6 p-6 text-white animate-fade-in">
 
+      {/* CABECERA */}
       <div className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-xl">
         <h1 className="text-3xl font-bold drop-shadow">Agenda corporativa</h1>
         <p className="text-white/70">Calendario de citas SJ‑2026.</p>
       </div>
 
+      {/* SELECTOR */}
       <div
         className="
           bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl
@@ -227,6 +283,7 @@ export default function Agenda() {
           →
         </button>
 
+        {/* BOTONES DE VISTA */}
         <div className="ml-auto flex gap-2">
           {["mes", "semana", "dia"].map((v) => (
             <button
@@ -247,23 +304,15 @@ export default function Agenda() {
         </div>
       </div>
 
+      {/* VISTA */}
       <div className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-xl">
-
         {vista === "mes" && (
           <VistaMes
             year={year}
             month={month}
             citas={citasSeguras}
-            onDiaClick={
-              permisosAgenda.includes("crear")
-                ? abrirCrear
-                : () => {}
-            }
-            onCitaClick={
-              permisosAgenda.includes("editar")
-                ? abrirEditar
-                : abrirVerCita
-            }
+            onDiaClick={handleDiaClick}
+            onCitaClick={handleCitaClick}
           />
         )}
 
@@ -271,16 +320,8 @@ export default function Agenda() {
           <VistaSemana
             fechaBase={`${year}-${String(month).padStart(2, "0")}-01`}
             citas={citasSeguras}
-            onCitaClick={
-              permisosAgenda.includes("editar")
-                ? abrirEditar
-                : abrirVerCita
-            }
-            onCrearCita={
-              permisosAgenda.includes("crear")
-                ? abrirCrear
-                : () => {}
-            }
+            onCitaClick={handleCitaClick}
+            onCrearCita={handleDiaClick}
           />
         )}
 
@@ -288,21 +329,13 @@ export default function Agenda() {
           <VistaDia
             fechaDia={new Date()}
             citas={citasSeguras}
-            onCitaClick={
-              permisosAgenda.includes("editar")
-                ? abrirEditar
-                : abrirVerCita
-            }
-            onCrearCita={
-              permisosAgenda.includes("crear")
-                ? abrirCrear
-                : () => {}
-            }
+            onCitaClick={handleCitaClick}
+            onCrearCita={handleDiaClick}
           />
         )}
-
       </div>
 
+      {/* MODAL */}
       {mostrarModal && (
         <ModalNuevaCita
           fecha={fechaSeleccionada}
@@ -311,7 +344,7 @@ export default function Agenda() {
           onClose={() => setMostrarModal(false)}
           onGuardar={guardarCita}
           onDelete={
-            modalModo === "editar" && permisosAgenda.includes("eliminar")
+            modalModo === "editar" && puedeEliminar
               ? borrarCita
               : null
           }

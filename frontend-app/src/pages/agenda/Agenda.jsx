@@ -9,6 +9,8 @@ import VistaDia from "./VistaDia";
 import ModalNuevaCita from "../../components/agenda/ModalNuevaCita.jsx";
 import AgendaToast from "../../components/agenda/AgendaToast.jsx";
 
+import SelectSJ from "../../components/ui/SelectSJ"; // ⭐ AÑADIDO
+
 const MESES = [
   "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
   "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
@@ -31,27 +33,25 @@ export default function Agenda() {
   } = useAgendaStore();
 
   // ⭐ PERMISOS BLINDADOS
-// ⭐ PERMISOS BLINDADOS — CORREGIDO
-const permisosAgenda = useAuthStore((s) => {
-  const mod = s.empleado?.permisos_modulo;
-  if (!mod) return [];
-  if (!Array.isArray(mod.agenda)) return [];
-  return mod.agenda;
-});
+  const permisosAgenda = useAuthStore((s) => {
+    const mod = s.empleado?.permisos_modulo;
+    if (!mod) return [];
+    if (!Array.isArray(mod.agenda)) return [];
+    return mod.agenda;
+  });
 
-const puedeCrear = permisosAgenda.includes("crear");
-const puedeEditar = permisosAgenda.includes("editar");
-const puedeEliminar = permisosAgenda.includes("eliminar");
+  const puedeCrear = permisosAgenda.includes("crear");
+  const puedeEditar = permisosAgenda.includes("editar");
+  const puedeEliminar = permisosAgenda.includes("eliminar");
 
-const puedeVer =
-  permisosAgenda.includes("ver") ||
-  permisosAgenda.includes("editar") ||
-  permisosAgenda.includes("crear") ||
-  permisosAgenda.includes("eliminar");
-
+  const puedeVer =
+    permisosAgenda.includes("ver") ||
+    permisosAgenda.includes("editar") ||
+    permisosAgenda.includes("crear") ||
+    permisosAgenda.includes("eliminar");
 
   const [mostrarModal, setMostrarModal] = useState(false);
-  const [modalModo, setModalModo] = useState("crear"); // crear | editar | ver
+  const [modalModo, setModalModo] = useState("crear");
   const [fechaSeleccionada, setFechaSeleccionada] = useState(null);
   const [citaSeleccionada, setCitaSeleccionada] = useState(null);
 
@@ -85,7 +85,6 @@ const puedeVer =
         );
         const citaCompleta = await res.json();
 
-        // Si no puede editar → modo ver
         setModalModo(puedeEditar ? "editar" : "ver");
 
         setFechaSeleccionada(citaCompleta.fecha);
@@ -98,6 +97,7 @@ const puedeVer =
     },
     [puedeEditar, notify]
   );
+
   // Guardar cita
   const guardarCita = useCallback(
     async (payload) => {
@@ -113,9 +113,7 @@ const puedeVer =
             marcarResaltada(creada.id);
             notify("Cita creada correctamente.");
           }
-        }
-
-        else if (modalModo === "editar" && citaSeleccionada) {
+        } else if (modalModo === "editar" && citaSeleccionada) {
           if (!puedeEditar) {
             notify("No tienes permiso para editar citas.");
             return;
@@ -126,9 +124,7 @@ const puedeVer =
             marcarResaltada(editada.id);
             notify("Cita actualizada correctamente.");
           }
-        }
-
-        else if (modalModo === "ver") {
+        } else if (modalModo === "ver") {
           setMostrarModal(false);
           return;
         }
@@ -139,7 +135,18 @@ const puedeVer =
         notify("Error al guardar la cita.");
       }
     },
-    [modalModo, citaSeleccionada, crear, editar, marcarResaltada, notify, year, month, puedeCrear, puedeEditar]
+    [
+      modalModo,
+      citaSeleccionada,
+      crear,
+      editar,
+      marcarResaltada,
+      notify,
+      year,
+      month,
+      puedeCrear,
+      puedeEditar,
+    ]
   );
 
   // Eliminar cita
@@ -184,21 +191,20 @@ const puedeVer =
 
   const citasSeguras = useMemo(() => (Array.isArray(citas) ? citas : []), [citas]);
 
-  // Handler seguro para clic en cita
   const handleCitaClick = useCallback(
     (cita) => {
-      abrirEditar(cita); // abrirEditar decide si es ver o editar
+      abrirEditar(cita);
     },
     [abrirEditar]
   );
 
-  // Handler seguro para crear
   const handleDiaClick = useCallback(
     (fecha) => {
       abrirCrear(fecha);
     },
     [abrirCrear]
   );
+
   return (
     <div className="space-y-6 p-6 text-white animate-fade-in">
 
@@ -222,31 +228,27 @@ const puedeVer =
           ←
         </button>
 
-        <select
-          className="sj-input w-32 bg-white/10 text-white border-white/20 rounded-xl"
+        {/* ⭐ SelectSJ — AÑO */}
+        <SelectSJ
           value={year}
-          onChange={(e) => setYear(parseInt(e.target.value))}
-        >
-          {Array.from({ length: 10 }, (_, i) => hoy.getFullYear() - 5 + i).map(
-            (y) => (
-              <option key={y} value={y}>
-                {y}
-              </option>
-            )
-          )}
-        </select>
+          onChange={(v) => setYear(parseInt(v))}
+          options={Array.from({ length: 10 }, (_, i) => {
+            const y = hoy.getFullYear() - 5 + i;
+            return { value: y, label: y };
+          })}
+          className="w-32"
+        />
 
-        <select
-          className="sj-input w-40 bg-white/10 text-white border-white/20 rounded-xl"
+        {/* ⭐ SelectSJ — MES */}
+        <SelectSJ
           value={month}
-          onChange={(e) => setMonth(parseInt(e.target.value))}
-        >
-          {MESES.map((nombre, index) => (
-            <option key={index} value={index + 1}>
-              {nombre}
-            </option>
-          ))}
-        </select>
+          onChange={(v) => setMonth(parseInt(v))}
+          options={MESES.map((nombre, index) => ({
+            value: index + 1,
+            label: nombre,
+          }))}
+          className="w-40"
+        />
 
         <button
           className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 transition"

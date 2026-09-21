@@ -2,8 +2,8 @@ from fastapi import APIRouter, Query, Depends
 from datetime import date
 from sqlalchemy.orm import Session
 from backend.app.database import get_db
-from backend.app.models.empleado import Empleado
-from backend.app.models.cita import Cita
+from backend.app.empleados.models import Empleado
+from backend.app.citas.models import Cita
 
 router = APIRouter(prefix="/informes", tags=["Informes"])
 

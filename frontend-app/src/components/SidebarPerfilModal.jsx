@@ -31,7 +31,7 @@ export default function EmpleadoPerfilModal({ id, onClose }) {
       <div
         className="
           bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
-          shadow-2xl p-6 w-[900px] max-h-[90vh] overflow-auto relative
+          shadow-2xl p-6 w-[1200px] max-h-[90vh] overflow-auto relative
         "
       >
         <button

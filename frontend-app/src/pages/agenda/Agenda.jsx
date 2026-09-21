@@ -68,29 +68,27 @@ export default function Agenda() {
 
   // Editar cita
   const abrirEditar = useCallback(
-    async (cita) => {
-      if (!puedeEditar) {
-        notify("No tienes permiso para editar citas.");
-        return;
-      }
+  async (cita) => {
+    try {
+      const res = await fetch(
+        `https://agenda-intranet-b.onrender.com/api/agenda/${cita.id}`
+      );
+      const citaCompleta = await res.json();
 
-      try {
-        const res = await fetch(
-          `https://agenda-intranet-b.onrender.com/api/agenda/${cita.id}`
-        );
-        const citaCompleta = await res.json();
+      // Si no puede editar → modo ver
+      setModalModo(puedeEditar ? "editar" : "ver");
 
-        setModalModo("editar");
-        setFechaSeleccionada(citaCompleta.fecha);
-        setCitaSeleccionada(citaCompleta);
-        setMostrarModal(true);
-      } catch (err) {
-        console.error("Error cargando cita completa:", err);
-        notify("Error al cargar la cita.");
-      }
-    },
-    [puedeEditar, notify]
-  );
+      setFechaSeleccionada(citaCompleta.fecha);
+      setCitaSeleccionada(citaCompleta);
+      setMostrarModal(true);
+    } catch (err) {
+      console.error("Error cargando cita completa:", err);
+      notify("Error al cargar la cita.");
+    }
+  },
+  [puedeEditar, notify]
+);
+
 
   // Ver cita (solo lectura)
   const abrirVerCita = useCallback(

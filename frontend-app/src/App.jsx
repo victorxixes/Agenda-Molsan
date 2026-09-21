@@ -79,7 +79,6 @@ import SeguridadRolEditor from "./pages/seguridad/SeguridadRolEditor.jsx";
 function MensajesWrapper() {
   const empleado = useAuthStore((s) => s.empleado);
 
-  // ⛔ Evita montar Mensajes antes de tener empleado.id
   if (!empleado || !empleado.id) {
     return (
       <div className="p-6 text-white/70">
@@ -90,7 +89,6 @@ function MensajesWrapper() {
 
   return <Mensajes usuarioId={empleado.id} />;
 }
-
 
 // ============================================================
 // App — Router principal SJ‑2026
@@ -106,10 +104,16 @@ export default function App() {
   return (
     <div className="animate-fade-in">
       <Routes>
+
+        {/* 🔥 PRIMERA PÁGINA SIEMPRE LOGIN */}
+        <Route path="/" element={<Navigate to="/login" replace />} />
+
+        {/* LOGIN */}
         <Route path="/login" element={<LoginPage />} />
 
+        {/* 🔥 TODAS LAS RUTAS PRIVADAS VAN EN /app */}
         <Route
-          path="/"
+          path="/app"
           element={
             <RequireAuth>
               <Layout />
@@ -165,6 +169,7 @@ export default function App() {
           <Route path="seguridad/roles/editor" element={<SeguridadRolEditor />} />
         </Route>
 
+        {/* Cualquier ruta desconocida → login */}
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </div>

@@ -1,7 +1,7 @@
 import Sidebar from "../components/Sidebar";
 import { Outlet } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
-import EmpleadoPerfilModal from "../components/EmpleadoPerfilModal";
+import EmpleadoPerfilModal from "../components/SidebarPerfilModal";
 
 /**
  * Layout — SJ‑2026 Premium

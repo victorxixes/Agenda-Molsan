@@ -72,6 +72,8 @@ import SeguridadAuditoria from "./pages/seguridad/SeguridadAuditoria.jsx";
 import SeguridadLogs from "./pages/seguridad/SeguridadLogs.jsx";
 import SeguridadRolEditor from "./pages/seguridad/SeguridadRolEditor.jsx";
 
+import Informes from "./pages/herramientas/Informes";
+
 // ============================================================
 // Wrapper SJ‑2026 para Mensajes
 // ============================================================
@@ -167,6 +169,7 @@ export default function App() {
           <Route path="seguridad/auditoria" element={<SeguridadAuditoria />} />
           <Route path="seguridad/logs" element={<SeguridadLogs />} />
           <Route path="seguridad/roles/editor" element={<SeguridadRolEditor />} />
+          <Route path="/herramientas/informes" element={<Informes />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/login" replace />} />

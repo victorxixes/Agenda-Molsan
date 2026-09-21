@@ -243,14 +243,22 @@ export default function Agenda() {
       {/* VISTA */}
       <div className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-xl">
         {vista === "mes" && (
-          <VistaMes
-            year={year}
-            month={month}
-            citas={citasSeguras}
-            onDiaClick={permisosAgenda.includes("crear") ? abrirCrear : null}
-            onCitaClick={permisosAgenda.includes("editar") ? abrirEditar : null}
-          />
-        )}
+         <VistaMes
+  year={year}
+  month={month}
+  citas={citasSeguras}
+  onDiaClick={
+    permisosAgenda.includes("crear")
+      ? abrirCrear
+      : () => {}   // función segura
+  }
+  onCitaClick={
+    permisosAgenda.includes("editar")
+      ? abrirEditar
+      : abrirVerCita
+  }
+/>
+
 
         {vista === "semana" && (
           <VistaSemana

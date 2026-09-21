@@ -1,22 +1,18 @@
 import { useEffect, useCallback } from "react";
-import EmpleadoPerfil from "../pages/empleados/EmpleadoPerfil";
+import ModalEmpleado from "./empleados/ModalEmpleado";
 
 export default function EmpleadoPerfilModal({ id, onClose }) {
-  // Blindar ID
   const idNum = Number(id);
   const idValido = Number.isFinite(idNum) && idNum > 0;
 
-  // Si el ID no es válido, NO montar el modal
   if (!idValido) return null;
 
-  // Cerrar con ESC
   useEffect(() => {
     const handleEsc = (e) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", handleEsc);
     return () => window.removeEventListener("keydown", handleEsc);
   }, [onClose]);
 
-  // Cerrar al hacer click fuera
   const handleOverlayClick = useCallback(
     (e) => {
       if (e.target === e.currentTarget) onClose();
@@ -38,7 +34,6 @@ export default function EmpleadoPerfilModal({ id, onClose }) {
           shadow-2xl p-6 w-[900px] max-h-[90vh] overflow-auto relative
         "
       >
-        {/* BOTÓN CERRAR */}
         <button
           className="
             absolute top-4 right-4 text-white/70 hover:text-white
@@ -49,8 +44,12 @@ export default function EmpleadoPerfilModal({ id, onClose }) {
           ✕
         </button>
 
-        {/* PERFIL PREMIUM */}
-        <EmpleadoPerfil id={idNum} />
+        {/* Ficha completa del empleado */}
+        <ModalEmpleado
+          open={true}
+          empleadoId={idNum}
+          onClose={onClose}
+        />
       </div>
     </div>
   );

@@ -143,6 +143,21 @@ export default function Informes() {
     t.nombre.toLowerCase().includes(filtroNombre.toLowerCase())
   );
 
+  // -----------------------------
+  // RESUMEN GLOBAL
+  // -----------------------------
+  const totalVC = tabla.reduce((acc, t) => acc + t.vc, 0);
+  const totalPresencial = tabla.reduce((acc, t) => acc + t.presencial, 0);
+  const totalKm = tabla.reduce((acc, t) => acc + t.km, 0);
+
+  const mediaCitas = tabla.length > 0
+    ? (totalVC + totalPresencial) / tabla.length
+    : 0;
+
+  const mediaKm = tabla.length > 0
+    ? totalKm / tabla.length
+    : 0;
+
   return (
     <div className="p-6 space-y-6 animate-fade-in">
 
@@ -185,6 +200,36 @@ export default function Informes() {
             value={filtroNombre}
             onChange={(e) => setFiltroNombre(e.target.value)}
           />
+        </div>
+
+      </div>
+
+      {/* Panel de resumen */}
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-6 shadow-xl">
+
+        <div className="bg-white/5 p-4 rounded-xl text-center">
+          <h4 className="text-white/70 text-sm">Total VC</h4>
+          <div className="text-3xl font-bold">{totalVC}</div>
+        </div>
+
+        <div className="bg-white/5 p-4 rounded-xl text-center">
+          <h4 className="text-white/70 text-sm">Total Presencial</h4>
+          <div className="text-3xl font-bold">{totalPresencial}</div>
+        </div>
+
+        <div className="bg-white/5 p-4 rounded-xl text-center">
+          <h4 className="text-white/70 text-sm">Km Totales</h4>
+          <div className="text-3xl font-bold">{totalKm}</div>
+        </div>
+
+        <div className="bg-white/5 p-4 rounded-xl text-center">
+          <h4 className="text-white/70 text-sm">Media Citas</h4>
+          <div className="text-3xl font-bold">{mediaCitas.toFixed(1)}</div>
+        </div>
+
+        <div className="bg-white/5 p-4 rounded-xl text-center">
+          <h4 className="text-white/70 text-sm">Media Km</h4>
+          <div className="text-3xl font-bold">{mediaKm.toFixed(1)}</div>
         </div>
 
       </div>

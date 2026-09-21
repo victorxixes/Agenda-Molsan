@@ -284,18 +284,7 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
                     />
                   </div>
 
-                  <div>
-                    <span className="block mb-1 text-white/80">Foto</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="
-                        w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
-                        text-white focus:ring-2 focus:ring-blue-400
-                      "
-                      onChange={handleFoto}
-                    />
-                  </div>
+                  
                 </div>
 
                 <button
@@ -320,6 +309,45 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
                 <h3 className="text-lg font-semibold drop-shadow mb-4">
                   Datos personales
                 </h3>
+<div className="grid grid-cols-3 gap-4 text-sm">
+
+  <div>
+    <span className="block mb-1 text-white/80">Nombre</span>
+    <input
+      className="
+        w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+        text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+      "
+      value={empleado.nombre || ""}
+      onChange={(e) => handleEmpleadoChange("nombre", e.target.value)}
+    />
+  </div>
+
+  <div>
+    <span className="block mb-1 text-white/80">Apellidos</span>
+    <input
+      className="
+        w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+        text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+      "
+      value={empleado.apellidos || ""}
+      onChange={(e) => handleEmpleadoChange("apellidos", e.target.value)}
+    />
+  </div>
+
+  <div>
+    <span className="block mb-1 text-white/80">DNI</span>
+    <input
+      className="
+        w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+        text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+      "
+      value={empleado.dni || ""}
+      onChange={(e) => handleEmpleadoChange("dni", e.target.value)}
+    />
+  </div>
+
+</div>
 
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
@@ -451,7 +479,19 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
                       }
                     />
                   </div>
-
+<div>
+                    <span className="block mb-1 text-white/80">Foto</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="
+                        w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                        text-white focus:ring-2 focus:ring-blue-400
+                      "
+                      onChange={handleFoto}
+                    />
+                  </div>
+                  
                   <div className="col-span-2">
                     <span className="block mb-1 text-white/80">
                       Observaciones

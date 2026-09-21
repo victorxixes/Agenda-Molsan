@@ -119,7 +119,7 @@ from backend.app.dashboard.router import router as dashboard_router
 
 # Utilidades
 from backend.app.Utilidades.router import router as utilidades_router
-from app.informes.router import router as informes_router
+from backend.app.informes.router import router as informes_router
 
 
 # ============================================================

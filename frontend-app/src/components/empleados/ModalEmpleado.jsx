@@ -869,9 +869,10 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
     )}
   </section>
 )}
-          </div> {/* cierre del scroll interno */}
-        </div>   {/* cierre del modal */}
-      </div>     {/* cierre del overlay */}
+
+          </div> 
+        </div>  
+      </div>    
     </>
   );
 }

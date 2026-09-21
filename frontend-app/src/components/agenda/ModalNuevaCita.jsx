@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import AutocompleteNotario from "./AutocompleteNotario";
 import { obtenerNotaria } from "../../api/ctn";
+import SelectSJ from "../ui/SelectSJ"; // ⭐ NUEVO
 
 const TIPOS_CITA = ["Firma notarial", "Reunión", "Visita", "Otros"];
 
@@ -51,10 +52,13 @@ export default function ModalNuevaCita({
 
   const [notarioSeleccionado, setNotarioSeleccionado] = useState(null);
 
-  const handleChange = useCallback((campo, valor) => {
-    if (soloLectura) return;
-    setForm((f) => ({ ...f, [campo]: valor }));
-  }, [soloLectura]);
+  const handleChange = useCallback(
+    (campo, valor) => {
+      if (soloLectura) return;
+      setForm((f) => ({ ...f, [campo]: valor }));
+    },
+    [soloLectura]
+  );
 
   useEffect(() => {
     if (modo === "crear") return;
@@ -156,22 +160,20 @@ export default function ModalNuevaCita({
             />
           </div>
 
-          {/* Tipo de cita */}
+          {/* Tipo de cita — ⭐ SelectSJ */}
           <div className="col-span-2">
             <label className="block mb-1 text-white/80">Tipo de cita</label>
-            <select
-              disabled={soloLectura}
-              className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white disabled:opacity-50"
+
+            <SelectSJ
               value={form.tipo_cita}
-              onChange={(e) => handleChange("tipo_cita", e.target.value)}
-            >
-              <option value="">Seleccionar tipo</option>
-              {TIPOS_CITA.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
-            </select>
+              onChange={(v) => handleChange("tipo_cita", v)}
+              placeholder="Seleccionar tipo"
+              disabled={soloLectura}
+              options={TIPOS_CITA.map((t) => ({
+                value: t,
+                label: t,
+              }))}
+            />
           </div>
 
           {/* Autocomplete Notario */}

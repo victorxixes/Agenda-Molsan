@@ -3,7 +3,7 @@ from datetime import date
 from sqlalchemy.orm import Session
 from backend.app.database import get_db
 from backend.app.empleados.models import Empleado
-from backend.app.citas.models import Cita
+from backend.app.agenda.models import Cita
 
 router = APIRouter(prefix="/informes", tags=["Informes"])
 

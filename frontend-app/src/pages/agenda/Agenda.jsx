@@ -38,7 +38,7 @@ export default function Agenda() {
   const puedeCrear = permisosAgenda.includes("crear");
   const puedeEditar = permisosAgenda.includes("editar");
   const puedeEliminar = permisosAgenda.includes("eliminar");
-  const puedeVer = true;
+  const puedeVer = permisosAgenda.includes("ver") || permisosAgenda.length > 0;
 
   const [mostrarModal, setMostrarModal] = useState(false);
   const [modalModo, setModalModo] = useState("crear"); // crear | editar | ver
@@ -66,29 +66,28 @@ export default function Agenda() {
     [puedeCrear, notify]
   );
 
-  // Editar cita
+  // Abrir cita (editar o ver)
   const abrirEditar = useCallback(
-  async (cita) => {
-    try {
-      const res = await fetch(
-        `https://agenda-intranet-b.onrender.com/api/agenda/${cita.id}`
-      );
-      const citaCompleta = await res.json();
+    async (cita) => {
+      try {
+        const res = await fetch(
+          `https://agenda-intranet-b.onrender.com/api/agenda/${cita.id}`
+        );
+        const citaCompleta = await res.json();
 
-      // Si no puede editar → modo ver
-      setModalModo(puedeEditar ? "editar" : "ver");
+        // Si no puede editar → modo ver
+        setModalModo(puedeEditar ? "editar" : "ver");
 
-      setFechaSeleccionada(citaCompleta.fecha);
-      setCitaSeleccionada(citaCompleta);
-      setMostrarModal(true);
-    } catch (err) {
-      console.error("Error cargando cita completa:", err);
-      notify("Error al cargar la cita.");
-    }
-  },
-  [puedeEditar, notify]
-);
-
+        setFechaSeleccionada(citaCompleta.fecha);
+        setCitaSeleccionada(citaCompleta);
+        setMostrarModal(true);
+      } catch (err) {
+        console.error("Error cargando cita completa:", err);
+        notify("Error al cargar la cita.");
+      }
+    },
+    [puedeEditar, notify]
+  );
 
   // Guardar cita
   const guardarCita = useCallback(
@@ -105,7 +104,9 @@ export default function Agenda() {
             marcarResaltada(creada.id);
             notify("Cita creada correctamente.");
           }
-        } else if (modalModo === "editar" && citaSeleccionada) {
+        }
+
+        else if (modalModo === "editar" && citaSeleccionada) {
           if (!puedeEditar) {
             notify("No tienes permiso para editar citas.");
             return;
@@ -116,8 +117,9 @@ export default function Agenda() {
             marcarResaltada(editada.id);
             notify("Cita actualizada correctamente.");
           }
-        } else if (modalModo === "ver") {
-          // En modo ver no se guarda nada
+        }
+
+        else if (modalModo === "ver") {
           setMostrarModal(false);
           return;
         }
@@ -173,25 +175,20 @@ export default function Agenda() {
 
   const citasSeguras = useMemo(() => (Array.isArray(citas) ? citas : []), [citas]);
 
-  // Handler seguro para clic en cita según permisos
-const handleCitaClick = useCallback(
-  (cita) => {
-    abrirEditar(cita);
-  },
-  [abrirEditar]
-);
+  // Handler seguro para clic en cita
+  const handleCitaClick = useCallback(
+    (cita) => {
+      abrirEditar(cita); // abrirEditar decide si es ver o editar
+    },
+    [abrirEditar]
+  );
 
-
-  // Handler seguro para crear según permisos
+  // Handler seguro para crear
   const handleDiaClick = useCallback(
     (fecha) => {
-      if (!puedeCrear) {
-        notify("No tienes permiso para crear citas.");
-        return;
-      }
       abrirCrear(fecha);
     },
-    [puedeCrear, abrirCrear, notify]
+    [abrirCrear]
   );
 
   return (

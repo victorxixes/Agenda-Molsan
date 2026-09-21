@@ -105,8 +105,8 @@ export default function Sidebar() {
         `}
         onMouseLeave={() => !fixed && setCollapsed(true)}
       >
-  {/* ICONO PERFIL */}
-        {!collapsed && (
+ {/* MI PERFIL */}
+{!collapsed && (
   <div className="mt-4">
     <button
       onClick={() => useAuthStore.getState().setPerfilModal(empleado.id)}
@@ -133,6 +133,7 @@ export default function Sidebar() {
     </button>
   </div>
 )}
+
         {/* HEADER */}
         {!collapsed && (
           <div className="flex items-center justify-between mb-2">

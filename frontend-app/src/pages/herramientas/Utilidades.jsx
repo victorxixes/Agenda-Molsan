@@ -7,9 +7,6 @@ import { Link } from "react-router-dom";
  * - Animación fade‑in
  */
 
-import { useCallback } from "react";
-import { Link } from "react-router-dom";
-
 export default function Utilidades() {
   const titulo = useCallback(() => "Utilidades del sistema", []);
 

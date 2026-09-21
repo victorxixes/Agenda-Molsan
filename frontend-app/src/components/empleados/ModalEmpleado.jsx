@@ -11,6 +11,8 @@ import {
 } from "../../api/empleados";
 import { getMaestros } from "../../api/maestros";
 
+import SelectSJ from "../ui/SelectSJ";
+
 export default function ModalEmpleado({ open, onClose, empleadoId }) {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState(null);
@@ -215,19 +217,17 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
                 <div className="grid grid-cols-3 gap-4 text-sm">
                   <div>
                     <span className="block mb-1 text-white/80">Estado</span>
-                    <select
-                      className="
-                        w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
-                        text-white focus:ring-2 focus:ring-blue-400
-                      "
+
+                    <SelectSJ
                       value={empleado.estado ?? 1}
-                      onChange={(e) =>
-                        handleEmpleadoChange("estado", Number(e.target.value))
+                      onChange={(v) =>
+                        handleEmpleadoChange("estado", Number(v))
                       }
-                    >
-                      <option value={1}>Activo</option>
-                      <option value={0}>Baja</option>
-                    </select>
+                      options={[
+                        { value: 1, label: "Activo" },
+                        { value: 0, label: "Baja" },
+                      ]}
+                    />
                   </div>
 
                   <div>
@@ -519,7 +519,7 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
                   </div>
                 </div>
 
-                <button
+                                <button
                   className="
                     mt-4 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
                     text-white shadow-lg transition
@@ -545,83 +545,61 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
 
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <span className="block mb-1 text-white/80">
-                      Departamento
-                    </span>
-                    <select
-                      className="
-                        w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
-                        text-white focus:ring-2 focus:ring-blue-400
-                      "
+                    <span className="block mb-1 text-white/80">Departamento</span>
+
+                    <SelectSJ
                       value={empleado.departamento_id || ""}
-                      onChange={(e) =>
-                        handleEmpleadoChange(
-                          "departamento_id",
-                          Number(e.target.value)
-                        )
+                      onChange={(v) =>
+                        handleEmpleadoChange("departamento_id", Number(v))
                       }
-                    >
-                      <option value="">Sin departamento</option>
-                      {departamentos.map((d) => (
-                        <option key={d.id} value={d.id}>
-                          {d.nombre}
-                        </option>
-                      ))}
-                    </select>
+                      options={[
+                        { value: "", label: "Sin departamento" },
+                        ...departamentos.map((d) => ({
+                          value: d.id,
+                          label: d.nombre,
+                        })),
+                      ]}
+                    />
                   </div>
 
                   <div>
                     <span className="block mb-1 text-white/80">Sección</span>
-                    <select
-                      className="
-                        w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
-                        text-white focus:ring-2 focus:ring-blue-400
-                      "
+
+                    <SelectSJ
                       value={empleado.seccion_id || ""}
-                      onChange={(e) =>
-                        handleEmpleadoChange(
-                          "seccion_id",
-                          Number(e.target.value)
-                        )
+                      onChange={(v) =>
+                        handleEmpleadoChange("seccion_id", Number(v))
                       }
-                    >
-                      <option value="">Sin sección</option>
-                      {secciones.map((s) => (
-                        <option key={s.id} value={s.id}>
-                          {s.nombre}
-                        </option>
-                      ))}
-                    </select>
+                      options={[
+                        { value: "", label: "Sin sección" },
+                        ...secciones.map((s) => ({
+                          value: s.id,
+                          label: s.nombre,
+                        })),
+                      ]}
+                    />
                   </div>
 
                   <div>
                     <span className="block mb-1 text-white/80">Cargo</span>
-                    <select
-                      className="
-                        w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
-                        text-white focus:ring-2 focus:ring-blue-400
-                      "
+
+                    <SelectSJ
                       value={empleado.cargo_id || ""}
-                      onChange={(e) =>
-                        handleEmpleadoChange(
-                          "cargo_id",
-                          Number(e.target.value)
-                        )
+                      onChange={(v) =>
+                        handleEmpleadoChange("cargo_id", Number(v))
                       }
-                    >
-                      <option value="">Sin cargo</option>
-                      {cargos.map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.nombre}
-                        </option>
-                      ))}
-                    </select>
+                      options={[
+                        { value: "", label: "Sin cargo" },
+                        ...cargos.map((c) => ({
+                          value: c.id,
+                          label: c.nombre,
+                        })),
+                      ]}
+                    />
                   </div>
 
                   <div>
-                    <span className="block mb-1 text-white/80">
-                      Fecha alta
-                    </span>
+                    <span className="block mb-1 text-white/80">Fecha alta</span>
                     <input
                       type="date"
                       className="
@@ -636,9 +614,7 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
                   </div>
 
                   <div>
-                    <span className="block mb-1 text-white/80">
-                      Fecha baja
-                    </span>
+                    <span className="block mb-1 text-white/80">Fecha baja</span>
                     <input
                       type="date"
                       className="
@@ -705,17 +681,11 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
 
                 {/* ESTADO DEL EMPLEADO */}
                 <div className="mt-4">
-                  <span className="block mb-1 text-white/80">
-                    Estado actual
-                  </span>
+                  <span className="block mb-1 text-white/80">Estado actual</span>
                   {empleado.activo ? (
-                    <span className="text-green-400 font-semibold">
-                      Activo
-                    </span>
+                    <span className="text-green-400 font-semibold">Activo</span>
                   ) : (
-                    <span className="text-red-400 font-semibold">
-                      Bloqueado
-                    </span>
+                    <span className="text-red-400 font-semibold">Bloqueado</span>
                   )}
                 </div>
 
@@ -764,7 +734,7 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
                   )}
                 </div>
 
-                {/* ROL DEL EMPLEADO */}
+                {/* ROL */}
                 <div
                   className="
                     bg-white/5 border border-white/20 rounded-xl p-4 shadow-md
@@ -786,28 +756,23 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
                     </span>
                   </h4>
 
-                  <div className="flex items-center gap-4 text-sm">
-                    <select
-                      className="
-                        bg-white/10 border border-white/20 rounded-xl px-3 py-2
-                        text-white focus:ring-2 focus:ring-blue-400
-                      "
-                      value={empleado?.rol?.id || ""}
-                      onChange={(e) => {
-                        const id = Number(e.target.value);
-                        const rolObj =
-                          roles.find((r) => r.id === id) || null;
-                        handleEmpleadoChange("rol", rolObj);
-                      }}
-                    >
-                      <option value="">Sin rol</option>
-                      {roles.map((r) => (
-                        <option key={r.id} value={r.id}>
-                          {r.nombre}
-                        </option>
-                      ))}
-                    </select>
+                  <SelectSJ
+                    value={empleado?.rol?.id || ""}
+                    onChange={(v) => {
+                      const id = Number(v);
+                      const rolObj = roles.find((r) => r.id === id) || null;
+                      handleEmpleadoChange("rol", rolObj);
+                    }}
+                    options={[
+                      { value: "", label: "Sin rol" },
+                      ...roles.map((r) => ({
+                        value: r.id,
+                        label: r.nombre,
+                      })),
+                    ]}
+                  />
 
+                  <div className="flex items-center gap-4 text-sm mt-4">
                     <button
                       className="
                         px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
@@ -1047,9 +1012,9 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
                 )}
               </section>
             )}
-          </div>
-        </div>
-      </div>
+          </div> {/* cierre scroll interno */}
+        </div>   {/* cierre modal */}
+      </div>     {/* cierre overlay */}
     </>
   );
 }

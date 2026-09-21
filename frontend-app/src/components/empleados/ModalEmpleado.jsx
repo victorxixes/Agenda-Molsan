@@ -11,8 +11,6 @@ import {
 } from "../../api/empleados";
 import { getMaestros } from "../../api/maestros";
 
-import SelectSJ from "../ui/SelectSJ";
-
 export default function ModalEmpleado({ open, onClose, empleadoId }) {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState(null);
@@ -74,6 +72,7 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
   const handleEmpleadoChange = useCallback((campo, valor) => {
     setEmpleado((e) => ({ ...e, [campo]: valor }));
   }, []);
+
   const handleFoto = useCallback(
     async (e) => {
       const file = e.target.files[0];
@@ -139,6 +138,7 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
             shadow-2xl w-[900px] max-h-[90vh] overflow-hidden text-white
           "
         >
+          {/* HEADER */}
           <div
             className="
               flex justify-between items-center px-6 py-4 border-b border-white/20
@@ -146,7 +146,8 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
             "
           >
             <h2 className="text-xl font-semibold drop-shadow">
-              Ficha empleado {empleado.id} — {empleado.nombre} {empleado.apellidos}
+              Ficha empleado {empleado.id} — {empleado.nombre}{" "}
+              {empleado.apellidos}
             </h2>
 
             <button
@@ -160,6 +161,7 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
             </button>
           </div>
 
+          {/* TABS PRINCIPALES */}
           <div
             className="
               px-6 pt-3 pb-2 border-b border-white/20 flex gap-3 text-sm
@@ -190,689 +192,864 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
             )}
           </div>
 
+          {/* CONTENIDO SCROLLEABLE */}
           <div className="px-6 pb-6 pt-4 overflow-y-auto max-h-[75vh]">
-{/* DATOS PERSONALES */}
-{!loading && tab === "personales" && (
-  <section
-    className="
-      bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
-      p-6 shadow-xl space-y-6
-    "
-  >
-    <h3 className="text-lg font-semibold drop-shadow mb-4">
-      Datos personales
-    </h3>
+            {loading && (
+              <div className="text-sm text-white/70 animate-pulse">
+                Cargando ficha…
+              </div>
+            )}
 
-    <div className="grid grid-cols-3 gap-4 text-sm">
+            {/* TAB: BÁSICOS */}
+            {!loading && tab === "basicos" && (
+              <section
+                className="
+                  bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
+                  p-6 shadow-xl space-y-6
+                "
+              >
+                <h3 className="text-lg font-semibold drop-shadow mb-4">
+                  Datos básicos
+                </h3>
 
-      <div>
-        <span className="block mb-1 text-white/80">Nombre</span>
-        <input
-          className="
-            w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
-            text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
-          "
-          value={empleado.nombre || ""}
-          onChange={(e) => handleEmpleadoChange("nombre", e.target.value)}
-        />
-      </div>
+                <div className="grid grid-cols-3 gap-4 text-sm">
+                  <div>
+                    <span className="block mb-1 text-white/80">Estado</span>
+                    <select
+                      className="
+                        w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                        text-white focus:ring-2 focus:ring-blue-400
+                      "
+                      value={empleado.estado ?? 1}
+                      onChange={(e) =>
+                        handleEmpleadoChange("estado", Number(e.target.value))
+                      }
+                    >
+                      <option value={1}>Activo</option>
+                      <option value={0}>Baja</option>
+                    </select>
+                  </div>
 
-      <div>
-        <span className="block mb-1 text-white/80">Apellidos</span>
-        <input
-          className="
-            w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
-            text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
-          "
-          value={empleado.apellidos || ""}
-          onChange={(e) => handleEmpleadoChange("apellidos", e.target.value)}
-        />
-      </div>
+                  <div>
+                    <span className="block mb-1 text-white/80">Nombre</span>
+                    <input
+                      className="
+                        w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                        text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                      "
+                      value={empleado.nombre || ""}
+                      onChange={(e) =>
+                        handleEmpleadoChange("nombre", e.target.value)
+                      }
+                    />
+                  </div>
 
-      <div>
-        <span className="block mb-1 text-white/80">DNI</span>
-        <input
-          className="
-            w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
-            text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
-          "
-          value={empleado.dni || ""}
-          onChange={(e) => handleEmpleadoChange("dni", e.target.value)}
-        />
-      </div>
+                  <div>
+                    <span className="block mb-1 text-white/80">Teléfono</span>
+                    <input
+                      className="
+                        w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                        text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                      "
+                      value={empleado.telefono || ""}
+                      onChange={(e) =>
+                        handleEmpleadoChange("telefono", e.target.value)
+                      }
+                    />
+                  </div>
 
-    </div>
+                  <div>
+                    <span className="block mb-1 text-white/80">
+                      Email empresa
+                    </span>
+                    <input
+                      className="
+                        w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                        text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                      "
+                      value={empleado.email_empresa || ""}
+                      onChange={(e) =>
+                        handleEmpleadoChange("email_empresa", e.target.value)
+                      }
+                    />
+                  </div>
 
-    <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="block mb-1 text-white/80">Extensión</span>
+                    <input
+                      className="
+                        w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                        text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                      "
+                      value={empleado.extension || ""}
+                      onChange={(e) =>
+                        handleEmpleadoChange("extension", e.target.value)
+                      }
+                    />
+                  </div>
+                </div>
 
-      <div>
-        <span className="block mb-1 text-white/80">Dirección</span>
-        <input
-          className="
-            w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
-            text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
-          "
-          value={empleado.direccion || ""}
-          onChange={(e) =>
-            handleEmpleadoChange("direccion", e.target.value)
-          }
-        />
-      </div>
+                <button
+                  className="
+                    mt-4 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
+                    text-white shadow-lg transition
+                  "
+                  onClick={guardarEmpleado}
+                >
+                  Guardar datos básicos
+                </button>
+              </section>
+            )}
 
-      <div>
-        <span className="block mb-1 text-white/80">Código postal</span>
-        <input
-          className="
-            w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
-            text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
-          "
-          value={empleado.codigo_postal || ""}
-          onChange={(e) =>
-            handleEmpleadoChange("codigo_postal", e.target.value)
-          }
-        />
-      </div>
+            {/* TAB: PERSONALES */}
+            {!loading && tab === "personales" && (
+              <section
+                className="
+                  bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
+                  p-6 shadow-xl space-y-6
+                "
+              >
+                <h3 className="text-lg font-semibold drop-shadow mb-4">
+                  Datos personales
+                </h3>
 
-      <div>
-        <span className="block mb-1 text-white/80">Población</span>
-        <input
-          className="
-            w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
-            text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
-          "
-          value={empleado.poblacion || ""}
-          onChange={(e) =>
-            handleEmpleadoChange("poblacion", e.target.value)
-          }
-        />
-      </div>
+                <div className="grid grid-cols-3 gap-4 text-sm">
+                  <div>
+                    <span className="block mb-1 text-white/80">Nombre</span>
+                    <input
+                      className="
+                        w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                        text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                      "
+                      value={empleado.nombre || ""}
+                      onChange={(e) =>
+                        handleEmpleadoChange("nombre", e.target.value)
+                      }
+                    />
+                  </div>
 
-      <div>
-        <span className="block mb-1 text-white/80">Provincia</span>
-        <input
-          className="
-            w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
-            text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
-          "
-          value={empleado.provincia || ""}
-          onChange={(e) =>
-            handleEmpleadoChange("provincia", e.target.value)
-          }
-        />
-      </div>
+                  <div>
+                    <span className="block mb-1 text-white/80">Apellidos</span>
+                    <input
+                      className="
+                        w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                        text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                      "
+                      value={empleado.apellidos || ""}
+                      onChange={(e) =>
+                        handleEmpleadoChange("apellidos", e.target.value)
+                      }
+                    />
+                  </div>
 
-      <div>
-        <span className="block mb-1 text-white/80">Fecha nacimiento</span>
-        <input
-          type="date"
-          className="
-            w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
-            text-white focus:ring-2 focus:ring-blue-400
-          "
-          value={empleado.fecha_nacimiento || ""}
-          onChange={(e) =>
-            handleEmpleadoChange("fecha_nacimiento", e.target.value)
-          }
-        />
-      </div>
+                  <div>
+                    <span className="block mb-1 text-white/80">DNI</span>
+                    <input
+                      className="
+                        w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                        text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                      "
+                      value={empleado.dni || ""}
+                      onChange={(e) =>
+                        handleEmpleadoChange("dni", e.target.value)
+                      }
+                    />
+                  </div>
+                </div>
 
-      <div>
-        <span className="block mb-1 text-white/80">Alergias</span>
-        <input
-          className="
-            w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
-            text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
-          "
-          value={empleado.alergias || ""}
-          onChange={(e) =>
-            handleEmpleadoChange("alergias", e.target.value)
-          }
-        />
-      </div>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="block mb-1 text-white/80">Dirección</span>
+                    <input
+                      className="
+                        w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                        text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                      "
+                      value={empleado.direccion || ""}
+                      onChange={(e) =>
+                        handleEmpleadoChange("direccion", e.target.value)
+                      }
+                    />
+                  </div>
 
-      <div>
-        <span className="block mb-1 text-white/80">Persona contacto</span>
-        <input
-          className="
-            w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
-            text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
-          "
-          value={empleado.persona_contacto || ""}
-          onChange={(e) =>
-            handleEmpleadoChange("persona_contacto", e.target.value)
-          }
-        />
-      </div>
+                  <div>
+                    <span className="block mb-1 text-white/80">
+                      Código postal
+                    </span>
+                    <input
+                      className="
+                        w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                        text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                      "
+                      value={empleado.codigo_postal || ""}
+                      onChange={(e) =>
+                        handleEmpleadoChange("codigo_postal", e.target.value)
+                      }
+                    />
+                  </div>
 
-      <div>
-        <span className="block mb-1 text-white/80">Teléfono contacto</span>
-        <input
-          className="
-            w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
-            text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
-          "
-          value={empleado.telefono_contacto || ""}
-          onChange={(e) =>
-            handleEmpleadoChange("telefono_contacto", e.target.value)
-          }
-        />
-      </div>
+                  <div>
+                    <span className="block mb-1 text-white/80">Población</span>
+                    <input
+                      className="
+                        w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                        text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                      "
+                      value={empleado.poblacion || ""}
+                      onChange={(e) =>
+                        handleEmpleadoChange("poblacion", e.target.value)
+                      }
+                    />
+                  </div>
 
-      <div>
-        <span className="block mb-1 text-white/80">Foto</span>
-        <input
-          type="file"
-          accept="image/*"
-          className="
-            w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
-            text-white focus:ring-2 focus:ring-blue-400
-          "
-          onChange={handleFoto}
-        />
-      </div>
+                  <div>
+                    <span className="block mb-1 text-white/80">Provincia</span>
+                    <input
+                      className="
+                        w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                        text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                      "
+                      value={empleado.provincia || ""}
+                      onChange={(e) =>
+                        handleEmpleadoChange("provincia", e.target.value)
+                      }
+                    />
+                  </div>
 
-      <div className="col-span-2">
-        <span className="block mb-1 text-white/80">Observaciones</span>
-        <textarea
-          className="
-            w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
-            text-white text-sm focus:ring-2 focus:ring-blue-400
-          "
-          rows={3}
-          value={empleado.observaciones || ""}
-          onChange={(e) =>
-            handleEmpleadoChange("observaciones", e.target.value)
-          }
-        />
-      </div>
+                  <div>
+                    <span className="block mb-1 text-white/80">
+                      Fecha nacimiento
+                    </span>
+                    <input
+                      type="date"
+                      className="
+                        w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                        text-white focus:ring-2 focus:ring-blue-400
+                      "
+                      value={empleado.fecha_nacimiento || ""}
+                      onChange={(e) =>
+                        handleEmpleadoChange(
+                          "fecha_nacimiento",
+                          e.target.value
+                        )
+                      }
+                    />
+                  </div>
 
-    </div>
+                  <div>
+                    <span className="block mb-1 text-white/80">Alergias</span>
+                    <input
+                      className="
+                        w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                        text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                      "
+                      value={empleado.alergias || ""}
+                      onChange={(e) =>
+                        handleEmpleadoChange("alergias", e.target.value)
+                      }
+                    />
+                  </div>
 
-    <button
-      className="
-        mt-4 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
-        text-white shadow-lg transition
-      "
-      onClick={guardarEmpleado}
-    >
-      Guardar cambios
-    </button>
-  </section>
-)}
+                  <div>
+                    <span className="block mb-1 text-white/80">
+                      Persona contacto
+                    </span>
+                    <input
+                      className="
+                        w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                        text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                      "
+                      value={empleado.persona_contacto || ""}
+                      onChange={(e) =>
+                        handleEmpleadoChange(
+                          "persona_contacto",
+                          e.target.value
+                        )
+                      }
+                    />
+                  </div>
 
-{/* DATOS LABORALES */}
-{!loading && tab === "laborales" && (
-  <section
-    className="
-      bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
-      p-6 shadow-xl space-y-6
-    "
-  >
-    <h3 className="text-lg font-semibold drop-shadow mb-4">
-      Datos laborales
-    </h3>
+                  <div>
+                    <span className="block mb-1 text-white/80">
+                      Teléfono contacto
+                    </span>
+                    <input
+                      className="
+                        w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                        text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                      "
+                      value={empleado.telefono_contacto || ""}
+                      onChange={(e) =>
+                        handleEmpleadoChange(
+                          "telefono_contacto",
+                          e.target.value
+                        )
+                      }
+                    />
+                  </div>
 
-    <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="block mb-1 text-white/80">Foto</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="
+                        w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                        text-white focus:ring-2 focus:ring-blue-400
+                      "
+                      onChange={handleFoto}
+                    />
+                  </div>
 
-      {/* ⭐ DEPARTAMENTO */}
-      <div>
-        <span className="block mb-1 text-white/80">Departamento</span>
-        <SelectSJ
-          value={empleado.departamento_id || ""}
-          onChange={(v) =>
-            handleEmpleadoChange("departamento_id", Number(v))
-          }
-          options={[
-            { value: "", label: "Sin departamento" },
-            ...departamentos.map((d) => ({
-              value: d.id,
-              label: d.nombre,
-            })),
-          ]}
-        />
-      </div>
+                  <div className="col-span-2">
+                    <span className="block mb-1 text-white/80">
+                      Observaciones
+                    </span>
+                    <textarea
+                      className="
+                        w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                        text-white text-sm focus:ring-2 focus:ring-blue-400
+                      "
+                      rows={3}
+                      value={empleado.observaciones || ""}
+                      onChange={(e) =>
+                        handleEmpleadoChange("observaciones", e.target.value)
+                      }
+                    />
+                  </div>
+                </div>
 
-      {/* ⭐ SECCIÓN */}
-      <div>
-        <span className="block mb-1 text-white/80">Sección</span>
-        <SelectSJ
-          value={empleado.seccion_id || ""}
-          onChange={(v) =>
-            handleEmpleadoChange("seccion_id", Number(v))
-          }
-          options={[
-            { value: "", label: "Sin sección" },
-            ...secciones.map((s) => ({
-              value: s.id,
-              label: s.nombre,
-            })),
-          ]}
-        />
-      </div>
+                <button
+                  className="
+                    mt-4 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
+                    text-white shadow-lg transition
+                  "
+                  onClick={guardarEmpleado}
+                >
+                  Guardar cambios
+                </button>
+              </section>
+            )}
 
-      {/* ⭐ CARGO */}
-      <div>
-        <span className="block mb-1 text-white/80">Cargo</span>
-        <SelectSJ
-          value={empleado.cargo_id || ""}
-          onChange={(v) =>
-            handleEmpleadoChange("cargo_id", Number(v))
-          }
-          options={[
-            { value: "", label: "Sin cargo" },
-            ...cargos.map((c) => ({
-              value: c.id,
-              label: c.nombre,
-            })),
-          ]}
-        />
-      </div>
+            {/* TAB: LABORALES */}
+            {!loading && tab === "laborales" && (
+              <section
+                className="
+                  bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
+                  p-6 shadow-xl space-y-6
+                "
+              >
+                <h3 className="text-lg font-semibold drop-shadow mb-4">
+                  Datos laborales
+                </h3>
 
-      {/* FECHA ALTA */}
-      <div>
-        <span className="block mb-1 text-white/80">Fecha alta</span>
-        <input
-          type="date"
-          className="
-            w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
-            text-white focus:ring-2 focus:ring-blue-400
-          "
-          value={empleado.fecha_alta || ""}
-          onChange={(e) =>
-            handleEmpleadoChange("fecha_alta", e.target.value)
-          }
-        />
-      </div>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="block mb-1 text-white/80">
+                      Departamento
+                    </span>
+                    <select
+                      className="
+                        w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                        text-white focus:ring-2 focus:ring-blue-400
+                      "
+                      value={empleado.departamento_id || ""}
+                      onChange={(e) =>
+                        handleEmpleadoChange(
+                          "departamento_id",
+                          Number(e.target.value)
+                        )
+                      }
+                    >
+                      <option value="">Sin departamento</option>
+                      {departamentos.map((d) => (
+                        <option key={d.id} value={d.id}>
+                          {d.nombre}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
-      {/* FECHA BAJA */}
-      <div>
-        <span className="block mb-1 text-white/80">Fecha baja</span>
-        <input
-          type="date"
-          className="
-            w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
-            text-white focus:ring-2 focus:ring-blue-400
-          "
-          value={empleado.fecha_baja || ""}
-          onChange={(e) =>
-            handleEmpleadoChange("fecha_baja", e.target.value)
-          }
-        />
-      </div>
+                  <div>
+                    <span className="block mb-1 text-white/80">Sección</span>
+                    <select
+                      className="
+                        w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                        text-white focus:ring-2 focus:ring-blue-400
+                      "
+                      value={empleado.seccion_id || ""}
+                      onChange={(e) =>
+                        handleEmpleadoChange(
+                          "seccion_id",
+                          Number(e.target.value)
+                        )
+                      }
+                    >
+                      <option value="">Sin sección</option>
+                      {secciones.map((s) => (
+                        <option key={s.id} value={s.id}>
+                          {s.nombre}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
-    </div>
+                  <div>
+                    <span className="block mb-1 text-white/80">Cargo</span>
+                    <select
+                      className="
+                        w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                        text-white focus:ring-2 focus:ring-blue-400
+                      "
+                      value={empleado.cargo_id || ""}
+                      onChange={(e) =>
+                        handleEmpleadoChange(
+                          "cargo_id",
+                          Number(e.target.value)
+                        )
+                      }
+                    >
+                      <option value="">Sin cargo</option>
+                      {cargos.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.nombre}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
-    <button
-      className="
-        mt-4 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
-        text-white shadow-lg transition
-      "
-      onClick={guardarEmpleado}
-    >
-      Guardar datos laborales
-    </button>
-  </section>
-)}
-{!loading && tab === "seguridad" && (
-  <section
-    className="
-      bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
-      p-6 shadow-xl space-y-6
-    "
-  >
-    <h3 className="text-lg font-semibold drop-shadow mb-4">
-      Seguridad interna
-    </h3>
+                  <div>
+                    <span className="block mb-1 text-white/80">
+                      Fecha alta
+                    </span>
+                    <input
+                      type="date"
+                      className="
+                        w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                        text-white focus:ring-2 focus:ring-blue-400
+                      "
+                      value={empleado.fecha_alta || ""}
+                      onChange={(e) =>
+                        handleEmpleadoChange("fecha_alta", e.target.value)
+                      }
+                    />
+                  </div>
 
-    <div className="grid grid-cols-3 gap-4 text-sm">
-      <div>
-        <span className="block mb-1 text-white/80">Usuario</span>
-        <input
-          className="
-            w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
-            text-white/80 cursor-not-allowed
-          "
-          value={empleado.usuario || ""}
-          readOnly
-        />
-      </div>
+                  <div>
+                    <span className="block mb-1 text-white/80">
+                      Fecha baja
+                    </span>
+                    <input
+                      type="date"
+                      className="
+                        w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                        text-white focus:ring-2 focus:ring-blue-400
+                      "
+                      value={empleado.fecha_baja || ""}
+                      onChange={(e) =>
+                        handleEmpleadoChange("fecha_baja", e.target.value)
+                      }
+                    />
+                  </div>
+                </div>
 
-      <div>
-        <span className="block mb-1 text-white/80">Password</span>
-        <input
-          className="
-            w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
-            text-white/80 cursor-not-allowed
-          "
-          value="********"
-          readOnly
-        />
-      </div>
-    </div>
+                <button
+                  className="
+                    mt-4 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
+                    text-white shadow-lg transition
+                  "
+                  onClick={guardarEmpleado}
+                >
+                  Guardar datos laborales
+                </button>
+              </section>
+            )}
 
-    {/* ESTADO */}
-    <div className="mt-4">
-      <span className="block mb-1 text-white/80">Estado actual</span>
-      {empleado.activo ? (
-        <span className="text-green-400 font-semibold">Activo</span>
-      ) : (
-        <span className="text-red-400 font-semibold">Bloqueado</span>
-      )}
-    </div>
+            {/* TAB: SEGURIDAD */}
+            {!loading && tab === "seguridad" && (
+              <section
+                className="
+                  bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
+                  p-6 shadow-xl space-y-6
+                "
+              >
+                <h3 className="text-lg font-semibold drop-shadow mb-4">
+                  Seguridad interna
+                </h3>
 
-    {/* BLOQUEAR / DESBLOQUEAR */}
-    <div className="flex gap-4 mt-4">
-      {empleado.activo ? (
-        <button
-          className="
-            px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700
-            text-white shadow-lg transition active:scale-[0.97]
-          "
-          onClick={async () => {
-            await axios.post(
-              `${API_BASE}/seguridad/asignar/empleado/${empleado.id}/bloquear`
-            );
-            const res = await obtenerFichaCompleta(empleado.id);
-            const d = res.data;
-            setData(d);
-            setEmpleado(d.empleado || {});
-            mostrarToast("ok", "Empleado bloqueado");
-          }}
-        >
-          Bloquear empleado
-        </button>
-      ) : (
-        <button
-          className="
-            px-4 py-2 rounded-xl bg-green-600 hover:bg-green-700
-            text-white shadow-lg transition active:scale-[0.97]
-          "
-          onClick={async () => {
-            await axios.post(
-              `${API_BASE}/seguridad/asignar/empleado/${empleado.id}/desbloquear`
-            );
-            const res = await obtenerFichaCompleta(empleado.id);
-            const d = res.data;
-            setData(d);
-            setEmpleado(d.empleado || {});
-            mostrarToast("ok", "Empleado desbloqueado");
-          }}
-        >
-          Desbloquear empleado
-        </button>
-      )}
-    </div>
+                <div className="grid grid-cols-3 gap-4 text-sm">
+                  <div>
+                    <span className="block mb-1 text-white/80">Usuario</span>
+                    <input
+                      className="
+                        w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                        text-white/80 cursor-not-allowed
+                      "
+                      value={empleado.usuario || ""}
+                      readOnly
+                    />
+                  </div>
 
-    {/* ROL */}
-    <div
-      className="
-        bg-white/5 border border-white/20 rounded-xl p-4 shadow-md
-        backdrop-blur-md
-      "
-    >
-      <h4 className="font-semibold text-sm mb-3 text-white flex items-center gap-3">
-        Rol del empleado
-        <span
-          className="
-            px-3 py-1 bg-white/10 border border-white/20 rounded-xl
-            text-white/80 text-xs backdrop-blur-md
-          "
-        >
-          Actual:{" "}
-          <strong className="text-white">
-            {empleado?.rol?.nombre || "Sin rol"}
-          </strong>
-        </span>
-      </h4>
+                  <div>
+                    <span className="block mb-1 text-white/80">Password</span>
+                    <input
+                      className="
+                        w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                        text-white/80 cursor-not-allowed
+                      "
+                      value="********"
+                      readOnly
+                    />
+                  </div>
+                </div>
 
-      <div className="flex items-center gap-4 text-sm">
+                {/* ESTADO DEL EMPLEADO */}
+                <div className="mt-4">
+                  <span className="block mb-1 text-white/80">
+                    Estado actual
+                  </span>
+                  {empleado.activo ? (
+                    <span className="text-green-400 font-semibold">
+                      Activo
+                    </span>
+                  ) : (
+                    <span className="text-red-400 font-semibold">
+                      Bloqueado
+                    </span>
+                  )}
+                </div>
 
-        <SelectSJ
-          value={empleado?.rol?.id || ""}
-          onChange={(v) => {
-            const id = Number(v);
-            const rolObj = roles.find((r) => r.id === id) || null;
-            handleEmpleadoChange("rol", rolObj);
-          }}
-          options={[
-            { value: "", label: "Sin rol" },
-            ...roles.map((r) => ({
-              value: r.id,
-              label: r.nombre,
-            })),
-          ]}
-        />
+                {/* BOTONES BLOQUEAR / DESBLOQUEAR */}
+                <div className="flex gap-4 mt-4">
+                  {empleado.activo ? (
+                    <button
+                      className="
+                        px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700
+                        text-white shadow-lg transition active:scale-[0.97]
+                      "
+                      onClick={async () => {
+                        await axios.post(
+                          `${API_BASE}/seguridad/asignar/empleado/${empleado.id}/bloquear`
+                        );
 
-        <button
-          className="
-            px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
-            text-white shadow-lg transition
-          "
-          onClick={guardarRol}
-        >
-          Guardar rol
-        </button>
+                        const res = await obtenerFichaCompleta(empleado.id);
+                        const d = res.data;
+                        setData(d);
+                        setEmpleado(d.empleado || {});
+                        mostrarToast("ok", "Empleado bloqueado");
+                      }}
+                    >
+                      Bloquear empleado
+                    </button>
+                  ) : (
+                    <button
+                      className="
+                        px-4 py-2 rounded-xl bg-green-600 hover:bg-green-700
+                        text-white shadow-lg transition active:scale-[0.97]
+                      "
+                      onClick={async () => {
+                        await axios.post(
+                          `${API_BASE}/seguridad/asignar/empleado/${empleado.id}/desbloquear`
+                        );
 
-        <button
-          className="
-            px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700
-            text-white shadow-lg transition
-          "
-          onClick={() => handleEmpleadoChange("rol", null)}
-        >
-          Reset rol
-        </button>
-      </div>
-    </div>
+                        const res = await obtenerFichaCompleta(empleado.id);
+                        const d = res.data;
+                        setData(d);
+                        setEmpleado(d.empleado || {});
+                        mostrarToast("ok", "Empleado desbloqueado");
+                      }}
+                    >
+                      Desbloquear empleado
+                    </button>
+                  )}
+                </div>
 
-    {/* RESET PASSWORD */}
-    <button
-      className="
-        px-4 py-2 rounded-xl bg-orange-600 hover:bg-orange-700
-        text-white shadow-lg transition
-      "
-      onClick={async () => {
-        await resetPasswordEmpleado(empleado.id);
-        mostrarToast("ok", "Contraseña reseteada");
-      }}
-    >
-      Reset contraseña
-    </button>
+                {/* ROL DEL EMPLEADO */}
+                <div
+                  className="
+                    bg-white/5 border border-white/20 rounded-xl p-4 shadow-md
+                    backdrop-blur-md
+                  "
+                >
+                  <h4 className="font-semibold text-sm mb-3 text-white flex items-center gap-3">
+                    Rol del empleado
+                    <span
+                      className="
+                        px-3 py-1 bg-white/10 border border-white/20 rounded-xl
+                        text-white/80 text-xs backdrop-blur-md
+                      "
+                    >
+                      Actual:{" "}
+                      <strong className="text-white">
+                        {empleado?.rol?.nombre || "Sin rol"}
+                      </strong>
+                    </span>
+                  </h4>
 
-    {/* TABS SEGURIDAD */}
-    <div className="flex gap-3 mt-6 text-sm">
-      <button
-        className={`
-          px-4 py-2 rounded-xl transition-all
-          ${
-            seguridadTab === "modulos"
-              ? "bg-blue-600 text-white shadow-lg"
-              : "bg-white/10 text-white/70 hover:bg-white/20"
-          }
-        `}
-        onClick={() => setSeguridadTab("modulos")}
-      >
-        Módulos visibles
-      </button>
+                  <div className="flex items-center gap-4 text-sm">
+                    <select
+                      className="
+                        bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                        text-white focus:ring-2 focus:ring-blue-400
+                      "
+                      value={empleado?.rol?.id || ""}
+                      onChange={(e) => {
+                        const id = Number(e.target.value);
+                        const rolObj =
+                          roles.find((r) => r.id === id) || null;
+                        handleEmpleadoChange("rol", rolObj);
+                      }}
+                    >
+                      <option value="">Sin rol</option>
+                      {roles.map((r) => (
+                        <option key={r.id} value={r.id}>
+                          {r.nombre}
+                        </option>
+                      ))}
+                    </select>
 
-      <button
-        className={`
-          px-4 py-2 rounded-xl transition-all
-          ${
-            seguridadTab === "permisos"
-              ? "bg-blue-600 text-white shadow-lg"
-              : "bg-white/10 text-white/70 hover:bg-white/20"
-          }
-        `}
-        onClick={() => setSeguridadTab("permisos")}
-      >
-        Permisos por módulo
-      </button>
-    </div>
-{/* MÓDULOS VISIBLES */}
-{seguridadTab === "modulos" && (
-  <div
-    className="
-      bg-white/5 border border-white/20 rounded-xl p-4 shadow-md
-      backdrop-blur-md
-    "
-  >
-    <h4 className="font-semibold text-sm mb-3 text-white">
-      Selecciona los módulos visibles
-    </h4>
+                    <button
+                      className="
+                        px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
+                        text-white shadow-lg transition
+                      "
+                      onClick={guardarRol}
+                    >
+                      Guardar rol
+                    </button>
 
-    <div className="grid grid-cols-2 gap-3 text-sm text-white/80">
-      {[
-        "dashboard",
-        "agenda",
-        "empleados",
-        "seguridad",
-        "auditoria",
-        "intranet",
-        "mensajes",
-        "utilidades",
-      ].map((mod) => (
-        <label key={mod} className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            checked={modulos.includes(mod)}
-            onChange={(e) => {
-              if (e.target.checked) {
-                setModulos([...modulos, mod]);
-              } else {
-                setModulos(modulos.filter((m) => m !== mod));
-              }
-            }}
-          />
-          {mod}
-        </label>
-      ))}
-    </div>
+                    <button
+                      className="
+                        px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700
+                        text-white shadow-lg transition
+                      "
+                      onClick={() => handleEmpleadoChange("rol", null)}
+                    >
+                      Reset rol
+                    </button>
+                  </div>
+                </div>
 
-    <button
-      className="
-        mt-4 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
-        text-white shadow-lg transition
-      "
-      onClick={guardarModulos}
-    >
-      Guardar módulos visibles
-    </button>
+                {/* RESET PASSWORD */}
+                <button
+                  className="
+                    px-4 py-2 rounded-xl bg-orange-600 hover:bg-orange-700
+                    text-white shadow-lg transition
+                  "
+                  onClick={async () => {
+                    await resetPasswordEmpleado(empleado.id);
+                    mostrarToast("ok", "Contraseña reseteada");
+                  }}
+                >
+                  Reset contraseña
+                </button>
 
-    <button
-      className="
-        mt-2 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700
-        text-white shadow-lg transition
-      "
-      onClick={() => setModulos([])}
-    >
-      Reset módulos visibles
-    </button>
-  </div>
-)}
+                {/* TABS SEGURIDAD */}
+                <div className="flex gap-3 mt-6 text-sm">
+                  <button
+                    className={`
+                      px-4 py-2 rounded-xl transition-all
+                      ${
+                        seguridadTab === "modulos"
+                          ? "bg-blue-600 text-white shadow-lg"
+                          : "bg-white/10 text-white/70 hover:bg-white/20"
+                      }
+                    `}
+                    onClick={() => setSeguridadTab("modulos")}
+                  >
+                    Módulos visibles
+                  </button>
 
-{/* PERMISOS POR MÓDULO */}
-{seguridadTab === "permisos" && (
-  <div
-    className="
-      bg-white/5 border border-white/20 rounded-xl p-4 shadow-md
-      backdrop-blur-md
-    "
-  >
-    <h4 className="font-semibold text-sm mb-3 text-white">
-      Permisos por módulo
-    </h4>
+                  <button
+                    className={`
+                      px-4 py-2 rounded-xl transition-all
+                      ${
+                        seguridadTab === "permisos"
+                          ? "bg-blue-600 text-white shadow-lg"
+                          : "bg-white/10 text-white/70 hover:bg-white/20"
+                      }
+                    `}
+                    onClick={() => setSeguridadTab("permisos")}
+                  >
+                    Permisos por módulo
+                  </button>
+                </div>
 
-    {Object.keys(permisos).map((mod) => (
-      <div key={mod} className="mb-4">
-        <span className="block font-semibold text-white mb-2 text-sm">
-          {mod.toUpperCase()}
-        </span>
+                {/* MÓDULOS VISIBLES */}
+                {seguridadTab === "modulos" && (
+                  <div
+                    className="
+                      bg-white/5 border border-white/20 rounded-xl p-4 shadow-md
+                      backdrop-blur-md
+                    "
+                  >
+                    <h4 className="font-semibold text-sm mb-3 text-white">
+                      Selecciona los módulos visibles
+                    </h4>
 
-        <div className="grid grid-cols-4 gap-3 text-sm text-white/80">
-          {["ver", "crear", "editar", "eliminar"].map((perm) => (
-            <label key={perm} className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={permisos[mod]?.includes(perm)}
-                onChange={(e) => {
-                  const actual = permisos[mod] || [];
-                  let nuevo;
+                    <div className="grid grid-cols-2 gap-3 text-sm text-white/80">
+                      {[
+                        "dashboard",
+                        "agenda",
+                        "empleados",
+                        "seguridad",
+                        "auditoria",
+                        "intranet",
+                        "mensajes",
+                        "utilidades",
+                      ].map((mod) => (
+                        <label key={mod} className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={modulos.includes(mod)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setModulos([...modulos, mod]);
+                              } else {
+                                setModulos(
+                                  modulos.filter((m) => m !== mod)
+                                );
+                              }
+                            }}
+                          />
+                          {mod}
+                        </label>
+                      ))}
+                    </div>
 
-                  if (e.target.checked) {
-                    nuevo = [...actual, perm];
-                  } else {
-                    nuevo = actual.filter((p) => p !== perm);
-                  }
+                    <button
+                      className="
+                        mt-4 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
+                        text-white shadow-lg transition
+                      "
+                      onClick={guardarModulos}
+                    >
+                      Guardar módulos visibles
+                    </button>
 
-                  setPermisos({
-                    ...permisos,
-                    [mod]: nuevo,
-                  });
-                }}
-              />
-              {perm}
-            </label>
-          ))}
+                    <button
+                      className="
+                        mt-2 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700
+                        text-white shadow-lg transition
+                      "
+                      onClick={() => setModulos([])}
+                    >
+                      Reset módulos visibles
+                    </button>
+                  </div>
+                )}
+
+                {/* PERMISOS POR MÓDULO */}
+                {seguridadTab === "permisos" && (
+                  <div
+                    className="
+                      bg-white/5 border border-white/20 rounded-xl p-4 shadow-md
+                      backdrop-blur-md
+                    "
+                  >
+                    <h4 className="font-semibold text-sm mb-3 text-white">
+                      Permisos por módulo
+                    </h4>
+
+                    {Object.keys(permisos).map((mod) => (
+                      <div key={mod} className="mb-4">
+                        <span className="block font-semibold text-white mb-2 text-sm">
+                          {mod.toUpperCase()}
+                        </span>
+
+                        <div className="grid grid-cols-4 gap-3 text-sm text-white/80">
+                          {["ver", "crear", "editar", "eliminar"].map(
+                            (perm) => (
+                              <label
+                                key={perm}
+                                className="flex items-center gap-2"
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={permisos[mod]?.includes(perm)}
+                                  onChange={(e) => {
+                                    const actual = permisos[mod] || [];
+                                    let nuevo;
+
+                                    if (e.target.checked) {
+                                      nuevo = [...actual, perm];
+                                    } else {
+                                      nuevo = actual.filter(
+                                        (p) => p !== perm
+                                      );
+                                    }
+
+                                    setPermisos({
+                                      ...permisos,
+                                      [mod]: nuevo,
+                                    });
+                                  }}
+                                />
+                                {perm}
+                              </label>
+                            )
+                          )}
+                        </div>
+                      </div>
+                    ))}
+
+                    <button
+                      className="
+                        mt-4 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
+                        text-white shadow-lg transition
+                      "
+                      onClick={guardarPermisos}
+                    >
+                      Guardar permisos
+                    </button>
+
+                    <button
+                      className="
+                        mt-2 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700
+                        text-white shadow-lg transition
+                      "
+                      onClick={() => setPermisos({})}
+                    >
+                      Reset permisos
+                    </button>
+                  </div>
+                )}
+              </section>
+            )}
+
+            {/* TAB: AUDITORÍA */}
+            {!loading && tab === "auditoria" && (
+              <section
+                className="
+                  border border-gray-300 bg-white p-4 rounded-xl shadow-sm
+                "
+              >
+                <h3 className="text-sm font-semibold mb-3 text-gray-900">
+                  Auditoría
+                </h3>
+
+                {(!auditoria || auditoria.length === 0) && (
+                  <p className="text-gray-500 text-xs">
+                    No hay registros de auditoría para este empleado.
+                  </p>
+                )}
+
+                {auditoria && auditoria.length > 0 && (
+                  <ul className="list-disc ml-5 text-xs text-gray-800">
+                    {auditoria.map((a) => (
+                      <li key={a.id}>
+                        {new Date(a.fecha).toLocaleString("es-ES")} —{" "}
+                        <strong>{a.modulo}</strong> [{a.accion}] —{" "}
+                        {a.descripcion}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </section>
+            )}
+          </div>
         </div>
       </div>
-    ))}
-
-    <button
-      className="
-        mt-4 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
-        text-white shadow-lg transition
-      "
-      onClick={guardarPermisos}
-    >
-      Guardar permisos
-    </button>
-
-    <button
-      className="
-        mt-2 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700
-        text-white shadow-lg transition
-      "
-      onClick={() => setPermisos({})}
-    >
-      Reset permisos
-    </button>
-  </div>
-)}
-
-{/* AUDITORÍA */}
-{!loading && tab === "auditoria" && (
-  <section
-    className="
-      border border-gray-300 bg-white p-4 rounded-xl shadow-sm
-    "
-  >
-    <h3 className="text-sm font-semibold mb-3 text-gray-900">
-      Auditoría
-    </h3>
-
-    {(!auditoria || auditoria.length === 0) && (
-      <p className="text-gray-500 text-xs">
-        No hay registros de auditoría para este empleado.
-      </p>
-    )}
-
-    {auditoria && auditoria.length > 0 && (
-      <ul className="list-disc ml-5 text-xs text-gray-800">
-        {auditoria.map((a) => (
-          <li key={a.id}>
-            {new Date(a.fecha).toLocaleString("es-ES")} —{" "}
-            <strong>{a.modulo}</strong> [{a.accion}] — {a.descripcion}
-          </li>
-        ))}
-      </ul>
-    )}
-  </section>
-)}
-
-          </div> 
-        </div>   
-      </div>    
     </>
   );
 }

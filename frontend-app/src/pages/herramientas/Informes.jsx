@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { API_BASE } from "../../api/config";
-import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 import Chart from "chart.js/auto";
@@ -50,14 +49,24 @@ export default function Informes() {
   };
 
   // -----------------------------
-  // EXPORTAR A EXCEL
-  // -----------------------------
-  const exportarExcel = () => {
-    const ws = XLSX.utils.json_to_sheet(tabla);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Informe");
-    XLSX.writeFile(wb, `informe_${mes}_${año}.xlsx`);
-  };
+// EXPORTAR A EXCEL (sin xlsx)
+// -----------------------------
+const exportarExcel = () => {
+  const encabezados = ["Apoderado", "VC", "Presencial", "Km"];
+  const filas = tabla.map(t => [t.nombre, t.vc, t.presencial, t.km]);
+
+  let contenido = encabezados.join(",") + "\n";
+  contenido += filas.map(f => f.join(",")).join("\n");
+
+  const blob = new Blob([contenido], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `informe_${mes}_${año}.csv`;
+  link.click();
+};
+
 
   // -----------------------------
   // EXPORTAR A PDF

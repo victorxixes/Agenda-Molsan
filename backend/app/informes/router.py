@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Query
 from datetime import date
-from database import db
+from backend.app.database import db
 from typing import List, Dict, Any
 
 router = APIRouter(prefix="/informes", tags=["Informes"])

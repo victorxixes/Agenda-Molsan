@@ -1,16 +1,35 @@
 import { useEffect, useRef } from "react";
+import { useAuthStore } from "../store/authStore";
+
+/**
+ * WebSocket Empleados — Versión SJ‑2026 Premium
+ * - Autenticación por token
+ * - Reconexión estable
+ * - Compatible con StrictMode
+ * - No pierde token
+ * - No desmonta layout
+ */
 
 export function useEmpleadosWS(onEvento) {
   const wsRef = useRef(null);
   const reconnectTimeout = useRef(null);
 
+  const { token, authReady } = useAuthStore();
+
   useEffect(() => {
+    // Esperar a que authStore esté listo
+    if (!authReady || !token) return;
+
+    // Evitar doble conexión en StrictMode
     if (wsRef.current) return;
 
     let ws;
 
     const conectar = () => {
-      ws = new WebSocket(`${import.meta.env.VITE_WS_URL}/ws/empleados`);
+      ws = new WebSocket(
+        `${import.meta.env.VITE_WS_URL}/ws/empleados?token=${token}`
+      );
+
       wsRef.current = ws;
 
       ws.onopen = () => {
@@ -61,5 +80,5 @@ export function useEmpleadosWS(onEvento) {
 
       wsRef.current = null;
     };
-  }, [onEvento]);
+  }, [token, authReady, onEvento]);
 }

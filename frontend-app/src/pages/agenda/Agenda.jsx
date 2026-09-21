@@ -38,7 +38,7 @@ export default function Agenda() {
   const puedeCrear = permisosAgenda.includes("crear");
   const puedeEditar = permisosAgenda.includes("editar");
   const puedeEliminar = permisosAgenda.includes("eliminar");
-  const puedeVer = permisosAgenda.includes("ver") || permisosAgenda.length > 0;
+  const puedeVer = true;
 
   const [mostrarModal, setMostrarModal] = useState(false);
   const [modalModo, setModalModo] = useState("crear"); // crear | editar | ver

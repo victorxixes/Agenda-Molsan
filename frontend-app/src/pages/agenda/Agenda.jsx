@@ -90,32 +90,6 @@ export default function Agenda() {
 );
 
 
-  // Ver cita (solo lectura)
-  const abrirVerCita = useCallback(
-    async (cita) => {
-      if (!puedeVer && !puedeEditar) {
-        notify("No tienes permiso para ver citas.");
-        return;
-      }
-
-      try {
-        const res = await fetch(
-          `https://agenda-intranet-b.onrender.com/api/agenda/${cita.id}`
-        );
-        const citaCompleta = await res.json();
-
-        setModalModo("ver");
-        setFechaSeleccionada(citaCompleta.fecha);
-        setCitaSeleccionada(citaCompleta);
-        setMostrarModal(true);
-      } catch (err) {
-        console.error("Error cargando cita completa:", err);
-        notify("Error al cargar la cita.");
-      }
-    },
-    [puedeVer, puedeEditar, notify]
-  );
-
   // Guardar cita
   const guardarCita = useCallback(
     async (payload) => {
@@ -200,18 +174,13 @@ export default function Agenda() {
   const citasSeguras = useMemo(() => (Array.isArray(citas) ? citas : []), [citas]);
 
   // Handler seguro para clic en cita según permisos
-  const handleCitaClick = useCallback(
-    (cita) => {
-      if (puedeEditar) {
-        abrirEditar(cita);
-      } else if (puedeVer) {
-        abrirVerCita(cita);
-      } else {
-        notify("No tienes permiso para ver citas.");
-      }
-    },
-    [puedeEditar, puedeVer, abrirEditar, abrirVerCita, notify]
-  );
+const handleCitaClick = useCallback(
+  (cita) => {
+    abrirEditar(cita);
+  },
+  [abrirEditar]
+);
+
 
   // Handler seguro para crear según permisos
   const handleDiaClick = useCallback(

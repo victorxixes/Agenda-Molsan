@@ -7,6 +7,9 @@ import { Link } from "react-router-dom";
  * - Animación fade‑in
  */
 
+import { useCallback } from "react";
+import { Link } from "react-router-dom";
+
 export default function Utilidades() {
   const titulo = useCallback(() => "Utilidades del sistema", []);
 
@@ -35,6 +38,13 @@ export default function Utilidades() {
           titulo="Subir documento"
           descripcion="Subir documentos a la intranet."
           link="/herramientas/utilidades/subir-documento"
+        />
+
+        {/* NUEVO: INFORMES */}
+        <Card
+          titulo="Informes"
+          descripcion="Listados y estadísticas de apoderados."
+          link="/herramientas/informes"
         />
 
       </div>

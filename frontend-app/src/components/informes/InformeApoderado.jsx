@@ -27,8 +27,18 @@ export default function InformeApoderado({ apoderadoId }) {
         { params: { desde, hasta } }
       );
 
-      setData(res.data);
-      setRanking(rank.data);
+      // ⭐ Normalizar km
+      setData({
+        ...res.data,
+        km_totales: res.data.km_totales ?? res.data.distancia_km ?? 0,
+      });
+
+      setRanking(
+        (rank.data || []).map((r) => ({
+          ...r,
+          km: r.km ?? r.distancia_km ?? 0,
+        }))
+      );
     };
 
     cargar();
@@ -62,7 +72,9 @@ export default function InformeApoderado({ apoderadoId }) {
 
         <div className="bg-white/5 p-4 rounded-xl">
           <h4 className="text-white/70 text-sm">Km recorridos</h4>
-          <div className="text-3xl font-bold">{data.km_totales}</div>
+          <div className="text-3xl font-bold">
+            {data.km_totales ? data.km_totales.toFixed(1) : "0.0"}
+          </div>
         </div>
 
         <div className="bg-white/5 p-4 rounded-xl">
@@ -77,10 +89,13 @@ export default function InformeApoderado({ apoderadoId }) {
 
       <ul className="space-y-2">
         {ranking.map((r, i) => (
-          <li key={r.apoderado_id} className="bg-white/5 p-3 rounded-xl flex justify-between">
+          <li
+            key={r.apoderado_id}
+            className="bg-white/5 p-3 rounded-xl flex justify-between"
+          >
             <span># {i + 1} — Apoderado {r.apoderado_id}</span>
             <span>
-              {r.total_citas} citas — {r.km} km
+              {r.total_citas} citas — {(r.km || 0).toFixed(1)} km
             </span>
           </li>
         ))}

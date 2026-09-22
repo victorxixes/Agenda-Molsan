@@ -78,7 +78,6 @@ from backend.app.seguridad.logs.router import router as seguridad_logs_router
 from backend.app.seguridad.admin_router import router as admin_router
 
 # Agenda
-from backend.app.agenda.notarios_router import router as agenda_notarios_router
 from backend.app.agenda.router import router as agenda_router
 
 # Empleados
@@ -141,7 +140,6 @@ app.include_router(seguridad_logs_router, prefix="/api")
 app.include_router(admin_router, prefix="/api")
 
 # Agenda
-app.include_router(agenda_notarios_router, prefix="/api")
 app.include_router(agenda_router, prefix="/api")
 
 # Empleados

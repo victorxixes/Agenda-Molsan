@@ -5,13 +5,13 @@ from backend.app.agenda.models import Cita
 from backend.app.ctn.models import Notaria
 from backend.app.empleados.models import Empleado
 
-# ⭐ USAR EL NUEVO MÓDULO DE DISTANCIA
+# ⭐ USAR EL NUEVO MÓDULO DE DISTANCIA REAL
 from backend.app.utils.distancia import distancia_km, MOLSAN_LAT, MOLSAN_LNG
 
 
 def km_de_cita(db: Session, cita: Cita) -> float:
     """
-    Calcula km de una cita:
+    Calcula km de una cita presencial.
     - VC → 0 km
     - Si no tiene notario → 0 km
     - Si no tiene lat/lng → 0 km

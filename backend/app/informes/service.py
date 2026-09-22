@@ -4,15 +4,17 @@ from sqlalchemy.orm import Session
 from backend.app.agenda.models import Cita
 from backend.app.ctn.models import Notaria
 from backend.app.empleados.models import Empleado
-from backend.app.agenda.geocode import distancia_molsan
+
+# ⭐ USAR EL NUEVO MÓDULO DE DISTANCIA
+from backend.app.utils.distancia import distancia_km, MOLSAN_LAT, MOLSAN_LNG
 
 
 def km_de_cita(db: Session, cita: Cita) -> float:
     """
-    Calcula km de una cita.
-    - Si es VC → 0 km
+    Calcula km de una cita:
+    - VC → 0 km
     - Si no tiene notario → 0 km
-    - Si no podemos geocodificar → 0 km
+    - Si no tiene lat/lng → 0 km
     """
 
     # VC → km = 0
@@ -29,8 +31,6 @@ def km_de_cita(db: Session, cita: Cita) -> float:
     if not notario:
         return 0.0
 
-    # ⚠ Tu modelo Notaria NO tiene lat/lng.
-    # Si en el futuro los añades, esto seguirá siendo seguro.
     lat = getattr(notario, "lat", None)
     lng = getattr(notario, "lng", None)
 
@@ -38,16 +38,14 @@ def km_de_cita(db: Session, cita: Cita) -> float:
         return 0.0
 
     try:
-        return float(distancia_molsan(lat, lng))
+        # ⭐ CÁLCULO REAL DE KM
+        return distancia_km(MOLSAN_LAT, MOLSAN_LNG, float(lat), float(lng))
     except Exception as e:
         print("ERROR KM:", e)
         return 0.0
 
 
 def _rango_mes(año: int, mes: int) -> tuple[date, date]:
-    """
-    Devuelve inicio y fin reales del mes.
-    """
     inicio = date(año, mes, 1)
     fin = date(año, mes, 28)
     while True:
@@ -59,15 +57,6 @@ def _rango_mes(año: int, mes: int) -> tuple[date, date]:
 
 
 def obtener_tabla(db: Session, mes: int, año: int):
-    """
-    Tabla de informes por apoderado:
-    - apoderado_id
-    - nombre
-    - vc
-    - presencial
-    - km
-    """
-
     inicio, fin = _rango_mes(año, mes)
 
     citas: list[Cita] = (
@@ -106,31 +95,19 @@ def obtener_tabla(db: Session, mes: int, año: int):
         else:
             tabla[ap_id]["presencial"] += 1
 
-        # Km (si falla, km_de_cita ya devuelve 0)
+        # ⭐ KM REAL
         tabla[ap_id]["km"] += km_de_cita(db, c)
 
-    # Devolvemos lista para el front
     return list(tabla.values())
 
 
 def obtener_ranking(db: Session, mes: int, año: int):
-    """
-    Ranking por km descendente.
-    """
     tabla = obtener_tabla(db, mes, año)
     tabla.sort(key=lambda x: x["km"], reverse=True)
     return tabla
 
 
 def obtener_informe_individual(db: Session, apoderado_id: int, mes: int, año: int):
-    """
-    Informe individual de un apoderado:
-    - total_vc
-    - total_presencial
-    - km_totales
-    - tiempo_medio_dias
-    """
-
     inicio, fin = _rango_mes(año, mes)
 
     citas: list[Cita] = (
@@ -152,6 +129,7 @@ def obtener_informe_individual(db: Session, apoderado_id: int, mes: int, año: i
         else:
             total_pres += 1
 
+        # ⭐ KM REAL
         total_km += km_de_cita(db, c)
         dias.append(c.fecha)
 

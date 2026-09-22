@@ -77,47 +77,135 @@ export default function Informes() {
   };
 
   const exportarPDF = () => {
-    const ventana = window.open("", "_blank");
-    const encabezados = ["Apoderado", "VC", "Presencial", "Km"];
+  const ventana = window.open("", "_blank");
 
-    const filas = tabla
-      .map(
-        (t) => `
-      <tr>
-        <td>${t.nombre}</td>
-        <td>${t.vc}</td>
-        <td>${t.presencial}</td>
-        <td>${t.km}</td>
-      </tr>
-    `
-      )
-      .join("");
+  // Totales
+  const totalVC = tabla.reduce((acc, t) => acc + t.vc, 0);
+  const totalPres = tabla.reduce((acc, t) => acc + t.presencial, 0);
+  const totalKm = tabla.reduce((acc, t) => acc + t.km, 0);
 
-    ventana.document.write(`
-      <html>
-        <head>
-          <title>Informe ${mes}/${año}</title>
-          <style>
-            table { width: 100%; border-collapse: collapse; font-size: 14px; }
-            th, td { border: 1px solid #000; padding: 6px; text-align: left; }
-            th { background: #eee; }
-          </style>
-        </head>
-        <body>
-          <h2>Informe ${mes}/${año}</h2>
+  const filas = tabla
+    .map(
+      (t) => `
+        <tr>
+          <td>${t.nombre}</td>
+          <td>${t.vc}</td>
+          <td>${t.presencial}</td>
+          <td>${t.km.toFixed(2)}</td>
+        </tr>
+      `
+    )
+    .join("");
+
+  ventana.document.write(`
+    <html>
+      <head>
+        <title>Informe ${mes}/${año}</title>
+        <style>
+          body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            padding: 40px;
+            background: #f7f9fc;
+            color: #1a1a1a;
+          }
+
+          .logo {
+            width: 140px;
+            margin-bottom: 20px;
+          }
+
+          h1 {
+            font-size: 26px;
+            margin-bottom: 5px;
+            color: #0d1b2a;
+          }
+
+          h2 {
+            font-size: 18px;
+            margin-top: 0;
+            color: #415a77;
+          }
+
+          .card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+          }
+
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 25px;
+            font-size: 14px;
+          }
+
+          th {
+            background: #e9eef5;
+            padding: 10px;
+            border-bottom: 2px solid #cbd5e1;
+            text-align: left;
+            color: #0d1b2a;
+          }
+
+          td {
+            padding: 8px;
+            border-bottom: 1px solid #e2e8f0;
+          }
+
+          tr:nth-child(even) {
+            background: #f8fafc;
+          }
+
+          .totales {
+            margin-top: 30px;
+            font-size: 15px;
+            font-weight: 600;
+            color: #0d1b2a;
+          }
+
+          .totales span {
+            display: block;
+            margin-bottom: 6px;
+          }
+        </style>
+      </head>
+
+      <body>
+        <img class="logo" src="/logo-sj2026.png" />
+
+        <div class="card">
+          <h1>Informe de Apoderados</h1>
+          <h2>${mes}/${año}</h2>
+
           <table>
             <thead>
-              <tr>${encabezados.map((h) => `<th>${h}</th>`).join("")}</tr>
+              <tr>
+                <th>Apoderado</th>
+                <th>VC</th>
+                <th>Presencial</th>
+                <th>Km</th>
+              </tr>
             </thead>
-            <tbody>${filas}</tbody>
+            <tbody>
+              ${filas}
+            </tbody>
           </table>
-        </body>
-      </html>
-    `);
 
-    ventana.document.close();
-    ventana.print();
-  };
+          <div class="totales">
+            <span>Total VC: ${totalVC}</span>
+            <span>Total Presencial: ${totalPres}</span>
+            <span>Total Km: ${totalKm.toFixed(2)}</span>
+          </div>
+        </div>
+      </body>
+    </html>
+  `);
+
+  ventana.document.close();
+  ventana.print();
+};
+
 
   const renderGraficos = () => {
     // 🔥 Destruir gráficos anteriores

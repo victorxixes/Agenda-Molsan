@@ -1,5 +1,4 @@
 from datetime import date
-from calendar import monthrange
 from sqlalchemy.orm import Session
 
 from backend.app.agenda.models import Cita
@@ -8,29 +7,50 @@ from backend.app.empleados.models import Empleado
 from backend.app.agenda.geocode import distancia_molsan
 
 
-def km_de_cita(db: Session, cita: Cita):
+def km_de_cita(db: Session, cita: Cita) -> float:
+    """
+    Calcula los km de una cita.
+    - Si es VC → 0 km
+    - Si la notaría no tiene coordenadas válidas → 0 km
+    """
     # VC → km = 0
     if cita.tipo_firma and cita.tipo_firma.lower().startswith("video"):
-        return 0
+        return 0.0
 
     if not cita.notario_id:
-        return 0
+        return 0.0
 
-    notario = db.query(Notaria).filter(Notaria.id == cita.notario_id).first()
-    if not notario or not notario.lat or not notario.lng:
-        return 0
+    notario: Notaria | None = (
+        db.query(Notaria).filter(Notaria.id == cita.notario_id).first()
+    )
+    if not notario:
+        return 0.0
+
+    # Algunos modelos pueden no tener lat/lng definidos como atributos
+    lat = getattr(notario, "lat", None)
+    lng = getattr(notario, "lng", None)
+
+    if lat is None or lng is None:
+        return 0.0
 
     try:
-        return float(distancia_molsan(notario.lat, notario.lng))
+        return float(distancia_molsan(lat, lng))
     except Exception as e:
         print("ERROR KM:", e)
-        return 0
+        return 0.0
 
 
 def obtener_tabla(db: Session, mes: int, año: int):
-    # Rango de fechas correcto para cualquier mes
+    """
+    Devuelve la tabla de informes por apoderado para un mes/año.
+    """
     inicio = date(año, mes, 1)
-    fin = date(año, mes, monthrange(año, mes)[1])
+    fin = date(año, mes, 28)
+    while True:
+        try:
+            fin = date(año, mes, fin.day + 1)
+        except Exception:
+            break
 
     citas = (
         db.query(Cita)
@@ -39,10 +59,9 @@ def obtener_tabla(db: Session, mes: int, año: int):
         .all()
     )
 
-    tabla = {}
+    tabla: dict = {}
 
     for c in citas:
-
         # Nombre del apoderado
         if c.apoderado_id:
             emp = db.query(Empleado).filter(Empleado.id == c.apoderado_id).first()
@@ -58,7 +77,7 @@ def obtener_tabla(db: Session, mes: int, año: int):
                 "nombre": nombre,
                 "vc": 0,
                 "presencial": 0,
-                "km": 0,
+                "km": 0.0,
             }
 
         # VC / Presencial
@@ -74,15 +93,25 @@ def obtener_tabla(db: Session, mes: int, año: int):
 
 
 def obtener_ranking(db: Session, mes: int, año: int):
+    """
+    Ranking de apoderados por km en el mes/año.
+    """
     tabla = obtener_tabla(db, mes, año)
     tabla.sort(key=lambda x: x["km"], reverse=True)
     return tabla
 
 
 def obtener_informe_individual(db: Session, apoderado_id: int, mes: int, año: int):
-    # Rango de fechas correcto
+    """
+    Informe individual de un apoderado en un mes/año.
+    """
     inicio = date(año, mes, 1)
-    fin = date(año, mes, monthrange(año, mes)[1])
+    fin = date(año, mes, 28)
+    while True:
+        try:
+            fin = date(año, mes, fin.day + 1)
+        except Exception:
+            break
 
     citas = (
         db.query(Cita)
@@ -94,8 +123,8 @@ def obtener_informe_individual(db: Session, apoderado_id: int, mes: int, año: i
 
     total_vc = 0
     total_pres = 0
-    total_km = 0
-    dias = []
+    total_km = 0.0
+    dias: list[date] = []
 
     for c in citas:
         if c.tipo_firma and c.tipo_firma.lower().startswith("video"):
@@ -106,7 +135,7 @@ def obtener_informe_individual(db: Session, apoderado_id: int, mes: int, año: i
         total_km += km_de_cita(db, c)
         dias.append(c.fecha)
 
-    tiempo_medio = 0
+    tiempo_medio = 0.0
     if len(dias) >= 2:
         dias.sort()
         diffs = [(dias[i] - dias[i - 1]).days for i in range(1, len(dias))]

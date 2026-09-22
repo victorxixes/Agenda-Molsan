@@ -26,6 +26,10 @@ class Notaria(Base):
     municipio = Column(String(100), nullable=True, index=True)
     direccion = Column(String(255), nullable=True)
 
+    # Coordenadas (necesarias para informes)
+    lat = Column(String(50), nullable=True)
+    lng = Column(String(50), nullable=True)
+
     # VC
     vc = Column(String(50), nullable=True, index=True)
 
@@ -36,15 +40,13 @@ class Notaria(Base):
     # Observaciones
     observacion = Column(Text, nullable=True)
 
-
-    # Relación opcional con tabla de apoderados
     apoderado_id = Column(Integer, ForeignKey("empleados.id"), nullable=True)
 
     citas = relationship(
-    "Cita",
-    back_populates="notario",
-    lazy="selectin"
-  )
+        "Cita",
+        back_populates="notario",
+        lazy="selectin"
+    )
 
 # Índices adicionales
 Index("idx_notaria_nombre", Notaria.nombre)

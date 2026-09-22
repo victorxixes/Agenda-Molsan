@@ -279,7 +279,11 @@ return (
       ))}
     </tbody>
 
-    {/* ... resto igual ... */}
-  </div>
-);
-)
+         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <canvas id="graficoVC" className="bg-white/10 p-4 rounded-xl"></canvas>
+        <canvas id="graficoP" className="bg-white/10 p-4 rounded-xl"></canvas>
+        <canvas id="graficoKm" className="bg-white/10 p-4 rounded-xl"></canvas>
+      </div>
+    </div>
+  );
+}

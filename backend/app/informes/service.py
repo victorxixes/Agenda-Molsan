@@ -1,4 +1,5 @@
 from datetime import date
+from calendar import monthrange
 from sqlalchemy.orm import Session
 
 from backend.app.agenda.models import Cita
@@ -26,15 +27,10 @@ def km_de_cita(db: Session, cita: Cita):
         return 0
 
 
-
 def obtener_tabla(db: Session, mes: int, año: int):
+    # Rango de fechas correcto para cualquier mes
     inicio = date(año, mes, 1)
-    fin = date(año, mes, 28)
-    while True:
-        try:
-            fin = date(año, mes, fin.day + 1)
-        except:
-            break
+    fin = date(año, mes, monthrange(año, mes)[1])
 
     citas = (
         db.query(Cita)
@@ -84,13 +80,9 @@ def obtener_ranking(db: Session, mes: int, año: int):
 
 
 def obtener_informe_individual(db: Session, apoderado_id: int, mes: int, año: int):
+    # Rango de fechas correcto
     inicio = date(año, mes, 1)
-    fin = date(año, mes, 28)
-    while True:
-        try:
-            fin = date(año, mes, fin.day + 1)
-        except:
-            break
+    fin = date(año, mes, monthrange(año, mes)[1])
 
     citas = (
         db.query(Cita)

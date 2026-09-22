@@ -1,8 +1,8 @@
 import math
 
 # Coordenadas de Molsan
-MOLSAN_LAT = 41.2243
-MOLSAN_LNG = 1.7250
+MOLSAN_LAT = 41.424960
+MOLSAN_LNG = 2.181740
 
 def distancia_molsan(lat, lng):
     # Haversine

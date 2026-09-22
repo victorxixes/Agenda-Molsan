@@ -30,9 +30,7 @@ export default function Informes() {
     }
   };
 
-  // -----------------------------
   // ORDENAR COLUMNAS
-  // -----------------------------
   const ordenar = (campo) => {
     const asc = orden.campo === campo ? !orden.asc : true;
     setOrden({ campo, asc });
@@ -46,71 +44,64 @@ export default function Informes() {
     setTabla(ordenada);
   };
 
-  // -----------------------------
-// EXPORTAR A EXCEL (sin xlsx)
-// -----------------------------
-const exportarExcel = () => {
-  const encabezados = ["Apoderado", "VC", "Presencial", "Km"];
-  const filas = tabla.map(t => [t.nombre, t.vc, t.presencial, t.km]);
+  // EXPORTAR EXCEL (CSV)
+  const exportarExcel = () => {
+    const encabezados = ["Apoderado", "VC", "Presencial", "Km"];
+    const filas = tabla.map(t => [t.nombre, t.vc, t.presencial, t.km]);
 
-  let contenido = encabezados.join(",") + "\n";
-  contenido += filas.map(f => f.join(",")).join("\n");
+    let contenido = encabezados.join(",") + "\n";
+    contenido += filas.map(f => f.join(",")).join("\n");
 
-  const blob = new Blob([contenido], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
+    const blob = new Blob([contenido], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
 
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = `informe_${mes}_${año}.csv`;
-  link.click();
-};
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `informe_${mes}_${año}.csv`;
+    link.click();
+  };
 
+  // EXPORTAR PDF (sin jspdf)
+  const exportarPDF = () => {
+    const ventana = window.open("", "_blank");
+    const encabezados = ["Apoderado", "VC", "Presencial", "Km"];
 
-  // -----------------------------
-  // EXPORTAR A PDF
-  // -----------------------------
-const exportarPDF = () => {
-  const ventana = window.open("", "_blank");
-  const encabezados = ["Apoderado", "VC", "Presencial", "Km"];
+    const filas = tabla.map(t => `
+      <tr>
+        <td>${t.nombre}</td>
+        <td>${t.vc}</td>
+        <td>${t.presencial}</td>
+        <td>${t.km}</td>
+      </tr>
+    `).join("");
 
-  const filas = tabla.map(t => `
-    <tr>
-      <td>${t.nombre}</td>
-      <td>${t.vc}</td>
-      <td>${t.presencial}</td>
-      <td>${t.km}</td>
-    </tr>
-  `).join("");
+    ventana.document.write(`
+      <html>
+        <head>
+          <title>Informe ${mes}/${año}</title>
+          <style>
+            table { width: 100%; border-collapse: collapse; font-size: 14px; }
+            th, td { border: 1px solid #000; padding: 6px; text-align: left; }
+            th { background: #eee; }
+          </style>
+        </head>
+        <body>
+          <h2>Informe ${mes}/${año}</h2>
+          <table>
+            <thead>
+              <tr>${encabezados.map(h => `<th>${h}</th>`).join("")}</tr>
+            </thead>
+            <tbody>${filas}</tbody>
+          </table>
+        </body>
+      </html>
+    `);
 
-  ventana.document.write(`
-    <html>
-      <head>
-        <title>Informe ${mes}/${año}</title>
-        <style>
-          table { width: 100%; border-collapse: collapse; font-size: 14px; }
-          th, td { border: 1px solid #000; padding: 6px; text-align: left; }
-          th { background: #eee; }
-        </style>
-      </head>
-      <body>
-        <h2>Informe ${mes}/${año}</h2>
-        <table>
-          <thead>
-            <tr>${encabezados.map(h => `<th>${h}</th>`).join("")}</tr>
-          </thead>
-          <tbody>${filas}</tbody>
-        </table>
-      </body>
-    </html>
-  `);
+    ventana.document.close();
+    ventana.print();
+  };
 
-  ventana.document.close();
-  ventana.print();
-};
-
-  // -----------------------------
-  // GRÁFICOS SJ‑2026
-  // -----------------------------
+  // GRÁFICOS
   const renderGraficos = () => {
     const ctx1 = document.getElementById("graficoVC");
     const ctx2 = document.getElementById("graficoP");
@@ -162,16 +153,12 @@ const exportarPDF = () => {
     });
   };
 
-  // -----------------------------
-  // FILTRO AVANZADO
-  // -----------------------------
+  // FILTRO
   const filtrada = tabla.filter((t) =>
     t.nombre.toLowerCase().includes(filtroNombre.toLowerCase())
   );
 
-  // -----------------------------
-  // RESUMEN GLOBAL
-  // -----------------------------
+  // RESUMEN
   const totalVC = tabla.reduce((acc, t) => acc + t.vc, 0);
   const totalPresencial = tabla.reduce((acc, t) => acc + t.presencial, 0);
   const totalKm = tabla.reduce((acc, t) => acc + t.km, 0);
@@ -191,76 +178,54 @@ const exportarPDF = () => {
         Informes de Apoderados
       </h1>
 
-     {/* Selector mes/año */}
-<div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-6 shadow-xl flex gap-6">
+      {/* Selector mes/año */}
+      <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-6 shadow-xl flex gap-6">
 
-  {/* Selector de Mes */}
-  <div className="flex flex-col relative w-40">
-    <label className="text-white/80 text-sm mb-1">Mes</label>
+        {/* Selector de Mes */}
+        <div className="flex flex-col relative w-40">
+          <label className="text-white/80 text-sm mb-1">Mes</label>
 
-    <select
-      className="appearance-none bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white backdrop-blur-xl"
-      value={mes}
-      onChange={(e) => setMes(Number(e.target.value))}
-    >
-      {[
-        "Enero","Febrero","Marzo","Abril","Mayo","Junio",
-        "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"
-      ].map((nombre, i) => (
-        <option
-          key={i}
-          value={i + 1}
-          className="bg-black/40 text-white"
-        >
-          {nombre}
-        </option>
-      ))}
-    </select>
+          <select
+            className="appearance-none bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white backdrop-blur-xl"
+            value={mes}
+            onChange={(e) => setMes(Number(e.target.value))}
+          >
+            {[
+              "Enero","Febrero","Marzo","Abril","Mayo","Junio",
+              "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"
+            ].map((nombre, i) => (
+              <option
+                key={i}
+                value={i + 1}
+                className="bg-black/40 text-white"
+              >
+                {nombre}
+              </option>
+            ))}
+          </select>
 
-    {/* Icono ▼ */}
-    <span className="pointer-events-none absolute right-3 top-9 text-white/60">
-      ▼
-    </span>
-  </div>
+          <span className="pointer-events-none absolute right-3 top-9 text-white/60">
+            ▼
+          </span>
+        </div>
 
-  {/* Selector de Año */}
-  <div className="flex flex-col w-32">
-    <label className="text-white/80 text-sm mb-1">Año</label>
-    <input
-      type="number"
-      className="bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white backdrop-blur-xl"
-      value={año}
-      onChange={(e) => setAño(Number(e.target.value))}
-    />
-  </div>
+        {/* Selector de Año */}
+        <div className="flex flex-col w-32">
+          <label className="text-white/80 text-sm mb-1">Año</label>
+          <input
+            type="number"
+            className="bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white backdrop-blur-xl"
+            value={año}
+            onChange={(e) => setAño(Number(e.target.value))}
+          />
+        </div>
 
-  {/* Filtro por nombre */}
-  <div className="flex flex-col flex-1">
-    <label className="text-white/80 text-sm mb-1">Buscar apoderado</label>
-    <input
-      type="text"
-      className="bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white backdrop-blur-xl"
-      placeholder="Nombre…"
-      value={filtroNombre}
-      onChange={(e) => setFiltroNombre(e.target.value)}
-    />
-  </div>
-
-</div>
-
-
-  {/* Icono ▼ */}
-  <span className="pointer-events-none absolute right-3 top-9 text-white/60">
-    ▼
-  </span>
-</div>
-
-
+        {/* Filtro por nombre */}
         <div className="flex flex-col flex-1">
           <label className="text-white/80 text-sm mb-1">Buscar apoderado</label>
           <input
             type="text"
-            className="bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white"
+            className="bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white backdrop-blur-xl"
             placeholder="Nombre…"
             value={filtroNombre}
             onChange={(e) => setFiltroNombre(e.target.value)}
@@ -316,7 +281,7 @@ const exportarPDF = () => {
         </button>
       </div>
 
-      {/* Tabla tipo Excel */}
+      {/* Tabla */}
       <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-6 shadow-xl overflow-x-auto">
 
         <table className="w-full text-left text-white text-sm">

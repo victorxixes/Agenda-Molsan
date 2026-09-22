@@ -1,10 +1,8 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, func
-import time
-import requests
 
-from backend.app.database import engine, get_db
+from backend.app.database import get_db
 from backend.app.ctn.models import Notaria
 from backend.app.ctn.service import obtener_notaria
 from backend.app.agenda.models import Cita
@@ -13,7 +11,24 @@ from backend.app.ctn.schemas import NotariaResponse
 # Distancia
 from backend.app.utils.distancia import distancia_km, MOLSAN_LAT, MOLSAN_LNG
 
+# Google Maps geocode
+from backend.app.ctn.geocode import geocode_todas_notarias, migracion_agregar_coordenadas
+
 router = APIRouter(prefix="/ctn", tags=["CTN"])
+
+
+# ---------------------------------------------------------
+# GEOCODIFICACIÓN AUTOMÁTICA (GOOGLE MAPS)
+# ---------------------------------------------------------
+@router.post("/geocode/notarias")
+def geocode_notarias(db: Session = Depends(get_db)):
+    return geocode_todas_notarias(db)
+
+
+@router.post("/migracion/agregar-coordenadas")
+def migracion(db: Session = Depends(get_db)):
+    return migracion_agregar_coordenadas(db)
+
 
 # ---------------------------------------------------------
 # LISTAR NOTARÍAS
@@ -68,7 +83,6 @@ def listar(
         .all()
     )
 
-    # 🔥 BLOQUE CORREGIDO
     return {
         "total": total,
         "page": page,
@@ -81,25 +95,6 @@ def listar(
             for n in items
         ]
     }
-
-
-# ---------------------------------------------------------
-# MIGRACIÓN: CREAR COLUMNAS lat/lng
-# ---------------------------------------------------------
-@router.post("/migracion/agregar-coordenadas")
-def migracion_agregar_coordenadas():
-    with engine.connect().execution_options(isolation_level="AUTOCOMMIT") as conn:
-        try:
-            conn.execute("ALTER TABLE ctn_notarios ADD COLUMN lat TEXT;")
-        except Exception as e:
-            print("LAT YA EXISTE O ERROR:", e)
-
-        try:
-            conn.execute("ALTER TABLE ctn_notarios ADD COLUMN lng TEXT;")
-        except Exception as e:
-            print("LNG YA EXISTE O ERROR:", e)
-
-    return {"status": "ok", "detalle": "Columnas lat/lng creadas si no existían"}
 
 
 # ---------------------------------------------------------
@@ -117,27 +112,6 @@ def obtener(notaria_id: int, db: Session = Depends(get_db)):
         return None
 
     return NotariaResponse.from_orm(notaria)
-
-
-# ---------------------------------------------------------
-# GEOCODIFICACIÓN AUTOMÁTICA (NUEVO SISTEMA)
-# ---------------------------------------------------------
-from backend.app.ctn.geocode import geocode_todas_notarias, migracion_agregar_coordenadas
-
-@router.post("/geocode/notarias")
-def geocode_notarias(db: Session = Depends(get_db)):
-    """
-    Geocodifica todas las notarías sin lat/lng usando el módulo nuevo.
-    """
-    return geocode_todas_notarias(db)
-
-
-@router.post("/migracion/agregar-coordenadas")
-def migracion(db: Session = Depends(get_db)):
-    """
-    Ejecuta la migración completa de coordenadas.
-    """
-    return migracion_agregar_coordenadas(db)
 
 
 # ---------------------------------------------------------

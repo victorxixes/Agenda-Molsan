@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { API_BASE } from "../../api/config";
 import Chart from "chart.js/auto";
+import SelectSJ from "../../components/ui/SelectSJ";
 
 export default function Informes() {
   const hoy = new Date();
@@ -182,42 +183,42 @@ export default function Informes() {
       <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-6 shadow-xl flex gap-6">
 
         {/* Selector de Mes */}
-<div className="flex flex-col relative w-40">
-  <label className="text-white/80 text-sm mb-1">Mes</label>
+        <div className="flex flex-col w-40">
+          <label className="text-white/80 text-sm mb-1">Mes</label>
 
-  <select
-    className="appearance-none bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl px-3 py-2 text-white"
-    value={mes}
-    onChange={(e) => setMes(Number(e.target.value))}
-  >
-    {[
-      "Enero","Febrero","Marzo","Abril","Mayo","Junio",
-      "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"
-    ].map((nombre, i) => (
-      <option
-        key={i}
-        value={i + 1}
-        className="bg-white/10 backdrop-blur-xl text-white"
-      >
-        {nombre}
-      </option>
-    ))}
-  </select>
-
-  {/* Icono ▼ */}
-  <span className="pointer-events-none absolute right-3 top-9 text-white/60">
-    ▼
-  </span>
-</div>
+          <SelectSJ
+            value={mes}
+            onChange={(v) => setMes(v)}
+            options={[
+              { value: 1, label: "Enero" },
+              { value: 2, label: "Febrero" },
+              { value: 3, label: "Marzo" },
+              { value: 4, label: "Abril" },
+              { value: 5, label: "Mayo" },
+              { value: 6, label: "Junio" },
+              { value: 7, label: "Julio" },
+              { value: 8, label: "Agosto" },
+              { value: 9, label: "Septiembre" },
+              { value: 10, label: "Octubre" },
+              { value: 11, label: "Noviembre" },
+              { value: 12, label: "Diciembre" }
+            ]}
+          />
+        </div>
 
         {/* Selector de Año */}
         <div className="flex flex-col w-32">
           <label className="text-white/80 text-sm mb-1">Año</label>
-          <input
-            type="number"
-            className="bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white backdrop-blur-xl"
+
+          <SelectSJ
             value={año}
-            onChange={(e) => setAño(Number(e.target.value))}
+            onChange={(v) => setAño(v)}
+            options={[
+              { value: 2024, label: "2024" },
+              { value: 2025, label: "2025" },
+              { value: 2026, label: "2026" },
+              { value: 2027, label: "2027" }
+            ]}
           />
         </div>
 

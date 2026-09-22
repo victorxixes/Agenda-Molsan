@@ -1,15 +1,14 @@
 from pydantic import BaseModel
 
-class InformeApoderado(BaseModel):
-    apoderado_id: int
+class InformeFila(BaseModel):
+    apoderado_id: str | int
     nombre: str
-    presencial: int
     vc: int
+    presencial: int
     km: float
 
-class InformeTabla(BaseModel):
-    apoderado_id: int
-    nombre: str
-    presencial: int
-    vc: int
-    km: float
+class InformeIndividual(BaseModel):
+    total_vc: int
+    total_presencial: int
+    km_totales: float
+    tiempo_medio_dias: float

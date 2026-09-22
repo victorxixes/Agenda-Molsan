@@ -1,3 +1,5 @@
+# backend/app/ctn/geocode.py
+
 import time
 import logging
 from typing import Optional
@@ -9,15 +11,18 @@ from backend.app.ctn.models import Notaria
 
 logger = logging.getLogger(__name__)
 
-NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
-NOMINATIM_USER_AGENT = "agenda-molsan-geocode/1.0"
+# ---------------------------------------------------------
+# GOOGLE MAPS API KEY (TU CLAVE)
+# ---------------------------------------------------------
+GOOGLE_MAPS_API_KEY = "AIzaSyDN8PU3Mo3grQyymvsAfNErFuhS1cY8GzQ"
+
+GOOGLE_GEOCODE_URL = "https://maps.googleapis.com/maps/api/geocode/json"
 
 
+# ---------------------------------------------------------
+# CONSTRUIR DIRECCIÓN
+# ---------------------------------------------------------
 def _build_address(notaria: Notaria) -> Optional[str]:
-    """
-    Construye una cadena de dirección lo más completa posible
-    para enviar a Nominatim.
-    """
     partes = []
 
     if notaria.direccion:
@@ -28,65 +33,53 @@ def _build_address(notaria: Notaria) -> Optional[str]:
         partes.append(notaria.municipio)
     if notaria.provincia:
         partes.append(notaria.provincia)
-    if notaria.nombre or notaria.apellidos:
-        partes.append(f"{notaria.nombre or ''} {notaria.apellidos or ''}".strip())
 
-    # Si no hay nada útil, no intentamos geocodificar
-    if not partes:
-        return None
+    partes.append("España")
 
-    return ", ".join(partes)
+    direccion = ", ".join(partes).strip()
+
+    return direccion if direccion else None
 
 
-def _geocode_nominatim(address: str) -> Optional[tuple[float, float]]:
-    """
-    Llama a Nominatim de forma segura y devuelve (lat, lng) o None.
-    Maneja errores de red, respuestas vacías y formatos inesperados.
-    """
+# ---------------------------------------------------------
+# GEOCODIFICAR UNA DIRECCIÓN CON GOOGLE MAPS
+# ---------------------------------------------------------
+def _geocode_google(address: str) -> Optional[tuple[float, float]]:
     try:
         params = {
-            "q": address,
-            "format": "json",
-            "limit": 1,
-        }
-        headers = {
-            "User-Agent": NOMINATIM_USER_AGENT,
+            "address": address,
+            "key": GOOGLE_MAPS_API_KEY
         }
 
-        resp = requests.get(NOMINATIM_URL, params=params, headers=headers, timeout=10)
+        resp = requests.get(GOOGLE_GEOCODE_URL, params=params, timeout=10)
 
-        # Si el servidor responde con error, no rompemos la app
         if resp.status_code != 200:
-            logger.warning(
-                f"Nominatim error {resp.status_code} para dirección: {address}"
-            )
+            logger.error(f"Google Maps error {resp.status_code} para: {address}")
             return None
 
         data = resp.json()
-        if not isinstance(data, list) or not data:
-            logger.info(f"Nominatim sin resultados para: {address}")
+
+        if data.get("status") != "OK":
+            logger.warning(f"Google Maps sin resultados para: {address}")
             return None
 
-        item = data[0]
-        lat_str = item.get("lat")
-        lon_str = item.get("lon")
+        result = data["results"][0]
+        location = result["geometry"]["location"]
 
-        if not lat_str or not lon_str:
-            return None
+        lat = location["lat"]
+        lng = location["lng"]
 
-        return float(lat_str), float(lon_str)
+        return float(lat), float(lng)
 
     except Exception as e:
         logger.error(f"Error geocodificando '{address}': {e}")
         return None
 
 
+# ---------------------------------------------------------
+# GEOCODIFICAR UNA NOTARÍA
+# ---------------------------------------------------------
 def geocode_notaria(db: Session, notaria: Notaria) -> bool:
-    """
-    Geocodifica una sola notaría si no tiene lat/lng.
-    Devuelve True si se ha actualizado, False si no.
-    """
-    # Si ya tiene coordenadas válidas, no tocamos nada
     if notaria.lat and notaria.lng:
         return False
 
@@ -95,7 +88,7 @@ def geocode_notaria(db: Session, notaria: Notaria) -> bool:
         logger.info(f"No se puede construir dirección para notaría id={notaria.id}")
         return False
 
-    coords = _geocode_nominatim(address)
+    coords = _geocode_google(address)
     if not coords:
         return False
 
@@ -107,7 +100,7 @@ def geocode_notaria(db: Session, notaria: Notaria) -> bool:
         db.add(notaria)
         db.commit()
         db.refresh(notaria)
-        logger.info(f"Actualizadas coordenadas para notaría id={notaria.id}")
+        logger.info(f"Coordenadas actualizadas para notaría id={notaria.id}")
         return True
     except Exception as e:
         db.rollback()
@@ -115,12 +108,11 @@ def geocode_notaria(db: Session, notaria: Notaria) -> bool:
         return False
 
 
+# ---------------------------------------------------------
+# GEOCODIFICAR TODAS LAS NOTARÍAS
+# ---------------------------------------------------------
 def geocode_todas_notarias(db: Session) -> dict:
-    """
-    Geocodifica todas las notarías que no tienen lat/lng.
-    Pensado para el endpoint POST /api/ctn/geocode/notarias.
-    """
-    notarias: list[Notaria] = db.query(Notaria).all()
+    notarias = db.query(Notaria).all()
 
     total = len(notarias)
     actualizadas = 0
@@ -129,7 +121,6 @@ def geocode_todas_notarias(db: Session) -> dict:
     sin_resultados = 0
 
     for n in notarias:
-        # Ya tiene coordenadas
         if n.lat and n.lng:
             ya_con_coordenadas += 1
             continue
@@ -139,7 +130,7 @@ def geocode_todas_notarias(db: Session) -> dict:
             sin_direccion += 1
             continue
 
-        coords = _geocode_nominatim(address)
+        coords = _geocode_google(address)
         if not coords:
             sin_resultados += 1
             continue
@@ -157,8 +148,7 @@ def geocode_todas_notarias(db: Session) -> dict:
             db.rollback()
             logger.error(f"Error guardando coordenadas para notaría id={n.id}: {e}")
 
-        # Pequeña pausa para no saturar Nominatim
-        time.sleep(1)
+        time.sleep(0.2)  # Google Maps permite muchas peticiones, pero mejor suave
 
     return {
         "total_notarias": total,
@@ -169,12 +159,8 @@ def geocode_todas_notarias(db: Session) -> dict:
     }
 
 
+# ---------------------------------------------------------
+# MIGRACIÓN
+# ---------------------------------------------------------
 def migracion_agregar_coordenadas(db: Session) -> dict:
-    """
-    Wrapper pensado para el endpoint
-    POST /api/ctn/migracion/agregar-coordenadas
-
-    Simplemente llama a geocode_todas_notarias y devuelve el resumen.
-    """
-    resumen = geocode_todas_notarias(db)
-    return resumen
+    return geocode_todas_notarias(db)

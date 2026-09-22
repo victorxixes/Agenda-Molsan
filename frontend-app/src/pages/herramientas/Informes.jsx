@@ -37,7 +37,7 @@ export default function Informes() {
 
   const cargarTabla = async () => {
     try {
-      const res = await axios.get(`${API_BASE}/api/informes/apoderados/tabla`, {
+      const res = await axios.get(`${API_BASE}/informes/apoderados/tabla`, {
         params: { mes, año },
       });
       setTabla(res.data || []);

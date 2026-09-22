@@ -2,7 +2,22 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { API_BASE } from "../../api/config";
 import Chart from "chart.js/auto";
-import SelectSJ from "../../components/ui/SelectSJ";
+import SelectSJ from "../ui/SelectSJ";
+
+const MESES = [
+  { value: 1, label: "Enero" },
+  { value: 2, label: "Febrero" },
+  { value: 3, label: "Marzo" },
+  { value: 4, label: "Abril" },
+  { value: 5, label: "Mayo" },
+  { value: 6, label: "Junio" },
+  { value: 7, label: "Julio" },
+  { value: 8, label: "Agosto" },
+  { value: 9, label: "Septiembre" },
+  { value: 10, label: "Octubre" },
+  { value: 11, label: "Noviembre" },
+  { value: 12, label: "Diciembre" },
+];
 
 export default function Informes() {
   const hoy = new Date();
@@ -25,13 +40,16 @@ export default function Informes() {
       const res = await axios.get(`${API_BASE}/informes/apoderados/tabla`, {
         params: { mes, año },
       });
-      setTabla(res.data);
+      setTabla(res.data || []);
     } catch (err) {
       console.error("Error cargando informe:", err);
+      setTabla([]);
     }
   };
 
+  // -----------------------------
   // ORDENAR COLUMNAS
+  // -----------------------------
   const ordenar = (campo) => {
     const asc = orden.campo === campo ? !orden.asc : true;
     setOrden({ campo, asc });
@@ -45,13 +63,15 @@ export default function Informes() {
     setTabla(ordenada);
   };
 
-  // EXPORTAR EXCEL (CSV)
+  // -----------------------------
+  // EXPORTAR A EXCEL (CSV)
+  // -----------------------------
   const exportarExcel = () => {
     const encabezados = ["Apoderado", "VC", "Presencial", "Km"];
-    const filas = tabla.map(t => [t.nombre, t.vc, t.presencial, t.km]);
+    const filas = tabla.map((t) => [t.nombre, t.vc, t.presencial, t.km]);
 
     let contenido = encabezados.join(",") + "\n";
-    contenido += filas.map(f => f.join(",")).join("\n");
+    contenido += filas.map((f) => f.join(",")).join("\n");
 
     const blob = new Blob([contenido], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
@@ -62,53 +82,68 @@ export default function Informes() {
     link.click();
   };
 
-  // EXPORTAR PDF (sin jspdf)
+  // -----------------------------
+  // EXPORTAR A PDF
+  // -----------------------------
   const exportarPDF = () => {
     const ventana = window.open("", "_blank");
     const encabezados = ["Apoderado", "VC", "Presencial", "Km"];
 
-    const filas = tabla.map(t => `
-      <tr>
-        <td>${t.nombre}</td>
-        <td>${t.vc}</td>
-        <td>${t.presencial}</td>
-        <td>${t.km}</td>
-      </tr>
-    `).join("");
+    const filas = tabla
+      .map(
+        (t) => `
+    <tr>
+      <td>${t.nombre}</td>
+      <td>${t.vc}</td>
+      <td>${t.presencial}</td>
+      <td>${t.km}</td>
+    </tr>
+  `
+      )
+      .join("");
 
     ventana.document.write(`
-      <html>
-        <head>
-          <title>Informe ${mes}/${año}</title>
-          <style>
-            table { width: 100%; border-collapse: collapse; font-size: 14px; }
-            th, td { border: 1px solid #000; padding: 6px; text-align: left; }
-            th { background: #eee; }
-          </style>
-        </head>
-        <body>
-          <h2>Informe ${mes}/${año}</h2>
-          <table>
-            <thead>
-              <tr>${encabezados.map(h => `<th>${h}</th>`).join("")}</tr>
-            </thead>
-            <tbody>${filas}</tbody>
-          </table>
-        </body>
-      </html>
-    `);
+    <html>
+      <head>
+        <title>Informe ${mes}/${año}</title>
+        <style>
+          body { font-family: system-ui, -apple-system, sans-serif; }
+          h2 { margin-bottom: 12px; }
+          table { width: 100%; border-collapse: collapse; font-size: 14px; }
+          th, td { border: 1px solid #000; padding: 6px; text-align: left; }
+          th { background: #eee; }
+        </style>
+      </head>
+      <body>
+        <h2>Informe ${mes}/${año}</h2>
+        <table>
+          <thead>
+            <tr>${encabezados.map((h) => `<th>${h}</th>`).join("")}</tr>
+          </thead>
+          <tbody>${filas}</tbody>
+        </table>
+      </body>
+    </html>
+  `);
 
     ventana.document.close();
     ventana.print();
   };
 
-  // GRÁFICOS
+  // -----------------------------
+  // GRÁFICOS SJ‑2026
+  // -----------------------------
   const renderGraficos = () => {
     const ctx1 = document.getElementById("graficoVC");
     const ctx2 = document.getElementById("graficoP");
     const ctx3 = document.getElementById("graficoKm");
 
     if (!ctx1 || !ctx2 || !ctx3) return;
+
+    // Limpieza básica: reemplazar contenido del canvas
+    ctx1.getContext("2d").clearRect(0, 0, ctx1.width, ctx1.height);
+    ctx2.getContext("2d").clearRect(0, 0, ctx2.width, ctx2.height);
+    ctx3.getContext("2d").clearRect(0, 0, ctx3.width, ctx3.height);
 
     new Chart(ctx1, {
       type: "bar",
@@ -154,71 +189,56 @@ export default function Informes() {
     });
   };
 
-  // FILTRO
+  // -----------------------------
+  // FILTRO AVANZADO
+  // -----------------------------
   const filtrada = tabla.filter((t) =>
     t.nombre.toLowerCase().includes(filtroNombre.toLowerCase())
   );
 
-  // RESUMEN
-  const totalVC = tabla.reduce((acc, t) => acc + t.vc, 0);
-  const totalPresencial = tabla.reduce((acc, t) => acc + t.presencial, 0);
-  const totalKm = tabla.reduce((acc, t) => acc + t.km, 0);
+  // -----------------------------
+  // RESUMEN GLOBAL
+  // -----------------------------
+  const totalVC = tabla.reduce((acc, t) => acc + (t.vc || 0), 0);
+  const totalPresencial = tabla.reduce(
+    (acc, t) => acc + (t.presencial || 0),
+    0
+  );
+  const totalKm = tabla.reduce((acc, t) => acc + (t.km || 0), 0);
 
-  const mediaCitas = tabla.length > 0
-    ? (totalVC + totalPresencial) / tabla.length
-    : 0;
+  const mediaCitas =
+    tabla.length > 0 ? (totalVC + totalPresencial) / tabla.length : 0;
 
-  const mediaKm = tabla.length > 0
-    ? totalKm / tabla.length
-    : 0;
+  const mediaKm = tabla.length > 0 ? totalKm / tabla.length : 0;
 
   return (
     <div className="p-6 space-y-6 animate-fade-in">
-
       <h1 className="text-3xl font-bold text-white drop-shadow mb-4">
         Informes de Apoderados
       </h1>
 
-      {/* Selector mes/año */}
+      {/* Selector mes/año + filtro */}
       <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-6 shadow-xl flex gap-6">
 
-        {/* Selector de Mes */}
+        {/* Selector de Mes (SelectSJ, fondo azul/transparente) */}
         <div className="flex flex-col w-40">
           <label className="text-white/80 text-sm mb-1">Mes</label>
-
           <SelectSJ
             value={mes}
-            onChange={(v) => setMes(v)}
-            options={[
-              { value: 1, label: "Enero" },
-              { value: 2, label: "Febrero" },
-              { value: 3, label: "Marzo" },
-              { value: 4, label: "Abril" },
-              { value: 5, label: "Mayo" },
-              { value: 6, label: "Junio" },
-              { value: 7, label: "Julio" },
-              { value: 8, label: "Agosto" },
-              { value: 9, label: "Septiembre" },
-              { value: 10, label: "Octubre" },
-              { value: 11, label: "Noviembre" },
-              { value: 12, label: "Diciembre" }
-            ]}
+            onChange={(v) => setMes(Number(v))}
+            options={MESES}
+            placeholder="Mes"
           />
         </div>
 
         {/* Selector de Año */}
         <div className="flex flex-col w-32">
           <label className="text-white/80 text-sm mb-1">Año</label>
-
-          <SelectSJ
+          <input
+            type="number"
+            className="bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white backdrop-blur-xl"
             value={año}
-            onChange={(v) => setAño(v)}
-            options={[
-              { value: 2024, label: "2024" },
-              { value: 2025, label: "2025" },
-              { value: 2026, label: "2026" },
-              { value: 2027, label: "2027" }
-            ]}
+            onChange={(e) => setAño(Number(e.target.value))}
           />
         </div>
 
@@ -233,12 +253,10 @@ export default function Informes() {
             onChange={(e) => setFiltroNombre(e.target.value)}
           />
         </div>
-
       </div>
 
       {/* Panel de resumen */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-6 shadow-xl">
-
         <div className="bg-white/5 p-4 rounded-xl text-center">
           <h4 className="text-white/70 text-sm">Total VC</h4>
           <div className="text-3xl font-bold">{totalVC}</div>
@@ -263,7 +281,6 @@ export default function Informes() {
           <h4 className="text-white/70 text-sm">Media Km</h4>
           <div className="text-3xl font-bold">{mediaKm.toFixed(1)}</div>
         </div>
-
       </div>
 
       {/* Botones */}
@@ -283,22 +300,33 @@ export default function Informes() {
         </button>
       </div>
 
-      {/* Tabla */}
+      {/* Tabla tipo Excel */}
       <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-6 shadow-xl overflow-x-auto">
-
         <table className="w-full text-left text-white text-sm">
           <thead>
             <tr className="border-b border-white/20">
-              <th className="py-2 px-2 cursor-pointer" onClick={() => ordenar("nombre")}>
+              <th
+                className="py-2 px-2 cursor-pointer"
+                onClick={() => ordenar("nombre")}
+              >
                 Apoderado
               </th>
-              <th className="py-2 px-2 text-center cursor-pointer" onClick={() => ordenar("vc")}>
+              <th
+                className="py-2 px-2 text-center cursor-pointer"
+                onClick={() => ordenar("vc")}
+              >
                 VC
               </th>
-              <th className="py-2 px-2 text-center cursor-pointer" onClick={() => ordenar("presencial")}>
+              <th
+                className="py-2 px-2 text-center cursor-pointer"
+                onClick={() => ordenar("presencial")}
+              >
                 Presencial
               </th>
-              <th className="py-2 px-2 text-center cursor-pointer" onClick={() => ordenar("km")}>
+              <th
+                className="py-2 px-2 text-center cursor-pointer"
+                onClick={() => ordenar("km")}
+              >
                 Km Presenciales
               </th>
             </tr>
@@ -306,7 +334,10 @@ export default function Informes() {
 
           <tbody>
             {filtrada.map((row) => (
-              <tr key={row.apoderado_id} className="border-b border-white/10 hover:bg-white/5 transition">
+              <tr
+                key={row.apoderado_id}
+                className="border-b border-white/10 hover:bg-white/5 transition"
+              >
                 <td className="py-2 px-2">{row.nombre}</td>
                 <td className="py-2 px-2 text-center">{row.vc}</td>
                 <td className="py-2 px-2 text-center">{row.presencial}</td>
@@ -315,7 +346,6 @@ export default function Informes() {
             ))}
           </tbody>
         </table>
-
       </div>
 
       {/* Gráficos */}
@@ -324,7 +354,6 @@ export default function Informes() {
         <canvas id="graficoP" className="bg-white/10 p-4 rounded-xl"></canvas>
         <canvas id="graficoKm" className="bg-white/10 p-4 rounded-xl"></canvas>
       </div>
-
     </div>
   );
 }

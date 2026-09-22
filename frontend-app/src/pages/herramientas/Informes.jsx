@@ -182,32 +182,33 @@ export default function Informes() {
       <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-6 shadow-xl flex gap-6">
 
         {/* Selector de Mes */}
-        <div className="flex flex-col relative w-40">
-          <label className="text-white/80 text-sm mb-1">Mes</label>
+<div className="flex flex-col relative w-40">
+  <label className="text-white/80 text-sm mb-1">Mes</label>
 
-          <select
-            className="appearance-none bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white backdrop-blur-xl"
-            value={mes}
-            onChange={(e) => setMes(Number(e.target.value))}
-          >
-            {[
-              "Enero","Febrero","Marzo","Abril","Mayo","Junio",
-              "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"
-            ].map((nombre, i) => (
-              <option
-                key={i}
-                value={i + 1}
-                className="bg-black/40 text-white"
-              >
-                {nombre}
-              </option>
-            ))}
-          </select>
+  <select
+    className="appearance-none bg-[#0f172a]/70 border border-white/20 rounded-xl px-3 py-2 text-white backdrop-blur-xl"
+    value={mes}
+    onChange={(e) => setMes(Number(e.target.value))}
+  >
+    {[
+      "Enero","Febrero","Marzo","Abril","Mayo","Junio",
+      "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"
+    ].map((nombre, i) => (
+      <option
+        key={i}
+        value={i + 1}
+        className="bg-[#0f172a]/80 text-white"
+      >
+        {nombre}
+      </option>
+    ))}
+  </select>
 
-          <span className="pointer-events-none absolute right-3 top-9 text-white/60">
-            ▼
-          </span>
-        </div>
+  {/* Icono ▼ */}
+  <span className="pointer-events-none absolute right-3 top-9 text-white/60">
+    ▼
+  </span>
+</div>
 
         {/* Selector de Año */}
         <div className="flex flex-col w-32">

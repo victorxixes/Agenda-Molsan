@@ -192,30 +192,30 @@ const exportarPDF = () => {
       </h1>
 
       {/* Selector mes/año */}
-      <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-6 shadow-xl flex gap-6">
+      <div className="flex flex-col relative">
+  <label className="text-white/80 text-sm mb-1">Mes</label>
 
-        <div className="flex flex-col">
-          <label className="text-white/80 text-sm mb-1">Mes</label>
-          <select
-            className="bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white"
-            value={mes}
-            onChange={(e) => setMes(Number(e.target.value))}
-          >
-            {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
-              <option key={m} value={m}>{m}</option>
-            ))}
-          </select>
-        </div>
+  <select
+    className="appearance-none bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white backdrop-blur-xl"
+    value={mes}
+    onChange={(e) => setMes(Number(e.target.value))}
+  >
+    {[
+      "Enero","Febrero","Marzo","Abril","Mayo","Junio",
+      "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"
+    ].map((nombre, i) => (
+      <option key={i} value={i + 1} className="bg-black/40 text-white">
+        {nombre}
+      </option>
+    ))}
+  </select>
 
-        <div className="flex flex-col">
-          <label className="text-white/80 text-sm mb-1">Año</label>
-          <input
-            type="number"
-            className="bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white"
-            value={año}
-            onChange={(e) => setAño(Number(e.target.value))}
-          />
-        </div>
+  {/* Icono ▼ */}
+  <span className="pointer-events-none absolute right-3 top-9 text-white/60">
+    ▼
+  </span>
+</div>
+
 
         <div className="flex flex-col flex-1">
           <label className="text-white/80 text-sm mb-1">Buscar apoderado</label>

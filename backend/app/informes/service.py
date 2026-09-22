@@ -19,7 +19,12 @@ def km_de_cita(db: Session, cita: Cita):
     if not notario or not notario.lat or not notario.lng:
         return 0
 
-    return distancia_molsan(notario.lat, notario.lng)
+    try:
+        return float(distancia_molsan(notario.lat, notario.lng))
+    except Exception as e:
+        print("ERROR KM:", e)
+        return 0
+
 
 
 def obtener_tabla(db: Session, mes: int, año: int):

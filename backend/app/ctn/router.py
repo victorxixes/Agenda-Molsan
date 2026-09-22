@@ -10,6 +10,9 @@ from backend.app.ctn.service import obtener_notaria
 from backend.app.agenda.models import Cita
 from backend.app.ctn.schemas import NotariaResponse
 
+# Distancia
+from backend.app.utils.distancia import distancia_km, MOLSAN_LAT, MOLSAN_LNG
+
 router = APIRouter(prefix="/ctn", tags=["CTN"])
 
 # ---------------------------------------------------------
@@ -65,15 +68,18 @@ def listar(
         .all()
     )
 
+    # 🔥 BLOQUE CORREGIDO
     return {
         "total": total,
         "page": page,
         "page_size": page_size,
-        "items": **NotariaResponse.from_orm(n).dict(),
-        "distancia_km": distancia_km(MOLSAN_LAT, MOLSAN_LNG, n.lat, n.lng)
-    }
-    for n in items
-]
+        "items": [
+            {
+                **NotariaResponse.from_orm(n).dict(),
+                "distancia_km": distancia_km(MOLSAN_LAT, MOLSAN_LNG, n.lat, n.lng)
+            }
+            for n in items
+        ]
     }
 
 
@@ -82,12 +88,6 @@ def listar(
 # ---------------------------------------------------------
 @router.post("/migracion/agregar-coordenadas")
 def migracion_agregar_coordenadas():
-    """
-    Crea columnas lat y lng en ctn_notarios si no existen.
-    Ejecutar UNA sola vez desde Swagger.
-    """
-
-    # AUTOCOMMIT → necesario para ALTER TABLE en Render/PostgreSQL
     with engine.connect().execution_options(isolation_level="AUTOCOMMIT") as conn:
         try:
             conn.execute("ALTER TABLE ctn_notarios ADD COLUMN lat TEXT;")
@@ -100,7 +100,6 @@ def migracion_agregar_coordenadas():
             print("LNG YA EXISTE O ERROR:", e)
 
     return {"status": "ok", "detalle": "Columnas lat/lng creadas si no existían"}
-
 
 
 # ---------------------------------------------------------
@@ -121,15 +120,10 @@ def obtener(notaria_id: int, db: Session = Depends(get_db)):
 
 
 # ---------------------------------------------------------
-# GEOCODIFICACIÓN AUTOMÁTICA DE NOTARÍAS
+# GEOCODIFICACIÓN AUTOMÁTICA
 # ---------------------------------------------------------
 @router.post("/geocode/notarias")
 def geocode_notarias(db: Session = Depends(get_db)):
-    """
-    Geocodifica TODAS las notarías sin lat/lng usando dirección completa.
-    Ejecutar desde Swagger cuando quieras rellenar coordenadas.
-    """
-
     notarias = (
         db.query(Notaria)
         .filter((Notaria.lat == None) | (Notaria.lng == None))

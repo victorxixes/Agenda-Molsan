@@ -37,7 +37,7 @@ export default function Informes() {
 
   const cargarTabla = async () => {
     try {
-      const res = await axios.get(`${API_BASE}/informes/apoderados/tabla`, {
+      const res = await axios.get(`${API_BASE}/api/informes/apoderados/tabla`, {
         params: { mes, año },
       });
       setTabla(res.data || []);
@@ -120,15 +120,16 @@ export default function Informes() {
   };
 
   const renderGraficos = () => {
+    // 🔥 Destruir gráficos anteriores
+    if (Chart.getChart("graficoVC")) Chart.getChart("graficoVC").destroy();
+    if (Chart.getChart("graficoP")) Chart.getChart("graficoP").destroy();
+    if (Chart.getChart("graficoKm")) Chart.getChart("graficoKm").destroy();
+
     const ctx1 = document.getElementById("graficoVC");
     const ctx2 = document.getElementById("graficoP");
     const ctx3 = document.getElementById("graficoKm");
 
     if (!ctx1 || !ctx2 || !ctx3) return;
-
-    ctx1.getContext("2d").clearRect(0, 0, ctx1.width, ctx1.height);
-    ctx2.getContext("2d").clearRect(0, 0, ctx2.width, ctx2.height);
-    ctx3.getContext("2d").clearRect(0, 0, ctx3.width, ctx3.height);
 
     new Chart(ctx1, {
       type: "bar",

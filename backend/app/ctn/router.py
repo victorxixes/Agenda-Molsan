@@ -120,78 +120,24 @@ def obtener(notaria_id: int, db: Session = Depends(get_db)):
 
 
 # ---------------------------------------------------------
-# GEOCODIFICACIÓN AUTOMÁTICA
+# GEOCODIFICACIÓN AUTOMÁTICA (NUEVO SISTEMA)
 # ---------------------------------------------------------
+from backend.app.ctn.geocode import geocode_todas_notarias, migracion_agregar_coordenadas
+
 @router.post("/geocode/notarias")
 def geocode_notarias(db: Session = Depends(get_db)):
-    notarias = (
-        db.query(Notaria)
-        .filter((Notaria.lat == None) | (Notaria.lng == None))
-        .all()
-    )
+    """
+    Geocodifica todas las notarías sin lat/lng usando el módulo nuevo.
+    """
+    return geocode_todas_notarias(db)
 
-    actualizadas = 0
-    fallos = 0
 
-    for n in notarias:
-        partes = []
-        if n.direccion:
-            partes.append(n.direccion)
-        if n.cp:
-            partes.append(n.cp)
-        if n.municipio:
-            partes.append(n.municipio)
-        if n.provincia:
-            partes.append(n.provincia)
-        partes.append("España")
-
-        direccion_completa = ", ".join(partes)
-
-        if not direccion_completa.strip():
-            fallos += 1
-            continue
-
-        try:
-            url = "https://nominatim.openstreetmap.org/search"
-            params = {
-                "q": direccion_completa,
-                "format": "json",
-                "limit": 1,
-            }
-            headers = {
-                "User-Agent": "SJ-2026-ERP/1.0 (contacto: soporte@molsan.es)"
-            }
-
-            resp = requests.get(url, params=params, headers=headers, timeout=10)
-            data = resp.json()
-
-            if not data:
-                fallos += 1
-                continue
-
-            lat = data[0]["lat"]
-            lng = data[0]["lon"]
-
-            n.lat = lat
-            n.lng = lng
-            actualizadas += 1
-
-            db.add(n)
-            db.commit()
-
-            time.sleep(1)
-
-        except Exception as e:
-            print("ERROR GEOCODIFICANDO NOTARIA:", n.id, direccion_completa, e)
-            fallos += 1
-            db.rollback()
-
-    return {
-        "status": "ok",
-        "notarias_procesadas": len(notarias),
-        "notarias_actualizadas": actualizadas,
-        "notarias_con_fallo": fallos,
-    }
+@router.post("/migracion/agregar-coordenadas")
+def migracion(db: Session = Depends(get_db)):
+    """
+    Ejecuta la migración completa de coordenadas.
+    """
+    return migracion_agregar_coordenadas(db)
 
 
 # ---------------------------------------------------------

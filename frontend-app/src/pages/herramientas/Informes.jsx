@@ -186,7 +186,7 @@ export default function Informes() {
   <label className="text-white/80 text-sm mb-1">Mes</label>
 
   <select
-    className="appearance-none bg-[#0f172a]/70 border border-white/20 rounded-xl px-3 py-2 text-white backdrop-blur-xl"
+    className="appearance-none bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl px-3 py-2 text-white"
     value={mes}
     onChange={(e) => setMes(Number(e.target.value))}
   >
@@ -197,7 +197,7 @@ export default function Informes() {
       <option
         key={i}
         value={i + 1}
-        className="bg-[#0f172a]/80 text-white"
+        className="bg-white/10 backdrop-blur-xl text-white"
       >
         {nombre}
       </option>

@@ -9,11 +9,14 @@ import { listarNotarias } from "../../api/ctn";
  * - Apoderado visible
  * - Dirección real visible
  * - VC visible
- * - Km visible (si viene del backend)
+ * - Km visible (calculado en frontend)
  * - Glass‑UI mejorado
  * - Debounce + memo + callbacks para rendimiento
  */
 
+// =========================================================
+// Highlight coincidencias
+// =========================================================
 function highlight(text, query) {
   if (!text || !query) return text;
   const q = query.trim();
@@ -33,13 +36,39 @@ function highlight(text, query) {
   );
 }
 
+// =========================================================
+// Distancia KM (Haversine)
+// =========================================================
+function distanciaKm(lat1, lon1, lat2, lon2) {
+  if (!lat1 || !lon1 || !lat2 || !lon2) return null;
+
+  const R = 6371; // km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1 * Math.PI / 180) *
+      Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon / 2) ** 2;
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+// =========================================================
+// Coordenadas reales Molsan (Felipe II 293, Barcelona)
+// =========================================================
+const MOLSAN_LAT = 41.424960;
+const MOLSAN_LNG = 2.181740;
+
 export default function AutocompleteNotario({ value, onSelect }) {
   const [notarios, setNotarios] = useState([]);
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Debounce simple: el valor real de búsqueda se actualiza con retraso
+  // Debounce simple
   const debouncedQuery = useMemo(() => query, [query]);
 
   useEffect(() => {
@@ -90,8 +119,15 @@ export default function AutocompleteNotario({ value, onSelect }) {
           (n.vc || "").trim().toUpperCase() === "SI"
             ? "Videoconferencia"
             : "Presencial",
-        // Si en el futuro añades distancia_km en CTN, lo recogemos aquí
-        distancia_km: n.distancia_km || null,
+
+        // km calculados en frontend
+        distancia_km:
+          distanciaKm(
+            MOLSAN_LAT,
+            MOLSAN_LNG,
+            Number(n.lat),
+            Number(n.lng)
+          ) || null,
       };
 
       onSelect(notarioCompleto);
@@ -120,6 +156,7 @@ export default function AutocompleteNotario({ value, onSelect }) {
                 .join("")
             : "NT"}
         </span>
+
         <input
           type="text"
           className="
@@ -136,6 +173,7 @@ export default function AutocompleteNotario({ value, onSelect }) {
             if (query.length >= 2) setOpen(true);
           }}
         />
+
         {loading && (
           <div className="animate-spin h-4 w-4 border-2 border-white/40 border-t-transparent rounded-full" />
         )}
@@ -167,10 +205,12 @@ export default function AutocompleteNotario({ value, onSelect }) {
 
               const apoderadoLabel = n.apoderado || n.apoderado_s || "";
 
-              const distanciaLabel =
-                n.distancia_km != null
-                  ? `${Number(n.distancia_km).toFixed(1)} km`
-                  : null;
+              const km = distanciaKm(
+                MOLSAN_LAT,
+                MOLSAN_LNG,
+                Number(n.lat),
+                Number(n.lng)
+              );
 
               return (
                 <div
@@ -185,17 +225,16 @@ export default function AutocompleteNotario({ value, onSelect }) {
                   <div className="flex flex-col items-center justify-center">
                     <div className="w-8 h-8 rounded-full bg-blue-500/80 text-white text-xs font-bold flex items-center justify-center shadow-md">
                       {nombreCompleto
-                        ? nombreCompleto
-                            .split(" ")
-                            .filter(Boolean)
-                            .slice(0, 2)
-                            .map((p) => p[0]?.toUpperCase())
-                            .join("")
-                        : "NT"}
+                        .split(" ")
+                        .filter(Boolean)
+                        .slice(0, 2)
+                        .map((p) => p[0]?.toUpperCase())
+                        .join("")}
                     </div>
-                    {distanciaLabel && (
-                      <div className="mt-1 text-[10px] text-white/60">
-                        {distanciaLabel}
+
+                    {km && (
+                      <div className="mt-1 text-[11px] text-blue-300/80 font-semibold">
+                        🚗 {km.toFixed(1)} km
                       </div>
                     )}
                   </div>
@@ -240,6 +279,7 @@ export default function AutocompleteNotario({ value, onSelect }) {
                     >
                       {vcLabel}
                     </span>
+
                     {n.codigo && (
                       <span className="text-[10px] text-white/50">
                         Código: {n.codigo}

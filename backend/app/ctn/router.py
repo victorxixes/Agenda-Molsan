@@ -69,7 +69,11 @@ def listar(
         "total": total,
         "page": page,
         "page_size": page_size,
-        "items": [NotariaResponse.from_orm(n) for n in items]
+        "items": **NotariaResponse.from_orm(n).dict(),
+        "distancia_km": distancia_km(MOLSAN_LAT, MOLSAN_LNG, n.lat, n.lng)
+    }
+    for n in items
+]
     }
 
 

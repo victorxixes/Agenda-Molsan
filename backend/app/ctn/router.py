@@ -68,6 +68,25 @@ def listar(
         "items": [NotariaResponse.from_orm(n) for n in items]
     }
 
+@router.post("/migracion/agregar-coordenadas")
+def migracion_agregar_coordenadas():
+    """
+    Crea columnas lat y lng en ctn_notarios si no existen.
+    Ejecutar una sola vez desde Swagger.
+    """
+    with engine.connect() as conn:
+        try:
+            conn.execute("ALTER TABLE ctn_notarios ADD COLUMN lat TEXT;")
+        except Exception:
+            pass  # Ya existe
+
+        try:
+            conn.execute("ALTER TABLE ctn_notarios ADD COLUMN lng TEXT;")
+        except Exception:
+            pass  # Ya existe
+
+    return {"status": "ok", "detalle": "Columnas lat/lng creadas si no existían"}
+    
 # ---------------------------------------------------------
 # OBTENER NOTARIA POR ID
 # ---------------------------------------------------------

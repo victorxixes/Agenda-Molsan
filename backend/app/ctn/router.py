@@ -82,18 +82,21 @@ def migracion_agregar_coordenadas():
     Crea columnas lat y lng en ctn_notarios si no existen.
     Ejecutar UNA sola vez desde Swagger.
     """
-    with engine.connect() as conn:
+
+    # AUTOCOMMIT → necesario para ALTER TABLE en Render/PostgreSQL
+    with engine.connect().execution_options(isolation_level="AUTOCOMMIT") as conn:
         try:
             conn.execute("ALTER TABLE ctn_notarios ADD COLUMN lat TEXT;")
-        except Exception:
-            pass
+        except Exception as e:
+            print("LAT YA EXISTE O ERROR:", e)
 
         try:
             conn.execute("ALTER TABLE ctn_notarios ADD COLUMN lng TEXT;")
-        except Exception:
-            pass
+        except Exception as e:
+            print("LNG YA EXISTE O ERROR:", e)
 
     return {"status": "ok", "detalle": "Columnas lat/lng creadas si no existían"}
+
 
 
 # ---------------------------------------------------------

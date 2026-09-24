@@ -10,7 +10,8 @@ def distancia_km(lat1, lon1, lat2, lon2):
         lat2 = float(lat2)
         lon2 = float(lon2)
     except:
-        return None
+        # 🔥 Nunca devolver None → siempre devolver número
+        return 0.0
 
     R = 6371  # km
     dLat = math.radians(lat2 - lat1)

@@ -160,7 +160,6 @@ def geocode_todas_notarias(db: Session) -> dict:
         "sin_resultados": sin_resultados,
     }
 
-
 # ---------------------------------------------------------
 # MIGRACIÓN
 # ---------------------------------------------------------

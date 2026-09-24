@@ -23,19 +23,16 @@ GOOGLE_GEOCODE_URL = "https://maps.googleapis.com/maps/api/geocode/json"
 def _build_address(notaria: Notaria) -> Optional[str]:
     partes = []
 
-    if notaria.direccion:
-        partes.append(notaria.direccion)
+    # 🔥 Usar solo el CP
     if notaria.cp:
         partes.append(notaria.cp)
-    if notaria.municipio:
-        partes.append(notaria.municipio)
-    if notaria.provincia:
-        partes.append(notaria.provincia)
 
+    # 🔥 Añadir España
     partes.append("España")
 
     direccion = ", ".join(partes).strip()
     return direccion if direccion else None
+
 
 
 # ---------------------------------------------------------

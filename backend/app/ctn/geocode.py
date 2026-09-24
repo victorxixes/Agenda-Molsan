@@ -1,5 +1,3 @@
-# backend/app/ctn/geocode.py
-
 import time
 import logging
 from typing import Optional
@@ -8,14 +6,14 @@ import requests
 from sqlalchemy.orm import Session
 
 from backend.app.ctn.models import Notaria
+from backend.app.ctn.normalizador import limpiar_direccion
 
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------
-# GOOGLE MAPS API KEY (TU CLAVE)
+# GOOGLE MAPS API KEY
 # ---------------------------------------------------------
 GOOGLE_MAPS_API_KEY = "AIzaSyDN8PU3Mo3grQyymvsAfNErFuhS1cY8GzQ"
-
 GOOGLE_GEOCODE_URL = "https://maps.googleapis.com/maps/api/geocode/json"
 
 
@@ -37,7 +35,6 @@ def _build_address(notaria: Notaria) -> Optional[str]:
     partes.append("España")
 
     direccion = ", ".join(partes).strip()
-
     return direccion if direccion else None
 
 
@@ -83,7 +80,10 @@ def geocode_notaria(db: Session, notaria: Notaria) -> bool:
     if notaria.lat and notaria.lng:
         return False
 
-    address = _build_address(notaria)
+    # 🔥 Normalizar dirección ANTES de enviar a Google Maps
+    raw_address = _build_address(notaria)
+    address = limpiar_direccion(raw_address)
+
     if not address:
         logger.info(f"No se puede construir dirección para notaría id={notaria.id}")
         return False
@@ -125,7 +125,9 @@ def geocode_todas_notarias(db: Session) -> dict:
             ya_con_coordenadas += 1
             continue
 
-        address = _build_address(n)
+        raw_address = _build_address(n)
+        address = limpiar_direccion(raw_address)
+
         if not address:
             sin_direccion += 1
             continue
@@ -148,7 +150,7 @@ def geocode_todas_notarias(db: Session) -> dict:
             db.rollback()
             logger.error(f"Error guardando coordenadas para notaría id={n.id}: {e}")
 
-        time.sleep(0.2)  # Google Maps permite muchas peticiones, pero mejor suave
+        time.sleep(0.2)
 
     return {
         "total_notarias": total,

@@ -1,6 +1,6 @@
 import pandas as pd
 from sqlalchemy.orm import Session
-from app.models import (
+from backend.app.models import (
     Cliente,
     Expediente,
     ExpedienteFinca,

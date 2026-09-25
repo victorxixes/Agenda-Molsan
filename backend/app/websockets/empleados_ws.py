@@ -1,6 +1,8 @@
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect, HTTPException
 from typing import Set
 import asyncio
+import jwt
+from app.config import settings  # JWT_SECRET, ALGORITHM
 
 router = APIRouter(prefix="/ws", tags=["empleados_ws"])
 
@@ -18,17 +20,40 @@ async def broadcast_empleados(evento: dict):
         conexiones_empleados.discard(ws)
 
 
-@router.websocket("/empleados")
-async def empleados_ws(websocket: WebSocket):
+@router.websocket("/empleados/{empleado_id}")
+async def empleados_ws(websocket: WebSocket, empleado_id: int):
+    # 🔥 1) Leer token desde query param
+    token = websocket.query_params.get("token")
+    if not token:
+        await websocket.close(code=4001)
+        return
+
+    # 🔥 2) Validar token
+    try:
+        payload = jwt.decode(token, settings.JWT_SECRET, algorithms=[settings.ALGORITHM])
+        usuario_id = payload.get("id")
+
+        if usuario_id is None:
+            await websocket.close(code=4002)
+            return
+
+    except Exception:
+        await websocket.close(code=4003)
+        return
+
+    # 🔥 3) Aceptar conexión
     await websocket.accept()
     conexiones_empleados.add(websocket)
 
     # ACK inicial
-    await websocket.send_json({"tipo": "ws_conectado"})
+    await websocket.send_json({
+        "tipo": "ws_conectado",
+        "empleado_id": empleado_id,
+        "usuario_id": usuario_id
+    })
 
     try:
         while True:
-            # Intentar recibir sin bloquear
             try:
                 msg = await asyncio.wait_for(websocket.receive_text(), timeout=5)
 
@@ -37,7 +62,6 @@ async def empleados_ws(websocket: WebSocket):
                     continue
 
             except asyncio.TimeoutError:
-                # No llegó nada → mantener conexión viva
                 continue
 
             except WebSocketDisconnect:

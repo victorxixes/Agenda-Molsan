@@ -5,25 +5,49 @@ export default function ImportadorAbsis() {
     const [fecha, setFecha] = useState("");
     const [file, setFile] = useState(null);
     const [resultado, setResultado] = useState(null);
+    const [cargando, setCargando] = useState(false);
+    const [error, setError] = useState(null);
 
     const importar = async (modo) => {
-        if (!file) return;
+        setError(null);
+        setResultado(null);
 
-        const formData = new FormData();
-        formData.append("fichero", file);
+        if (!file) {
+            setError("Debes seleccionar un archivo Excel.");
+            return;
+        }
 
-        const url = modo === "hoy"
-            ? "/utilidades/importador-absis/expedientes"
-            : `/utilidades/importador-absis/expedientes?fecha=${fecha}`;
+        if (modo === "fecha" && !fecha) {
+            setError("Debes seleccionar una fecha para importar.");
+            return;
+        }
 
-        const res = await axios.post(url, formData);
-        setResultado(res.data);
+        setCargando(true);
+
+        try {
+            const formData = new FormData();
+            formData.append("fichero", file);
+
+            const url =
+                modo === "hoy"
+                    ? "/utilidades/importador-absis/expedientes"
+                    : `/utilidades/importador-absis/expedientes?fecha=${fecha}`;
+
+            const res = await axios.post(url, formData);
+            setResultado(res.data);
+
+        } catch (err) {
+            setError("Error al importar el archivo. Revisa el formato o el servidor.");
+        }
+
+        setCargando(false);
     };
 
     return (
         <div className="p-6">
             <h1 className="text-2xl font-bold mb-4">Importador ABSIS</h1>
 
+            {/* Selección de fecha */}
             <div className="mb-4">
                 <label className="block mb-2 font-semibold">Seleccionar fecha</label>
                 <input
@@ -34,6 +58,7 @@ export default function ImportadorAbsis() {
                 />
             </div>
 
+            {/* Archivo Excel */}
             <div className="mb-4">
                 <label className="block mb-2 font-semibold">Archivo Excel</label>
                 <input
@@ -44,22 +69,33 @@ export default function ImportadorAbsis() {
                 />
             </div>
 
+            {/* Botones */}
             <div className="flex gap-4 mb-6">
                 <button
                     onClick={() => importar("hoy")}
-                    className="bg-blue-600 text-white px-4 py-2 rounded"
+                    disabled={cargando}
+                    className="bg-blue-600 text-white px-4 py-2 rounded disabled:opacity-50"
                 >
-                    Importar expedientes del día
+                    {cargando ? "Importando..." : "Importar expedientes del día"}
                 </button>
 
                 <button
                     onClick={() => importar("fecha")}
-                    className="bg-green-600 text-white px-4 py-2 rounded"
+                    disabled={cargando}
+                    className="bg-green-600 text-white px-4 py-2 rounded disabled:opacity-50"
                 >
-                    Importar expedientes de la fecha seleccionada
+                    {cargando ? "Importando..." : "Importar expedientes de la fecha seleccionada"}
                 </button>
             </div>
 
+            {/* Error */}
+            {error && (
+                <div className="bg-red-100 text-red-700 p-3 rounded mb-4">
+                    {error}
+                </div>
+            )}
+
+            {/* Resultado */}
             {resultado && (
                 <div className="bg-gray-100 p-4 rounded">
                     <p><strong>Fecha importada:</strong> {resultado.fecha_importada}</p>

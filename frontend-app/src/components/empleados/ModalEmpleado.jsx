@@ -861,6 +861,7 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
                         "auditoria",
                         "intranet",
                         "mensajes",
+                        "expedientes"
                         "utilidades",
                       ].map((mod) => (
                         <label key={mod} className="flex items-center gap-2">

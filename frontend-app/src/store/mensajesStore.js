@@ -9,7 +9,7 @@ export const useMensajesStore = create((set, get) => ({
   usuarioId: null,
 
   // ---------------------------------------------------------
-  // CARGAR CONVERSACIÓN (solo al abrir chat)
+  // CARGAR CONVERSACIÓN
   // ---------------------------------------------------------
   cargarConversacion: async (usuarioId, otroId) => {
     if (!usuarioId || !otroId) return;
@@ -24,7 +24,7 @@ export const useMensajesStore = create((set, get) => ({
   },
 
   // ---------------------------------------------------------
-  // CARGAR CONECTADOS (REST)
+  // CARGAR CONECTADOS (FILTRADO)
   // ---------------------------------------------------------
   cargarConectados: async () => {
     try {
@@ -50,14 +50,12 @@ export const useMensajesStore = create((set, get) => ({
       if (!empleado || !empleado.id) return state;
       if (empleado.id === usuarioId) return state;
 
-      // OFFLINE
       if (empleado.offline) {
         return {
           conectados: state.conectados.filter((e) => e.id !== empleado.id),
         };
       }
 
-      // ONLINE (actualizar si existe)
       const existe = state.conectados.some((e) => e.id === empleado.id);
 
       if (existe) {
@@ -68,14 +66,13 @@ export const useMensajesStore = create((set, get) => ({
         };
       }
 
-      // Nuevo conectado
       return {
         conectados: [...state.conectados, empleado],
       };
     }),
 
   // ---------------------------------------------------------
-  // REST: ENVIAR MENSAJE
+  // ENVIAR MENSAJE REST
   // ---------------------------------------------------------
   enviarMensajeREST: async (data) => {
     try {
@@ -89,7 +86,7 @@ export const useMensajesStore = create((set, get) => ({
   },
 
   // ---------------------------------------------------------
-  // MARCAR LEÍDO
+  // MARCAR MENSAJE COMO LEÍDO
   // ---------------------------------------------------------
   marcarLeido: async (id) => {
     try {
@@ -99,6 +96,9 @@ export const useMensajesStore = create((set, get) => ({
     }
   },
 
+  // ---------------------------------------------------------
+  // MARCAR CONVERSACIÓN COMO LEÍDA
+  // ---------------------------------------------------------
   marcarConversacionLeida: async (usuarioId, otroId) => {
     try {
       await api.marcarConversacionLeida(usuarioId, otroId);
@@ -123,16 +123,13 @@ export const useMensajesStore = create((set, get) => ({
     }),
 
   // ---------------------------------------------------------
-  // 🔥 REALTIME: MENSAJE DE TEXTO
+  // REALTIME: MENSAJE / ARCHIVO
   // ---------------------------------------------------------
   addMensajeRealtime: (mensaje) =>
     set((state) => ({
       mensajes: [...state.mensajes, mensaje],
     })),
 
-  // ---------------------------------------------------------
-  // 🔥 REALTIME: ARCHIVO
-  // ---------------------------------------------------------
   addArchivoRealtime: (mensaje) =>
     set((state) => ({
       mensajes: [...state.mensajes, mensaje],

@@ -145,6 +145,7 @@ from backend.app.dashboard.router import router as dashboard_router
 # Utilidades
 from backend.app.Utilidades.router import router as utilidades_router
 from backend.app.informes.router import router as informes_router
+from backend.app.Utilidades.importadores.router_absis import router as router_absis
 
 # ============================================================
 # INCLUIR ROUTERS (orden correcto)
@@ -209,3 +210,5 @@ app.include_router(mensajes_router, prefix="/api")
 # Utilidades
 app.include_router(utilidades_router, prefix="/api")
 app.include_router(informes_router, prefix="/api")
+app.include_router(router_absis, prefix="/api")
+

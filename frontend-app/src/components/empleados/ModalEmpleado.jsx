@@ -14,30 +14,29 @@ import {
 import { getMaestros } from "../../api/maestros";
 import SelectSJ from "../ui/SelectSJ";
 
-// ============================================================
-// PLANTILLA OFICIAL SJ‑2026 (incluye EXPEDIENTES)
-// ============================================================
+// ⭐ Módulos oficiales SJ‑2026
 const MODULOS_SJ2026 = [
   "dashboard",
   "agenda",
   "empleados",
-  "seguridad",
-  "auditoria",
+  "ctn",
   "intranet",
   "mensajes",
-  "expedientes",
-  "utilidades",
-  "ctn",
   "noticias",
   "documentos",
+  "auditoria",
   "logs",
+  "seguridad",
+  "utilidades",
   "maestros",
   "realtime",
   "herramientas",
   "panel-tecnico",
   "notificaciones",
+  "expedientes"
 ];
 
+// ⭐ Permisos estándar SJ‑2026
 const PERMISOS_SJ2026 = ["ver", "crear", "editar", "eliminar"];
 
 export default function ModalEmpleado({ open, onClose, empleadoId }) {
@@ -64,9 +63,6 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
     setTimeout(() => setToast(null), 3000);
   }, []);
 
-  // ============================================================
-  // CARGA DE FICHA COMPLETA
-  // ============================================================
   useEffect(() => {
     if (!open || !empleadoId) return;
 
@@ -78,8 +74,8 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
 
         setData(d);
         setEmpleado(d.empleado || {});
-        setModulos(Array.isArray(d.modulos_visibles) ? d.modulos_visibles : []);
-        setPermisos(typeof d.permisos_modulo === "object" ? d.permisos_modulo : {});
+        setModulos(d.modulos_visibles || []);
+        setPermisos(d.permisos_modulo || {});
         setAuditoria(d.auditoria || []);
 
         const [depRes, secRes, carRes, rolesRes] = await Promise.all([
@@ -101,9 +97,6 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
     cargar();
   }, [open, empleadoId]);
 
-  // ============================================================
-  // HANDLERS
-  // ============================================================
   const handleEmpleadoChange = useCallback((campo, valor) => {
     setEmpleado((e) => ({ ...e, [campo]: valor }));
   }, []);
@@ -114,7 +107,6 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
       if (!file || !empleado?.id) return;
 
       await subirFotoEmpleado(empleado.id, file);
-
       const res = await obtenerFichaCompleta(empleado.id);
       const d = res.data;
 
@@ -154,104 +146,177 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
   }, [empleado?.id, empleado?.rol?.id, mostrarToast]);
 
   if (!open || !empleadoId) return null;
-
-
-           {/* TAB: BÁSICOS */}
-{!loading && tab === "basicos" && (
-  <section
-    className="
-      bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
-      p-6 shadow-xl space-y-6
-    "
-  >
-    <h3 className="text-lg font-semibold drop-shadow mb-4">
-      Datos básicos
-    </h3>
-
-    <div className="grid grid-cols-3 gap-4 text-sm">
-
-      {/* Estado */}
-      <div>
-        <span className="block mb-1 text-white/80">Estado</span>
-
-        <SelectSJ
-          value={empleado.estado ?? 1}
-          onChange={(v) => handleEmpleadoChange("estado", Number(v))}
-          options={[
-            { value: 1, label: "Activo" },
-            { value: 0, label: "Baja" },
-          ]}
-        />
-      </div>
-
-      {/* Nombre */}
-      <div>
-        <span className="block mb-1 text-white/80">Nombre</span>
-        <input
-          className="
-            w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
-            text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
-          "
-          value={empleado.nombre || ""}
-          onChange={(e) => handleEmpleadoChange("nombre", e.target.value)}
-        />
-      </div>
-
-      {/* Teléfono */}
-      <div>
-        <span className="block mb-1 text-white/80">Teléfono</span>
-        <input
-          className="
-            w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
-            text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
-          "
-          value={empleado.telefono || ""}
-          onChange={(e) => handleEmpleadoChange("telefono", e.target.value)}
-        />
-      </div>
-
-      {/* Email empresa */}
-      <div>
-        <span className="block mb-1 text-white/80">Email empresa</span>
-        <input
-          className="
-            w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
-            text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
-          "
-          value={empleado.email_empresa || ""}
-          onChange={(e) => handleEmpleadoChange("email_empresa", e.target.value)}
-        />
-      </div>
-
-      {/* Extensión */}
-      <div>
-        <span className="block mb-1 text-white/80">Extensión</span>
-        <input
-          className="
-            w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
-            text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
-          "
-          value={empleado.extension || ""}
-          onChange={(e) => handleEmpleadoChange("extension", e.target.value)}
-        />
-      </div>
-
-    </div>
-
-    <button
-      className="
-        mt-4 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
-        text-white shadow-lg transition
-      "
-      onClick={guardarEmpleado}
+<>
+  {toast && (
+    <div
+      className={`
+        fixed top-4 right-4 px-4 py-2 rounded-xl shadow-2xl text-white text-sm
+        backdrop-blur-xl border border-white/20
+        ${toast.tipo === "ok" ? "bg-green-500/30" : "bg-red-500/30"}
+      `}
     >
-      Guardar datos básicos
-    </button>
-  </section>
-)}
+      {toast.mensaje}
+    </div>
+  )}
 
+  <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+    <div
+      className="
+        bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
+        shadow-2xl w-[900px] max-h-[90vh] overflow-hidden text-white
+      "
+    >
+      {/* HEADER */}
+      <div
+        className="
+          flex justify-between items-center px-6 py-4 border-b border-white/20
+          bg-white/5 backdrop-blur-xl
+        "
+      >
+        <h2 className="text-xl font-semibold drop-shadow">
+          Ficha empleado {empleado.id} — {empleado.nombre} {empleado.apellidos}
+        </h2>
 
-           {/* TAB: PERSONALES */}
+        <button
+          className="
+            px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20
+            text-white shadow-lg transition
+          "
+          onClick={onClose}
+        >
+          Cerrar
+        </button>
+      </div>
+
+      {/* TABS PRINCIPALES */}
+      <div
+        className="
+          px-6 pt-3 pb-2 border-b border-white/20 flex gap-3 text-sm
+          bg-white/5 backdrop-blur-xl
+        "
+      >
+        {["basicos", "personales", "laborales", "seguridad", "auditoria"].map(
+          (t) => (
+            <button
+              key={t}
+              className={`
+                px-4 py-2 rounded-xl transition-all duration-200
+                ${
+                  tab === t
+                    ? "bg-blue-600 text-white shadow-lg"
+                    : "bg-white/10 text-white/70 hover:bg-white/20"
+                }
+              `}
+              onClick={() => setTab(t)}
+            >
+              {t === "basicos" && "Datos básicos"}
+              {t === "personales" && "Datos personales"}
+              {t === "laborales" && "Datos laborales"}
+              {t === "seguridad" && "Seguridad"}
+              {t === "auditoria" && "Auditoría"}
+            </button>
+          )
+        )}
+      </div>
+
+      {/* CONTENIDO SCROLLEABLE */}
+      <div className="px-6 pb-6 pt-4 overflow-y-auto max-h-[75vh]">
+        {loading && (
+          <div className="text-sm text-white/70 animate-pulse">
+            Cargando ficha…
+          </div>
+        )}
+
+        {/* TAB: BÁSICOS */}
+        {!loading && tab === "basicos" && (
+          <section
+            className="
+              bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
+              p-6 shadow-xl space-y-6
+            "
+          >
+            <h3 className="text-lg font-semibold drop-shadow mb-4">
+              Datos básicos
+            </h3>
+
+            <div className="grid grid-cols-3 gap-4 text-sm">
+              <div>
+                <span className="block mb-1 text-white/80">Estado</span>
+                <SelectSJ
+                  value={empleado.estado ?? 1}
+                  onChange={(v) => handleEmpleadoChange("estado", Number(v))}
+                  options={[
+                    { value: 1, label: "Activo" },
+                    { value: 0, label: "Baja" },
+                  ]}
+                />
+              </div>
+
+              <div>
+                <span className="block mb-1 text-white/80">Nombre</span>
+                <input
+                  className="
+                    w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                    text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                  "
+                  value={empleado.nombre || ""}
+                  onChange={(e) => handleEmpleadoChange("nombre", e.target.value)}
+                />
+              </div>
+
+              <div>
+                <span className="block mb-1 text-white/80">Teléfono</span>
+                <input
+                  className="
+                    w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                    text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                  "
+                  value={empleado.telefono || ""}
+                  onChange={(e) => handleEmpleadoChange("telefono", e.target.value)}
+                />
+              </div>
+
+              <div>
+                <span className="block mb-1 text-white/80">Email empresa</span>
+                <input
+                  className="
+                    w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                    text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                  "
+                  value={empleado.email_empresa || ""}
+                  onChange={(e) =>
+                    handleEmpleadoChange("email_empresa", e.target.value)
+                  }
+                />
+              </div>
+
+              <div>
+                <span className="block mb-1 text-white/80">Extensión</span>
+                <input
+                  className="
+                    w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                    text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                  "
+                  value={empleado.extension || ""}
+                  onChange={(e) =>
+                    handleEmpleadoChange("extension", e.target.value)
+                  }
+                />
+              </div>
+            </div>
+
+            <button
+              className="
+                mt-4 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
+                text-white shadow-lg transition
+              "
+              onClick={guardarEmpleado}
+            >
+              Guardar datos básicos
+            </button>
+          </section>
+        )}
+{/* TAB: PERSONALES */}
 {!loading && tab === "personales" && (
   <section
     className="
@@ -462,9 +527,7 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
     </button>
   </section>
 )}
-
-
-            {/* TAB: LABORALES */}
+{/* TAB: LABORALES */}
 {!loading && tab === "laborales" && (
   <section
     className="
@@ -483,7 +546,9 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
         <span className="block mb-1 text-white/80">Departamento</span>
         <SelectSJ
           value={empleado.departamento_id || ""}
-          onChange={(v) => handleEmpleadoChange("departamento_id", Number(v))}
+          onChange={(v) =>
+            handleEmpleadoChange("departamento_id", Number(v))
+          }
           options={[
             { value: "", label: "Sin departamento" },
             ...departamentos.map((d) => ({
@@ -499,7 +564,9 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
         <span className="block mb-1 text-white/80">Sección</span>
         <SelectSJ
           value={empleado.seccion_id || ""}
-          onChange={(v) => handleEmpleadoChange("seccion_id", Number(v))}
+          onChange={(v) =>
+            handleEmpleadoChange("seccion_id", Number(v))
+          }
           options={[
             { value: "", label: "Sin sección" },
             ...secciones.map((s) => ({
@@ -515,7 +582,9 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
         <span className="block mb-1 text-white/80">Cargo</span>
         <SelectSJ
           value={empleado.cargo_id || ""}
-          onChange={(v) => handleEmpleadoChange("cargo_id", Number(v))}
+          onChange={(v) =>
+            handleEmpleadoChange("cargo_id", Number(v))
+          }
           options={[
             { value: "", label: "Sin cargo" },
             ...cargos.map((c) => ({
@@ -536,7 +605,9 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
             text-white focus:ring-2 focus:ring-blue-400
           "
           value={empleado.fecha_alta || ""}
-          onChange={(e) => handleEmpleadoChange("fecha_alta", e.target.value)}
+          onChange={(e) =>
+            handleEmpleadoChange("fecha_alta", e.target.value)
+          }
         />
       </div>
 
@@ -550,7 +621,9 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
             text-white focus:ring-2 focus:ring-blue-400
           "
           value={empleado.fecha_baja || ""}
-          onChange={(e) => handleEmpleadoChange("fecha_baja", e.target.value)}
+          onChange={(e) =>
+            handleEmpleadoChange("fecha_baja", e.target.value)
+          }
         />
       </div>
     </div>
@@ -579,7 +652,6 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
       Seguridad interna
     </h3>
 
-    {/* Usuario + Password */}
     <div className="grid grid-cols-3 gap-4 text-sm">
 
       {/* Usuario */}
@@ -608,9 +680,7 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
         />
       </div>
     </div>
-
-
-                {/* ESTADO DEL EMPLEADO */}
+{/* ESTADO DEL EMPLEADO */}
 <div className="mt-4">
   <span className="block mb-1 text-white/80">Estado actual</span>
 
@@ -668,7 +738,7 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
   )}
 </div>
 
-{/* ROL */}
+{/* ROL DEL EMPLEADO */}
 <div
   className="
     bg-white/5 border border-white/20 rounded-xl p-4 shadow-md
@@ -742,9 +812,7 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
 >
   Reset contraseña
 </button>
-
-
-              {/* TABS SEGURIDAD */}
+{/* TABS SEGURIDAD */}
 <div className="flex gap-3 mt-6 text-sm">
   <button
     className={`
@@ -788,17 +856,7 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
     </h4>
 
     <div className="grid grid-cols-2 gap-3 text-sm text-white/80">
-      {[
-        "dashboard",
-        "agenda",
-        "empleados",
-        "seguridad",
-        "auditoria",
-        "intranet",
-        "mensajes",
-        "expedientes",
-        "utilidades",
-      ].map((mod) => (
+      {MODULOS_SJ2026.map((mod) => (
         <label key={mod} className="flex items-center gap-2">
           <input
             type="checkbox"
@@ -857,7 +915,7 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
         </span>
 
         <div className="grid grid-cols-4 gap-3 text-sm text-white/80">
-          {["ver", "crear", "editar", "eliminar"].map((perm) => (
+          {PERMISOS_SJ2026.map((perm) => (
             <label key={perm} className="flex items-center gap-2">
               <input
                 type="checkbox"
@@ -940,4 +998,9 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
   </section>
 )}
 
-           
+</div> {/* cierre scroll interno */}
+</div>   {/* cierre modal */}
+</div>     {/* cierre overlay */}
+</>
+);
+}

@@ -1,17 +1,73 @@
-const subir = async () => {
-  const form = new FormData();
-  form.append("fichero", file);
+import { useState } from "react";
+import axios from "axios";
 
-  const res = await fetch(`${import.meta.env.VITE_API_URL}/utilidades/importar/expedientes`, {
-    method: "POST",
-    body: form
-  });
+export default function ImportadorAbsis() {
+    const [fecha, setFecha] = useState("");
+    const [file, setFile] = useState(null);
+    const [resultado, setResultado] = useState(null);
 
-  const data = await res.json();
-  setResultado(data);
-};
+    const importar = async (modo) => {
+        if (!file) return;
 
-if (!res.ok) {
-  setResultado({ error: true, detalle: await res.text() });
-  return;
+        const formData = new FormData();
+        formData.append("fichero", file);
+
+        const url = modo === "hoy"
+            ? "/utilidades/importador-absis/expedientes"
+            : `/utilidades/importador-absis/expedientes?fecha=${fecha}`;
+
+        const res = await axios.post(url, formData);
+        setResultado(res.data);
+    };
+
+    return (
+        <div className="p-6">
+            <h1 className="text-2xl font-bold mb-4">Importador ABSIS</h1>
+
+            <div className="mb-4">
+                <label className="block mb-2 font-semibold">Seleccionar fecha</label>
+                <input
+                    type="date"
+                    value={fecha}
+                    onChange={(e) => setFecha(e.target.value)}
+                    className="border p-2 rounded"
+                />
+            </div>
+
+            <div className="mb-4">
+                <label className="block mb-2 font-semibold">Archivo Excel</label>
+                <input
+                    type="file"
+                    accept=".xlsx"
+                    onChange={(e) => setFile(e.target.files[0])}
+                    className="border p-2 rounded"
+                />
+            </div>
+
+            <div className="flex gap-4 mb-6">
+                <button
+                    onClick={() => importar("hoy")}
+                    className="bg-blue-600 text-white px-4 py-2 rounded"
+                >
+                    Importar expedientes del día
+                </button>
+
+                <button
+                    onClick={() => importar("fecha")}
+                    className="bg-green-600 text-white px-4 py-2 rounded"
+                >
+                    Importar expedientes de la fecha seleccionada
+                </button>
+            </div>
+
+            {resultado && (
+                <div className="bg-gray-100 p-4 rounded">
+                    <p><strong>Fecha importada:</strong> {resultado.fecha_importada}</p>
+                    <p><strong>Expedientes creados:</strong> {resultado.expedientes_creados}</p>
+                    <p><strong>Expedientes actualizados:</strong> {resultado.expedientes_actualizados}</p>
+                    <p><strong>Total filtrados:</strong> {resultado.total_filtrados}</p>
+                </div>
+            )}
+        </div>
+    );
 }

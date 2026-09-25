@@ -43,6 +43,7 @@ import Mensajes from "./pages/mensajes/Mensajes.jsx";
 /* HERRAMIENTAS */
 import Herramientas from "./pages/herramientas/Herramientas.jsx";
 import ImportarCTN from "./pages/herramientas/ImportarCTN.jsx";
+import ImportadorAbsis from "./pages/herramientas/importador_absis";
 import Utilidades from "./pages/herramientas/Utilidades.jsx";
 import CrearNoticia from "./pages/herramientas/CrearNoticia.jsx";
 import SubirDocumento from "./pages/herramientas/SubirDocumento.jsx";
@@ -128,6 +129,7 @@ export default function App() {
 
           <Route path="herramientas" element={<Herramientas />} />
           <Route path="herramientas/importar-ctn" element={<ImportarCTN />} />
+          <Route path="/herramientas/importador-absis" element={<ImportadorAbsis />}/>
           <Route path="herramientas/utilidades" element={<Utilidades />} />
           <Route path="herramientas/utilidades/crear-noticia" element={<CrearNoticia />} />
           <Route path="herramientas/utilidades/subir-documento" element={<SubirDocumento />} />

@@ -9,6 +9,15 @@ export default function ExpedientesListado() {
   // Filtros
   const [filtroNif, setFiltroNif] = useState("");
   const [filtroActividad, setFiltroActividad] = useState("");
+  const [filtroFecha, setFiltroFecha] = useState("");
+  const [filtroNotario, setFiltroNotario] = useState("");
+  const [filtroFinca, setFiltroFinca] = useState("");
+  const [filtroImporteMin, setFiltroImporteMin] = useState("");
+  const [filtroImporteMax, setFiltroImporteMax] = useState("");
+
+  // Ordenación
+  const [ordenColumna, setOrdenColumna] = useState("fecha_alta");
+  const [ordenDireccion, setOrdenDireccion] = useState("desc");
 
   // Paginación
   const [pagina, setPagina] = useState(1);
@@ -25,6 +34,13 @@ export default function ExpedientesListado() {
         porPagina,
         nif: filtroNif || undefined,
         actividad: filtroActividad || undefined,
+        fecha: filtroFecha || undefined,
+        notario: filtroNotario || undefined,
+        finca: filtroFinca || undefined,
+        importeMin: filtroImporteMin || undefined,
+        importeMax: filtroImporteMax || undefined,
+        ordenColumna,
+        ordenDireccion,
       },
     });
 
@@ -35,11 +51,25 @@ export default function ExpedientesListado() {
 
   useEffect(() => {
     cargarExpedientes();
-  }, [pagina]);
+  }, [pagina, ordenColumna, ordenDireccion]);
 
   const aplicarFiltros = () => {
     setPagina(1);
     cargarExpedientes();
+  };
+
+  const ordenar = (col) => {
+    if (ordenColumna === col) {
+      setOrdenDireccion(ordenDireccion === "asc" ? "desc" : "asc");
+    } else {
+      setOrdenColumna(col);
+      setOrdenDireccion("asc");
+    }
+  };
+
+  const iconoOrden = (col) => {
+    if (ordenColumna !== col) return "↕";
+    return ordenDireccion === "asc" ? "↑" : "↓";
   };
 
   return (
@@ -47,9 +77,9 @@ export default function ExpedientesListado() {
 
       <h1 className="text-3xl font-bold drop-shadow">Expedientes</h1>
 
-      {/* FILTROS */}
+      {/* FILTROS AVANZADOS */}
       <section className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-xl">
-        <h2 className="text-xl font-semibold mb-4">Filtros</h2>
+        <h2 className="text-xl font-semibold mb-4">Filtros avanzados</h2>
 
         <div className="grid grid-cols-3 gap-4">
 
@@ -60,7 +90,6 @@ export default function ExpedientesListado() {
               value={filtroNif}
               onChange={(e) => setFiltroNif(e.target.value)}
               className="w-full mt-1 px-3 py-2 rounded-xl bg-white/10 border border-white/20 text-white"
-              placeholder="Ej: 12345678A"
             />
           </div>
 
@@ -71,7 +100,56 @@ export default function ExpedientesListado() {
               value={filtroActividad}
               onChange={(e) => setFiltroActividad(e.target.value)}
               className="w-full mt-1 px-3 py-2 rounded-xl bg-white/10 border border-white/20 text-white"
-              placeholder="Ej: FIRMA, INSCRIPCIÓN…"
+            />
+          </div>
+
+          <div>
+            <label className="text-sm text-white/70">Fecha Alta</label>
+            <input
+              type="date"
+              value={filtroFecha}
+              onChange={(e) => setFiltroFecha(e.target.value)}
+              className="w-full mt-1 px-3 py-2 rounded-xl bg-white/10 border border-white/20 text-white"
+            />
+          </div>
+
+          <div>
+            <label className="text-sm text-white/70">NIF Notario</label>
+            <input
+              type="text"
+              value={filtroNotario}
+              onChange={(e) => setFiltroNotario(e.target.value)}
+              className="w-full mt-1 px-3 py-2 rounded-xl bg-white/10 border border-white/20 text-white"
+            />
+          </div>
+
+          <div>
+            <label className="text-sm text-white/70">Finca</label>
+            <input
+              type="text"
+              value={filtroFinca}
+              onChange={(e) => setFiltroFinca(e.target.value)}
+              className="w-full mt-1 px-3 py-2 rounded-xl bg-white/10 border border-white/20 text-white"
+            />
+          </div>
+
+          <div>
+            <label className="text-sm text-white/70">Importe mínimo</label>
+            <input
+              type="number"
+              value={filtroImporteMin}
+              onChange={(e) => setFiltroImporteMin(e.target.value)}
+              className="w-full mt-1 px-3 py-2 rounded-xl bg-white/10 border border-white/20 text-white"
+            />
+          </div>
+
+          <div>
+            <label className="text-sm text-white/70">Importe máximo</label>
+            <input
+              type="number"
+              value={filtroImporteMax}
+              onChange={(e) => setFiltroImporteMax(e.target.value)}
+              className="w-full mt-1 px-3 py-2 rounded-xl bg-white/10 border border-white/20 text-white"
             />
           </div>
 
@@ -96,15 +174,26 @@ export default function ExpedientesListado() {
           <table className="min-w-full text-sm text-white/80">
             <thead>
               <tr className="text-left bg-white/5">
-                <th className="px-3 py-2">Nº Expediente</th>
-                <th className="px-3 py-2">Fecha Alta</th>
-                <th className="px-3 py-2">Actividad</th>
-                <th className="px-3 py-2">Tipo Provisión</th>
-                <th className="px-3 py-2">Importe</th>
-                <th className="px-3 py-2">Finca</th>
-                <th className="px-3 py-2">Cliente</th>
-                <th className="px-3 py-2">NIF Cliente</th>
-                <th className="px-3 py-2">NIF Notario</th>
+                {[
+                  ["id_expediente", "Nº Expediente"],
+                  ["fecha_alta", "Fecha Alta"],
+                  ["actividad_actual", "Actividad"],
+                  ["tipoprovision", "Tipo Provisión"],
+                  ["importe", "Importe"],
+                  ["finca", "Finca"],
+                  ["nombrecliente", "Cliente"],
+                  ["nifcliente", "NIF Cliente"],
+                  ["nifnotario", "NIF Notario"],
+                ].map(([col, label]) => (
+                  <th
+                    key={col}
+                    className="px-3 py-2 cursor-pointer select-none"
+                    onClick={() => ordenar(col)}
+                  >
+                    {label} <span className="text-white/40">{iconoOrden(col)}</span>
+                  </th>
+                ))}
+
                 <th className="px-3 py-2">Acciones</th>
               </tr>
             </thead>

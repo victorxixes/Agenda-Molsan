@@ -33,7 +33,15 @@ app.add_middleware(
 # BASE DE DATOS
 # ============================================================
 from backend.app.database import Base, engine
+
+# Importar modelos para que SQLAlchemy cree las tablas nuevas
+from backend.app.expedientes.clientes.models import Cliente
+from backend.app.expedientes.models import Expediente
+
+# Importar modelos existentes
 from backend.app.mensajes.models import Mensaje
+
+# Crear tablas
 Base.metadata.create_all(bind=engine)
 
 # ============================================================
@@ -119,9 +127,6 @@ from backend.app.dashboard.router import router as dashboard_router
 from backend.app.Utilidades.router import router as utilidades_router
 from backend.app.informes.router import router as informes_router
 
-# Clientes
-from backend.app.expedientes.clientes.models import Cliente
-
 # ============================================================
 # INCLUIR ROUTERS (orden correcto)
 # ============================================================
@@ -160,7 +165,7 @@ app.include_router(intranet_ws_router)
 app.include_router(empleados_ws_router)
 app.include_router(agenda_ws_router)
 app.include_router(mensajes_ws_router)
-app.include_router(router_notif)   # 🔔 Notificaciones realtime
+app.include_router(router_notif)
 
 # Realtime
 app.include_router(realtime_router)
@@ -185,5 +190,3 @@ app.include_router(mensajes_router, prefix="/api")
 # Utilidades
 app.include_router(utilidades_router, prefix="/api")
 app.include_router(informes_router, prefix="/api")
-
-

@@ -58,6 +58,7 @@ from backend.app.expedientes.defectos.models import ExpedienteDefecto
 
 # Modelos existentes
 from backend.app.mensajes.models import Mensaje
+from backend.app.expedientes.detalle.models import ExpedienteDetalle
 
 # Crear tablas
 Base.metadata.create_all(bind=engine)

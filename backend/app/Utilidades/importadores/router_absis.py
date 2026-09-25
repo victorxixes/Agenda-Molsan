@@ -6,13 +6,13 @@ from backend.app.database import get_db
 from backend.app.Utilidades.importadores.expedientes_importer import importar_excel_expedientes
 
 router = APIRouter(
-    prefix="/utilidades/importador",
-    tags=["Importador de expedientes"]
+    prefix="/utilidades/importador-absis",
+    tags=["Importador ABSIS"]
 )
 
 
 @router.post("/expedientes")
-async def importar_expedientes(
+async def importar_expedientes_absis(
     fichero: UploadFile = File(...),
     fecha: str | None = Query(
         None,
@@ -21,7 +21,7 @@ async def importar_expedientes(
     db: Session = Depends(get_db)
 ):
     """
-    Importa expedientes del Excel matriz.
+    Importa expedientes del Excel matriz ABSIS.
     - Si no se indica fecha → importa solo las altas del día actual.
     - Si se indica fecha → importa solo las altas de esa fecha.
     """
@@ -57,7 +57,7 @@ async def importar_expedientes(
     # 4) Respuesta
     # ============================
     return {
-        "mensaje": "Importación completada",
+        "mensaje": "Importación ABSIS completada",
         "fecha_importada": resultado["fecha_importada"],
         "expedientes_creados": resultado["creados"],
         "expedientes_actualizados": resultado["actualizados"],

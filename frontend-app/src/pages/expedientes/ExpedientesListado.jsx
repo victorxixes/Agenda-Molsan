@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { Link } from "react-router-dom";
+import {
+  obtenerListadoExpedientes,
+  exportarExcelExpedientes,
+  obtenerResumenExpedientes,
+} from "../../api/expedientes";
 
 const COLUMNAS = [
   { key: "id_expediente", label: "Nº Expediente" },
@@ -12,13 +16,11 @@ const COLUMNAS = [
   { key: "capital", label: "Capital" },
   { key: "saldo_real", label: "Saldo real" },
   { key: "saldo_disponible", label: "Saldo disponible" },
-  { key: "finca", label: "Finca" }, // si no existe en modelo, se ignora
   { key: "nombre_titular", label: "Nombre titular" },
   { key: "nif_titular", label: "NIF titular" },
   { key: "nombre_notario", label: "Nombre notario" },
   { key: "nif_notario", label: "NIF notario" },
   { key: "oficina", label: "Oficina" },
-  { key: "contrato", label: "Contrato" },
   { key: "tipo_operacion", label: "Tipo operación" },
   { key: "subtipo_operacion", label: "Subtipo operación" },
   { key: "producto_gtg", label: "Producto GTG" },
@@ -52,50 +54,48 @@ export default function ExpedientesListado() {
     COLUMNAS.map((c) => c.key)
   );
 
-  // Resumen para gráficos
+  // Resumen
   const [resumen, setResumen] = useState({
     pendientes: 0,
     enCurso: 0,
     finalizados: 0,
   });
 
-  const cargarExpedientes = async () => {
+  const cargar = async () => {
     setLoading(true);
 
-    const res = await axios.get("/api/expedientes/listado", {
-      params: {
-        pagina,
-        porPagina,
-        nif: filtroNif || undefined,
-        actividad: filtroActividad || undefined,
-        fechaInicio: filtroFechaInicio || undefined,
-        fechaFin: filtroFechaFin || undefined,
-        notario: filtroNotario || undefined,
-        oficina: filtroOficina || undefined,
-        importeMin: filtroImporteMin || undefined,
-        importeMax: filtroImporteMax || undefined,
-        ordenMultiple: ordenMultiple.length ? JSON.stringify(ordenMultiple) : undefined,
-      },
+    const res = await obtenerListadoExpedientes({
+      pagina,
+      porPagina,
+      nif: filtroNif || undefined,
+      actividad: filtroActividad || undefined,
+      fechaInicio: filtroFechaInicio || undefined,
+      fechaFin: filtroFechaFin || undefined,
+      notario: filtroNotario || undefined,
+      oficina: filtroOficina || undefined,
+      importeMin: filtroImporteMin || undefined,
+      importeMax: filtroImporteMax || undefined,
+      ordenMultiple: ordenMultiple.length ? JSON.stringify(ordenMultiple) : undefined,
     });
 
-    setExpedientes(res.data.items || []);
-    setTotalPaginas(res.data.total_paginas || 1);
+    setExpedientes(res.items || []);
+    setTotalPaginas(res.total_paginas || 1);
     setLoading(false);
   };
 
   const cargarResumen = async () => {
-    const res = await axios.get("/api/expedientes/resumen");
-    setResumen(res.data || { pendientes: 0, enCurso: 0, finalizados: 0 });
+    const res = await obtenerResumenExpedientes();
+    setResumen(res || { pendientes: 0, enCurso: 0, finalizados: 0 });
   };
 
   useEffect(() => {
-    cargarExpedientes();
+    cargar();
     cargarResumen();
   }, [pagina, ordenMultiple]);
 
   const aplicarFiltros = () => {
     setPagina(1);
-    cargarExpedientes();
+    cargar();
   };
 
   const ordenar = (col, shiftKey) => {
@@ -135,25 +135,16 @@ export default function ExpedientesListado() {
   };
 
   const exportarExcel = async () => {
-    const res = await axios.get("/api/expedientes/exportar-excel", {
-      params: {
-        nif: filtroNif || undefined,
-        actividad: filtroActividad || undefined,
-        fechaInicio: filtroFechaInicio || undefined,
-        fechaFin: filtroFechaFin || undefined,
-        notario: filtroNotario || undefined,
-        oficina: filtroOficina || undefined,
-        importeMin: filtroImporteMin || undefined,
-        importeMax: filtroImporteMax || undefined,
-      },
-      responseType: "blob",
+    await exportarExcelExpedientes({
+      nif: filtroNif || undefined,
+      actividad: filtroActividad || undefined,
+      fechaInicio: filtroFechaInicio || undefined,
+      fechaFin: filtroFechaFin || undefined,
+      notario: filtroNotario || undefined,
+      oficina: filtroOficina || undefined,
+      importeMin: filtroImporteMin || undefined,
+      importeMax: filtroImporteMax || undefined,
     });
-
-    const url = window.URL.createObjectURL(new Blob([res.data]));
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "expedientes.xlsx";
-    a.click();
   };
 
   return (
@@ -317,7 +308,7 @@ export default function ExpedientesListado() {
                 <tr key={exp.id_expediente} className="border-t border-white/10 hover:bg-white/5">
                   {COLUMNAS.filter((c) => columnasVisibles.includes(c.key)).map((c) => (
                     <td key={c.key} className="px-3 py-2">
-                      {exp[c.key] || "—"}
+                      {exp[c.key] ?? "—"}
                     </td>
                   ))}
                   <td className="px-3 py-2">

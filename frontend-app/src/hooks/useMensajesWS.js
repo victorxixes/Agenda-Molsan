@@ -6,13 +6,12 @@ export const useMensajesWS = (empleadoId, otroId) => {
   const pingInterval = useRef(null);
   const reconnectTimeout = useRef(null);
 
-  const cargarConversacion = useMensajesStore((s) => s.cargarConversacion);
   const cargarConectados = useMensajesStore((s) => s.cargarConectados);
   const setConectadosWS = useMensajesStore((s) => s.setConectadosWS);
   const setTyping = useMensajesStore((s) => s.setTyping);
   const clearTyping = useMensajesStore((s) => s.clearTyping);
 
-  // ✅ Guardar usuarioId SOLO cuando cambie
+  // 🔥 Guardar usuarioId en Zustand solo cuando cambie
   useEffect(() => {
     if (!empleadoId) return;
 
@@ -25,7 +24,7 @@ export const useMensajesWS = (empleadoId, otroId) => {
   useEffect(() => {
     if (!empleadoId) return;
 
-    // Si ya hay un WS activo, no volver a conectar
+    // Si ya existe un WS, no reconectar
     if (wsRef.current) return;
 
     let ws;
@@ -36,9 +35,13 @@ export const useMensajesWS = (empleadoId, otroId) => {
       );
       wsRef.current = ws;
 
+      // ---------------------------------------------------------
+      // WS OPEN
+      // ---------------------------------------------------------
       ws.onopen = () => {
         cargarConectados();
 
+        // Ping cada 15s
         pingInterval.current = setInterval(() => {
           if (ws.readyState === WebSocket.OPEN) {
             ws.send("ping");
@@ -46,6 +49,9 @@ export const useMensajesWS = (empleadoId, otroId) => {
         }, 15000);
       };
 
+      // ---------------------------------------------------------
+      // WS MESSAGE
+      // ---------------------------------------------------------
       ws.onmessage = (event) => {
         if (!event.data) return;
 
@@ -58,33 +64,43 @@ export const useMensajesWS = (empleadoId, otroId) => {
 
         if (!data?.tipo) return;
 
+        // ONLINE
         if (data.tipo === "online") {
           setConectadosWS(data);
         }
 
+        // OFFLINE
         if (data.tipo === "offline") {
           setConectadosWS({ id: data.id, offline: true });
         }
 
+        // TYPING
         if (data.tipo === "typing") {
           setTyping(data.from);
           setTimeout(() => clearTyping(data.from), 1500);
         }
 
-        if (
-          data.tipo === "mensaje" ||
-          data.tipo === "archivo" ||
-          data.tipo === "nuevo_mensaje" ||
-          data.tipo === "nuevo_archivo"
-        ) {
-          if (otroId) cargarConversacion(empleadoId, otroId);
+        // 🔥 MENSAJE REALTIME
+        if (data.tipo === "nuevo_mensaje") {
+          useMensajesStore.getState().addMensajeRealtime(data.mensaje);
+        }
+
+        // 🔥 ARCHIVO REALTIME
+        if (data.tipo === "nuevo_archivo") {
+          useMensajesStore.getState().addArchivoRealtime(data.mensaje);
         }
       };
 
+      // ---------------------------------------------------------
+      // WS ERROR
+      // ---------------------------------------------------------
       ws.onerror = () => {
         console.warn("WS Mensajes error.");
       };
 
+      // ---------------------------------------------------------
+      // WS CLOSE + RECONNECT
+      // ---------------------------------------------------------
       ws.onclose = () => {
         clearInterval(pingInterval.current);
         pingInterval.current = null;
@@ -98,6 +114,9 @@ export const useMensajesWS = (empleadoId, otroId) => {
 
     conectar();
 
+    // ---------------------------------------------------------
+    // CLEANUP
+    // ---------------------------------------------------------
     return () => {
       try {
         wsRef.current?.close();
@@ -113,7 +132,14 @@ export const useMensajesWS = (empleadoId, otroId) => {
 
       wsRef.current = null;
     };
-  }, [empleadoId, otroId, cargarConectados, cargarConversacion, setConectadosWS, setTyping, clearTyping]);
+  }, [
+    empleadoId,
+    otroId,
+    cargarConectados,
+    setConectadosWS,
+    setTyping,
+    clearTyping,
+  ]);
 
   return wsRef;
 };

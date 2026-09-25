@@ -14,7 +14,6 @@ function Intranet() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // 🔥 NO cargar hasta que authStore esté listo
     if (!authReady || !token) return;
 
     async function cargar() {

@@ -37,11 +37,17 @@ export default function Utilidades() {
           link="/herramientas/utilidades/subir-documento"
         />
 
-        {/* NUEVO: INFORMES */}
         <Card
           titulo="Informes"
           descripcion="Listados y estadísticas de apoderados."
           link="/herramientas/informes"
+        />
+
+        {/* NUEVO: IMPORTADOR ABSIS */}
+        <Card
+          titulo="Importador ABSIS"
+          descripcion="Importar expedientes del Excel matriz ABSIS."
+          link="/herramientas/importador-absis"
         />
 
       </div>

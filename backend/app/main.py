@@ -118,8 +118,6 @@ from backend.app.dashboard.router import router as dashboard_router
 # Utilidades
 from backend.app.Utilidades.router import router as utilidades_router
 from backend.app.informes.router import router as informes_router
-from app.utilidades.router_import import router as utilidades_import_router
-
 
 
 # ============================================================

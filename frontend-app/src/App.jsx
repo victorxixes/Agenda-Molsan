@@ -24,6 +24,7 @@ import VistaSemana from "./pages/agenda/VistaSemana.jsx";
 import VistaMes from "./pages/agenda/VistaMes.jsx";
 
 /* EXPEDIENTES */
+import ExpedientesListado from "./pages/expedientes/ExpedientesListado.jsx";
 import FichaExpediente from "./pages/expedientes/FichaExpediente.jsx";
 
 /* CTN */
@@ -50,6 +51,7 @@ import ImportadorAbsis from "./pages/herramientas/importador_absis";
 import Utilidades from "./pages/herramientas/Utilidades.jsx";
 import CrearNoticia from "./pages/herramientas/CrearNoticia.jsx";
 import SubirDocumento from "./pages/herramientas/SubirDocumento.jsx";
+import Informes from "./pages/herramientas/Informes";
 
 /* LOGS */
 import Logs from "./pages/logs/Logs.jsx";
@@ -74,8 +76,6 @@ import SeguridadFicha from "./pages/seguridad/SeguridadFicha.jsx";
 import SeguridadAuditoria from "./pages/seguridad/SeguridadAuditoria.jsx";
 import SeguridadLogs from "./pages/seguridad/SeguridadLogs.jsx";
 import SeguridadRolEditor from "./pages/seguridad/SeguridadRolEditor.jsx";
-
-import Informes from "./pages/herramientas/Informes";
 
 function MensajesWrapper() {
   const empleado = useAuthStore((s) => s.empleado);
@@ -117,8 +117,9 @@ export default function App() {
           <Route path="agenda/semana" element={<VistaSemana />} />
           <Route path="agenda/mes" element={<VistaMes />} />
 
-          <Route path="/expedientes" element={<ExpedientesListado />} />
-          <Route path="/expedientes/:id" element={<FichaExpediente />} />
+          {/* EXPEDIENTES */}
+          <Route path="expedientes" element={<ExpedientesListado />} />
+          <Route path="expedientes/:id" element={<FichaExpediente />} />
 
           <Route path="ctn" element={<Ctn />} />
           <Route path="ctn/listado" element={<CtnListadoPage />} />
@@ -134,13 +135,12 @@ export default function App() {
           <Route path="mensajes" element={<MensajesWrapper />} />
 
           <Route path="herramientas" element={<Herramientas />} />
-<Route path="herramientas/importar-ctn" element={<ImportarCTN />} />
-<Route path="herramientas/importador-absis" element={<ImportadorAbsis />} />
-<Route path="herramientas/utilidades" element={<Utilidades />} />
-<Route path="herramientas/utilidades/crear-noticia" element={<CrearNoticia />} />
-<Route path="herramientas/utilidades/subir-documento" element={<SubirDocumento />} />
-<Route path="herramientas/informes" element={<Informes />} />
-
+          <Route path="herramientas/importar-ctn" element={<ImportarCTN />} />
+          <Route path="herramientas/importador-absis" element={<ImportadorAbsis />} />
+          <Route path="herramientas/utilidades" element={<Utilidades />} />
+          <Route path="herramientas/utilidades/crear-noticia" element={<CrearNoticia />} />
+          <Route path="herramientas/utilidades/subir-documento" element={<SubirDocumento />} />
+          <Route path="herramientas/informes" element={<Informes />} />
 
           <Route path="logs" element={<Logs />} />
 
@@ -162,7 +162,6 @@ export default function App() {
           <Route path="seguridad/logs" element={<SeguridadLogs />} />
           <Route path="seguridad/roles/editor" element={<SeguridadRolEditor />} />
 
-          <Route path="herramientas/informes" element={<Informes />} />
         </Route>
 
         {/* CUALQUIER OTRA RUTA → LOGIN */}

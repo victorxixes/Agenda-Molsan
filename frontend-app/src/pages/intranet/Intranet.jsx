@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuthStore } from "../../store/authStore";
-
-const API = "https://agenda-intranet-b.onrender.com/api";
+import axios from "../../api/axios";
 
 function Intranet() {
   const { token, authReady, empleado } = useAuthStore();
@@ -21,61 +20,43 @@ function Intranet() {
         setLoading(true);
         setError(null);
 
+        // Axios añade automáticamente el token desde el interceptor
         const [resNoticias, resDocumentos] = await Promise.all([
-          fetch(`${API}/noticias`, {
-            headers: { Authorization: `Bearer ${token}` }
-          }),
-          fetch(`${API}/documentos`, {
-            headers: { Authorization: `Bearer ${token}` }
-          })
+          axios.get("/noticias"),
+          axios.get("/documentos")
         ]);
 
-        if (!resNoticias.ok || !resDocumentos.ok) {
-          throw new Error("Error cargando datos de intranet");
-        }
-
-        const dataNoticias = await resNoticias.json();
-        const dataDocumentos = await resDocumentos.json();
-
-        setNoticias(dataNoticias || []);
-        setDocumentos(dataDocumentos || []);
+        setNoticias(Array.isArray(resNoticias.data) ? resNoticias.data : []);
+        setDocumentos(Array.isArray(resDocumentos.data) ? resDocumentos.data : []);
       } catch (e) {
         console.error("Error cargando intranet", e);
-        setError(e.message || "Error inesperado");
+        setError("Error cargando datos de intranet");
       } finally {
         setLoading(false);
       }
     }
 
     cargar();
-  }, [token, authReady]);
+  }, [authReady, token]);
 
   // ELIMINAR NOTICIA
   async function eliminarNoticia(id) {
-    const res = await fetch(`${API}/noticias/${id}`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` }
-    });
-
-    if (!res.ok) {
-      return alert("Error eliminando noticia");
+    try {
+      await axios.delete(`/noticias/${id}`);
+      setNoticias(noticias.filter(n => n.id !== id));
+    } catch {
+      alert("Error eliminando noticia");
     }
-
-    setNoticias(noticias.filter(n => n.id !== id));
   }
 
   // ELIMINAR DOCUMENTO
   async function eliminarDocumento(id) {
-    const res = await fetch(`${API}/documentos/${id}`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` }
-    });
-
-    if (!res.ok) {
-      return alert("Error eliminando documento");
+    try {
+      await axios.delete(`/documentos/${id}`);
+      setDocumentos(documentos.filter(d => d.id !== id));
+    } catch {
+      alert("Error eliminando documento");
     }
-
-    setDocumentos(documentos.filter(d => d.id !== id));
   }
 
   // ESTADOS DE CARGA
@@ -164,7 +145,7 @@ function Intranet() {
 
                 <div className="flex gap-2">
                   <a
-                    href={`${API}/documentos/descargar/${d.id}`}
+                    href={`${import.meta.env.VITE_API_URL}/documentos/descargar/${d.id}`}
                     className="text-xs px-3 py-1 rounded-lg bg-white/20 text-white hover:bg-white/30 transition"
                   >
                     Descargar

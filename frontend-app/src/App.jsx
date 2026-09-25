@@ -117,7 +117,8 @@ export default function App() {
           <Route path="agenda/semana" element={<VistaSemana />} />
           <Route path="agenda/mes" element={<VistaMes />} />
 
-          <Route path="expedientes/:id" element={<FichaExpediente />} />
+          <Route path="/expedientes" element={<ExpedientesListado />} />
+          <Route path="/expedientes/:id" element={<FichaExpediente />} />
 
           <Route path="ctn" element={<Ctn />} />
           <Route path="ctn/listado" element={<CtnListadoPage />} />

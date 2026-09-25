@@ -7,7 +7,7 @@ from backend.app.database import get_db
 from backend.app.empleados.models import Empleado
 from sqlalchemy.orm import Session
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/login")
 
 # ---------------------------------------------------------
 # FUNCIÓN QUE YA TENÍAS (NO SE TOCA)

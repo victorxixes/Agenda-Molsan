@@ -87,8 +87,10 @@ from backend.app.empleados.router import router as empleados_router
 from backend.app.maestros.router import router as maestros_router
 
 # Intranet
+from backend.app.intranet.router import router as intranet_router
 from backend.app.intranet.documentos.router import router as documentos_router
 from backend.app.intranet.noticias.router import router as noticias_router
+
 
 # WebSockets
 from backend.app.websockets.intranet_ws import router as intranet_ws_router
@@ -149,6 +151,7 @@ app.include_router(empleados_router, prefix="/api")
 app.include_router(maestros_router, prefix="/api")
 
 # Intranet
+app.include_router(intranet_router, prefix="/api")
 app.include_router(intranet_ws_router)
 app.include_router(documentos_router, prefix="/api")
 app.include_router(noticias_router, prefix="/api")

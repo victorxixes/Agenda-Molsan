@@ -981,7 +981,8 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
         )}
 
       </div> 
-
+      
+  </div> 
 </>
 );
 }

@@ -7,11 +7,14 @@ from app.Utilidades.importadores.expedientes_importer import importar_excel_expe
 router = APIRouter(prefix="/utilidades", tags=["Utilidades"])
 
 @router.post("/ctn/importar")
-async def importar_ctn(fichero: UploadFile = File(...)):
-    contenido = await fichero.read()  # lectura segura en async
-    db = next(get_db())
+async def importar_ctn(
+    fichero: UploadFile = File(...),
+    db: Session = Depends(get_db)
+):
+    contenido = await fichero.read()
     total = importar_ctn_desde_excel(db, contenido)
     return {"importados": total}
+
 
 
 

@@ -12,39 +12,40 @@ import axios from "./axios";
    DOCUMENTOS
 --------------------------------------------------------- */
 export const listarDocumentos = (search) =>
-  axios.get("/intranet/documentos", { params: { search } });
+  axios.get("/documentos", { params: { search } });
 
 export const obtenerDocumento = (id) =>
-  axios.get(`/intranet/documentos/${id}`);
+  axios.get(`/documentos/${id}`);
 
 export const crearDocumento = (formData) =>
-  axios.post("/intranet/documentos", formData);
+  axios.post("/documentos", formData);
 
 export const actualizarDocumento = (id, formData) =>
-  axios.put(`/intranet/documentos/${id}`, formData);
+  axios.put(`/documentos/${id}`, formData);
 
 export const eliminarDocumento = (id) =>
-  axios.delete(`/intranet/documentos/${id}`);
+  axios.delete(`/documentos/${id}`);
 
 export const descargarDocumento = (id) =>
-  axios.get(`/intranet/documentos/descargar/${id}`, {
+  axios.get(`/documentos/descargar/${id}`, {
     responseType: "blob",
   });
+
 
 /* ---------------------------------------------------------
    NOTICIAS
 --------------------------------------------------------- */
 export const listarNoticias = (search) =>
-  axios.get("/intranet/noticias", { params: { search } });
+  axios.get("/noticias", { params: { search } });
 
 export const obtenerNoticia = (id) =>
-  axios.get(`/intranet/noticias/${id}`);
+  axios.get(`/noticias/${id}`);
 
 export const crearNoticia = (data) =>
-  axios.post("/intranet/noticias", data);
+  axios.post("/noticias", data);
 
 export const actualizarNoticia = (id, data) =>
-  axios.put(`/intranet/noticias/${id}`, data);
+  axios.put(`/noticias/${id}`, data);
 
 export const eliminarNoticia = (id) =>
-  axios.delete(`/intranet/noticias/${id}`);
+  axios.delete(`/noticias/${id}`);

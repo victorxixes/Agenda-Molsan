@@ -34,11 +34,29 @@ app.add_middleware(
 # ============================================================
 from backend.app.database import Base, engine
 
-# Importar modelos para que SQLAlchemy cree las tablas nuevas
+# ============================
+# MODELOS EXPEDIENTES
+# ============================
+
+# Cliente (titular + facturación)
 from backend.app.expedientes.clientes.models import Cliente
+
+# Expediente completo
 from backend.app.expedientes.models import Expediente
 
-# Importar modelos existentes
+# Actividades del expediente
+from backend.app.expedientes.actividades.models import ExpedienteActividad
+
+# Fincas + Registros
+from backend.app.expedientes.fincasyregistros.models import ExpedienteFinca
+
+# Gastos del expediente
+from backend.app.expedientes.gastos.models import ExpedienteGasto
+
+# Defectos del expediente
+from backend.app.expedientes.defectos.models import ExpedienteDefecto
+
+# Modelos existentes
 from backend.app.mensajes.models import Mensaje
 
 # Crear tablas
@@ -160,7 +178,7 @@ app.include_router(intranet_router, prefix="/api")
 app.include_router(documentos_router, prefix="/api")
 app.include_router(noticias_router, prefix="/api")
 
-# WebSockets (🔥 todos juntos)
+# WebSockets
 app.include_router(intranet_ws_router)
 app.include_router(empleados_ws_router)
 app.include_router(agenda_ws_router)

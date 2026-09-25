@@ -1,35 +1,33 @@
 import { create } from "zustand";
 
-/**
- * Store de Notificaciones — Versión SJ‑2026 Premium
- * Gestiona:
- * - Lista de notificaciones
- * - Añadir notificación
- * - Limpiar notificaciones
- */
-
 export const useNotificacionesStore = create((set) => ({
   notificaciones: [],
+  unreadCount: 0,
 
-  // ---------------------------------------------------------
-  // AÑADIR NOTIFICACIÓN
-  // ---------------------------------------------------------
   addNotificacion: (notif) =>
     set((state) => ({
       notificaciones: [
         {
           id: Date.now(),
-          tipo: notif.tipo,
-          titulo: notif.titulo || "",
-          descripcion: notif.descripcion || "",
-          fecha: new Date().toISOString(),
+          ...notif,
         },
         ...state.notificaciones,
       ],
+      unreadCount: state.unreadCount + 1,
     })),
 
-  // ---------------------------------------------------------
-  // LIMPIAR TODAS
-  // ---------------------------------------------------------
-  clearNotificaciones: () => set({ notificaciones: [] }),
+  clearNotificaciones: () =>
+    set(() => ({
+      notificaciones: [],
+      unreadCount: 0,
+    })),
+
+  markAllRead: () =>
+    set((state) => ({
+      unreadCount: 0,
+      notificaciones: state.notificaciones.map((n) => ({
+        ...n,
+        read: true,
+      })),
+    })),
 }));

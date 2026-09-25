@@ -21,7 +21,7 @@ from backend.app.websockets.notificaciones_ws import broadcast_notificacion
 
 
 router = APIRouter(
-    prefix="/intranet/noticias",
+    prefix="/noticias",
     tags=["Noticias"]
 )
 

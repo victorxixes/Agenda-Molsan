@@ -2,7 +2,7 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect, HTTPException
 from typing import Set
 import asyncio
 import jwt
-from app.config import settings  # JWT_SECRET, ALGORITHM
+from backend.app.config import settings
 
 router = APIRouter(prefix="/ws", tags=["empleados_ws"])
 

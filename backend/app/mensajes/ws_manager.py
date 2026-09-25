@@ -5,20 +5,21 @@ from threading import Lock
 from backend.app.mensajes.models import Mensaje
 from backend.app.database import SessionLocal
 
+# 🔥 Import correcto del WS de notificaciones
+from backend.app.notificaciones.router_ws import send_notif_to_user
+
 
 class WSManager:
     """
     Gestor WebSocket SJ‑2026:
-    - Conexiones por usuario
+    - Conexiones por usuario (múltiples pestañas)
     - Broadcast seguro
-    - Envío de mensajes en tiempo real
-    - Envío de archivos en tiempo real
+    - Envío realtime de mensajes y archivos
     - Tiping realtime
     - Online/offline
     - Limpieza de conexiones muertas
     """
 
-    # 🔥 Ahora soporta múltiples conexiones por usuario (PC + móvil + otra pestaña)
     conectados = {}  # {empleado_id: [ws1, ws2, ...]}
     lock = Lock()
 
@@ -45,19 +46,18 @@ class WSManager:
     # ---------------------------------------------------------
     async def send_to_user(self, empleado_id, data):
         conexiones = self.conectados.get(empleado_id, [])
-
-        conexiones_muertas = []
+        muertos = []
 
         for ws in conexiones:
             try:
                 await ws.send_json(data)
             except Exception:
-                conexiones_muertas.append(ws)
+                muertos.append(ws)
 
-        # 🔥 Limpieza de conexiones muertas
-        if conexiones_muertas:
+        # Limpieza
+        if muertos:
             with self.lock:
-                for ws in conexiones_muertas:
+                for ws in muertos:
                     try:
                         conexiones.remove(ws)
                     except:
@@ -67,19 +67,19 @@ class WSManager:
     # BROADCAST GLOBAL
     # ---------------------------------------------------------
     async def broadcast(self, data):
-        conexiones_muertas = []
+        muertos = []
 
         for empleado_id, conexiones in self.conectados.items():
             for ws in conexiones:
                 try:
                     await ws.send_json(data)
                 except Exception:
-                    conexiones_muertas.append((empleado_id, ws))
+                    muertos.append((empleado_id, ws))
 
-        # 🔥 Limpieza
-        if conexiones_muertas:
+        # Limpieza
+        if muertos:
             with self.lock:
-                for empleado_id, ws in conexiones_muertas:
+                for empleado_id, ws in muertos:
                     try:
                         self.conectados[empleado_id].remove(ws)
                     except:
@@ -110,11 +110,18 @@ class WSManager:
             "mensaje": mensaje.as_dict()
         }
 
-        # 🔥 Enviar al remitente
+        # 🔥 Enviar realtime al remitente
         await self.send_to_user(remitente_id, payload)
 
-        # 🔥 Enviar al destinatario
+        # 🔥 Enviar realtime al destinatario
         await self.send_to_user(destinatario_id, payload)
+
+        # 🔔 Notificación global
+        await send_notif_to_user(destinatario_id, {
+            "tipo": "nuevo_mensaje",
+            "from": remitente_id,
+            "preview": contenido,
+        })
 
         return mensaje
 
@@ -143,13 +150,21 @@ class WSManager:
             "mensaje": mensaje.as_dict()
         }
 
-        # 🔥 Enviar al remitente
+        # 🔥 Enviar realtime al remitente
         await self.send_to_user(remitente_id, payload)
 
-        # 🔥 Enviar al destinatario
+        # 🔥 Enviar realtime al destinatario
         await self.send_to_user(destinatario_id, payload)
+
+        # 🔔 Notificación global
+        await send_notif_to_user(destinatario_id, {
+            "tipo": "nuevo_archivo",
+            "from": remitente_id,
+            "archivo_url": archivo_url,
+        })
 
         return mensaje
 
 
+# Instancia global
 manager = WSManager()

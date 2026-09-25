@@ -10,3 +10,8 @@ const subir = async () => {
   const data = await res.json();
   setResultado(data);
 };
+
+if (!res.ok) {
+  setResultado({ error: true, detalle: await res.text() });
+  return;
+}

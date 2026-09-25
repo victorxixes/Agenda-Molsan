@@ -3,11 +3,10 @@
 // ============================================================
 
 import { Routes, Route, Navigate } from "react-router-dom";
-import { useEffect } from "react";
+import { useAuthStore } from "./store/authStore";
 
 /* AUTH */
 import RequireAuth from "./components/auth/RequireAuth";
-import { useAuthStore } from "./store/authStore";
 
 /* LAYOUT */
 import Layout from "./layout/Layout";
@@ -74,10 +73,6 @@ import SeguridadRolEditor from "./pages/seguridad/SeguridadRolEditor.jsx";
 
 import Informes from "./pages/herramientas/Informes";
 
-// ============================================================
-// Wrapper SJ‑2026 para Mensajes
-// ============================================================
-
 function MensajesWrapper() {
   const empleado = useAuthStore((s) => s.empleado);
 
@@ -92,28 +87,15 @@ function MensajesWrapper() {
   return <Mensajes usuarioId={empleado.id} />;
 }
 
-// ============================================================
-// App — Router principal SJ‑2026
-// ============================================================
-
 export default function App() {
-  const init = useAuthStore((s) => s.init);
-
-  useEffect(() => {
-    init();
-  }, [init]);
-
   return (
     <div className="animate-fade-in">
       <Routes>
 
-        {/* 🔥 PRIMERA PÁGINA SIEMPRE LOGIN */}
-        <Route path="/" element={<Navigate to="/login" replace />} />
-
         {/* LOGIN */}
         <Route path="/login" element={<LoginPage />} />
 
-        {/* 🔥 TODAS LAS RUTAS PRIVADAS */}
+        {/* RUTAS PRIVADAS */}
         <Route
           path="/"
           element={
@@ -169,9 +151,11 @@ export default function App() {
           <Route path="seguridad/auditoria" element={<SeguridadAuditoria />} />
           <Route path="seguridad/logs" element={<SeguridadLogs />} />
           <Route path="seguridad/roles/editor" element={<SeguridadRolEditor />} />
-          <Route path="/herramientas/informes" element={<Informes />} />
+
+          <Route path="herramientas/informes" element={<Informes />} />
         </Route>
 
+        {/* CUALQUIER OTRA RUTA → LOGIN */}
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </div>

@@ -1,74 +1,75 @@
 import { useEffect, useRef } from "react";
 import { useNotificacionesStore } from "../store/notificacionesStore";
 
+/**
+ * Hook WebSocket de notificaciones — SJ‑2026 Premium
+ * - Sin reconexiones infinitas
+ * - Sin bucles
+ * - Compatible con Render (403 fix)
+ * - Estable y seguro
+ */
+
 export const useNotificacionesWS = (empleadoId) => {
   const wsRef = useRef(null);
-  const pingInterval = useRef(null);
-  const reconnectTimeout = useRef(null);
-
   const addNotificacion = useNotificacionesStore((s) => s.addNotificacion);
 
   useEffect(() => {
     if (!empleadoId) return;
+
+    // Si ya está conectado, no volver a conectar
     if (wsRef.current) return;
 
     let ws;
 
-    const conectar = () => {
+    try {
       ws = new WebSocket(
         `${import.meta.env.VITE_WS_URL}/ws/notificaciones/${empleadoId}`
       );
-      wsRef.current = ws;
+    } catch (err) {
+      console.warn("WS Notificaciones: error creando WebSocket:", err);
+      return;
+    }
 
-      ws.onopen = () => {
-        pingInterval.current = setInterval(() => {
-          if (ws.readyState === WebSocket.OPEN) ws.send("ping");
-        }, 15000);
-      };
+    wsRef.current = ws;
 
-      ws.onmessage = (event) => {
-        if (!event.data) return;
-
-        let data;
-        try {
-          data = JSON.parse(event.data);
-        } catch {
-          return;
-        }
-
-        if (!data?.tipo) return;
-
-        addNotificacion(data);
-      };
-
-      ws.onerror = () => console.warn("WS Notificaciones error.");
-
-      ws.onclose = () => {
-        clearInterval(pingInterval.current);
-        pingInterval.current = null;
-        wsRef.current = null;
-
-        reconnectTimeout.current = setTimeout(() => {
-          if (empleadoId) conectar();
-        }, 2000);
-      };
+    ws.onopen = () => {
+      console.log("WS Notificaciones conectado");
     };
 
-    conectar();
+    ws.onmessage = (event) => {
+      if (!event.data) return;
+
+      let data;
+      try {
+        data = JSON.parse(event.data);
+      } catch {
+        return;
+      }
+
+      if (!data?.tipo) return;
+
+      // Guardar notificación en Zustand
+      addNotificacion(data);
+    };
+
+    ws.onerror = () => {
+      // 🔥 IMPORTANTE: NO reconectar automáticamente
+      // Render bloquea WS con 403 → reconectar crea bucles infinitos
+      console.warn("WS Notificaciones error.");
+    };
+
+    ws.onclose = () => {
+      console.log("WS Notificaciones cerrado");
+      wsRef.current = null;
+
+      // 🔥 NO reconectar automáticamente
+      // Render no permite reconexiones agresivas
+    };
 
     return () => {
       try {
-        wsRef.current?.close();
+        ws.close();
       } catch {}
-
-      clearInterval(pingInterval.current);
-      pingInterval.current = null;
-
-      if (reconnectTimeout.current) {
-        clearTimeout(reconnectTimeout.current);
-        reconnectTimeout.current = null;
-      }
-
       wsRef.current = null;
     };
   }, [empleadoId, addNotificacion]);

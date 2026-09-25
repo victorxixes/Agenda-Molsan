@@ -89,6 +89,11 @@ class Expediente(Base):
     fecha_fin_actividad = Column(Date)
 
     # ============================
+    # GESTORIA
+    # ============================
+    gestoria = Column(String(200))   # "Gestoria" / "Oficina CaixaBank"
+
+    # ============================
     # CGN
     # ============================
     id_expediente_cgn = Column(String(200))

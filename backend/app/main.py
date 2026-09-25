@@ -185,5 +185,5 @@ app.include_router(mensajes_router, prefix="/api")
 # Utilidades
 app.include_router(utilidades_router, prefix="/api")
 app.include_router(informes_router, prefix="/api")
-app.include_router(expedientes_import_router)
+
 

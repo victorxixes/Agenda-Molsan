@@ -14,13 +14,13 @@ class Cliente(Base):
     telefono = Column(String(50))
     email = Column(String(200))
 
-    # Dirección
+    # Dirección titular
     direccion = Column(String(300))
     codigo_postal = Column(String(20))
     poblacion = Column(String(200))
     provincia = Column(String(200))
 
-    # Facturación
+    # Datos de facturación
     nombre_facturacion = Column(String(300))
     dni_facturacion = Column(String(50))
     direccion_facturacion = Column(String(300))

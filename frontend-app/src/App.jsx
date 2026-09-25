@@ -23,6 +23,9 @@ import VistaDia from "./pages/agenda/VistaDia.jsx";
 import VistaSemana from "./pages/agenda/VistaSemana.jsx";
 import VistaMes from "./pages/agenda/VistaMes.jsx";
 
+/* EXPEDIENTES */
+import FichaExpediente from "./pages/expedientes/FichaExpediente.jsx";
+
 /* CTN */
 import Ctn from "./pages/ctn/Ctn.jsx";
 import CtnDetallePage from "./pages/ctn/CtnDetallePage.jsx";
@@ -113,6 +116,8 @@ export default function App() {
           <Route path="agenda/dia" element={<VistaDia />} />
           <Route path="agenda/semana" element={<VistaSemana />} />
           <Route path="agenda/mes" element={<VistaMes />} />
+
+          <Route path="expedientes/:id" element={<FichaExpediente />} />
 
           <Route path="ctn" element={<Ctn />} />
           <Route path="ctn/listado" element={<CtnListadoPage />} />

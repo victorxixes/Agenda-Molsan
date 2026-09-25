@@ -9,7 +9,7 @@ import { useAuthStore } from "../store/authStore";
  */
 
 const instance = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: import.meta.env.VITE_API_URL,   // Debe ser: https://agenda-intranet-b.onrender.com/api
   withCredentials: false,
 });
 
@@ -18,8 +18,12 @@ const instance = axios.create({
 --------------------------------------------------------- */
 instance.interceptors.request.use(
   (config) => {
-    const { token } = useAuthStore.getState();   // ← TOKEN CORRECTO
-    if (token) config.headers.Authorization = `Bearer ${token}`;
+    const { token } = useAuthStore.getState();
+
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
     return config;
   },
   (error) => Promise.reject(error)
@@ -31,6 +35,7 @@ instance.interceptors.request.use(
 instance.interceptors.response.use(
   (response) => response,
   (error) => {
+    // Error sin respuesta → servidor caído o red caída
     if (!error.response) {
       return Promise.reject({
         status: 500,

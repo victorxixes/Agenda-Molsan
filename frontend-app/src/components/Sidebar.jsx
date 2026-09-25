@@ -23,7 +23,7 @@ const IconRound = ({ name, active }) => (
 );
 
 /**
- * Item de navegación SJ‑2026 — CORREGIDO
+ * Item de navegación SJ‑2026
  */
 const SidebarItem = ({ to, label, icon, collapsed, badge = 0 }) => (
   <NavLink
@@ -51,7 +51,6 @@ const SidebarItem = ({ to, label, icon, collapsed, badge = 0 }) => (
     )}
   </NavLink>
 );
-
 
 /**
  * Sidebar SJ‑2026 Premium
@@ -107,23 +106,21 @@ export default function Sidebar() {
       >
 
         {/* MI PERFIL */}
-{!collapsed && (
-  <div className="mt-4">
-    <button
-      onClick={() => useAuthStore.getState().setPerfilModal(empleado.id)}
-      className="
-        flex items-center gap-4 px-3 py-2 rounded-xl w-full
-        text-white hover:bg-white/10 transition-all duration-300
-        group
-      "
-    >
-      <IconRound name="user" active={false} />
-
-      <span className="font-medium">Mi perfil</span>
-    </button>
-  </div>
-)}
-
+        {!collapsed && (
+          <div className="mt-4">
+            <button
+              onClick={() => useAuthStore.getState().setPerfilModal(empleado.id)}
+              className="
+                flex items-center gap-4 px-3 py-2 rounded-xl w-full
+                text-white hover:bg-white/10 transition-all duration-300
+                group
+              "
+            >
+              <IconRound name="user" active={false} />
+              <span className="font-medium">Mi perfil</span>
+            </button>
+          </div>
+        )}
 
         {/* HEADER */}
         {!collapsed && (
@@ -151,7 +148,19 @@ export default function Sidebar() {
         )}
 
         <nav className="space-y-2">
+
+          {/* ⭐ NUEVO MÓDULO EXPEDIENTES */}
+          {puedeVerModulo("expedientes") && (
+            <SidebarItem
+              to="/expedientes"
+              label="Expedientes"
+              icon="folder"
+              collapsed={collapsed}
+            />
+          )}
+
           <SidebarItem to="/dashboard" label="Dashboard" icon="home" collapsed={collapsed} />
+
           {puedeVerModulo("agenda") && (
             <SidebarItem to="/agenda" label="Agenda" icon="calendar" collapsed={collapsed} />
           )}
@@ -219,8 +228,7 @@ export default function Sidebar() {
           )}
         </nav>
 
-          
-        {/* SOLO LOGOUT */}
+        {/* LOGOUT */}
         {!collapsed && (
           <div className="mt-auto pt-4 border-t border-white/10">
 

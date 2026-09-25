@@ -119,6 +119,8 @@ from backend.app.dashboard.router import router as dashboard_router
 from backend.app.Utilidades.router import router as utilidades_router
 from backend.app.informes.router import router as informes_router
 
+# Clientes
+from backend.app.expedientes.clientes.models import Cliente
 
 # ============================================================
 # INCLUIR ROUTERS (orden correcto)

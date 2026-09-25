@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { API_BASE } from "../../api/config";
+import { Link } from "react-router-dom";
 
 export default function ExpedientesListado() {
   const [expedientes, setExpedientes] = useState([]);
@@ -19,7 +19,7 @@ export default function ExpedientesListado() {
   const cargarExpedientes = async () => {
     setLoading(true);
 
-    const res = await axios.get(`${API_BASE}/expedientes/listado`, {
+    const res = await axios.get(`/api/expedientes/listado`, {
       params: {
         pagina,
         porPagina,
@@ -105,6 +105,7 @@ export default function ExpedientesListado() {
                 <th className="px-3 py-2">Cliente</th>
                 <th className="px-3 py-2">NIF Cliente</th>
                 <th className="px-3 py-2">NIF Notario</th>
+                <th className="px-3 py-2">Acciones</th>
               </tr>
             </thead>
 
@@ -120,6 +121,15 @@ export default function ExpedientesListado() {
                   <td className="px-3 py-2">{exp.nombrecliente}</td>
                   <td className="px-3 py-2">{exp.nifcliente}</td>
                   <td className="px-3 py-2">{exp.nifnotario}</td>
+
+                  <td className="px-3 py-2">
+                    <Link
+                      to={`/expedientes/${exp.id_expediente}`}
+                      className="text-blue-400 hover:text-blue-300 underline"
+                    >
+                      Ver ficha
+                    </Link>
+                  </td>
                 </tr>
               ))}
             </tbody>

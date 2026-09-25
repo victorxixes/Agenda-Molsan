@@ -22,9 +22,11 @@ export default function Layout() {
   useEffect(() => {
     if (!empleado || !empleado.id) return;
 
-    const ws = new WebSocket(
-      `${import.meta.env.VITE_WS_URL}/ws/empleados/${empleado.id}`
-    );
+    const token = localStorage.getItem("token");
+
+   const ws = new WebSocket(
+  `${import.meta.env.VITE_WS_URL}/ws/empleados/${empleado.id}?token=${token}`
+);
 
     ws.onopen = () => console.log("WS Empleados conectado");
     ws.onclose = () => console.log("WS Empleados cerrado");

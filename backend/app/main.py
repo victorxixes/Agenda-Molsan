@@ -98,6 +98,9 @@ from backend.app.notificaciones.router_ws import router_notif
 # Realtime
 from backend.app.realtime.router import router as realtime_router
 
+# Mensajes
+from backend.app.mensajes.router import router as mensajes_router
+
 # Herramientas Swagger
 from backend.app.herramientasswager.crear_tablas import router as herramientas_router
 from backend.app.herramientasswager.reset_intranet import router as reset_intranet_router

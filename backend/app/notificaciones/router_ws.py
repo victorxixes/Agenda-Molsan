@@ -7,7 +7,10 @@ router_notif = APIRouter(prefix="/ws", tags=["notificaciones_ws"])
 conexiones = {}
 lock = Lock()
 
-
+@router_notif.get("/notificaciones/test")
+async def notif_test():
+    return {"status": "ok"}
+    
 async def send_notif_to_user(empleado_id: int, data: dict):
     """Enviar notificación a un usuario (todas sus pestañas)."""
     with lock:

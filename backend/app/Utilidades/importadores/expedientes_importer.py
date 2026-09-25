@@ -7,7 +7,8 @@ from backend.app.expedientes.detalle.models import ExpedienteDetalle
 
 
 def importar_excel_expedientes(db: Session, contenido_excel: bytes, fecha_objetivo: date = None):
-    df = pd.read_excel(contenido_excel)
+     import io
+     df = pd.read_excel(io.BytesIO(contenido_excel))
 
     # ============================
     # 0) FECHA OBJETIVO

@@ -15,11 +15,3 @@ async def importar_ctn(
     total = importar_ctn_desde_excel(db, contenido)
     return {"importados": total}
 
-
-
-
-@router.post("/importar/expedientes")
-async def importar_expedientes(fichero: UploadFile = File(...), db: Session = Depends(get_db)):
-    contenido = await fichero.read()
-    resultado = importar_excel_expedientes(db, contenido)
-    return resultado

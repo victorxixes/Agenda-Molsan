@@ -4,13 +4,15 @@ import { Outlet } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
 import EmpleadoPerfilModal from "../components/SidebarPerfilModal";
 
+import { useNotificacionesWS } from "../hooks/useNotificacionesWS";
+import { useNotificacionesStore } from "../store/notificacionesStore";
+
 /**
  * Layout — SJ‑2026 Premium
- * Estructura principal del ERP:
  * - Sidebar glass‑UI
  * - Header premium
- * - Modal de perfil
- * - Fondo degradado profesional
+ * - WS empleados + WS notificaciones
+ * - Badge de notificaciones
  */
 
 export default function Layout() {
@@ -18,15 +20,20 @@ export default function Layout() {
   const perfilModal = useAuthStore((s) => s.perfilModal);
   const setPerfilModal = useAuthStore((s) => s.setPerfilModal);
 
-  // 🔥 WebSocket de empleados — conexión global y persistente
+  const unreadCount = useNotificacionesStore((s) => s.unreadCount);
+
+  // 🔥 WebSocket de NOTIFICACIONES (global)
+  useNotificacionesWS(empleado?.id);
+
+  // 🔥 WebSocket de EMPLEADOS (global)
   useEffect(() => {
     if (!empleado || !empleado.id) return;
 
     const token = localStorage.getItem("token");
 
-   const ws = new WebSocket(
-  `${import.meta.env.VITE_WS_URL}/ws/empleados/${empleado.id}?token=${token}`
-);
+    const ws = new WebSocket(
+      `${import.meta.env.VITE_WS_URL}/ws/empleados/${empleado.id}?token=${token}`
+    );
 
     ws.onopen = () => console.log("WS Empleados conectado");
     ws.onclose = () => console.log("WS Empleados cerrado");
@@ -35,7 +42,7 @@ export default function Layout() {
       const data = JSON.parse(event.data);
       console.log("WS Empleados mensaje:", data);
 
-      // Si quieres actualizar conectados:
+      // Aquí puedes actualizar estado global si lo deseas
       // useAuthStore.getState().updateConectados(data);
     };
 
@@ -69,12 +76,25 @@ export default function Layout() {
           className="
             bg-white/20 backdrop-blur-xl 
             border-b border-white/20 
-            p-4 shadow-lg
+            p-4 shadow-lg flex items-center justify-between
           "
         >
           <h1 className="text-xl font-semibold text-white drop-shadow">
             Panel de control
           </h1>
+
+          {/* 🔔 NOTIFICACIONES */}
+          <button className="relative text-2xl">
+            🔔
+            {unreadCount > 0 && (
+              <span className="
+                absolute -top-1 -right-1 bg-red-500 text-white text-xs 
+                px-1 rounded-full shadow-lg
+              ">
+                {unreadCount}
+              </span>
+            )}
+          </button>
         </header>
 
         <div className="p-6">

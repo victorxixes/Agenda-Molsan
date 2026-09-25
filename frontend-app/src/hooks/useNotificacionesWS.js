@@ -22,9 +22,7 @@ export const useNotificacionesWS = (empleadoId) => {
 
       ws.onopen = () => {
         pingInterval.current = setInterval(() => {
-          if (ws.readyState === WebSocket.OPEN) {
-            ws.send("ping");
-          }
+          if (ws.readyState === WebSocket.OPEN) ws.send("ping");
         }, 15000);
       };
 
@@ -40,27 +38,10 @@ export const useNotificacionesWS = (empleadoId) => {
 
         if (!data?.tipo) return;
 
-        // aquí puedes ramificar tipos
-        if (data.tipo === "nuevo_mensaje") {
-          addNotificacion({
-            tipo: "mensaje",
-            from: data.from,
-            preview: data.preview,
-          });
-        }
-
-        if (data.tipo === "nuevo_archivo") {
-          addNotificacion({
-            tipo: "archivo",
-            from: data.from,
-            archivo_url: data.archivo_url,
-          });
-        }
+        addNotificacion(data);
       };
 
-      ws.onerror = () => {
-        console.warn("WS Notificaciones error.");
-      };
+      ws.onerror = () => console.warn("WS Notificaciones error.");
 
       ws.onclose = () => {
         clearInterval(pingInterval.current);

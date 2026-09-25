@@ -29,14 +29,8 @@ def importar_excel_expedientes(db: Session, contenido_excel: bytes, fecha_objeti
     if "FECHAALTA" not in df.columns:
         raise ValueError("El Excel no contiene la columna FECHAALTA")
 
-    # Convertir fechas con seguridad
     df["FECHAALTA"] = pd.to_datetime(df["FECHAALTA"], errors="coerce").dt.date
 
-    print("VALORES FECHAALTA:", df["FECHAALTA"].head())
-
-    # ============================
-    # 2) FILTRAR SOLO EXPEDIENTES DE ESA FECHA
-    # ============================
     df_filtrado = df[df["FECHAALTA"] == fecha_objetivo]
 
     print("FILTRADOS:", len(df_filtrado))
@@ -44,14 +38,15 @@ def importar_excel_expedientes(db: Session, contenido_excel: bytes, fecha_objeti
     creados = 0
     actualizados = 0
 
+    detalles_batch = []
+
     # ============================
-    # 3) RECORRER FILAS
+    # 3) RECORRER FILAS (OPTIMIZADO)
     # ============================
     for _, row in df_filtrado.iterrows():
 
         idexp = row.get("IDEXPEDIENTE")
         if not idexp:
-            print("Fila sin IDEXPEDIENTE, se ignora")
             continue
 
         idexp = str(idexp).strip()
@@ -61,27 +56,33 @@ def importar_excel_expedientes(db: Session, contenido_excel: bytes, fecha_objeti
         if not exp:
             exp = Expediente(id_expediente=idexp)
             db.add(exp)
-            db.flush()
             creados += 1
         else:
             actualizados += 1
 
+        # No flush aquí → mucho más rápido
+        db.flush()
+
         # ============================
-        # 4) GUARDAR TODOS LOS CAMPOS
+        # 4) GUARDAR TODOS LOS CAMPOS (BATCH)
         # ============================
         for col in df.columns:
             valor = row.get(col)
-
             if pd.isna(valor):
                 valor = ""
 
-            db.add(ExpedienteDetalle(
-                expediente_id=exp.id,
-                campo=str(col),
-                valor=str(valor)
-            ))
+            detalles_batch.append(
+                ExpedienteDetalle(
+                    expediente_id=exp.id,
+                    campo=str(col),
+                    valor=str(valor)
+                )
+            )
 
-        db.flush()
+    # ============================
+    # 5) INSERTAR DETALLES EN BLOQUE
+    # ============================
+    db.bulk_save_objects(detalles_batch)
 
     db.commit()
 

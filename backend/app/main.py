@@ -13,8 +13,8 @@ app = FastAPI(title="Agenda Intranet Backend")
 # ============================================================
 
 origins = [
-    "https://agenda-intranet-f.onrender.com",   # Frontend
-    "https://agenda-intranet-b.onrender.com",   # Backend (Render redirects)
+    "https://agenda-intranet-f.onrender.com",
+    "https://agenda-intranet-b.onrender.com",
     "http://localhost:5173",
     "http://localhost:3000",
 ]
@@ -25,11 +25,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-
-    # 🔥 Render necesita esto para evitar bloqueos
     expose_headers=["*"],
-
-    # 🔥 Render necesita esto para preflight caching
     max_age=86400,
 )
 
@@ -47,7 +43,7 @@ from backend.app.agenda.fix_schema import fix_agenda_schema
 fix_agenda_schema()
 
 # ============================================================
-# STATIC FILES (montar SIEMPRE después de CORS)
+# STATIC FILES
 # ============================================================
 STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
@@ -60,9 +56,10 @@ FOTOS_DIR = os.path.join(os.path.dirname(__file__), "static", "fotos")
 app.mount("/api/fotos", StaticFiles(directory=FOTOS_DIR), name="fotos")
 
 # ============================================================
-# IMPORTAR ROUTERS (SIEMPRE después de CORS)
+# IMPORTAR ROUTERS
 # ============================================================
 
+# Auth
 from backend.app.auth.router import router as auth_router
 
 # Seguridad
@@ -91,15 +88,12 @@ from backend.app.intranet.router import router as intranet_router
 from backend.app.intranet.documentos.router import router as documentos_router
 from backend.app.intranet.noticias.router import router as noticias_router
 
-
 # WebSockets
 from backend.app.websockets.intranet_ws import router as intranet_ws_router
 from backend.app.websockets.empleados_ws import router as empleados_ws_router
 from backend.app.websockets.agenda_ws import router as agenda_ws_router
-
-# Mensajes
-from backend.app.mensajes.router import router as mensajes_router
 from backend.app.mensajes.router_ws import router as mensajes_ws_router
+from backend.app.notificaciones.router_ws import router_notif
 
 # Realtime
 from backend.app.realtime.router import router as realtime_router
@@ -122,11 +116,11 @@ from backend.app.dashboard.router import router as dashboard_router
 from backend.app.Utilidades.router import router as utilidades_router
 from backend.app.informes.router import router as informes_router
 
-
 # ============================================================
 # INCLUIR ROUTERS (orden correcto)
 # ============================================================
 
+# Auth
 app.include_router(auth_router, prefix="/api")
 
 # Seguridad
@@ -152,14 +146,15 @@ app.include_router(maestros_router, prefix="/api")
 
 # Intranet
 app.include_router(intranet_router, prefix="/api")
-app.include_router(intranet_ws_router)
 app.include_router(documentos_router, prefix="/api")
 app.include_router(noticias_router, prefix="/api")
 
-# WebSockets
+# WebSockets (🔥 todos juntos)
+app.include_router(intranet_ws_router)
 app.include_router(empleados_ws_router)
 app.include_router(agenda_ws_router)
 app.include_router(mensajes_ws_router)
+app.include_router(router_notif)   # 🔔 Notificaciones realtime
 
 # Realtime
 app.include_router(realtime_router)
@@ -184,4 +179,3 @@ app.include_router(mensajes_router, prefix="/api")
 # Utilidades
 app.include_router(utilidades_router, prefix="/api")
 app.include_router(informes_router, prefix="/api")
-

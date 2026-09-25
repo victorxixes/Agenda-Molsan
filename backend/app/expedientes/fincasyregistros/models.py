@@ -10,41 +10,35 @@ class ExpedienteFinca(Base):
     expediente_id = Column(Integer, ForeignKey("expedientes.id"))
 
     # ============================
-    # DATOS REGISTRALES
+    # DATOS DE FINCA
     # ============================
+    finca = Column(String(200))                # Número de finca
+    cru_idufir = Column(String(200))           # CRU / IDUFIR
 
-    # Número de finca
-    finca = Column(String(200))
-
-    # CRU / IDUFIR
-    cru_idufir = Column(String(200))
-
-    # Provincia registral
-    provincia = Column(String(200))
-
-    # Población registral
-    poblacion = Column(String(200))
+    # ============================
+    # UBICACIÓN REGISTRAL
+    # ============================
+    provincia = Column(String(200))            # Provincia
+    poblacion = Column(String(200))            # Población
 
     # Registro (número + nombre)
-    registro = Column(String(300))
+    registro = Column(String(300))             # Ej: "46046-SAGUNTO ( SAGUNT ) 1"
 
-    # Sección
-    seccion = Column(String(100))
+    # ============================
+    # DATOS REGISTRALES
+    # ============================
+    seccion = Column(String(100))              # Sección
+    cuantia = Column(String(200))              # Cuantía
+    inscripcion = Column(String(200))          # Inscripción
+    contrato = Column(String(200))             # Contrato
+    fecha_constitucion = Column(Date)          # Fecha Constitución
 
-    # Cuantía
-    cuantia = Column(String(200))
+    # ============================
+    # SUBROGACIÓN
+    # ============================
+    subrogado = Column(String(20))             # SI / NO
 
-    # Inscripción
-    inscripcion = Column(String(200))
-
-    # Contrato
-    contrato = Column(String(200))
-
-    # Fecha constitución
-    fecha_constitucion = Column(Date)
-
-    # Subrogado (SI / NO)
-    subrogado = Column(String(20))
-
-    # Entidad original
-    entidad_original = Column(String(300))
+    # ============================
+    # ENTIDAD ORIGINAL
+    # ============================
+    entidad_original = Column(String(300))     # Nombre de la entidad original

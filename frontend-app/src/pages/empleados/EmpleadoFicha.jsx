@@ -230,6 +230,110 @@ export default function EmpleadoFicha({ empleadoId }) {
           )}
         </div>
       </section>
+      {/* MÓDULOS VISUALES */}
+      <section className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-xl">
+        <h2 className="text-xl font-semibold mb-4 drop-shadow">Módulos visibles</h2>
+
+        {/* Checkboxes SJ‑2026 */}
+        <div className="grid grid-cols-2 gap-2 mb-4">
+          {MODULOS_SJ2026.map((m) => (
+            <label key={m} className="flex items-center gap-2 text-sm text-white/80">
+              <input
+                type="checkbox"
+                checked={modulos.includes(m)}
+                onChange={(e) => {
+                  if (e.target.checked) {
+                    setModulos([...modulos, m]);
+                  } else {
+                    setModulos(modulos.filter((x) => x !== m));
+                  }
+                }}
+              />
+              {m}
+            </label>
+          ))}
+        </div>
+
+        {/* Textarea avanzada */}
+        <textarea
+          className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white text-xs"
+          rows={4}
+          value={JSON.stringify(modulos, null, 2)}
+          onChange={(e) => {
+            try {
+              const parsed = JSON.parse(e.target.value);
+              if (Array.isArray(parsed)) setModulos(parsed);
+            } catch {}
+          }}
+        />
+
+        <button
+          className="mt-3 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-lg transition active:scale-[0.97]"
+          onClick={guardarModulos}
+        >
+          Guardar módulos visibles
+        </button>
+      </section>
+
+      {/* PERMISOS POR MÓDULO */}
+      <section className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-xl">
+        <h2 className="text-xl font-semibold mb-4 drop-shadow">Permisos por módulo</h2>
+
+        {/* Checkboxes SJ‑2026 */}
+        <div className="space-y-4 mb-4">
+          {MODULOS_SJ2026.map((modulo) => (
+            <div key={modulo}>
+              <h4 className="font-semibold text-white/90 mb-1">{modulo}</h4>
+
+              <div className="flex flex-wrap gap-3">
+                {PERMISOS_SJ2026.map((permiso) => {
+                  const activo = permisos[modulo]?.includes(permiso);
+
+                  return (
+                    <label key={permiso} className="flex items-center gap-2 text-sm text-white/70">
+                      <input
+                        type="checkbox"
+                        checked={activo}
+                        onChange={(e) => {
+                          setPermisos((prev) => {
+                            const actual = prev[modulo] || [];
+                            if (e.target.checked) {
+                              return { ...prev, [modulo]: [...actual, permiso] };
+                            } else {
+                              return { ...prev, [modulo]: actual.filter((p) => p !== permiso) };
+                            }
+                          });
+                        }}
+                      />
+                      {permiso}
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Textarea avanzada */}
+        <textarea
+          className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white text-xs"
+          rows={6}
+          value={JSON.stringify(permisos, null, 2)}
+          onChange={(e) => {
+            try {
+              const parsed = JSON.parse(e.target.value);
+              if (typeof parsed === "object") setPermisos(parsed);
+            } catch {}
+          }}
+        />
+
+        <button
+          className="mt-3 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-lg transition active:scale-[0.97]"
+          onClick={guardarPermisos}
+        >
+          Guardar permisos
+        </button>
+      </section>
 
       {/* MÓDULOS VISUALES */}
       <section className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-xl">

@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import Sidebar from "../components/Sidebar";
 import { Outlet } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
@@ -13,9 +14,33 @@ import EmpleadoPerfilModal from "../components/SidebarPerfilModal";
  */
 
 export default function Layout() {
-  // 🔥 Corrección crítica: el store usa "perfilModal", NO "perfilModalId"
+  const empleado = useAuthStore((s) => s.empleado);
   const perfilModal = useAuthStore((s) => s.perfilModal);
   const setPerfilModal = useAuthStore((s) => s.setPerfilModal);
+
+  // 🔥 WebSocket de empleados — conexión global y persistente
+  useEffect(() => {
+    if (!empleado || !empleado.id) return;
+
+    const ws = new WebSocket(
+      `${import.meta.env.VITE_WS_URL}/ws/empleados/${empleado.id}`
+    );
+
+    ws.onopen = () => console.log("WS Empleados conectado");
+    ws.onclose = () => console.log("WS Empleados cerrado");
+
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      console.log("WS Empleados mensaje:", data);
+
+      // Si quieres actualizar conectados:
+      // useAuthStore.getState().updateConectados(data);
+    };
+
+    return () => {
+      ws.close();
+    };
+  }, [empleado?.id]);
 
   return (
     <div

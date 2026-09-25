@@ -5,13 +5,24 @@ import { Link } from "react-router-dom";
 const COLUMNAS = [
   { key: "id_expediente", label: "Nº Expediente" },
   { key: "fecha_alta", label: "Fecha Alta" },
-  { key: "actividad_actual", label: "Actividad" },
-  { key: "tipoprovision", label: "Tipo Provisión" },
+  { key: "actividad_actual", label: "Actividad actual" },
+  { key: "estado_expediente", label: "Estado expediente" },
+  { key: "estado_actividad", label: "Estado actividad" },
   { key: "importe", label: "Importe" },
-  { key: "finca", label: "Finca" },
-  { key: "nombrecliente", label: "Cliente" },
-  { key: "nifcliente", label: "NIF Cliente" },
-  { key: "nifnotario", label: "NIF Notario" },
+  { key: "capital", label: "Capital" },
+  { key: "saldo_real", label: "Saldo real" },
+  { key: "saldo_disponible", label: "Saldo disponible" },
+  { key: "finca", label: "Finca" }, // si no existe en modelo, se ignora
+  { key: "nombre_titular", label: "Nombre titular" },
+  { key: "nif_titular", label: "NIF titular" },
+  { key: "nombre_notario", label: "Nombre notario" },
+  { key: "nif_notario", label: "NIF notario" },
+  { key: "oficina", label: "Oficina" },
+  { key: "contrato", label: "Contrato" },
+  { key: "tipo_operacion", label: "Tipo operación" },
+  { key: "subtipo_operacion", label: "Subtipo operación" },
+  { key: "producto_gtg", label: "Producto GTG" },
+  { key: "gestoria", label: "Gestoría" },
 ];
 
 export default function ExpedientesListado() {
@@ -24,7 +35,7 @@ export default function ExpedientesListado() {
   const [filtroFechaInicio, setFiltroFechaInicio] = useState("");
   const [filtroFechaFin, setFiltroFechaFin] = useState("");
   const [filtroNotario, setFiltroNotario] = useState("");
-  const [filtroFinca, setFiltroFinca] = useState("");
+  const [filtroOficina, setFiltroOficina] = useState("");
   const [filtroImporteMin, setFiltroImporteMin] = useState("");
   const [filtroImporteMax, setFiltroImporteMax] = useState("");
 
@@ -60,7 +71,7 @@ export default function ExpedientesListado() {
         fechaInicio: filtroFechaInicio || undefined,
         fechaFin: filtroFechaFin || undefined,
         notario: filtroNotario || undefined,
-        finca: filtroFinca || undefined,
+        oficina: filtroOficina || undefined,
         importeMin: filtroImporteMin || undefined,
         importeMax: filtroImporteMax || undefined,
         ordenMultiple: ordenMultiple.length ? JSON.stringify(ordenMultiple) : undefined,
@@ -80,7 +91,6 @@ export default function ExpedientesListado() {
   useEffect(() => {
     cargarExpedientes();
     cargarResumen();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pagina, ordenMultiple]);
 
   const aplicarFiltros = () => {
@@ -90,7 +100,6 @@ export default function ExpedientesListado() {
 
   const ordenar = (col, shiftKey) => {
     if (!shiftKey) {
-      // Orden simple: solo una columna
       const actual = ordenMultiple[0];
       if (actual && actual.columna === col) {
         setOrdenMultiple([
@@ -105,7 +114,6 @@ export default function ExpedientesListado() {
       return;
     }
 
-    // Orden múltiple: Shift + click
     const existe = ordenMultiple.find((o) => o.columna === col);
     if (existe) {
       setOrdenMultiple(
@@ -134,7 +142,7 @@ export default function ExpedientesListado() {
         fechaInicio: filtroFechaInicio || undefined,
         fechaFin: filtroFechaFin || undefined,
         notario: filtroNotario || undefined,
-        finca: filtroFinca || undefined,
+        oficina: filtroOficina || undefined,
         importeMin: filtroImporteMin || undefined,
         importeMax: filtroImporteMax || undefined,
       },
@@ -150,15 +158,17 @@ export default function ExpedientesListado() {
 
   return (
     <div className="p-6 text-white space-y-6 animate-fade-in">
+
       <h1 className="text-3xl font-bold drop-shadow">Expedientes</h1>
 
-      {/* Filtros avanzados */}
+      {/* FILTROS */}
       <section className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-xl">
         <h2 className="text-xl font-semibold mb-4">Filtros avanzados</h2>
 
         <div className="grid grid-cols-3 gap-4">
+
           <div>
-            <label className="text-sm text-white/70">NIF Cliente</label>
+            <label className="text-sm text-white/70">NIF titular</label>
             <input
               type="text"
               value={filtroNif}
@@ -168,7 +178,7 @@ export default function ExpedientesListado() {
           </div>
 
           <div>
-            <label className="text-sm text-white/70">Actividad</label>
+            <label className="text-sm text-white/70">Actividad actual</label>
             <input
               type="text"
               value={filtroActividad}
@@ -198,7 +208,7 @@ export default function ExpedientesListado() {
           </div>
 
           <div>
-            <label className="text-sm text-white/70">NIF Notario</label>
+            <label className="text-sm text-white/70">NIF notario</label>
             <input
               type="text"
               value={filtroNotario}
@@ -208,11 +218,11 @@ export default function ExpedientesListado() {
           </div>
 
           <div>
-            <label className="text-sm text-white/70">Finca</label>
+            <label className="text-sm text-white/70">Oficina</label>
             <input
               type="text"
-              value={filtroFinca}
-              onChange={(e) => setFiltroFinca(e.target.value)}
+              value={filtroOficina}
+              onChange={(e) => setFiltroOficina(e.target.value)}
               className="w-full mt-1 px-3 py-2 rounded-xl bg-white/10 border border-white/20 text-white"
             />
           </div>
@@ -249,21 +259,20 @@ export default function ExpedientesListado() {
               onClick={exportarExcel}
               className="px-4 py-2 rounded-xl bg-green-600 hover:bg-green-700 text-white shadow-lg transition active:scale-[0.97]"
             >
-              Exportar a Excel
+              Exportar Excel
             </button>
           </div>
+
         </div>
       </section>
 
-      {/* Selector de columnas */}
+      {/* SELECTOR DE COLUMNAS */}
       <section className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-xl">
         <h2 className="text-xl font-semibold mb-4">Columnas visibles</h2>
+
         <div className="grid grid-cols-3 gap-2">
           {COLUMNAS.map((c) => (
-            <label
-              key={c.key}
-              className="flex items-center gap-2 text-sm text-white/80"
-            >
+            <label key={c.key} className="flex items-center gap-2 text-sm text-white/80">
               <input
                 type="checkbox"
                 checked={columnasVisibles.includes(c.key)}
@@ -271,9 +280,7 @@ export default function ExpedientesListado() {
                   if (e.target.checked) {
                     setColumnasVisibles([...columnasVisibles, c.key]);
                   } else {
-                    setColumnasVisibles(
-                      columnasVisibles.filter((x) => x !== c.key)
-                    );
+                    setColumnasVisibles(columnasVisibles.filter((x) => x !== c.key));
                   }
                 }}
               />
@@ -283,42 +290,34 @@ export default function ExpedientesListado() {
         </div>
       </section>
 
-      {/* Tabla */}
+      {/* TABLA */}
       <section className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-xl overflow-auto">
+
         {loading ? (
-          <div className="text-white/70 animate-pulse">
-            Cargando expedientes…
-          </div>
+          <div className="text-white/70 animate-pulse">Cargando expedientes…</div>
         ) : (
           <table className="min-w-full text-sm text-white/80">
             <thead>
               <tr className="text-left bg-white/5">
-                {COLUMNAS.filter((c) =>
-                  columnasVisibles.includes(c.key)
-                ).map((c) => (
+                {COLUMNAS.filter((c) => columnasVisibles.includes(c.key)).map((c) => (
                   <th
                     key={c.key}
                     className="px-3 py-2 cursor-pointer select-none"
                     onClick={(e) => ordenar(c.key, e.shiftKey)}
                   >
-                    {c.label}{" "}
-                    <span className="text-white/40">{iconoOrden(c.key)}</span>
+                    {c.label} <span className="text-white/40">{iconoOrden(c.key)}</span>
                   </th>
                 ))}
                 <th className="px-3 py-2">Acciones</th>
               </tr>
             </thead>
+
             <tbody>
               {expedientes.map((exp) => (
-                <tr
-                  key={exp.id_expediente}
-                  className="border-t border-white/10 hover:bg-white/5"
-                >
-                  {COLUMNAS.filter((c) =>
-                    columnasVisibles.includes(c.key)
-                  ).map((c) => (
+                <tr key={exp.id_expediente} className="border-t border-white/10 hover:bg-white/5">
+                  {COLUMNAS.filter((c) => columnasVisibles.includes(c.key)).map((c) => (
                     <td key={c.key} className="px-3 py-2">
-                      {exp[c.key]}
+                      {exp[c.key] || "—"}
                     </td>
                   ))}
                   <td className="px-3 py-2">
@@ -334,9 +333,10 @@ export default function ExpedientesListado() {
             </tbody>
           </table>
         )}
+
       </section>
 
-      {/* Paginación */}
+      {/* PAGINACIÓN */}
       <div className="flex items-center justify-center gap-4">
         <button
           disabled={pagina <= 1}
@@ -359,24 +359,28 @@ export default function ExpedientesListado() {
         </button>
       </div>
 
-      {/* Resumen simple para gráficos (puedes luego meter Chart.js) */}
+      {/* RESUMEN */}
       <section className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-xl">
         <h2 className="text-xl font-semibold mb-4">Estado de expedientes</h2>
+
         <div className="grid grid-cols-3 gap-4 text-sm text-white/80">
           <div className="bg-white/5 p-3 rounded-xl border border-white/10">
             <p className="text-white/60">Pendientes</p>
             <p className="text-white font-semibold">{resumen.pendientes}</p>
           </div>
+
           <div className="bg-white/5 p-3 rounded-xl border border-white/10">
             <p className="text-white/60">En curso</p>
             <p className="text-white font-semibold">{resumen.enCurso}</p>
           </div>
+
           <div className="bg-white/5 p-3 rounded-xl border border-white/10">
             <p className="text-white/60">Finalizados</p>
             <p className="text-white font-semibold">{resumen.finalizados}</p>
           </div>
         </div>
       </section>
+
     </div>
   );
 }

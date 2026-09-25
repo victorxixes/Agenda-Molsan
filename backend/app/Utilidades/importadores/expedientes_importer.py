@@ -1,14 +1,12 @@
 import pandas as pd
 from sqlalchemy.orm import Session
-from backend.app.models import (
-    Cliente,
-    Expediente,
-    ExpedienteFinca,
-    ExpedienteActividad,
-    ExpedienteProvision,
-    ExpedienteGestoria,
-    ExpedienteDefecto
-)
+from backend.app.expedientes.clientes.models import Cliente
+from backend.app.expedientes.models import Expediente
+from backend.app.expedientes.fincas.models import ExpedienteFinca
+from backend.app.expedientes.provisiones.models import ExpedienteProvision
+from backend.app.expedientes.gestoria.models import ExpedienteGestoria
+from backend.app.expedientes.defectos.models import ExpedienteDefecto
+
 
 def importar_excel_expedientes(db: Session, contenido_excel: bytes):
     df = pd.read_excel(contenido_excel)

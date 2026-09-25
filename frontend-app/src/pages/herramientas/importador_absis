@@ -1,0 +1,12 @@
+const subir = async () => {
+  const form = new FormData();
+  form.append("fichero", file);
+
+  const res = await fetch(`${import.meta.env.VITE_API_URL}/utilidades/importar/expedientes`, {
+    method: "POST",
+    body: form
+  });
+
+  const data = await res.json();
+  setResultado(data);
+};

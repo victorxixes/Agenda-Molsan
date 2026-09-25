@@ -20,7 +20,6 @@ const MODULOS_SJ2026 = [
   "dashboard",
   "agenda",
   "empleados",
-  "Expedientes",
   "ctn",
   "intranet",
   "mensajes",

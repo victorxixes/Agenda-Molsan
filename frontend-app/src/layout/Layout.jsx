@@ -5,14 +5,14 @@ import { useAuthStore } from "../store/authStore";
 import EmpleadoPerfilModal from "../components/SidebarPerfilModal";
 import { useNotificacionesWS } from "../hooks/useNotificacionesWS";
 import { useNotificacionesStore } from "../store/notificacionesStore";
+import NotificacionesToast from "../components/notificaciones/NotificacionesToast";
 
 /**
  * Layout — SJ‑2026 Premium
- * Estructura principal del ERP:
- * - Sidebar glass‑UI
- * - Header premium
- * - Modal de perfil
- * - Fondo degradado profesional
+ * - WS global de empleados
+ * - WS global de notificaciones
+ * - Sidebar + Header premium
+ * - Popup realtime
  */
 
 export default function Layout() {
@@ -20,13 +20,14 @@ export default function Layout() {
   const perfilModal = useAuthStore((s) => s.perfilModal);
   const setPerfilModal = useAuthStore((s) => s.setPerfilModal);
 
-  // Notificaciones popup realtime (cuando se implemente el WS)
+  // 🔔 Notificaciones realtime
   useNotificacionesWS(empleado?.id);
+
   const unreadCount = useNotificacionesStore((s) => s.unreadCount);
 
-  // WebSocket de empleados — conexión global y persistente
+  // 🔥 WebSocket global de empleados
   useEffect(() => {
-    if (!empleado || !empleado.id) return;
+    if (!empleado?.id) return;
 
     const token = localStorage.getItem("token");
 
@@ -38,15 +39,21 @@ export default function Layout() {
     ws.onclose = () => console.log("WS Empleados cerrado");
 
     ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      console.log("WS Empleados mensaje:", data);
+      try {
+        const data = JSON.parse(event.data);
+        console.log("WS Empleados mensaje:", data);
 
-      // Aquí podrías disparar popup/notificación o actualizar estado global.
-      // p.ej: useAuthStore.getState().updateConectados(data);
+        // Aquí puedes actualizar estado global si lo necesitas
+        // useAuthStore.getState().updateConectados(data);
+      } catch (err) {
+        console.warn("WS Empleados error parseando mensaje:", err);
+      }
     };
 
     return () => {
-      ws.close();
+      try {
+        ws.close();
+      } catch {}
     };
   }, [empleado?.id]);
 
@@ -70,7 +77,8 @@ export default function Layout() {
       <Sidebar />
 
       {/* MAIN */}
-      <main className="flex-1 backdrop-blur-xl bg-white/10">
+      <main className="flex-1 backdrop-blur-xl bg-white/10 relative">
+        {/* HEADER */}
         <header
           className="
             bg-white/20 backdrop-blur-xl 
@@ -82,7 +90,7 @@ export default function Layout() {
             Panel de control
           </h1>
 
-          <button className="relative">
+          <button className="relative cursor-pointer">
             🔔
             {unreadCount > 0 && (
               <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1 rounded-full">
@@ -92,6 +100,10 @@ export default function Layout() {
           </button>
         </header>
 
+        {/* POPUP REALTIME (siempre visible) */}
+        <NotificacionesToast />
+
+        {/* CONTENIDO */}
         <div className="p-6">
           <Outlet />
         </div>

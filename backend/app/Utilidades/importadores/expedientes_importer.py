@@ -1,4 +1,5 @@
 import pandas as pd
+import io
 from datetime import date
 from sqlalchemy.orm import Session
 
@@ -7,38 +8,54 @@ from backend.app.expedientes.detalle.models import ExpedienteDetalle
 
 
 def importar_excel_expedientes(db: Session, contenido_excel: bytes, fecha_objetivo: date = None):
-     import io
-     df = pd.read_excel(io.BytesIO(contenido_excel))
 
     # ============================
-    # 0) FECHA OBJETIVO
+    # 0) LEER EXCEL DESDE BYTES
+    # ============================
+    try:
+        df = pd.read_excel(io.BytesIO(contenido_excel))
+    except Exception as e:
+        print("ERROR LEYENDO EXCEL:", e)
+        raise ValueError("No se pudo leer el archivo Excel. Formato inválido o archivo corrupto.")
+
+    print("COLUMNAS:", df.columns)
+
+    # ============================
+    # 1) FECHA OBJETIVO
     # ============================
     if fecha_objetivo is None:
         fecha_objetivo = date.today()
 
-    # Convertir FECHAALTA a date si viene como datetime
-    df["FECHAALTA"] = pd.to_datetime(df["FECHAALTA"]).dt.date
+    if "FECHAALTA" not in df.columns:
+        raise ValueError("El Excel no contiene la columna FECHAALTA")
+
+    # Convertir fechas con seguridad
+    df["FECHAALTA"] = pd.to_datetime(df["FECHAALTA"], errors="coerce").dt.date
+
+    print("VALORES FECHAALTA:", df["FECHAALTA"].head())
 
     # ============================
-    # 1) FILTRAR SOLO EXPEDIENTES DE ESA FECHA
+    # 2) FILTRAR SOLO EXPEDIENTES DE ESA FECHA
     # ============================
     df_filtrado = df[df["FECHAALTA"] == fecha_objetivo]
+
+    print("FILTRADOS:", len(df_filtrado))
 
     creados = 0
     actualizados = 0
 
+    # ============================
+    # 3) RECORRER FILAS
+    # ============================
     for _, row in df_filtrado.iterrows():
 
-        # ============================
-        # 2) ID EXPEDIENTE
-        # ============================
-        idexp = str(row.get("IDEXPEDIENTE")).strip() if row.get("IDEXPEDIENTE") else None
+        idexp = row.get("IDEXPEDIENTE")
         if not idexp:
+            print("Fila sin IDEXPEDIENTE, se ignora")
             continue
 
-        # ============================
-        # 3) Crear expediente si no existe
-        # ============================
+        idexp = str(idexp).strip()
+
         exp = db.query(Expediente).filter(Expediente.id_expediente == idexp).first()
 
         if not exp:
@@ -50,16 +67,19 @@ def importar_excel_expedientes(db: Session, contenido_excel: bytes, fecha_objeti
             actualizados += 1
 
         # ============================
-        # 4) Guardar TODOS los campos del Excel en tabla unificada
+        # 4) GUARDAR TODOS LOS CAMPOS
         # ============================
         for col in df.columns:
             valor = row.get(col)
-            if valor is not None:
-                db.add(ExpedienteDetalle(
-                    expediente_id=exp.id,
-                    campo=str(col),
-                    valor=str(valor)
-                ))
+
+            if pd.isna(valor):
+                valor = ""
+
+            db.add(ExpedienteDetalle(
+                expediente_id=exp.id,
+                campo=str(col),
+                valor=str(valor)
+            ))
 
         db.flush()
 

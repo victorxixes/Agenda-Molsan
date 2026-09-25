@@ -2,40 +2,51 @@ import { useMemo } from "react";
 
 /**
  * MensajeBubble — SJ‑2026 Premium
- * Burbuja de mensaje con soporte para:
- * - Texto
- * - Imágenes
- * - PDFs
- * - Archivos adjuntos
+ * - Texto / imágenes / PDFs / adjuntos
  * - Avatar + estado online
- * - Estética consistente con el módulo de Mensajes
+ * - Animación suave
+ * - Fecha normalizada
  */
 
 export default function MensajeBubble({ mensaje, usuarioId, avatarUrl, online }) {
   const propio = mensaje.remitente_id === usuarioId;
 
-  /**
-   * Normalización de URL completa del archivo
-   */
+  // URL completa del archivo
   const archivoFullUrl = useMemo(() => {
     if (!mensaje.archivo_url) return null;
     return `${import.meta.env.VITE_API_URL}${mensaje.archivo_url}`;
   }, [mensaje.archivo_url]);
 
-  /**
-   * Detección de tipo de archivo
-   */
+  // Tipo de archivo
   const tipoArchivo = useMemo(() => {
-    if (!mensaje.archivo_url) return null;
+    const url = mensaje.archivo_url;
+    if (!url) return null;
 
-    if (/\.(jpg|jpeg|png|gif)$/i.test(mensaje.archivo_url)) return "imagen";
-    if (/\.pdf$/i.test(mensaje.archivo_url)) return "pdf";
+    if (/\.(jpg|jpeg|png|gif)$/i.test(url)) return "imagen";
+    if (/\.pdf$/i.test(url)) return "pdf";
     return "otro";
   }, [mensaje.archivo_url]);
 
+  // Fecha normalizada
+  const fecha = useMemo(() => {
+    try {
+      const d = new Date(mensaje.fecha);
+      return d.toLocaleTimeString("es-ES", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } catch {
+      return mensaje.fecha || "";
+    }
+  }, [mensaje.fecha]);
+
   return (
-    <div className={`flex items-start gap-2 my-2 ${propio ? "justify-end" : ""}`}>
-      
+    <div
+      className={`
+        flex items-start gap-2 my-2 animate-fadeIn
+        ${propio ? "justify-end" : ""}
+      `}
+    >
       {/* AVATAR DEL OTRO */}
       {!propio && (
         <div className="relative w-8 h-8 rounded-full overflow-hidden border bg-gray-200 shadow">
@@ -58,7 +69,7 @@ export default function MensajeBubble({ mensaje, usuarioId, avatarUrl, online })
       >
         {/* TEXTO */}
         {mensaje.contenido && (
-          <p className="text-gray-800">{mensaje.contenido}</p>
+          <p className="text-gray-800 whitespace-pre-wrap">{mensaje.contenido}</p>
         )}
 
         {/* IMAGEN */}
@@ -93,7 +104,7 @@ export default function MensajeBubble({ mensaje, usuarioId, avatarUrl, online })
 
         {/* FECHA */}
         <small className="text-gray-500 text-xs block mt-1">
-          {mensaje.fecha}
+          {fecha}
         </small>
       </div>
 

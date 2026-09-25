@@ -3,16 +3,16 @@ import Sidebar from "../components/Sidebar";
 import { Outlet } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
 import EmpleadoPerfilModal from "../components/SidebarPerfilModal";
-
 import { useNotificacionesWS } from "../hooks/useNotificacionesWS";
 import { useNotificacionesStore } from "../store/notificacionesStore";
 
 /**
  * Layout — SJ‑2026 Premium
+ * Estructura principal del ERP:
  * - Sidebar glass‑UI
  * - Header premium
- * - WS empleados + WS notificaciones
- * - Badge de notificaciones
+ * - Modal de perfil
+ * - Fondo degradado profesional
  */
 
 export default function Layout() {
@@ -20,12 +20,11 @@ export default function Layout() {
   const perfilModal = useAuthStore((s) => s.perfilModal);
   const setPerfilModal = useAuthStore((s) => s.setPerfilModal);
 
+  // Notificaciones popup realtime (cuando se implemente el WS)
+  useNotificacionesWS(empleado?.id);
   const unreadCount = useNotificacionesStore((s) => s.unreadCount);
 
-  // 🔥 WebSocket de NOTIFICACIONES (global)
-  useNotificacionesWS(empleado?.id);
-
-  // 🔥 WebSocket de EMPLEADOS (global)
+  // WebSocket de empleados — conexión global y persistente
   useEffect(() => {
     if (!empleado || !empleado.id) return;
 
@@ -42,8 +41,8 @@ export default function Layout() {
       const data = JSON.parse(event.data);
       console.log("WS Empleados mensaje:", data);
 
-      // Aquí puedes actualizar estado global si lo deseas
-      // useAuthStore.getState().updateConectados(data);
+      // Aquí podrías disparar popup/notificación o actualizar estado global.
+      // p.ej: useAuthStore.getState().updateConectados(data);
     };
 
     return () => {
@@ -83,14 +82,10 @@ export default function Layout() {
             Panel de control
           </h1>
 
-          {/* 🔔 NOTIFICACIONES */}
-          <button className="relative text-2xl">
+          <button className="relative">
             🔔
             {unreadCount > 0 && (
-              <span className="
-                absolute -top-1 -right-1 bg-red-500 text-white text-xs 
-                px-1 rounded-full shadow-lg
-              ">
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1 rounded-full">
                 {unreadCount}
               </span>
             )}

@@ -128,11 +128,13 @@ export default function App() {
           <Route path="mensajes" element={<MensajesWrapper />} />
 
           <Route path="herramientas" element={<Herramientas />} />
-          <Route path="herramientas/importar-ctn" element={<ImportarCTN />} />
-          <Route path="/herramientas/importador-absis" element={<ImportadorAbsis />}/>
-          <Route path="herramientas/utilidades" element={<Utilidades />} />
-          <Route path="herramientas/utilidades/crear-noticia" element={<CrearNoticia />} />
-          <Route path="herramientas/utilidades/subir-documento" element={<SubirDocumento />} />
+<Route path="herramientas/importar-ctn" element={<ImportarCTN />} />
+<Route path="herramientas/importador-absis" element={<ImportadorAbsis />} />
+<Route path="herramientas/utilidades" element={<Utilidades />} />
+<Route path="herramientas/utilidades/crear-noticia" element={<CrearNoticia />} />
+<Route path="herramientas/utilidades/subir-documento" element={<SubirDocumento />} />
+<Route path="herramientas/informes" element={<Informes />} />
+
 
           <Route path="logs" element={<Logs />} />
 

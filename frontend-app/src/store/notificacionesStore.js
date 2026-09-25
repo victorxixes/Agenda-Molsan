@@ -7,19 +7,10 @@ export const useNotificacionesStore = create((set) => ({
   addNotificacion: (notif) =>
     set((state) => ({
       notificaciones: [
-        {
-          id: Date.now(),
-          ...notif,
-        },
+        { id: Date.now(), ...notif },
         ...state.notificaciones,
       ],
       unreadCount: state.unreadCount + 1,
-    })),
-
-  clearNotificaciones: () =>
-    set(() => ({
-      notificaciones: [],
-      unreadCount: 0,
     })),
 
   markAllRead: () =>
@@ -29,5 +20,11 @@ export const useNotificacionesStore = create((set) => ({
         ...n,
         read: true,
       })),
+    })),
+
+  clearNotificaciones: () =>
+    set(() => ({
+      notificaciones: [],
+      unreadCount: 0,
     })),
 }));

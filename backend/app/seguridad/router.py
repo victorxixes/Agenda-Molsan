@@ -35,6 +35,7 @@ PLANTILLA_PERMISOS = {
     "utilidades": ["ver","crear","editar","eliminar"],
     "herramientas": ["ver","crear","editar","eliminar"],
     "panel-tecnico": ["ver","crear","editar","eliminar"],
+    "expedientes": ["ver","crear","editar","eliminar"],
     "notificaciones": ["ver","crear","editar","eliminar"]
 }
 

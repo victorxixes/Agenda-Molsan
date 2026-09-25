@@ -1,6 +1,8 @@
-from fastapi import APIRouter, UploadFile, File
-from backend.app.database import get_db
+from fastapi import APIRouter, UploadFile, File, Depends
+from sqlalchemy.orm import Session
+from app.db import get_db
 from backend.app.Utilidades.importadores.ctn_importer import importar_ctn_desde_excel
+from app.Utilidades.importadores.expedientes_importer import importar_excel_expedientes
 
 router = APIRouter(prefix="/utilidades", tags=["Utilidades"])
 
@@ -13,4 +15,8 @@ async def importar_ctn(fichero: UploadFile = File(...)):
 
 
 
-
+@router.post("/importar/expedientes")
+async def importar_expedientes(fichero: UploadFile = File(...), db: Session = Depends(get_db)):
+    contenido = await fichero.read()
+    resultado = importar_excel_expedientes(db, contenido)
+    return resultado

@@ -1,205 +1,1010 @@
-import { useEffect, useState } from "react";
-import { API_BASE } from "../../api/config";
 import axios from "axios";
+import { useEffect, useState, useCallback } from "react";
+import { API_BASE } from "../../api/config";
 
-import ModalEmpleado from "../../components/empleados/ModalEmpleado";
+import {
+  obtenerFichaCompleta,
+  actualizarModulosVisibles,
+  actualizarPermisosModulo,
+  subirFotoEmpleado,
+  editarEmpleado,
+  resetPasswordEmpleado,
+} from "../../api/empleados";
 
-export default function EmpleadoFicha({ empleadoId }) {
-  const [empleado, setEmpleado] = useState(null);
-  const [auditoria, setAuditoria] = useState([]);
-  const [openModal, setOpenModal] = useState(false);
+import { getMaestros } from "../../api/maestros";
+import SelectSJ from "../ui/SelectSJ";
+
+// Módulos oficiales SJ‑2026
+const MODULOS_SJ2026 = [
+  "dashboard",
+  "agenda",
+  "empleados",
+  "ctn",
+  "intranet",
+  "mensajes",
+  "noticias",
+  "documentos",
+  "auditoria",
+  "logs",
+  "seguridad",
+  "utilidades",
+  "maestros",
+  "realtime",
+  "herramientas",
+  "panel-tecnico",
+  "notificaciones",
+  "expedientes"
+];
+
+// Permisos estándar SJ‑2026
+const PERMISOS_SJ2026 = ["ver", "crear", "editar", "eliminar"];
+
+export default function ModalEmpleado({ open, onClose, empleadoId }) {
+
+  // Estados principales
   const [loading, setLoading] = useState(false);
+  const [empleado, setEmpleado] = useState({});
+  const [modulos, setModulos] = useState([]);
+  const [permisos, setPermisos] = useState({});
+  const [auditoria, setAuditoria] = useState([]);
 
+  // Maestros
+  const [departamentos, setDepartamentos] = useState([]);
+  const [secciones, setSecciones] = useState([]);
+  const [cargos, setCargos] = useState([]);
+  const [roles, setRoles] = useState([]);
+
+  // Tabs
+  const [tab, setTab] = useState("basicos");
+  const [seguridadTab, setSeguridadTab] = useState("modulos");
+
+  // Toast
+  const [toast, setToast] = useState(null);
+
+  const mostrarToast = useCallback((tipo, mensaje) => {
+    setToast({ tipo, mensaje });
+    setTimeout(() => setToast(null), 3000);
+  }, []);
+
+  // Carga inicial
   useEffect(() => {
-    if (!empleadoId) return;
+    if (!open || !empleadoId) return;
 
     const cargar = async () => {
       setLoading(true);
+
       try {
-        const res = await axios.get(`${API_BASE}/empleados/${empleadoId}/ficha`);
-        setEmpleado(res.data.empleado || null);
-        setAuditoria(res.data.auditoria || []);
+        const res = await obtenerFichaCompleta(empleadoId);
+        const d = res.data;
+
+        setEmpleado(d.empleado || {});
+        setModulos(d.modulos_visibles || []);
+        setPermisos(d.permisos_modulo || {});
+        setAuditoria(d.auditoria || []);
+
+        const [depRes, secRes, carRes, rolesRes] = await Promise.all([
+          getMaestros("departamentos"),
+          getMaestros("secciones"),
+          getMaestros("cargos"),
+          axios.get(`${API_BASE}/seguridad/roles`)
+        ]);
+
+        setDepartamentos(depRes.data || []);
+        setSecciones(secRes.data || []);
+        setCargos(carRes.data || []);
+        setRoles(rolesRes.data || []);
+
       } finally {
         setLoading(false);
       }
     };
 
     cargar();
-  }, [empleadoId]);
+  }, [open, empleadoId]);
 
-  if (!empleadoId) {
-    return (
-      <div className="p-6 text-white">
-        No se ha seleccionado ningún empleado.
-      </div>
+  // Handlers
+  const handleEmpleadoChange = (campo, valor) => {
+    setEmpleado((prev) => ({ ...prev, [campo]: valor }));
+  };
+
+  const handleFoto = async (e) => {
+    const file = e.target.files[0];
+    if (!file || !empleado?.id) return;
+
+    await subirFotoEmpleado(empleado.id, file);
+    const res = await obtenerFichaCompleta(empleado.id);
+    const d = res.data;
+
+    setEmpleado(d.empleado || {});
+    mostrarToast("ok", "Foto actualizada");
+  };
+
+  const guardarEmpleado = async () => {
+    if (!empleado?.id) return;
+    await editarEmpleado(empleado.id, { ...empleado });
+    mostrarToast("ok", "Datos del empleado guardados");
+  };
+
+  const guardarModulos = async () => {
+    if (!empleado?.id) return;
+    await actualizarModulosVisibles(empleado.id, modulos);
+    mostrarToast("ok", "Módulos visibles guardados");
+  };
+
+  const guardarPermisos = async () => {
+    if (!empleado?.id) return;
+    await actualizarPermisosModulo(empleado.id, permisos);
+    mostrarToast("ok", "Permisos guardados");
+  };
+
+  const guardarRol = async () => {
+    if (!empleado?.id || !empleado?.rol?.id) return;
+
+    await axios.post(
+      `${API_BASE}/seguridad/asignar/empleado/${empleado.id}/rol/${empleado.rol.id}`
     );
-  }
 
-  if (loading || !empleado) {
-    return (
-      <div className="p-6 text-white animate-pulse">
-        Cargando ficha del empleado…
+    mostrarToast("ok", "Rol actualizado");
+  };
+
+  // Si el modal no está abierto, no renderizamos nada
+  if (!open) return null;
+<>
+  {/* TOAST */}
+  {toast && (
+    <div
+      className={`
+        fixed top-4 right-4 px-4 py-2 rounded-xl shadow-2xl text-white text-sm
+        backdrop-blur-xl border border-white/20
+        ${toast.tipo === "ok" ? "bg-green-500/30" : "bg-red-500/30"}
+      `}
+    >
+      {toast.mensaje}
+    </div>
+  )}
+
+  {/* OVERLAY */}
+  <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+
+    {/* MODAL */}
+    <div
+      className="
+        bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
+        shadow-2xl w-[900px] max-h-[90vh] overflow-hidden text-white
+      "
+    >
+
+      {/* HEADER */}
+      <div
+        className="
+          flex justify-between items-center px-6 py-4 border-b border-white/20
+          bg-white/5 backdrop-blur-xl
+        "
+      >
+        <h2 className="text-xl font-semibold drop-shadow">
+          Ficha empleado {empleado.id} — {empleado.nombre} {empleado.apellidos}
+        </h2>
+
+        <button
+          className="
+            px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20
+            text-white shadow-lg transition
+          "
+          onClick={onClose}
+        >
+          Cerrar
+        </button>
       </div>
-    );
-  }
-  return (
-    <>
-      {/* MODAL */}
-      {openModal && (
-        <ModalEmpleado
-          open={openModal}
-          onClose={() => setOpenModal(false)}
-          empleadoId={empleadoId}
-        />
-      )}
 
-      {/* FICHA */}
-      <div className="p-6 text-white space-y-6">
+      {/* TABS PRINCIPALES */}
+      <div
+        className="
+          px-6 pt-3 pb-2 border-b border-white/20 flex gap-3 text-sm
+          bg-white/5 backdrop-blur-xl
+        "
+      >
+        {["basicos", "personales", "laborales", "seguridad", "auditoria"].map(
+          (t) => (
+            <button
+              key={t}
+              className={`
+                px-4 py-2 rounded-xl transition-all duration-200
+                ${
+                  tab === t
+                    ? "bg-blue-600 text-white shadow-lg"
+                    : "bg-white/10 text-white/70 hover:bg-white/20"
+                }
+              `}
+              onClick={() => setTab(t)}
+            >
+              {t === "basicos" && "Datos básicos"}
+              {t === "personales" && "Datos personales"}
+              {t === "laborales" && "Datos laborales"}
+              {t === "seguridad" && "Seguridad"}
+              {t === "auditoria" && "Auditoría"}
+            </button>
+          )
+        )}
+      </div>
 
-        {/* HEADER */}
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-semibold drop-shadow">
-            Ficha del empleado #{empleado.id}
-          </h2>
+      {/* CONTENIDO SCROLLEABLE */}
+      <div className="px-6 pb-6 pt-4 overflow-y-auto max-h-[75vh]">
 
-          <button
-            className="
-              px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
-              text-white shadow-lg transition
-            "
-            onClick={() => setOpenModal(true)}
-          >
-            Editar ficha
-          </button>
-        </div>
-
-        {/* FOTO + INFO */}
-        <div className="flex gap-6 items-start">
-
-          {/* FOTO */}
-          <div>
-            <img
-              src={
-                empleado.foto_empleado
-                  ? `${API_BASE}/empleados/foto/${empleado.id}`
-                  : "/no-foto.png"
-              }
-              alt="Foto empleado"
-              className="w-40 h-40 object-cover rounded-xl border border-white/20"
-            />
+        {loading && (
+          <div className="text-sm text-white/70 animate-pulse">
+            Cargando ficha…
           </div>
+        )}
 
-          {/* INFO BÁSICA */}
-          <div className="space-y-2 text-sm">
-            <p>
-              <span className="text-white/70">Nombre:</span>{" "}
-              <strong>{empleado.nombre} {empleado.apellidos}</strong>
-            </p>
+        {/* TAB: BÁSICOS */}
+        {!loading && tab === "basicos" && (
+          <section
+            className="
+              bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
+              p-6 shadow-xl space-y-6
+            "
+          >
+            <h3 className="text-lg font-semibold drop-shadow mb-4">
+              Datos básicos
+            </h3>
 
-            <p>
-              <span className="text-white/70">Estado:</span>{" "}
-              {empleado.estado === 1 ? (
+            <div className="grid grid-cols-3 gap-4 text-sm">
+
+              {/* Estado */}
+              <div>
+                <span className="block mb-1 text-white/80">Estado</span>
+                <SelectSJ
+                  value={empleado.estado ?? 1}
+                  onChange={(v) => handleEmpleadoChange("estado", Number(v))}
+                  options={[
+                    { value: 1, label: "Activo" },
+                    { value: 0, label: "Baja" },
+                  ]}
+                />
+              </div>
+
+              {/* Nombre */}
+              <div>
+                <span className="block mb-1 text-white/80">Nombre</span>
+                <input
+                  className="
+                    w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                    text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                  "
+                  value={empleado.nombre || ""}
+                  onChange={(e) => handleEmpleadoChange("nombre", e.target.value)}
+                />
+              </div>
+
+              {/* Teléfono */}
+              <div>
+                <span className="block mb-1 text-white/80">Teléfono</span>
+                <input
+                  className="
+                    w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                    text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                  "
+                  value={empleado.telefono || ""}
+                  onChange={(e) => handleEmpleadoChange("telefono", e.target.value)}
+                />
+              </div>
+
+              {/* Email empresa */}
+              <div>
+                <span className="block mb-1 text-white/80">Email empresa</span>
+                <input
+                  className="
+                    w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                    text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                  "
+                  value={empleado.email_empresa || ""}
+                  onChange={(e) =>
+                    handleEmpleadoChange("email_empresa", e.target.value)
+                  }
+                />
+              </div>
+
+              {/* Extensión */}
+              <div>
+                <span className="block mb-1 text-white/80">Extensión</span>
+                <input
+                  className="
+                    w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                    text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                  "
+                  value={empleado.extension || ""}
+                  onChange={(e) =>
+                    handleEmpleadoChange("extension", e.target.value)
+                  }
+                />
+              </div>
+            </div>
+
+            <button
+              className="
+                mt-4 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
+                text-white shadow-lg transition
+              "
+              onClick={guardarEmpleado}
+            >
+              Guardar datos básicos
+            </button>
+          </section>
+        )}
+        {/* TAB: PERSONALES */}
+        {!loading && tab === "personales" && (
+          <section
+            className="
+              bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
+              p-6 shadow-xl space-y-6
+            "
+          >
+            <h3 className="text-lg font-semibold drop-shadow mb-4">
+              Datos personales
+            </h3>
+
+            <div className="grid grid-cols-3 gap-4 text-sm">
+
+              {/* Nombre */}
+              <div>
+                <span className="block mb-1 text-white/80">Nombre</span>
+                <input
+                  className="
+                    w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                    text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                  "
+                  value={empleado.nombre || ""}
+                  onChange={(e) => handleEmpleadoChange("nombre", e.target.value)}
+                />
+              </div>
+
+              {/* Apellidos */}
+              <div>
+                <span className="block mb-1 text-white/80">Apellidos</span>
+                <input
+                  className="
+                    w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                    text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                  "
+                  value={empleado.apellidos || ""}
+                  onChange={(e) => handleEmpleadoChange("apellidos", e.target.value)}
+                />
+              </div>
+
+              {/* DNI */}
+              <div>
+                <span className="block mb-1 text-white/80">DNI</span>
+                <input
+                  className="
+                    w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                    text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                  "
+                  value={empleado.dni || ""}
+                  onChange={(e) => handleEmpleadoChange("dni", e.target.value)}
+                />
+              </div>
+            </div>
+
+            {/* Datos personales ampliados */}
+            <div className="grid grid-cols-2 gap-4 text-sm">
+
+              <div>
+                <span className="block mb-1 text-white/80">Dirección</span>
+                <input
+                  className="
+                    w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                    text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                  "
+                  value={empleado.direccion || ""}
+                  onChange={(e) => handleEmpleadoChange("direccion", e.target.value)}
+                />
+              </div>
+
+              <div>
+                <span className="block mb-1 text-white/80">Código postal</span>
+                <input
+                  className="
+                    w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                    text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                  "
+                  value={empleado.codigo_postal || ""}
+                  onChange={(e) => handleEmpleadoChange("codigo_postal", e.target.value)}
+                />
+              </div>
+
+              <div>
+                <span className="block mb-1 text-white/80">Población</span>
+                <input
+                  className="
+                    w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                    text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                  "
+                  value={empleado.poblacion || ""}
+                  onChange={(e) => handleEmpleadoChange("poblacion", e.target.value)}
+                />
+              </div>
+
+              <div>
+                <span className="block mb-1 text-white/80">Provincia</span>
+                <input
+                  className="
+                    w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                    text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                  "
+                  value={empleado.provincia || ""}
+                  onChange={(e) => handleEmpleadoChange("provincia", e.target.value)}
+                />
+              </div>
+
+              <div>
+                <span className="block mb-1 text-white/80">Fecha nacimiento</span>
+                <input
+                  type="date"
+                  className="
+                    w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                    text-white focus:ring-2 focus:ring-blue-400
+                  "
+                  value={empleado.fecha_nacimiento || ""}
+                  onChange={(e) =>
+                    handleEmpleadoChange("fecha_nacimiento", e.target.value)
+                  }
+                />
+              </div>
+
+              <div>
+                <span className="block mb-1 text-white/80">Alergias</span>
+                <input
+                  className="
+                    w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                    text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                  "
+                  value={empleado.alergias || ""}
+                  onChange={(e) => handleEmpleadoChange("alergias", e.target.value)}
+                />
+              </div>
+
+              <div>
+                <span className="block mb-1 text-white/80">Persona contacto</span>
+                <input
+                  className="
+                    w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                    text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                  "
+                  value={empleado.persona_contacto || ""}
+                  onChange={(e) =>
+                    handleEmpleadoChange("persona_contacto", e.target.value)
+                  }
+                />
+              </div>
+
+              <div>
+                <span className="block mb-1 text-white/80">Teléfono contacto</span>
+                <input
+                  className="
+                    w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                    text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                  "
+                  value={empleado.telefono_contacto || ""}
+                  onChange={(e) =>
+                    handleEmpleadoChange("telefono_contacto", e.target.value)
+                  }
+                />
+              </div>
+
+              {/* Foto */}
+              <div>
+                <span className="block mb-1 text-white/80">Foto</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="
+                    w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                    text-white focus:ring-2 focus:ring-blue-400
+                  "
+                  onChange={handleFoto}
+                />
+              </div>
+
+              {/* Observaciones */}
+              <div className="col-span-2">
+                <span className="block mb-1 text-white/80">Observaciones</span>
+                <textarea
+                  className="
+                    w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                    text-white text-sm placeholder-white/40 focus:ring-2 focus:ring-blue-400
+                  "
+                  rows={3}
+                  value={empleado.observaciones || ""}
+                  onChange={(e) =>
+                    handleEmpleadoChange("observaciones", e.target.value)
+                  }
+                />
+              </div>
+            </div>
+
+            <button
+              className="
+                mt-4 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
+                text-white shadow-lg transition
+              "
+              onClick={guardarEmpleado}
+            >
+              Guardar datos personales
+            </button>
+          </section>
+        )}
+
+        {/* TAB: LABORALES */}
+        {!loading && tab === "laborales" && (
+          <section
+            className="
+              bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
+              p-6 shadow-xl space-y-6
+            "
+          >
+            <h3 className="text-lg font-semibold drop-shadow mb-4">
+              Datos laborales
+            </h3>
+
+            <div className="grid grid-cols-2 gap-4 text-sm">
+
+              {/* Departamento */}
+              <div>
+                <span className="block mb-1 text-white/80">Departamento</span>
+                <SelectSJ
+                  value={empleado.departamento_id || ""}
+                  onChange={(v) =>
+                    handleEmpleadoChange("departamento_id", Number(v))
+                  }
+                  options={[
+                    { value: "", label: "Sin departamento" },
+                    ...departamentos.map((d) => ({
+                      value: d.id,
+                      label: d.nombre,
+                    })),
+                  ]}
+                />
+              </div>
+
+              {/* Sección */}
+              <div>
+                <span className="block mb-1 text-white/80">Sección</span>
+                <SelectSJ
+                  value={empleado.seccion_id || ""}
+                  onChange={(v) =>
+                    handleEmpleadoChange("seccion_id", Number(v))
+                  }
+                  options={[
+                    { value: "", label: "Sin sección" },
+                    ...secciones.map((s) => ({
+                      value: s.id,
+                      label: s.nombre,
+                    })),
+                  ]}
+                />
+              </div>
+
+              {/* Cargo */}
+              <div>
+                <span className="block mb-1 text-white/80">Cargo</span>
+                <SelectSJ
+                  value={empleado.cargo_id || ""}
+                  onChange={(v) =>
+                    handleEmpleadoChange("cargo_id", Number(v))
+                  }
+                  options={[
+                    { value: "", label: "Sin cargo" },
+                    ...cargos.map((c) => ({
+                      value: c.id,
+                      label: c.nombre,
+                    })),
+                  ]}
+                />
+              </div>
+
+              {/* Fecha alta */}
+              <div>
+                <span className="block mb-1 text-white/80">Fecha alta</span>
+                <input
+                  type="date"
+                  className="
+                    w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                    text-white focus:ring-2 focus:ring-blue-400
+                  "
+                  value={empleado.fecha_alta || ""}
+                  onChange={(e) =>
+                    handleEmpleadoChange("fecha_alta", e.target.value)
+                  }
+                />
+              </div>
+
+              {/* Fecha baja */}
+              <div>
+                <span className="block mb-1 text-white/80">Fecha baja</span>
+                <input
+                  type="date"
+                  className="
+                    w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                    text-white focus:ring-2 focus:ring-blue-400
+                  "
+                  value={empleado.fecha_baja || ""}
+                  onChange={(e) =>
+                    handleEmpleadoChange("fecha_baja", e.target.value)
+                  }
+                />
+              </div>
+            </div>
+
+            <button
+              className="
+                mt-4 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
+                text-white shadow-lg transition
+              "
+              onClick={guardarEmpleado}
+            >
+              Guardar datos laborales
+            </button>
+          </section>
+        )}
+
+        {/* TAB: SEGURIDAD (inicio) */}
+        {!loading && tab === "seguridad" && (
+          <section
+            className="
+              bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
+              p-6 shadow-xl space-y-6
+            "
+          >
+            <h3 className="text-lg font-semibold drop-shadow mb-4">
+              Seguridad interna
+            </h3>
+
+            {/* Usuario + Password */}
+            <div className="grid grid-cols-3 gap-4 text-sm">
+              <div>
+                <span className="block mb-1 text-white/80">Usuario</span>
+                <input
+                  className="
+                    w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                    text-white/80 cursor-not-allowed
+                  "
+                  value={empleado.usuario || ""}
+                  readOnly
+                />
+              </div>
+
+              <div>
+                <span className="block mb-1 text-white/80">Password</span>
+                <input
+                  className="
+                    w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
+                    text-white/80 cursor-not-allowed
+                  "
+                  value="********"
+                  readOnly
+                />
+              </div>
+            </div>
+
+            {/* Estado */}
+            <div className="mt-4">
+              <span className="block mb-1 text-white/80">Estado actual</span>
+              {empleado.activo ? (
                 <span className="text-green-400 font-semibold">Activo</span>
               ) : (
-                <span className="text-red-400 font-semibold">Baja</span>
+                <span className="text-red-400 font-semibold">Bloqueado</span>
               )}
-            </p>
+            </div>
 
-            <p>
-              <span className="text-white/70">Teléfono:</span>{" "}
-              {empleado.telefono || "—"}
-            </p>
+            {/* Bloquear / desbloquear */}
+            <div className="flex gap-4 mt-4">
+              {empleado.activo ? (
+                <button
+                  className="
+                    px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700
+                    text-white shadow-lg transition active:scale-[0.97]
+                  "
+                  onClick={async () => {
+                    await axios.post(
+                      `${API_BASE}/seguridad/asignar/empleado/${empleado.id}/bloquear`
+                    );
+                    const res = await obtenerFichaCompleta(empleado.id);
+                    const d = res.data;
+                    setEmpleado(d.empleado || {});
+                    mostrarToast("ok", "Empleado bloqueado");
+                  }}
+                >
+                  Bloquear empleado
+                </button>
+              ) : (
+                <button
+                  className="
+                    px-4 py-2 rounded-xl bg-green-600 hover:bg-green-700
+                    text-white shadow-lg transition active:scale-[0.97]
+                  "
+                  onClick={async () => {
+                    await axios.post(
+                      `${API_BASE}/seguridad/asignar/empleado/${empleado.id}/desbloquear`
+                    );
+                    const res = await obtenerFichaCompleta(empleado.id);
+                    const d = res.data;
+                    setEmpleado(d.empleado || {});
+                    mostrarToast("ok", "Empleado desbloqueado");
+                  }}
+                >
+                  Desbloquear empleado
+                </button>
+              )}
+            </div>
+            {/* ROL */}
+            <div
+              className="
+                bg-white/5 border border-white/20 rounded-xl p-4 shadow-md
+                backdrop-blur-md
+              "
+            >
+              <h4 className="font-semibold text-sm mb-3 text-white flex items-center gap-3">
+                Rol del empleado
+                <span
+                  className="
+                    px-3 py-1 bg-white/10 border border-white/20 rounded-xl
+                    text-white/80 text-xs backdrop-blur-md
+                  "
+                >
+                  Actual:{" "}
+                  <strong className="text-white">
+                    {empleado?.rol?.nombre || "Sin rol"}
+                  </strong>
+                </span>
+              </h4>
 
-            <p>
-              <span className="text-white/70">Email empresa:</span>{" "}
-              {empleado.email_empresa || "—"}
-            </p>
+              <SelectSJ
+                value={empleado?.rol?.id || ""}
+                onChange={(v) => {
+                  const id = Number(v);
+                  const rolObj = roles.find((r) => r.id === id) || null;
+                  handleEmpleadoChange("rol", rolObj);
+                }}
+                options={[
+                  { value: "", label: "Sin rol" },
+                  ...roles.map((r) => ({
+                    value: r.id,
+                    label: r.nombre,
+                  })),
+                ]}
+              />
 
-            <p>
-              <span className="text-white/70">Extensión:</span>{" "}
-              {empleado.extension || "—"}
-            </p>
-          </div>
-        </div>
-        {/* DATOS PERSONALES */}
-        <section
-          className="
-            bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
-            p-6 shadow-xl space-y-4
-          "
-        >
-          <h3 className="text-lg font-semibold drop-shadow mb-2">
-            Datos personales
-          </h3>
+              <div className="flex items-center gap-4 text-sm mt-4">
+                <button
+                  className="
+                    px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
+                    text-white shadow-lg transition
+                  "
+                  onClick={guardarRol}
+                >
+                  Guardar rol
+                </button>
 
-          <div className="grid grid-cols-3 gap-4 text-sm">
-            <p><span className="text-white/70">DNI:</span> {empleado.dni || "—"}</p>
-            <p><span className="text-white/70">Dirección:</span> {empleado.direccion || "—"}</p>
-            <p><span className="text-white/70">CP:</span> {empleado.codigo_postal || "—"}</p>
-            <p><span className="text-white/70">Población:</span> {empleado.poblacion || "—"}</p>
-            <p><span className="text-white/70">Provincia:</span> {empleado.provincia || "—"}</p>
-            <p><span className="text-white/70">Nacimiento:</span> {empleado.fecha_nacimiento || "—"}</p>
-            <p><span className="text-white/70">Alergias:</span> {empleado.alergias || "—"}</p>
-            <p><span className="text-white/70">Contacto:</span> {empleado.persona_contacto || "—"}</p>
-            <p><span className="text-white/70">Tel. contacto:</span> {empleado.telefono_contacto || "—"}</p>
-          </div>
+                <button
+                  className="
+                    px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700
+                    text-white shadow-lg transition
+                  "
+                  onClick={() => handleEmpleadoChange("rol", null)}
+                >
+                  Reset rol
+                </button>
+              </div>
+            </div>
 
-          <p className="text-white/70 text-sm">
-            <span className="text-white">Observaciones:</span>{" "}
-            {empleado.observaciones || "—"}
-          </p>
-        </section>
+            {/* RESET PASSWORD */}
+            <button
+              className="
+                px-4 py-2 rounded-xl bg-orange-600 hover:bg-orange-700
+                text-white shadow-lg transition
+              "
+              onClick={async () => {
+                await resetPasswordEmpleado(empleado.id);
+                mostrarToast("ok", "Contraseña reseteada");
+              }}
+            >
+              Reset contraseña
+            </button>
 
-        {/* DATOS LABORALES */}
-        <section
-          className="
-            bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
-            p-6 shadow-xl space-y-4
-          "
-        >
-          <h3 className="text-lg font-semibold drop-shadow mb-2">
-            Datos laborales
-          </h3>
+            {/* TABS SEGURIDAD INTERNOS */}
+            <div className="flex gap-3 mt-6 text-sm">
+              <button
+                className={`
+                  px-4 py-2 rounded-xl transition-all
+                  ${
+                    seguridadTab === "modulos"
+                      ? "bg-blue-600 text-white shadow-lg"
+                      : "bg-white/10 text-white/70 hover:bg-white/20"
+                  }
+                `}
+                onClick={() => setSeguridadTab("modulos")}
+              >
+                Módulos visibles
+              </button>
 
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <p><span className="text-white/70">Departamento:</span> {empleado.departamento || "—"}</p>
-            <p><span className="text-white/70">Sección:</span> {empleado.seccion || "—"}</p>
-            <p><span className="text-white/70">Cargo:</span> {empleado.cargo || "—"}</p>
-            <p><span className="text-white/70">Fecha alta:</span> {empleado.fecha_alta || "—"}</p>
-            <p><span className="text-white/70">Fecha baja:</span> {empleado.fecha_baja || "—"}</p>
-          </div>
-        </section>
-        {/* AUDITORÍA */}
-        <section
-          className="
-            bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
-            p-6 shadow-xl space-y-4
-          "
-        >
-          <h3 className="text-lg font-semibold drop-shadow mb-2">
-            Auditoría reciente
-          </h3>
+              <button
+                className={`
+                  px-4 py-2 rounded-xl transition-all
+                  ${
+                    seguridadTab === "permisos"
+                      ? "bg-blue-600 text-white shadow-lg"
+                      : "bg-white/10 text-white/70 hover:bg-white/20"
+                  }
+                `}
+                onClick={() => setSeguridadTab("permisos")}
+              >
+                Permisos por módulo
+              </button>
+            </div>
 
-          {(!auditoria || auditoria.length === 0) && (
-            <p className="text-white/70 text-sm">
-              No hay registros de auditoría.
-            </p>
-          )}
+            {/* MÓDULOS VISIBLES */}
+            {seguridadTab === "modulos" && (
+              <div
+                className="
+                  bg-white/5 border border-white/20 rounded-xl p-4 shadow-md
+                  backdrop-blur-md
+                "
+              >
+                <h4 className="font-semibold text-sm mb-3 text-white">
+                  Selecciona los módulos visibles
+                </h4>
 
-          {auditoria && auditoria.length > 0 && (
-            <ul className="list-disc ml-5 text-sm text-white/90 space-y-1">
-              {auditoria.slice(0, 10).map((a) => (
-                <li key={a.id}>
-                  {new Date(a.fecha).toLocaleString("es-ES")} —{" "}
-                  <strong className="text-white">{a.modulo}</strong>{" "}
-                  [{a.accion}] — {a.descripcion}
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
+                <div className="grid grid-cols-2 gap-3 text-sm text-white/80">
+                  {MODULOS_SJ2026.map((mod) => (
+                    <label key={mod} className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={modulos.includes(mod)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setModulos([...modulos, mod]);
+                          } else {
+                            setModulos(modulos.filter((m) => m !== mod));
+                          }
+                        }}
+                      />
+                      {mod}
+                    </label>
+                  ))}
+                </div>
 
-      </div>
-    </>
-  );
+                <button
+                  className="
+                    mt-4 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
+                    text-white shadow-lg transition
+                  "
+                  onClick={guardarModulos}
+                >
+                  Guardar módulos visibles
+                </button>
+
+                <button
+                  className="
+                    mt-2 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700
+                    text-white shadow-lg transition
+                  "
+                  onClick={() => setModulos([])}
+                >
+                  Reset módulos visibles
+                </button>
+              </div>
+            )}
+
+            {/* PERMISOS POR MÓDULO */}
+            {seguridadTab === "permisos" && (
+              <div
+                className="
+                  bg-white/5 border border-white/20 rounded-xl p-4 shadow-md
+                  backdrop-blur-md
+                "
+              >
+                <h4 className="font-semibold text-sm mb-3 text-white">
+                  Permisos por módulo
+                </h4>
+
+                {Object.keys(permisos).map((mod) => (
+                  <div key={mod} className="mb-4">
+                    <span className="block font-semibold text-white mb-2 text-sm">
+                      {mod.toUpperCase()}
+                    </span>
+
+                    <div className="grid grid-cols-4 gap-3 text-sm text-white/80">
+                      {PERMISOS_SJ2026.map((perm) => (
+                        <label key={perm} className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={permisos[mod]?.includes(perm)}
+                            onChange={(e) => {
+                              const actual = permisos[mod] || [];
+                              let nuevo;
+
+                              if (e.target.checked) {
+                                nuevo = [...actual, perm];
+                              } else {
+                                nuevo = actual.filter((p) => p !== perm);
+                              }
+
+                              setPermisos({
+                                ...permisos,
+                                [mod]: nuevo,
+                              });
+                            }}
+                          />
+                          {perm}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+
+                <button
+                  className="
+                    mt-4 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
+                    text-white shadow-lg transition
+                  "
+                  onClick={guardarPermisos}
+                >
+                  Guardar permisos
+                </button>
+
+                <button
+                  className="
+                    mt-2 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700
+                    text-white shadow-lg transition
+                  "
+                  onClick={() => setPermisos({})}
+                >
+                  Reset permisos
+                </button>
+              </div>
+            )}
+
+          </section>
+        )}
+
+        {/* TAB: AUDITORÍA */}
+        {!loading && tab === "auditoria" && (
+          <section
+            className="
+              bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
+              p-6 shadow-xl space-y-4
+            "
+          >
+            <h3 className="text-lg font-semibold drop-shadow mb-3">
+              Auditoría del empleado
+            </h3>
+
+            {(!auditoria || auditoria.length === 0) && (
+              <p className="text-white/70 text-sm">
+                No hay registros de auditoría para este empleado.
+              </p>
+            )}
+
+            {auditoria && auditoria.length > 0 && (
+              <ul className="list-disc ml-5 text-sm text-white/90 space-y-1">
+                {auditoria.map((a) => (
+                  <li key={a.id}>
+                    {new Date(a.fecha).toLocaleString("es-ES")} —{" "}
+                    <strong className="text-white">{a.modulo}</strong>{" "}
+                    [{a.accion}] — {a.descripcion}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        )}
+
+      </div> {/* cierre scroll interno */}
+
+    </div> {/* cierre modal */}
+
+  </div> {/* cierre overlay */}
+
+</>
+);
 }

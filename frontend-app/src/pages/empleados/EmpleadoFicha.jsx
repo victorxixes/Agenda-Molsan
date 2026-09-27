@@ -1,444 +1,344 @@
-import { useEffect, useState, useCallback, useMemo } from "react";
+import axios from "axios";
+import { useEffect, useState, useCallback } from "react";
 import { API_BASE } from "../../api/config";
+
 import {
   obtenerFichaCompleta,
   actualizarModulosVisibles,
   actualizarPermisosModulo,
   subirFotoEmpleado,
+  editarEmpleado,
+  resetPasswordEmpleado,
 } from "../../api/empleados";
 
-// Sanitizador SJ‑2026
-const safe = (v) => {
-  if (v === null || v === undefined) return "-";
-  if (typeof v === "object") return "-";
-  if (typeof v === "boolean") return v ? "Sí" : "No";
-  return String(v);
-};
+import { getMaestros } from "../../api/maestros";
+import SelectSJ from "../ui/SelectSJ";
 
-// ⭐ Módulos oficiales SJ‑2026 (incluye EXPEDIENTES)
 const MODULOS_SJ2026 = [
-  "dashboard",
-  "agenda",
-  "empleados",
-  "ctn",
-  "intranet",
-  "mensajes",
-  "noticias",
-  "documentos",
-  "auditoria",
-  "logs",
-  "seguridad",
-  "utilidades",
-  "maestros",
-  "realtime",
-  "herramientas",
-  "panel-tecnico",
-  "notificaciones",
-  "expedientes" // ⭐ NUEVO MÓDULO
+  "dashboard","agenda","empleados","ctn","intranet","mensajes","noticias",
+  "documentos","auditoria","logs","seguridad","utilidades","maestros",
+  "realtime","herramientas","panel-tecnico","notificaciones","expedientes"
 ];
 
-// ⭐ Permisos estándar SJ‑2026
-const PERMISOS_SJ2026 = ["ver", "crear", "editar", "eliminar"];
+const PERMISOS_SJ2026 = ["ver","crear","editar","eliminar"];
 
-export default function EmpleadoFicha({ empleadoId }) {
-  const idNum = Number(empleadoId);
+export default function ModalEmpleado({ open, onClose, empleadoId }) {
 
-  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [empleado, setEmpleado] = useState({});
   const [modulos, setModulos] = useState([]);
   const [permisos, setPermisos] = useState({});
-  const [rolId, setRolId] = useState(null);
+  const [auditoria, setAuditoria] = useState([]);
 
-  // Cargar ficha completa
+  const [departamentos, setDepartamentos] = useState([]);
+  const [secciones, setSecciones] = useState([]);
+  const [cargos, setCargos] = useState([]);
+  const [roles, setRoles] = useState([]);
+
+  const [tab, setTab] = useState("basicos");
+  const [seguridadTab, setSeguridadTab] = useState("modulos");
+
+  const [toast, setToast] = useState(null);
+
+  const mostrarToast = useCallback((tipo, mensaje) => {
+    setToast({ tipo, mensaje });
+    setTimeout(() => setToast(null), 3000);
+  }, []);
+
   useEffect(() => {
-    if (!Number.isFinite(idNum)) return;
+    if (!open || !empleadoId) return;
 
-    obtenerFichaCompleta(idNum).then((res) => {
-      const d = res.data || {};
+    const cargar = async () => {
+      setLoading(true);
+      try {
+        const res = await obtenerFichaCompleta(empleadoId);
+        const d = res.data;
 
-      setData(d);
-      setModulos(Array.isArray(d.modulos_visibles) ? d.modulos_visibles : []);
-      setPermisos(typeof d.permisos_modulo === "object" ? d.permisos_modulo : {});
-      setRolId(d.empleado?.rol?.id ?? null);
-    });
-  }, [idNum]);
+        setEmpleado(d.empleado || {});
+        setModulos(d.modulos_visibles || []);
+        setPermisos(d.permisos_modulo || []);
+        setAuditoria(d.auditoria || []);
 
-  if (!Number.isFinite(idNum))
-    return <div className="text-white/70">Selecciona un empleado válido.</div>;
+        const [depRes, secRes, carRes, rolesRes] = await Promise.all([
+          getMaestros("departamentos"),
+          getMaestros("secciones"),
+          getMaestros("cargos"),
+          axios.get(`${API_BASE}/seguridad/roles`)
+        ]);
 
-  if (!data)
-    return <div className="text-white/70 animate-pulse">Cargando ficha…</div>;
+        setDepartamentos(depRes.data || []);
+        setSecciones(secRes.data || []);
+        setCargos(carRes.data || []);
+        setRoles(rolesRes.data || []);
 
-  const empleado = data?.empleado || {};
-  const rol = empleado?.rol || {};
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // SUBIR FOTO
-  const handleFoto = useCallback(
-    async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
+    cargar();
+  }, [open, empleadoId]);
 
-      await subirFotoEmpleado(idNum, file);
+  const handleEmpleadoChange = (campo, valor) => {
+    setEmpleado(e => ({ ...e, [campo]: valor }));
+  };
 
-      const res = await obtenerFichaCompleta(idNum);
-      setData(res.data);
-    },
-    [idNum]
-  );
-
-  // GUARDAR MÓDULOS
-  const guardarModulos = useCallback(async () => {
-    await actualizarModulosVisibles(idNum, modulos);
-    alert("Módulos visibles guardados");
-  }, [idNum, modulos]);
-
-  // GUARDAR PERMISOS
-  const guardarPermisos = useCallback(async () => {
-    await actualizarPermisosModulo(idNum, permisos);
-    alert("Permisos guardados");
-  }, [idNum, permisos]);
-
-  // GUARDAR ROL
-  const guardarRol = useCallback(async () => {
-    try {
-      await fetch(`${API_BASE}/seguridad/asignar/empleado/${idNum}/rol/${rolId}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
-
-      alert("Rol actualizado correctamente");
-
-      const res = await obtenerFichaCompleta(idNum);
-      setData(res.data);
-      setRolId(res.data.empleado?.rol?.id || null);
-    } catch (err) {
-      console.error(err);
-      alert("Error al actualizar el rol");
-    }
-  }, [idNum, rolId]);
-
-  const fotoUrl = useMemo(() => {
-    const f = empleado.foto;
-    return typeof f === "string" && f !== "-" ? `${API_BASE}${f}` : null;
-  }, [empleado.foto]);
-
-  return (
-    <div className="space-y-8 text-white animate-fade-in">
-
-      {/* DATOS BÁSICOS */}
-      <section className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-xl">
-        <h2 className="text-xl font-semibold mb-4 drop-shadow">Datos básicos</h2>
-
-        <div className="grid grid-cols-2 gap-4 text-sm text-white/80">
-          <div><strong>Nombre:</strong> {safe(empleado.nombre)}</div>
-          <div><strong>Apellidos:</strong> {safe(empleado.apellidos)}</div>
-          <div><strong>DNI:</strong> {safe(empleado.dni)}</div>
-          <div><strong>Teléfono:</strong> {safe(empleado.telefono)}</div>
-          <div><strong>Email personal:</strong> {safe(empleado.email_personal)}</div>
-          <div><strong>Email empresa:</strong> {safe(empleado.email_empresa)}</div>
-          <div><strong>Usuario:</strong> {safe(empleado.usuario)}</div>
-          <div><strong>Rol actual:</strong> {safe(rol.nombre)}</div>
-        </div>
-
-        <div className="mt-6 flex items-center gap-6">
-          {fotoUrl && (
-            <img
-              src={fotoUrl}
-              alt="Foto empleado"
-              className="w-28 h-28 rounded-full object-cover border border-white/20 shadow-xl"
-            />
-          )}
-
-          <label className="text-sm text-white/80">
-            Subir nueva foto:
-            <input
-              type="file"
-              className="block mt-2 text-white"
-              onChange={handleFoto}
-            />
-          </label>
-        </div>
-      </section>
-
-      {/* ROL */}
-      <section className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-xl">
-        <h2 className="text-xl font-semibold mb-4 drop-shadow">Rol del empleado</h2>
-
-        <div className="flex items-center gap-4">
-          <select
-            className="bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white focus:ring-2 focus:ring-blue-400"
-            value={rolId || ""}
-            onChange={(e) => setRolId(Number(e.target.value))}
-          >
-            <option value="">Selecciona rol</option>
-            <option value={1}>admin</option>
-            <option value={2}>tecnico</option>
-            <option value={3}>usuario</option>
-          </select>
-
-          <button
-            className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-lg transition active:scale-[0.97]"
-            onClick={guardarRol}
-          >
-            Guardar rol
-          </button>
-        </div>
-      </section>
-
-      {/* BLOQUEAR / DESBLOQUEAR */}
-      <section className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-xl">
-        <h2 className="text-xl font-semibold mb-4 drop-shadow">Estado del empleado</h2>
-
-        <div className="text-sm mb-4">
-          {empleado.activo ? (
-            <span className="text-green-400 font-semibold">Activo</span>
-          ) : (
-            <span className="text-red-400 font-semibold">Bloqueado</span>
-          )}
-        </div>
-
-        <div className="flex items-center gap-4">
-          {empleado.activo ? (
-            <button
-              className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white shadow-lg transition active:scale-[0.97]"
-              onClick={async () => {
-                await fetch(`${API_BASE}/seguridad/asignar/empleado/${idNum}/bloquear`, {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                });
-
-                const res = await obtenerFichaCompleta(idNum);
-                setData(res.data);
-              }}
-            >
-              Bloquear empleado
-            </button>
-          ) : (
-            <button
-              className="px-4 py-2 rounded-xl bg-green-600 hover:bg-green-700 text-white shadow-lg transition active:scale-[0.97]"
-              onClick={async () => {
-                await fetch(`${API_BASE}/seguridad/asignar/empleado/${idNum}/desbloquear`, {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                });
-
-                const res = await obtenerFichaCompleta(idNum);
-                setData(res.data);
-              }}
-            >
-              Desbloquear empleado
-            </button>
-          )}
-        </div>
-      </section>
-      {/* MÓDULOS VISUALES */}
-      <section className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-xl">
-        <h2 className="text-xl font-semibold mb-4 drop-shadow">Módulos visibles</h2>
-
-        {/* Checkboxes SJ‑2026 */}
-        <div className="grid grid-cols-2 gap-2 mb-4">
-          {MODULOS_SJ2026.map((m) => (
-            <label key={m} className="flex items-center gap-2 text-sm text-white/80">
-              <input
-                type="checkbox"
-                checked={modulos.includes(m)}
-                onChange={(e) => {
-                  if (e.target.checked) {
-                    setModulos([...modulos, m]);
-                  } else {
-                    setModulos(modulos.filter((x) => x !== m));
-                  }
-                }}
-              />
-              {m}
-            </label>
-          ))}
-        </div>
-
-        {/* Textarea avanzada */}
-        <textarea
-          className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white text-xs"
-          rows={4}
-          value={JSON.stringify(modulos, null, 2)}
-          onChange={(e) => {
-            try {
-              const parsed = JSON.parse(e.target.value);
-              if (Array.isArray(parsed)) setModulos(parsed);
-            } catch {}
-          }}
-        />
-
-        <button
-          className="mt-3 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-lg transition active:scale-[0.97]"
-          onClick={guardarModulos}
-        >
-          Guardar módulos visibles
-        </button>
-      </section>
-
-      {/* PERMISOS POR MÓDULO */}
-      <section className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-xl">
-        <h2 className="text-xl font-semibold mb-4 drop-shadow">Permisos por módulo</h2>
-
-        {/* Checkboxes SJ‑2026 */}
-        <div className="space-y-4 mb-4">
-          {MODULOS_SJ2026.map((modulo) => (
-            <div key={modulo}>
-              <h4 className="font-semibold text-white/90 mb-1">{modulo}</h4>
-
-              <div className="flex flex-wrap gap-3">
-                {PERMISOS_SJ2026.map((permiso) => {
-                  const activo = permisos[modulo]?.includes(permiso);
-
-                  return (
-                    <label key={permiso} className="flex items-center gap-2 text-sm text-white/70">
-                      <input
-                        type="checkbox"
-                        checked={activo}
-                        onChange={(e) => {
-                          setPermisos((prev) => {
-                            const actual = prev[modulo] || [];
-                            if (e.target.checked) {
-                              return { ...prev, [modulo]: [...actual, permiso] };
-                            } else {
-                              return { ...prev, [modulo]: actual.filter((p) => p !== permiso) };
-                            }
-                          });
-                        }}
-                      />
-                      {permiso}
-                    </label>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Textarea avanzada */}
-        <textarea
-          className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white text-xs"
-          rows={6}
-          value={JSON.stringify(permisos, null, 2)}
-          onChange={(e) => {
-            try {
-              const parsed = JSON.parse(e.target.value);
-              if (typeof parsed === "object") setPermisos(parsed);
-            } catch {}
-          }}
-        />
-
-        <button
-          className="mt-3 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-lg transition active:scale-[0.97]"
-          onClick={guardarPermisos}
-        >
-          Guardar permisos
-        </button>
-      </section>
-
-      {/* MÓDULOS VISUALES */}
-      <section className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-xl">
-        <h2 className="text-xl font-semibold mb-4 drop-shadow">Módulos visibles</h2>
-
-        {/* Checkboxes SJ‑2026 */}
-        <div className="grid grid-cols-2 gap-2 mb-4">
-          {MODULOS_SJ2026.map((m) => (
-            <label key={m} className="flex items-center gap-2 text-sm text-white/80">
-              <input
-                type="checkbox"
-                checked={modulos.includes(m)}
-                onChange={(e) => {
-                  if (e.target.checked) {
-                    setModulos([...modulos, m]);
-                  } else {
-                    setModulos(modulos.filter((x) => x !== m));
-                  }
-                }}
-              />
-              {m}
-            </label>
-          ))}
-        </div>
-
-        {/* Textarea avanzada */}
-        <textarea
-          className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white text-xs"
-          rows={4}
-          value={JSON.stringify(modulos, null, 2)}
-          onChange={(e) => {
-            try {
-              const parsed = JSON.parse(e.target.value);
-              if (Array.isArray(parsed)) setModulos(parsed);
-            } catch {}
-          }}
-        />
-
-        <button
-          className="mt-3 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-lg transition active:scale-[0.97]"
-          onClick={guardarModulos}
-        >
-          Guardar módulos visibles
-        </button>
-      </section>
-
-      {/* PERMISOS POR MÓDULO */}
-      <section className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-xl">
-        <h2 className="text-xl font-semibold mb-4 drop-shadow">Permisos por módulo</h2>
-
-        {/* Checkboxes SJ‑2026 */}
-        <div className="space-y-4 mb-4">
-          {MODULOS_SJ2026.map((modulo) => (
-            <div key={modulo}>
-              <h4 className="font-semibold text-white/90 mb-1">{modulo}</h4>
-
-              <div className="flex flex-wrap gap-3">
-                {PERMISOS_SJ2026.map((permiso) => {
-                  const activo = permisos[modulo]?.includes(permiso);
-
-                  return (
-                    <label key={permiso} className="flex items-center gap-2 text-sm text-white/70">
-                      <input
-                        type="checkbox"
-                        checked={activo}
-                        onChange={(e) => {
-                          setPermisos((prev) => {
-                            const actual = prev[modulo] || [];
-                            if (e.target.checked) {
-                              return { ...prev, [modulo]: [...actual, permiso] };
-                            } else {
-                              return { ...prev, [modulo]: actual.filter((p) => p !== permiso) };
-                            }
-                          });
-                        }}
-                      />
-                      {permiso}
-                    </label>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Textarea avanzada */}
-        <textarea
-          className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white text-xs"
-          rows={6}
-          value={JSON.stringify(permisos, null, 2)}
-          onChange={(e) => {
-            try {
-              const parsed = JSON.parse(e.target.value);
-              if (typeof parsed === "object") setPermisos(parsed);
-            } catch {}
-          }}
-        />
-
-        <button
-          className="mt-3 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-lg transition active:scale-[0.97]"
-          onClick={guardarPermisos}
-        >
-          Guardar permisos
-        </button>
-      </section>
+  if (!open) return null;
+<>
+  {toast && (
+    <div className={`fixed top-4 right-4 px-4 py-2 rounded-xl shadow-xl text-white
+      ${toast.tipo === "ok" ? "bg-green-600/40" : "bg-red-600/40"}`}>
+      {toast.mensaje}
     </div>
-  );
+  )}
+
+  <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+    <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl w-[900px] max-h-[90vh] overflow-hidden text-white">
+
+      <div className="flex justify-between items-center px-6 py-4 border-b border-white/20">
+        <h2 className="text-xl font-semibold">
+          Ficha empleado {empleado.id} — {empleado.nombre} {empleado.apellidos}
+        </h2>
+        <button onClick={onClose} className="px-4 py-2 bg-white/10 rounded-xl">Cerrar</button>
+      </div>
+
+      <div className="px-6 pt-3 pb-2 border-b border-white/20 flex gap-3 text-sm">
+        {["basicos","personales","laborales","seguridad","auditoria"].map(t => (
+          <button key={t}
+            className={`px-4 py-2 rounded-xl ${
+              tab === t ? "bg-blue-600 text-white" : "bg-white/10 text-white/70"
+            }`}
+            onClick={() => setTab(t)}
+          >
+            {t === "basicos" && "Datos básicos"}
+            {t === "personales" && "Datos personales"}
+            {t === "laborales" && "Datos laborales"}
+            {t === "seguridad" && "Seguridad"}
+            {t === "auditoria" && "Auditoría"}
+          </button>
+        ))}
+      </div>
+
+      <div className="px-6 pb-6 pt-4 overflow-y-auto max-h-[75vh]">
+
+        {!loading && tab === "basicos" && (
+          <section className="bg-white/10 border border-white/20 rounded-2xl p-6 space-y-6">
+
+            <h3 className="text-lg font-semibold">Datos básicos</h3>
+
+            <div className="grid grid-cols-3 gap-4 text-sm">
+
+              <div>
+                <span className="block mb-1">Estado</span>
+                <SelectSJ
+                  value={empleado.estado ?? 1}
+                  onChange={v => handleEmpleadoChange("estado", Number(v))}
+                  options={[
+                    { value: 1, label: "Activo" },
+                    { value: 0, label: "Baja" }
+                  ]}
+                />
+              </div>
+
+              <div>
+                <span className="block mb-1">Nombre</span>
+                <input className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2"
+                  value={empleado.nombre || ""}
+                  onChange={e => handleEmpleadoChange("nombre", e.target.value)}
+                />
+              </div>
+
+              <div>
+                <span className="block mb-1">Teléfono</span>
+                <input className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2"
+                  value={empleado.telefono || ""}
+                  onChange={e => handleEmpleadoChange("telefono", e.target.value)}
+                />
+              </div>
+
+            </div>
+
+            <button className="px-4 py-2 bg-blue-600 rounded-xl"
+              onClick={() => editarEmpleado(empleado.id, empleado)}>
+              Guardar datos básicos
+            </button>
+
+          </section>
+        )}
+
+        {!loading && tab === "personales" && (
+          <section className="bg-white/10 border border-white/20 rounded-2xl p-6 space-y-6">
+
+            <h3 className="text-lg font-semibold">Datos personales</h3>
+
+            <div className="grid grid-cols-3 gap-4 text-sm">
+
+              <div>
+                <span className="block mb-1">Nombre</span>
+                <input className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2"
+                  value={empleado.nombre || ""}
+                  onChange={e => handleEmpleadoChange("nombre", e.target.value)}
+                />
+              </div>
+
+              <div>
+                <span className="block mb-1">Apellidos</span>
+                <input className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2"
+                  value={empleado.apellidos || ""}
+                  onChange={e => handleEmpleadoChange("apellidos", e.target.value)}
+                />
+              </div>
+
+              <div>
+                <span className="block mb-1">DNI</span>
+                <input className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2"
+                  value={empleado.dni || ""}
+                  onChange={e => handleEmpleadoChange("dni", e.target.value)}
+                />
+              </div>
+
+            </div>
+
+            <div className="col-span-2">
+              <span className="block mb-1">Observaciones</span>
+              <textarea
+                className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2"
+                rows={3}
+                value={empleado.observaciones || ""}
+                onChange={e => handleEmpleadoChange("observaciones", e.target.value)}
+              />
+            </div>
+
+            <button className="px-4 py-2 bg-blue-600 rounded-xl"
+              onClick={() => editarEmpleado(empleado.id, empleado)}>
+              Guardar cambios
+            </button>
+
+          </section>
+        )}
+<button
+  className="
+    mt-2 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700
+    text-white shadow-lg transition
+  "
+  onClick={() => setModulos([])}
+>
+  Reset módulos visibles
+</button>
+</div>
+)}
+
+{/* PERMISOS POR MÓDULO */}
+{seguridadTab === "permisos" && (
+  <div
+    className="
+      bg-white/5 border border-white/20 rounded-xl p-4 shadow-md
+      backdrop-blur-md
+    "
+  >
+    <h4 className="font-semibold text-sm mb-3 text-white">
+      Permisos por módulo
+    </h4>
+
+    {Object.keys(permisos).map((mod) => (
+      <div key={mod} className="mb-4">
+        <span className="block font-semibold text-white mb-2 text-sm">
+          {mod.toUpperCase()}
+        </span>
+
+        <div className="grid grid-cols-4 gap-3 text-sm text-white/80">
+          {PERMISOS_SJ2026.map((perm) => (
+            <label key={perm} className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={permisos[mod]?.includes(perm)}
+                onChange={(e) => {
+                  const actual = permisos[mod] || [];
+                  let nuevo;
+
+                  if (e.target.checked) {
+                    nuevo = [...actual, perm];
+                  } else {
+                    nuevo = actual.filter((p) => p !== perm);
+                  }
+
+                  setPermisos({
+                    ...permisos,
+                    [mod]: nuevo,
+                  });
+                }}
+              />
+              {perm}
+            </label>
+          ))}
+        </div>
+      </div>
+    ))}
+
+    <button
+      className="
+        mt-4 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
+        text-white shadow-lg transition
+      "
+      onClick={guardarPermisos}
+    >
+      Guardar permisos
+    </button>
+
+    <button
+      className="
+        mt-2 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700
+        text-white shadow-lg transition
+      "
+      onClick={() => setPermisos({})}
+    >
+      Reset permisos
+    </button>
+  </div>
+)}
+
+</section>
+)}
+{/* TAB: AUDITORÍA */}
+{!loading && tab === "auditoria" && (
+  <section
+    className="
+      bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
+      p-6 shadow-xl space-y-4
+    "
+  >
+    <h3 className="text-lg font-semibold drop-shadow mb-3">
+      Auditoría del empleado
+    </h3>
+
+    {/* Sin registros */}
+    {(!auditoria || auditoria.length === 0) && (
+      <p className="text-white/70 text-sm">
+        No hay registros de auditoría para este empleado.
+      </p>
+    )}
+
+    {/* Lista de auditoría */}
+    {auditoria && auditoria.length > 0 && (
+      <ul className="list-disc ml-5 text-sm text-white/90 space-y-1">
+        {auditoria.map((a) => (
+          <li key={a.id}>
+            {new Date(a.fecha).toLocaleString("es-ES")} —{" "}
+            <strong className="text-white">{a.modulo}</strong>{" "}
+            [{a.accion}] — {a.descripcion}
+          </li>
+        ))}
+      </ul>
+    )}
+  </section>
+)}
+
+</div> {/* cierre scroll interno */}
+
+</div> {/* cierre modal */}
+
+</div> {/* cierre overlay */}
+
+</>
+);
 }

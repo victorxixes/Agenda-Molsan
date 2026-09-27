@@ -1004,7 +1004,3 @@ export default function ModalEmpleado({ open, onClose, empleadoId }) {
     </div> {/* cierre modal */}
 
   </div> {/* cierre overlay */}
-
-</>
-);
-}

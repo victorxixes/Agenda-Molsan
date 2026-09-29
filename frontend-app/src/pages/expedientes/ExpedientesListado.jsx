@@ -1,3 +1,4 @@
+```jsx
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -175,8 +176,7 @@ export default function ExpedientesListado() {
       </section>
 
     </div>
-  );
-}
+
       {/* FILTROS */}
 <section className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-xl">
 
@@ -406,8 +406,6 @@ export default function ExpedientesListado() {
         >
           Siguiente
         </button>
-      </div>
-
-    
+      </div>  
   );
 }

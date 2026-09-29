@@ -151,173 +151,162 @@ export default function ExpedientesListado() {
     <div className="p-6 text-white space-y-6 animate-fade-in">
 
       <h1 className="text-3xl font-bold drop-shadow">Expedientes</h1>
+{/* FILTROS */}
+<section className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-xl">
 
-     {/* FILTROS */}
-<section className="bg-white/10*backdrop-blur-xl border border-whi*e/10 rounded-2xl p-4 shadow-xl">
-
-* <button
-    onClick={() => setMos*rarFiltros(!mostrarFiltros)}
-    c*assName="
-      w-full flex items-*enter justify-between
-      text-x* font-semibold text-left
-      hov*r:text-blue-300 transition
+  <button
+    onClick={() => setMostrarFiltros(!mostrarFiltros)}
+    className="
+      w-full flex items-center justify-between
+      text-xl font-semibold text-left
+      hover:text-blue-300 transition
     "
- *>
-    <span>Filtros avanzados</spa*>
+  >
+    <span>Filtros avanzados</span>
+
     <span className="text-sm">
- *    {mostrarFiltros ? "▲ Ocultar" * "▼ Mostrar"}
+      {mostrarFiltros ? "▲ Ocultar" : "▼ Mostrar"}
     </span>
-  </butt*n>
+  </button>
 
   {mostrarFiltros && (
-    <di* className="mt-4">
+    <div className="mt-4">
 
-      <div cla*sName="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-4">
 
- *      <div>
-          <label class*ame="text-sm text-white/70">NIF ti*ular</label>
+        <div>
+          <label className="text-sm text-white/70">NIF titular</label>
           <input
-    *       type="text"
-            val*e={filtroNif}
-            onChange*{(e) => setFiltroNif(e.target.valu*)}
-            className="w-full m*-1 px-3 py-2 rounded-xl bg-white/1* border border-white/20 text-white*
+            type="text"
+            value={filtroNif}
+            onChange={(e) => setFiltroNif(e.target.value)}
+            className="w-full mt-1 px-3 py-2 rounded-xl bg-white/10 border border-white/20 text-white"
           />
         </div>
 
-    *   <div>
-          <label classNam*="text-sm text-white/70">Actividad*actual</label>
+        <div>
+          <label className="text-sm text-white/70">Actividad actual</label>
           <input
-  *         type="text"
-            v*lue={filtroActividad}
-            *nChange={(e) => setFiltroActividad*e.target.value)}
-            class*ame="w-full mt-1 px-3 py-2 rounded*xl bg-white/10 border border-white*20 text-white"
+            type="text"
+            value={filtroActividad}
+            onChange={(e) => setFiltroActividad(e.target.value)}
+            className="w-full mt-1 px-3 py-2 rounded-xl bg-white/10 border border-white/20 text-white"
           />
-      * </div>
+        </div>
 
         <div>
-          <*abel className="text-sm text-white*70">Fecha inicio</label>
-         *<input
+          <label className="text-sm text-white/70">Fecha inicio</label>
+          <input
             type="date"
-   *        value={filtroFechaInicio}
-*           onChange={(e) => setFil*roFechaInicio(e.target.value)}
-   *        className="w-full mt-1 px-* py-2 rounded-xl bg-white/10 borde* border-white/20 text-white"
-     *    />
-        </div>
-
-        <di*>
-          <label className="text*sm text-white/70">Fecha fin</label*
-          <input
-            type*"date"
-            value={filtroFe*haFin}
-            onChange={(e) =* setFiltroFechaFin(e.target.value)*
-            className="w-full mt-* px-3 py-2 rounded-xl bg-white/10 *order border-white/20 text-white"
-*         />
-        </div>
-
-      * <div>
-          <label className=*text-sm text-white/70">NIF notario*/label>
-          <input
-         *  type="text"
-            value={f*ltroNotario}
-            onChange=*(e) => setFiltroNotario(e.target.v*lue)}
-            className="w-ful* mt-1 px-3 py-2 rounded-xl bg-whit*/10 border border-white/20 text-wh*te"
+            value={filtroFechaInicio}
+            onChange={(e) => setFiltroFechaInicio(e.target.value)}
+            className="w-full mt-1 px-3 py-2 rounded-xl bg-white/10 border border-white/20 text-white"
           />
         </div>
-
- *      <div>
-          <label class*ame="text-sm text-white/70">Oficin*</label>
-          <input
-        *   type="text"
-            value={*iltroOficina}
-            onChange*{(e) => setFiltroOficina(e.target.*alue)}
-            className="w-fu*l mt-1 px-3 py-2 rounded-xl bg-whi*e/10 border border-white/20 text-w*ite"
-          />
-        </div>
-
-*       <div>
-          <label clas*Name="text-sm text-white/70">Impor*e mínimo</label>
-          <input
-*           type="number"
-         *  value={filtroImporteMin}
-       *    onChange={(e) => setFiltroImpo*teMin(e.target.value)}
-           *className="w-full mt-1 px-3 py-2 r*unded-xl bg-white/10 border border*white/20 text-white"
-          />
-*       </div>
 
         <div>
-     *    <label className="text-sm text*white/70">Importe máximo</label>
- *        <input
-            type="n*mber"
-            value={filtroImp*rteMax}
-            onChange={(e) *> setFiltroImporteMax(e.target.val*e)}
-            className="w-full *t-1 px-3 py-2 rounded-xl bg-white/*0 border border-white/20 text-whit*"
+          <label className="text-sm text-white/70">Fecha fin</label>
+          <input
+            type="date"
+            value={filtroFechaFin}
+            onChange={(e) => setFiltroFechaFin(e.target.value)}
+            className="w-full mt-1 px-3 py-2 rounded-xl bg-white/10 border border-white/20 text-white"
           />
         </div>
 
-   *    <div className="flex items-end*gap-3">
-          <button
-        *   onClick={aplicarFiltros}
-      *     className="px-4 py-2 rounded-*l bg-blue-600 hover:bg-blue-700 te*t-white shadow-lg transition activ*:scale-[0.97]"
-          >
-       *    Aplicar filtros
-          </bu*ton>
-
-          <button
-          * onClick={exportarExcel}
-         *  className="px-4 py-2 rounded-xl *g-green-600 hover:bg-green-700 tex*-white shadow-lg transition active*scale-[0.97]"
-          >
-        *   Exportar Excel
-          </button>
+        <div>
+          <label className="text-sm text-white/70">NIF notario</label>
+          <input
+            type="text"
+            value={filtroNotario}
+            onChange={(e) => setFiltroNotario(e.target.value)}
+            className="w-full mt-1 px-3 py-2 rounded-xl bg-white/10 border border-white/20 text-white"
+          />
         </div>
 
-      </div>
+        <div>
+          <label className="text-sm text-white/70">Oficina</label>
+          <input
+            type="text"
+            value={filtroOficina}
+            onChange={(e) => setFiltroOficina(e.target.value)}
+            className="w-full mt-1 px-3 py-2 rounded-xl bg-white/10 border border-white/20 text-white"
+          />
+        </div>
 
-    </div>
-  )}
+        <div>
+          <label className="text-sm text-white/70">Importe mínimo</label>
+          <input
+            type="number"
+            value={filtroImporteMin}
+            onChange={(e) => setFiltroImporteMin(e.target.value)}
+            className="w-full mt-1 px-3 py-2 rounded-xl bg-white/10 border border-white/20 text-white"
+          />
+        </div>
 
-</section>
+        <div>
+          <label className="text-sm text-white/70">Importe máximo</label>
+          <input
+            type="number"
+            value={filtroImporteMax}
+            onChange={(e) => setFiltroImporteMax(e.target.value)}
+            className="w-full mt-1 px-3 py-2 rounded-xl bg-white/10 border border-white/20 text-white"
+          />
+        </div>
 
+        <div className="flex items-end gap-3">
+          <button
+            onClick={aplicarFiltros}
+            className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-lg transition"
+          >
+            Aplicar filtros
+          </button>
+
+          <button
+            onClick={exportarExcel}
+            className="px-4 py-2 rounded-xl bg-green-600 hover:bg-green-700 text-white shadow
+  
      {/* SELECTOR DE COLUMNAS */}
-<section className="bg-white/10*backdrop-blur-xl border border-whi*e/10 rounded-2xl p-4 shadow-xl">
+<section className="bg-white/10backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-xl">
 
-* <button
-    onClick={() => setMos*rarColumnas(!mostrarColumnas)}
-   *className="
-      w-full flex item*-center justify-between
-      text*xl font-semibold text-left
-      h*ver:text-blue-300 transition
-    "*  >
-    <span>Columnas visibles</s*an>
-    <span className="text-sm">*      {mostrarColumnas ? "▲ Oculta*" : "▼ Mostrar"}
+ <button
+    onClick={() => setMosrarColumnas(!mostrarColumnas)}
+   className="
+      w-full flex item-center justify-between
+      textxl font-semibold text-left
+      hover:text-blue-300 transition
+    "  >
+    <span>Columnas visibles</san>
+    <span className="text-sm">      {mostrarColumnas ? "▲ Oculta*" : "▼ Mostrar"}
     </span>
   </button>
 
   {mostrarColumnas && (
-   *<div className="mt-4">
+   <div className="mt-4">
 
-      <div*className="grid grid-cols-3 gap-2"*
+      <divclassName="grid grid-cols-3 gap-2"
         {COLUMNAS.map((c) => (
-  *       <label
-            key={c.k*y}
-            className="flex ite*s-center gap-2 text-sm text-white/*0"
+         <label
+            key={c.key}
+            className="flex items-center gap-2 text-sm text-white/"0"
           >
             <input
-*             type="checkbox"
-     *        checked={columnasVisibles.*ncludes(c.key)}
-              onCh*nge={(e) => {
-                if (*.target.checked) {
-               *  setColumnasVisibles([...columnasVisibles, c.key]);
-                * else {
-                  setColum*asVisibles(
-                    co*umnasVisibles.filter((x) => x !== *.key)
+            type="checkbox"
+             checked={columnasVisibles.includes(c.key)}
+              onChange={(e) => {
+                if (.target.checked) {
+                 setColumnasVisibles([...columnasVisibles, c.key]);
+                 else {
+                  setColumasVisibles(
+                    columnasVisibles.filter((x) => x !== .key)
                   );
-       *        }
+               }
               }}
-       *    />
+          />
             {c.label}
-     *    </label>
+         </label>
         ))}
-      </d*v>
+      </div>
 
     </div>
   )}

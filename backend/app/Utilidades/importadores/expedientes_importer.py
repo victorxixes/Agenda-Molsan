@@ -43,7 +43,7 @@ def importar_excel_expedientes(db: Session, contenido_excel: bytes, fecha_objeti
     # ============================
     # 3) RECORRER FILAS (OPTIMIZADO)
     # ============================
-    for _, row in df_filtrado.iterrows():
+   for _, row in df_filtrado.iterrows():
 
     idexp = row.get("IDEXPEDIENTE")
 

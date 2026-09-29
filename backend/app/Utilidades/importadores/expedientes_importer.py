@@ -2,10 +2,8 @@ import pandas as pd
 import io
 from datetime import date
 from sqlalchemy.orm import Session
-
 from backend.app.expedientes.models import Expediente
 from backend.app.expedientes.detalle.models import ExpedienteDetalle
-
 
 def importar_excel_expedientes(db: Session, contenido_excel: bytes, fecha_objetivo: date = None):
 

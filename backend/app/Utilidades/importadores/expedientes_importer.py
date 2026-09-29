@@ -48,20 +48,20 @@ def importar_excel_expedientes(db: Session, contenido_excel: bytes, fecha_objeti
     # ============================
     # 3) RECORRER FILAS (OPTIMIZADO)
     # ============================
-   for _, row in df_filtrado.iterrows():
+    for _, row in df_filtrado.iterrows():
 
-    idexp = row.get("IDEXPEDIENTE")
+        idexp = row.get("IDEXPEDIENTE")
 
-    if not idexp:
+        if not idexp:
         continue
 
-    idexp = str(idexp).strip()
+        idexp = str(idexp).strip()
 
-    exp = (
-        db.query(Expediente)
-        .filter(Expediente.id_expediente == idexp)
-        .first()
-    )
+        exp = (
+            db.query(Expediente)
+            .filter(Expediente.id_expediente == idexp)
+            .first()
+        )
 
     if not exp:
         exp = Expediente(

@@ -152,134 +152,177 @@ export default function ExpedientesListado() {
 
       <h1 className="text-3xl font-bold drop-shadow">Expedientes</h1>
 
-      {/* FILTROS */}
-      <section className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-xl">
-        <h2 className="text-xl font-semibold mb-4">Filtros avanzados</h2>
+     {/* FILTROS */}
+<section className="bg-white/10*backdrop-blur-xl border border-whi*e/10 rounded-2xl p-4 shadow-xl">
 
-        <div className="grid grid-cols-3 gap-4">
+* <button
+    onClick={() => setMos*rarFiltros(!mostrarFiltros)}
+    c*assName="
+      w-full flex items-*enter justify-between
+      text-x* font-semibold text-left
+      hov*r:text-blue-300 transition
+    "
+ *>
+    <span>Filtros avanzados</spa*>
+    <span className="text-sm">
+ *    {mostrarFiltros ? "▲ Ocultar" * "▼ Mostrar"}
+    </span>
+  </butt*n>
 
-          <div>
-            <label className="text-sm text-white/70">NIF titular</label>
-            <input
-              type="text"
-              value={filtroNif}
-              onChange={(e) => setFiltroNif(e.target.value)}
-              className="w-full mt-1 px-3 py-2 rounded-xl bg-white/10 border border-white/20 text-white"
-            />
-          </div>
+  {mostrarFiltros && (
+    <di* className="mt-4">
 
-          <div>
-            <label className="text-sm text-white/70">Actividad actual</label>
-            <input
-              type="text"
-              value={filtroActividad}
-              onChange={(e) => setFiltroActividad(e.target.value)}
-              className="w-full mt-1 px-3 py-2 rounded-xl bg-white/10 border border-white/20 text-white"
-            />
-          </div>
+      <div cla*sName="grid grid-cols-3 gap-4">
 
-          <div>
-            <label className="text-sm text-white/70">Fecha inicio</label>
-            <input
-              type="date"
-              value={filtroFechaInicio}
-              onChange={(e) => setFiltroFechaInicio(e.target.value)}
-              className="w-full mt-1 px-3 py-2 rounded-xl bg-white/10 border border-white/20 text-white"
-            />
-          </div>
-
-          <div>
-            <label className="text-sm text-white/70">Fecha fin</label>
-            <input
-              type="date"
-              value={filtroFechaFin}
-              onChange={(e) => setFiltroFechaFin(e.target.value)}
-              className="w-full mt-1 px-3 py-2 rounded-xl bg-white/10 border border-white/20 text-white"
-            />
-          </div>
-
-          <div>
-            <label className="text-sm text-white/70">NIF notario</label>
-            <input
-              type="text"
-              value={filtroNotario}
-              onChange={(e) => setFiltroNotario(e.target.value)}
-              className="w-full mt-1 px-3 py-2 rounded-xl bg-white/10 border border-white/20 text-white"
-            />
-          </div>
-
-          <div>
-            <label className="text-sm text-white/70">Oficina</label>
-            <input
-              type="text"
-              value={filtroOficina}
-              onChange={(e) => setFiltroOficina(e.target.value)}
-              className="w-full mt-1 px-3 py-2 rounded-xl bg-white/10 border border-white/20 text-white"
-            />
-          </div>
-
-          <div>
-            <label className="text-sm text-white/70">Importe mínimo</label>
-            <input
-              type="number"
-              value={filtroImporteMin}
-              onChange={(e) => setFiltroImporteMin(e.target.value)}
-              className="w-full mt-1 px-3 py-2 rounded-xl bg-white/10 border border-white/20 text-white"
-            />
-          </div>
-
-          <div>
-            <label className="text-sm text-white/70">Importe máximo</label>
-            <input
-              type="number"
-              value={filtroImporteMax}
-              onChange={(e) => setFiltroImporteMax(e.target.value)}
-              className="w-full mt-1 px-3 py-2 rounded-xl bg-white/10 border border-white/20 text-white"
-            />
-          </div>
-
-          <div className="flex items-end gap-3">
-            <button
-              onClick={aplicarFiltros}
-              className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-lg transition active:scale-[0.97]"
-            >
-              Aplicar filtros
-            </button>
-
-            <button
-              onClick={exportarExcel}
-              className="px-4 py-2 rounded-xl bg-green-600 hover:bg-green-700 text-white shadow-lg transition active:scale-[0.97]"
-            >
-              Exportar Excel
-            </button>
-          </div>
-
+ *      <div>
+          <label class*ame="text-sm text-white/70">NIF ti*ular</label>
+          <input
+    *       type="text"
+            val*e={filtroNif}
+            onChange*{(e) => setFiltroNif(e.target.valu*)}
+            className="w-full m*-1 px-3 py-2 rounded-xl bg-white/1* border border-white/20 text-white*
+          />
         </div>
-      </section>
 
-      {/* SELECTOR DE COLUMNAS */}
-      <section className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-xl">
-        <h2 className="text-xl font-semibold mb-4">Columnas visibles</h2>
+    *   <div>
+          <label classNam*="text-sm text-white/70">Actividad*actual</label>
+          <input
+  *         type="text"
+            v*lue={filtroActividad}
+            *nChange={(e) => setFiltroActividad*e.target.value)}
+            class*ame="w-full mt-1 px-3 py-2 rounded*xl bg-white/10 border border-white*20 text-white"
+          />
+      * </div>
 
-        <div className="grid grid-cols-3 gap-2">
-          {COLUMNAS.map((c) => (
-            <label key={c.key} className="flex items-center gap-2 text-sm text-white/80">
-              <input
-                type="checkbox"
-                checked={columnasVisibles.includes(c.key)}
-                onChange={(e) => {
-                  if (e.target.checked) {
-                    setColumnasVisibles([...columnasVisibles, c.key]);
-                  } else {
-                    setColumnasVisibles(columnasVisibles.filter((x) => x !== c.key));
-                  }
-                }}
-              />
-              {c.label}
-            </label>
-          ))}
+        <div>
+          <*abel className="text-sm text-white*70">Fecha inicio</label>
+         *<input
+            type="date"
+   *        value={filtroFechaInicio}
+*           onChange={(e) => setFil*roFechaInicio(e.target.value)}
+   *        className="w-full mt-1 px-* py-2 rounded-xl bg-white/10 borde* border-white/20 text-white"
+     *    />
         </div>
-      </section>
+
+        <di*>
+          <label className="text*sm text-white/70">Fecha fin</label*
+          <input
+            type*"date"
+            value={filtroFe*haFin}
+            onChange={(e) =* setFiltroFechaFin(e.target.value)*
+            className="w-full mt-* px-3 py-2 rounded-xl bg-white/10 *order border-white/20 text-white"
+*         />
+        </div>
+
+      * <div>
+          <label className=*text-sm text-white/70">NIF notario*/label>
+          <input
+         *  type="text"
+            value={f*ltroNotario}
+            onChange=*(e) => setFiltroNotario(e.target.v*lue)}
+            className="w-ful* mt-1 px-3 py-2 rounded-xl bg-whit*/10 border border-white/20 text-wh*te"
+          />
+        </div>
+
+ *      <div>
+          <label class*ame="text-sm text-white/70">Oficin*</label>
+          <input
+        *   type="text"
+            value={*iltroOficina}
+            onChange*{(e) => setFiltroOficina(e.target.*alue)}
+            className="w-fu*l mt-1 px-3 py-2 rounded-xl bg-whi*e/10 border border-white/20 text-w*ite"
+          />
+        </div>
+
+*       <div>
+          <label clas*Name="text-sm text-white/70">Impor*e mínimo</label>
+          <input
+*           type="number"
+         *  value={filtroImporteMin}
+       *    onChange={(e) => setFiltroImpo*teMin(e.target.value)}
+           *className="w-full mt-1 px-3 py-2 r*unded-xl bg-white/10 border border*white/20 text-white"
+          />
+*       </div>
+
+        <div>
+     *    <label className="text-sm text*white/70">Importe máximo</label>
+ *        <input
+            type="n*mber"
+            value={filtroImp*rteMax}
+            onChange={(e) *> setFiltroImporteMax(e.target.val*e)}
+            className="w-full *t-1 px-3 py-2 rounded-xl bg-white/*0 border border-white/20 text-whit*"
+          />
+        </div>
+
+   *    <div className="flex items-end*gap-3">
+          <button
+        *   onClick={aplicarFiltros}
+      *     className="px-4 py-2 rounded-*l bg-blue-600 hover:bg-blue-700 te*t-white shadow-lg transition activ*:scale-[0.97]"
+          >
+       *    Aplicar filtros
+          </bu*ton>
+
+          <button
+          * onClick={exportarExcel}
+         *  className="px-4 py-2 rounded-xl *g-green-600 hover:bg-green-700 tex*-white shadow-lg transition active*scale-[0.97]"
+          >
+        *   Exportar Excel
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+  )}
+
+</section>
+
+     {/* SELECTOR DE COLUMNAS */}
+<section className="bg-white/10*backdrop-blur-xl border border-whi*e/10 rounded-2xl p-4 shadow-xl">
+
+* <button
+    onClick={() => setMos*rarColumnas(!mostrarColumnas)}
+   *className="
+      w-full flex item*-center justify-between
+      text*xl font-semibold text-left
+      h*ver:text-blue-300 transition
+    "*  >
+    <span>Columnas visibles</s*an>
+    <span className="text-sm">*      {mostrarColumnas ? "▲ Oculta*" : "▼ Mostrar"}
+    </span>
+  </button>
+
+  {mostrarColumnas && (
+   *<div className="mt-4">
+
+      <div*className="grid grid-cols-3 gap-2"*
+        {COLUMNAS.map((c) => (
+  *       <label
+            key={c.k*y}
+            className="flex ite*s-center gap-2 text-sm text-white/*0"
+          >
+            <input
+*             type="checkbox"
+     *        checked={columnasVisibles.*ncludes(c.key)}
+              onCh*nge={(e) => {
+                if (*.target.checked) {
+               *  setColumnasVisibles([...columnasVisibles, c.key]);
+                * else {
+                  setColum*asVisibles(
+                    co*umnasVisibles.filter((x) => x !== *.key)
+                  );
+       *        }
+              }}
+       *    />
+            {c.label}
+     *    </label>
+        ))}
+      </d*v>
+
+    </div>
+  )}
+
+</section>
 
       {/* TABLA */}
       <section className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-xl overflow-auto">

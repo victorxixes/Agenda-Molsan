@@ -1,4 +1,3 @@
-```jsx
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -32,6 +31,9 @@ export default function ExpedientesListado() {
   const [expedientes, setExpedientes] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const [mostrarFiltros, setMostrarFiltros] = useState(false);
+  const [mostrarColumnas, setMostrarColumnas] = useState(false);
+
   // Filtros
   const [filtroNif, setFiltroNif] = useState("");
   const [filtroActividad, setFiltroActividad] = useState("");
@@ -42,20 +44,16 @@ export default function ExpedientesListado() {
   const [filtroImporteMin, setFiltroImporteMin] = useState("");
   const [filtroImporteMax, setFiltroImporteMax] = useState("");
 
-  // Ordenación múltiple
   const [ordenMultiple, setOrdenMultiple] = useState([]);
 
-  // Paginación
   const [pagina, setPagina] = useState(1);
   const [totalPaginas, setTotalPaginas] = useState(1);
   const porPagina = 20;
 
-  // Columnas visibles
   const [columnasVisibles, setColumnasVisibles] = useState(
     COLUMNAS.map((c) => c.key)
   );
 
-  // Resumen
   const [resumen, setResumen] = useState({
     pendientes: 0,
     enCurso: 0,
@@ -177,7 +175,7 @@ export default function ExpedientesListado() {
 
     </div>
 
-      {/* FILTROS */}
+     {/* FILTROS */}
 <section className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-xl">
 
   <button
@@ -201,7 +199,10 @@ export default function ExpedientesListado() {
       <div className="grid grid-cols-3 gap-4">
 
         <div>
-          <label className="text-sm text-white/70">NIF titular</label>
+          <label className="text-sm text-white/70">
+            NIF titular
+          </label>
+
           <input
             type="text"
             value={filtroNif}
@@ -211,7 +212,10 @@ export default function ExpedientesListado() {
         </div>
 
         <div>
-          <label className="text-sm text-white/70">Actividad actual</label>
+          <label className="text-sm text-white/70">
+            Actividad actual
+          </label>
+
           <input
             type="text"
             value={filtroActividad}
@@ -221,7 +225,10 @@ export default function ExpedientesListado() {
         </div>
 
         <div>
-          <label className="text-sm text-white/70">Fecha inicio</label>
+          <label className="text-sm text-white/70">
+            Fecha inicio
+          </label>
+
           <input
             type="date"
             value={filtroFechaInicio}
@@ -231,7 +238,10 @@ export default function ExpedientesListado() {
         </div>
 
         <div>
-          <label className="text-sm text-white/70">Fecha fin</label>
+          <label className="text-sm text-white/70">
+            Fecha fin
+          </label>
+
           <input
             type="date"
             value={filtroFechaFin}
@@ -241,7 +251,10 @@ export default function ExpedientesListado() {
         </div>
 
         <div>
-          <label className="text-sm text-white/70">NIF notario</label>
+          <label className="text-sm text-white/70">
+            NIF notario
+          </label>
+
           <input
             type="text"
             value={filtroNotario}
@@ -251,7 +264,10 @@ export default function ExpedientesListado() {
         </div>
 
         <div>
-          <label className="text-sm text-white/70">Oficina</label>
+          <label className="text-sm text-white/70">
+            Oficina
+          </label>
+
           <input
             type="text"
             value={filtroOficina}
@@ -261,7 +277,10 @@ export default function ExpedientesListado() {
         </div>
 
         <div>
-          <label className="text-sm text-white/70">Importe mínimo</label>
+          <label className="text-sm text-white/70">
+            Importe mínimo
+          </label>
+
           <input
             type="number"
             value={filtroImporteMin}
@@ -271,7 +290,10 @@ export default function ExpedientesListado() {
         </div>
 
         <div>
-          <label className="text-sm text-white/70">Importe máximo</label>
+          <label className="text-sm text-white/70">
+            Importe máximo
+          </label>
+
           <input
             type="number"
             value={filtroImporteMax}
@@ -290,122 +312,137 @@ export default function ExpedientesListado() {
 
           <button
             onClick={exportarExcel}
-            className="px-4 py-2 rounded-xl bg-green-600 hover:bg-green-700 text-white shadow
-  
-     {/* SELECTOR DE COLUMNAS */}
-<section className="bg-white/10backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-xl">
-
- <button
-    onClick={() => setMosrarColumnas(!mostrarColumnas)}
-   className="
-      w-full flex item-center justify-between
-      textxl font-semibold text-left
-      hover:text-blue-300 transition
-    "  >
-    <span>Columnas visibles</san>
-    <span className="text-sm">      {mostrarColumnas ? "▲ Oculta*" : "▼ Mostrar"}
-    </span>
-  </button>
-
-  {mostrarColumnas && (
-   <div className="mt-4">
-
-      <divclassName="grid grid-cols-3 gap-2"
-        {COLUMNAS.map((c) => (
-         <label
-            key={c.key}
-            className="flex items-center gap-2 text-sm text-white/"0"
+            className="px-4 py-2 rounded-xl bg-green-600 hover:bg-green-700 text-white shadow-lg transition"
           >
-            <input
-            type="checkbox"
-             checked={columnasVisibles.includes(c.key)}
-              onChange={(e) => {
-                if (.target.checked) {
-                 setColumnasVisibles([...columnasVisibles, c.key]);
-                 else {
-                  setColumasVisibles(
-                    columnasVisibles.filter((x) => x !== .key)
-                  );
-               }
-              }}
-          />
-            {c.label}
-         </label>
-        ))}
+            Exportar Excel
+          </button>
+        </div>
+
       </div>
 
     </div>
   )}
 
 </section>
+  
+    {/* SELECTOR DE COLUMNAS */}
+<section className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-xl">
+  <button
+    onClick={() => setMostrarColumnas(!mostrarColumnas)}
+    className="
+      w-full flex items-center justify-between
+      text-xl font-semibold text-left
+      hover:text-blue-300 transition
+    "
+  >
+    <span>Columnas visibles</span>
 
-      {/* TABLA */}
-      <section className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-xl overflow-auto">
+    <span className="text-sm">
+      {mostrarColumnas ? "▲ Ocultar" : "▼ Mostrar"}
+    </span>
+  </button>
 
-        {loading ? (
-          <div className="text-white/70 animate-pulse">Cargando expedientes…</div>
-        ) : (
-          <table className="min-w-full text-sm text-white/80">
-            <thead>
-              <tr className="text-left bg-white/5">
-                {COLUMNAS.filter((c) => columnasVisibles.includes(c.key)).map((c) => (
-                  <th
-                    key={c.key}
-                    className="px-3 py-2 cursor-pointer select-none"
-                    onClick={(e) => ordenar(c.key, e.shiftKey)}
-                  >
-                    {c.label} <span className="text-white/40">{iconoOrden(c.key)}</span>
-                  </th>
-                ))}
-                <th className="px-3 py-2">Acciones</th>
-              </tr>
-            </thead>
+  {mostrarColumnas && (
+    <div className="mt-4">
+      <div className="grid grid-cols-3 gap-2">
+        {COLUMNAS.map((c) => (
+          <label
+            key={c.key}
+            className="flex items-center gap-2 text-sm text-white/70"
+          >
+            <input
+              type="checkbox"
+              checked={columnasVisibles.includes(c.key)}
+              onChange={(e) => {
+                if (e.target.checked) {
+                  setColumnasVisibles([
+                    ...columnasVisibles,
+                    c.key,
+                  ]);
+                } else {
+                  setColumnasVisibles(
+                    columnasVisibles.filter(
+                      (x) => x !== c.key
+                    )
+                  );
+                }
+              }}
+            />
+            {c.label}
+          </label>
+        ))}
+      </div>
+    </div>
+  )}
+</section>
 
-            <tbody>
-              {expedientes.map((exp) => (
-                <tr key={exp.id_expediente} className="border-t border-white/10 hover:bg-white/5">
-                  {COLUMNAS.filter((c) => columnasVisibles.includes(c.key)).map((c) => (
-                    <td key={c.key} className="px-3 py-2">
-                      {exp[c.key] ?? "—"}
-                    </td>
-                  ))}
-                  <td className="px-3 py-2">
-                    <Link
-                      to={`/expedientes/${exp.id_expediente}`}
-                      className="text-blue-400 hover:text-blue-300 underline"
-                    >
-                      Ver ficha
-                    </Link>
-                  </td>
-                </tr>
+{/* TABLA */}
+<section className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-xl overflow-auto">
+
+  {loading ? (
+    <div className="text-white/70 animate-pulse">
+      Cargando expedientes…
+    </div>
+  ) : (
+    <table className="min-w-full text-sm text-white/80">
+
+      <thead>
+        <tr className="text-left bg-white/5">
+          {COLUMNAS
+            .filter((c) => columnasVisibles.includes(c.key))
+            .map((c) => (
+              <th
+                key={c.key}
+                className="px-3 py-2 cursor-pointer select-none"
+                onClick={(e) =>
+                  ordenar(c.key, e.shiftKey)
+                }
+              >
+                {c.label}
+                {" "}
+                <span className="text-white/40">
+                  {iconoOrden(c.key)}
+                </span>
+              </th>
+            ))}
+
+          <th className="px-3 py-2">
+            Acciones
+          </th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {expedientes.map((exp) => (
+          <tr
+            key={exp.id_expediente}
+            className="border-t border-white/10 hover:bg-white/5"
+          >
+            {COLUMNAS
+              .filter((c) =>
+                columnasVisibles.includes(c.key)
+              )
+              .map((c) => (
+                <td
+                  key={c.key}
+                  className="px-3 py-2"
+                >
+                  {exp[c.key] ?? "—"}
+                </td>
               ))}
-            </tbody>
-          </table>
-        )}
 
-      </section>
+            <td className="px-3 py-2">
+              <Link
+                to={`/expedientes/${exp.id_expediente}`}
+                className="text-blue-400 hover:text-blue-300 underline"
+              >
+                Ver ficha
+              </Link>
+            </td>
+          </tr>
+        ))}
+      </tbody>
 
-      {/* PAGINACIÓN */}
-      <div className="flex items-center justify-center gap-4">
-        <button
-          disabled={pagina <= 1}
-          onClick={() => setPagina(pagina - 1)}
-          className="px-3 py-2 rounded-xl bg-white/10 border border-white/20 hover:bg-white/20 transition disabled:opacity-40"
-        >
-          Anterior
-        </button>
-
-        <span className="text-white/70">
-          Página {pagina} de {totalPaginas}
-        </span>
-
-        <button
-          disabled={pagina >= totalPaginas}
-          onClick={() => setPagina(pagina + 1)}
-          className="px-3 py-2 rounded-xl bg-white/10 border border-white/20 hover:bg-white/20 transition disabled:opacity-40"
-        >
-          Siguiente
-        </button>
-      </div>  
-  );
-}
+    </table>
+  )}
+</section>

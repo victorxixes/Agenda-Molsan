@@ -151,7 +151,31 @@ export default function ExpedientesListado() {
     <div className="p-6 text-white space-y-6 animate-fade-in">
 
       <h1 className="text-3xl font-bold drop-shadow">Expedientes</h1>
-{/* FILTROS */}
+
+        {/* RESUMEN */}
+      <section className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-xl">
+        <h2 className="text-xl font-semibold mb-4">Estado de expedientes</h2>
+
+        <div className="grid grid-cols-3 gap-4 text-sm text-white/80">
+          <div className="bg-white/5 p-3 rounded-xl border border-white/10">
+            <p className="text-white/60">Pendientes</p>
+            <p className="text-white font-semibold">{resumen.pendientes}</p>
+          </div>
+
+          <div className="bg-white/5 p-3 rounded-xl border border-white/10">
+            <p className="text-white/60">En curso</p>
+            <p className="text-white font-semibold">{resumen.enCurso}</p>
+          </div>
+
+          <div className="bg-white/5 p-3 rounded-xl border border-white/10">
+            <p className="text-white/60">Finalizados</p>
+            <p className="text-white font-semibold">{resumen.finalizados}</p>
+          </div>
+        </div>
+      </section>
+
+    </div>
+      {/* FILTROS */}
 <section className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-xl">
 
   <button
@@ -382,28 +406,6 @@ export default function ExpedientesListado() {
         </button>
       </div>
 
-      {/* RESUMEN */}
-      <section className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-xl">
-        <h2 className="text-xl font-semibold mb-4">Estado de expedientes</h2>
-
-        <div className="grid grid-cols-3 gap-4 text-sm text-white/80">
-          <div className="bg-white/5 p-3 rounded-xl border border-white/10">
-            <p className="text-white/60">Pendientes</p>
-            <p className="text-white font-semibold">{resumen.pendientes}</p>
-          </div>
-
-          <div className="bg-white/5 p-3 rounded-xl border border-white/10">
-            <p className="text-white/60">En curso</p>
-            <p className="text-white font-semibold">{resumen.enCurso}</p>
-          </div>
-
-          <div className="bg-white/5 p-3 rounded-xl border border-white/10">
-            <p className="text-white/60">Finalizados</p>
-            <p className="text-white font-semibold">{resumen.finalizados}</p>
-          </div>
-        </div>
-      </section>
-
-    </div>
+    
   );
 }

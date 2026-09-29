@@ -19,7 +19,12 @@ def importar_excel_expedientes(db: Session, contenido_excel: bytes, fecha_objeti
         raise ValueError("No se pudo leer el archivo Excel. Formato inválido o archivo corrupto.")
 
     print("COLUMNAS:", df.columns)
+    print("TOTAL FILAS EXCEL:", len(df))
 
+    print(df.head(5))
+
+    print("FILTRADOS:", len(df_filtrado))
+    
     # ============================
     # 1) FECHA OBJETIVO
     # ============================

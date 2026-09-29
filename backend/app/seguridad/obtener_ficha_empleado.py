@@ -74,7 +74,10 @@ def obtener_ficha_completa(empleado_id: int, db: Session = Depends(get_db)):
     # SI permisos_modulo_dict está vacío → devolver PLANTILLA_PERMISOS
     # ============================================================
 
-    permisos_finales = empleado.permisos_modulo_dict or PLANTILLA_PERMISOS
+    permisos_finales = {
+    **PLANTILLA_PERMISOS,
+    **(empleado.permisos_modulo_dict or {})
+}
 
     return {
         "empleado": {

@@ -447,8 +447,34 @@ export default function ExpedientesListado() {
             </td>
           </tr>
         ))}
-      </tbody>
-
-    </table>
-  )}
+  </tbody>
+</table>
+ 
+)}
 </section>
+          {/* PAGINACIÓN */}
+      <div className="flex items-center justify-center gap-4">
+        <button
+          disabled={pagina <= 1}
+          onClick={() => setPagina(pagina - 1)}
+          className="px-3 py-2 rounded-xl bg-white/10 border border-white/20 hover:bg-white/20 transition disabled:opacity-40"
+        >
+          Anterior
+        </button>
+
+        <span className="text-white/70">
+          Página {pagina} de {totalPaginas}
+        </span>
+
+        <button
+          disabled={pagina >= totalPaginas}
+          onClick={() => setPagina(pagina + 1)}
+          className="px-3 py-2 rounded-xl bg-white/10 border border-white/20 hover:bg-white/20 transition disabled:opacity-40"
+        >
+          Siguiente
+        </button>
+      </div>
+
+</div>
+);
+}

@@ -147,6 +147,9 @@ from backend.app.Utilidades.router import router as utilidades_router
 from backend.app.informes.router import router as informes_router
 from backend.app.Utilidades.importadores.router_absis import router as router_absis
 
+# Expedientes
+from backend.app.expedientes.router import router as expedientes_router
+
 # ============================================================
 # INCLUIR ROUTERS (orden correcto)
 # ============================================================
@@ -212,3 +215,5 @@ app.include_router(utilidades_router, prefix="/api")
 app.include_router(informes_router, prefix="/api")
 app.include_router(router_absis, prefix="/api")
 
+# Expedientes
+app.include_router(expedientes_router, prefix="/api")

@@ -22,11 +22,13 @@ def importar_excel_expedientes(
     """
     Importa expedientes desde el Excel matriz ABSIS.
 
-    IMPORTANTE:
     El Excel puede contener más de 100.000 filas.
 
     Solamente se procesan las filas cuya FECHAALTA coincide
     con fecha_objetivo.
+
+    El Excel ABSIS utiliza fechas en formato:
+        DD/MM/YYYY
 
     No se generan ExpedienteDetalle en esta importación.
     Los datos se guardan directamente en la tabla expedientes.
@@ -119,8 +121,75 @@ def importar_excel_expedientes(
 
     df["FECHAALTA"] = pd.to_datetime(
         df["FECHAALTA"],
+        format="%d/%m/%Y",
         errors="coerce"
     ).dt.date
+
+    # ========================================================
+    # 3.1) DIAGNÓSTICO DE FECHAS
+    # ========================================================
+
+    fechas_validas = df["FECHAALTA"].dropna()
+
+    print(
+        "============================================",
+        flush=True
+    )
+
+    print(
+        "DEBUG FECHAALTA",
+        flush=True
+    )
+
+    print(
+        f"FECHA OBJETIVO: {fecha_objetivo}",
+        flush=True
+    )
+
+    print(
+        "PRIMERAS 20 FECHAS:",
+        fechas_validas.head(20).tolist(),
+        flush=True
+    )
+
+    print(
+        "FECHA MÍNIMA:",
+        fechas_validas.min() if not fechas_validas.empty else None,
+        flush=True
+    )
+
+    print(
+        "FECHA MÁXIMA:",
+        fechas_validas.max() if not fechas_validas.empty else None,
+        flush=True
+    )
+
+    print(
+        "NÚMERO DE FECHAS DISTINTAS:",
+        fechas_validas.nunique(),
+        flush=True
+    )
+
+    print(
+        "ÚLTIMAS 20 FECHAS:",
+        fechas_validas.tail(20).tolist(),
+        flush=True
+    )
+
+    coincidencias_fecha = (
+        df["FECHAALTA"] == fecha_objetivo
+    ).sum()
+
+    print(
+        "COINCIDENCIAS CON FECHA OBJETIVO:",
+        coincidencias_fecha,
+        flush=True
+    )
+
+    print(
+        "============================================",
+        flush=True
+    )
 
     # ========================================================
     # 4) FILTRAR ÚNICAMENTE LA FECHA OBJETIVO
@@ -160,10 +229,12 @@ def importar_excel_expedientes(
             "============================================",
             flush=True
         )
+
         print(
             "IMPORTADOR ABSIS - FINALIZADO SIN DATOS",
             flush=True
         )
+
         print(
             "============================================",
             flush=True
@@ -203,6 +274,12 @@ def importar_excel_expedientes(
     )
 
     if total_filtrados == 0:
+
+        print(
+            "IMPORTADOR: las filas encontradas no tienen "
+            "un IDEXPEDIENTE válido.",
+            flush=True
+        )
 
         return {
             "creados": 0,
@@ -265,8 +342,6 @@ def importar_excel_expedientes(
     errores = 0
     procesados = 0
 
-    nuevos_en_batch = []
-
     # ========================================================
     # 10) PROCESAR FILAS
     # ========================================================
@@ -302,11 +377,7 @@ def importar_excel_expedientes(
 
                 db.add(exp)
 
-                # Lo guardamos también en el diccionario
-                # para evitar duplicados dentro del propio Excel.
                 existentes_por_id[idexp] = exp
-
-                nuevos_en_batch.append(exp)
 
                 creados += 1
 
@@ -325,22 +396,31 @@ def importar_excel_expedientes(
             exp.fecha_alta = row.get("FECHAALTA")
 
             exp.fecha_firma = row.get("FECHAFIRMA")
-            exp.fecha_inscripcion = row.get("FECHAINSCRIPCION")
+
+            exp.fecha_inscripcion = (
+                row.get("FECHAINSCRIPCION")
+            )
+
             exp.fecha_entregado_cliente = (
                 row.get("FECHAENTREGADOCLIENTE")
             )
+
             exp.fecha_prevista_firma = (
                 row.get("FECHAPREVISTAFIRMA")
             )
+
             exp.fecha_vencimiento = (
                 row.get("FECHAVENCIMIENTO")
             )
+
             exp.fecha_sol_cgn = (
                 row.get("FECHASOLCGN")
             )
+
             exp.fecha_firma_prev_val = (
-                row.get("FECHAFIRMAPPREVVAL")
+                row.get("FECHAFIRMAPREVVAL")
             )
+
             exp.fecha_firma_prev_cli = (
                 row.get("FECHAFIRMAPREVCLI")
             )
@@ -419,7 +499,11 @@ def importar_excel_expedientes(
             # ==================================================
 
             exp.oficina = row.get("OFICINA")
-            exp.oficina_alta = row.get("OFICINAALTA")
+
+            exp.oficina_alta = (
+                row.get("OFICINAALTA")
+            )
+
             exp.dan = row.get("DAN")
 
             # ==================================================
@@ -427,9 +511,16 @@ def importar_excel_expedientes(
             # ==================================================
 
             exp.capital = row.get("CAPITAL")
+
             exp.importe = row.get("IMPORTE")
-            exp.saldo_real = row.get("SALDOREAL")
-            exp.saldo_disponible = row.get("SALDODISPONIBLE")
+
+            exp.saldo_real = (
+                row.get("SALDOREAL")
+            )
+
+            exp.saldo_disponible = (
+                row.get("SALDODISPONIBLE")
+            )
 
             # ==================================================
             # OPERACIÓN
@@ -453,13 +544,16 @@ def importar_excel_expedientes(
             )
 
             exp.vinccanc = row.get("VINCCANC")
+
             exp.protocolo = row.get("PROTOCOLO")
 
             # ==================================================
             # GTG / BANKIA
             # ==================================================
 
-            exp.origen_bankia = row.get("ORIGENBANKIA")
+            exp.origen_bankia = (
+                row.get("ORIGENBANKIA")
+            )
 
             exp.producto_gtg = (
                 row.get("PRODUCTOGTG")
@@ -488,13 +582,18 @@ def importar_excel_expedientes(
             # ==================================================
 
             exp.lucy = row.get("LUCY")
-            exp.indicador_tt = row.get("INDICADORTT")
+
+            exp.indicador_tt = (
+                row.get("INDICADORTT")
+            )
 
             # ==================================================
             # OBSERVACIONES
             # ==================================================
 
-            exp.observaciones = row.get("OBSERVACIONES")
+            exp.observaciones = (
+                row.get("OBSERVACIONES")
+            )
 
             # ==================================================
             # CONTADOR
@@ -529,9 +628,6 @@ def importar_excel_expedientes(
 
                 db.commit()
 
-                # Limpiamos la lista de nuevos objetos.
-                nuevos_en_batch = []
-
         except Exception as e:
 
             errores += 1
@@ -542,9 +638,13 @@ def importar_excel_expedientes(
                 flush=True
             )
 
-            # Expulsamos cualquier estado pendiente
-            # de la sesión antes de continuar.
-            db.rollback()
+            # --------------------------------------------------
+            # IMPORTANTE:
+            # No hacemos rollback aquí porque podría deshacer
+            # expedientes correctamente procesados del lote.
+            #
+            # La excepción queda contabilizada y continuamos.
+            # --------------------------------------------------
 
     # ========================================================
     # 11) COMMIT FINAL
@@ -574,15 +674,50 @@ def importar_excel_expedientes(
     # 12) RESULTADO
     # ========================================================
 
-    print("============================================", flush=True)
-    print("IMPORTADOR ABSIS - FINALIZADO", flush=True)
-    print(f"FECHA: {fecha_objetivo}", flush=True)
-    print(f"FILAS FILTRADAS: {total_filtrados}", flush=True)
-    print(f"PROCESADOS: {procesados}", flush=True)
-    print(f"CREADOS: {creados}", flush=True)
-    print(f"ACTUALIZADOS: {actualizados}", flush=True)
-    print(f"ERRORES: {errores}", flush=True)
-    print("============================================", flush=True)
+    print(
+        "============================================",
+        flush=True
+    )
+
+    print(
+        "IMPORTADOR ABSIS - FINALIZADO",
+        flush=True
+    )
+
+    print(
+        f"FECHA: {fecha_objetivo}",
+        flush=True
+    )
+
+    print(
+        f"FILAS FILTRADAS: {total_filtrados}",
+        flush=True
+    )
+
+    print(
+        f"PROCESADOS: {procesados}",
+        flush=True
+    )
+
+    print(
+        f"CREADOS: {creados}",
+        flush=True
+    )
+
+    print(
+        f"ACTUALIZADOS: {actualizados}",
+        flush=True
+    )
+
+    print(
+        f"ERRORES: {errores}",
+        flush=True
+    )
+
+    print(
+        "============================================",
+        flush=True
+    )
 
     return {
         "creados": creados,

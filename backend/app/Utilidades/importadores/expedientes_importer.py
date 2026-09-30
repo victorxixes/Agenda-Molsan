@@ -2,7 +2,6 @@ import io
 import math
 from datetime import date, datetime
 
-import openpyxl
 import pandas as pd
 from sqlalchemy.orm import Session
 
@@ -17,18 +16,12 @@ BATCH_SIZE = 500
 
 
 # ============================================================
-# FUNCIONES AUXILIARES
+# UTILIDADES
 # ============================================================
 
 def limpiar_nombre_columna(valor):
     """
-    Normaliza el nombre de una columna.
-
-    Ejemplos:
-        "FECHAALTA"      -> "FECHAALTA"
-        " FECHAALTA "    -> "FECHAALTA"
-        "FechaAlta"      -> "FECHAALTA"
-        "IDEXPEDIENTE "  -> "IDEXPEDIENTE"
+    Normaliza nombres de columnas del Excel.
     """
 
     if valor is None:
@@ -39,8 +32,8 @@ def limpiar_nombre_columna(valor):
 
 def limpiar_valor(valor):
     """
-    Convierte valores de pandas/numpy a valores seguros
-    para SQLAlchemy.
+    Convierte valores de pandas a valores compatibles
+    con SQLAlchemy.
     """
 
     if valor is None:
@@ -52,15 +45,12 @@ def limpiar_valor(valor):
     except Exception:
         pass
 
-    # Convertir timestamps de pandas a date
     if isinstance(valor, pd.Timestamp):
         return valor.date()
 
-    # Convertir datetime a date cuando corresponda
     if isinstance(valor, datetime):
         return valor.date()
 
-    # Evitar NaN / infinito
     if isinstance(valor, float):
         if math.isnan(valor) or math.isinf(valor):
             return None
@@ -70,7 +60,7 @@ def limpiar_valor(valor):
 
 def obtener_valor(row, *columnas):
     """
-    Obtiene el primer valor disponible de las columnas indicadas.
+    Devuelve el primer valor válido encontrado.
     """
 
     for columna in columnas:
@@ -96,13 +86,15 @@ def obtener_valor(row, *columnas):
 
 def convertir_fecha(valor):
     """
-    Convierte cualquier fecha razonable a date.
+    Convierte una fecha del Excel a datetime.date.
 
-    El Excel ABSIS utiliza normalmente:
+    El formato habitual del Excel ABSIS es:
+
         DD/MM/YYYY
 
-    pero también aceptamos fechas que pandas/openpyxl
-    ya haya convertido.
+    Ejemplo:
+
+        08/11/2025
     """
 
     valor = limpiar_valor(valor)
@@ -124,34 +116,28 @@ def convertir_fecha(valor):
     if not texto:
         return None
 
-    # Primero formato habitual ABSIS
-    try:
-        return datetime.strptime(
-            texto,
-            "%d/%m/%Y"
-        ).date()
-    except ValueError:
-        pass
-
-    # Otros formatos habituales
-    formatos = (
-        "%Y-%m-%d",
-        "%d-%m-%Y",
+    formatos = [
+        "%d/%m/%Y",
         "%d/%m/%Y %H:%M:%S",
+        "%d-%m-%Y",
+        "%Y-%m-%d",
         "%Y-%m-%d %H:%M:%S",
-    )
+    ]
 
     for formato in formatos:
+
         try:
             return datetime.strptime(
                 texto,
                 formato
             ).date()
+
         except ValueError:
             continue
 
     # Último intento con pandas
     try:
+
         fecha = pd.to_datetime(
             texto,
             dayfirst=True,
@@ -179,18 +165,19 @@ def importar_excel_expedientes(
     """
     Importa expedientes desde el Excel matriz ABSIS.
 
-    El Excel puede tener más de 100.000 filas.
+    IMPORTANTE:
+
+    El Excel puede contener más de 100.000 filas.
 
     El proceso es:
 
-        1. Abrir Excel.
-        2. Detectar la hoja que contiene IDEXPEDIENTE y FECHAALTA.
-        3. Normalizar las columnas.
-        4. Leer los datos.
-        5. Convertir FECHAALTA.
-        6. Filtrar SOLO la fecha solicitada.
-        7. Importar únicamente esas filas.
-        8. Guardar por lotes.
+        1. Leer Excel una sola vez.
+        2. Normalizar columnas.
+        3. Convertir FECHAALTA.
+        4. Filtrar la fecha solicitada.
+        5. Solo después consultar la base de datos.
+        6. Crear/actualizar expedientes.
+        7. Guardar por lotes.
 
     No se generan ExpedienteDetalle.
     """
@@ -200,7 +187,7 @@ def importar_excel_expedientes(
     print("============================================", flush=True)
 
     # ========================================================
-    # 0) FECHA OBJETIVO
+    # 1) FECHA OBJETIVO
     # ========================================================
 
     if fecha_objetivo is None:
@@ -217,152 +204,21 @@ def importar_excel_expedientes(
     )
 
     # ========================================================
-    # 1) VALIDAR FICHERO
+    # 2) VALIDAR FICHERO
     # ========================================================
 
     if not contenido_excel:
+
         raise ValueError(
             "El fichero Excel está vacío."
         )
 
     # ========================================================
-    # 2) ABRIR LIBRO EXCEL
+    # 3) LEER EXCEL
     # ========================================================
 
     print(
-        "IMPORTADOR: abriendo libro Excel...",
-        flush=True
-    )
-
-    try:
-        wb = openpyxl.load_workbook(
-            io.BytesIO(contenido_excel),
-            read_only=True,
-            data_only=True
-        )
-
-    except Exception as e:
-
-        print(
-            f"ERROR ABRIENDO EXCEL: {e}",
-            flush=True
-        )
-
-        raise ValueError(
-            "No se pudo abrir el fichero Excel."
-        )
-
-    hojas = wb.sheetnames
-
-    print(
-        f"HOJAS ENCONTRADAS: {hojas}",
-        flush=True
-    )
-
-    # ========================================================
-    # 3) LOCALIZAR HOJA CORRECTA
-    # ========================================================
-
-    hoja_seleccionada = None
-    columnas_normalizadas = None
-
-    for nombre_hoja in hojas:
-
-        print(
-            f"IMPORTADOR: inspeccionando hoja '{nombre_hoja}'...",
-            flush=True
-        )
-
-        ws = wb[nombre_hoja]
-
-        try:
-            primera_fila = next(
-                ws.iter_rows(
-                    min_row=1,
-                    max_row=1,
-                    values_only=True
-                )
-            )
-        except StopIteration:
-            print(
-                f"HOJA '{nombre_hoja}': vacía.",
-                flush=True
-            )
-            continue
-
-        columnas = list(primera_fila)
-
-        columnas_limpias = [
-            limpiar_nombre_columna(c)
-            for c in columnas
-        ]
-
-        print(
-            f"HOJA '{nombre_hoja}' - COLUMNAS: "
-            f"{columnas_limpias}",
-            flush=True
-        )
-
-        tiene_id = "IDEXPEDIENTE" in columnas_limpias
-        tiene_fecha = "FECHAALTA" in columnas_limpias
-
-        print(
-            f"HOJA '{nombre_hoja}' - "
-            f"IDEXPEDIENTE={tiene_id} "
-            f"FECHAALTA={tiene_fecha}",
-            flush=True
-        )
-
-        if tiene_id and tiene_fecha:
-
-            hoja_seleccionada = nombre_hoja
-            columnas_normalizadas = columnas_limpias
-
-            break
-
-    # ========================================================
-    # 4) VALIDAR HOJA
-    # ========================================================
-
-    if hoja_seleccionada is None:
-
-        print(
-            "IMPORTADOR: no se ha encontrado ninguna hoja "
-            "válida.",
-            flush=True
-        )
-
-        print(
-            "IMPORTADOR: hojas disponibles:",
-            hojas,
-            flush=True
-        )
-
-        wb.close()
-
-        raise ValueError(
-            "No se ha encontrado ninguna hoja que contenga "
-            "las columnas FECHAALTA e IDEXPEDIENTE."
-        )
-
-    print(
-        f"HOJA SELECCIONADA: {hoja_seleccionada}",
-        flush=True
-    )
-
-    print(
-        f"COLUMNAS NORMALIZADAS: {columnas_normalizadas}",
-        flush=True
-    )
-
-    wb.close()
-
-    # ========================================================
-    # 5) LEER ÚNICAMENTE LA HOJA CORRECTA
-    # ========================================================
-
-    print(
-        "IMPORTADOR: leyendo datos de la hoja seleccionada...",
+        "IMPORTADOR: leyendo Excel...",
         flush=True
     )
 
@@ -370,20 +226,24 @@ def importar_excel_expedientes(
 
         df = pd.read_excel(
             io.BytesIO(contenido_excel),
-            sheet_name=hoja_seleccionada,
+            sheet_name=0,
             engine="openpyxl"
         )
 
     except Exception as e:
 
         print(
-            f"ERROR LEYENDO HOJA: {e}",
+            f"ERROR LEYENDO EXCEL: {e}",
             flush=True
         )
 
         raise ValueError(
-            "No se pudo leer la hoja de datos del Excel."
+            "No se pudo leer el archivo Excel."
         )
+
+    # ========================================================
+    # 4) INFORMACIÓN DEL EXCEL
+    # ========================================================
 
     print(
         "IMPORTADOR: Excel leído correctamente.",
@@ -406,7 +266,7 @@ def importar_excel_expedientes(
     )
 
     # ========================================================
-    # 6) NORMALIZAR COLUMNAS DEL DATAFRAME
+    # 5) NORMALIZAR COLUMNAS
     # ========================================================
 
     df.columns = [
@@ -420,7 +280,7 @@ def importar_excel_expedientes(
     )
 
     # ========================================================
-    # 7) COMPROBAR COLUMNAS
+    # 6) COMPROBAR COLUMNAS
     # ========================================================
 
     if "FECHAALTA" not in df.columns:
@@ -436,21 +296,23 @@ def importar_excel_expedientes(
         )
 
     # ========================================================
-    # 8) MOSTRAR PRIMERAS FECHAS
+    # 7) MOSTRAR PRIMERAS FILAS
     # ========================================================
 
     print(
-        "IMPORTADOR: primeras FECHAALTA detectadas:",
+        "IMPORTADOR: primeras filas del Excel:",
         flush=True
     )
 
     print(
-        df["FECHAALTA"].head(10).tolist(),
+        df[
+            ["IDEXPEDIENTE", "FECHAALTA"]
+        ].head(5).to_string(index=False),
         flush=True
     )
 
     # ========================================================
-    # 9) CONVERTIR FECHAALTA
+    # 8) CONVERTIR FECHAALTA
     # ========================================================
 
     print(
@@ -462,22 +324,24 @@ def importar_excel_expedientes(
         convertir_fecha
     )
 
-    fechas_validas = df["FECHAALTA"].notna().sum()
+    fechas_validas = int(
+        df["FECHAALTA"].notna().sum()
+    )
 
     print(
         f"FECHAS VÁLIDAS: {fechas_validas}",
         flush=True
     )
 
+    # ========================================================
+    # 9) FILTRAR FECHA
+    # ========================================================
+
     print(
-        "IMPORTADOR: buscando expedientes del día "
+        "IMPORTADOR: filtrando únicamente la fecha "
         f"{fecha_objetivo}...",
         flush=True
     )
-
-    # ========================================================
-    # 10) FILTRAR ANTES DE PROCESAR
-    # ========================================================
 
     df_filtrado = df[
         df["FECHAALTA"] == fecha_objetivo
@@ -492,18 +356,30 @@ def importar_excel_expedientes(
     )
 
     # ========================================================
-    # 11) SI NO HAY DATOS
+    # 10) MOSTRAR PRIMEROS RESULTADOS
+    # ========================================================
+
+    if total_filtrados > 0:
+
+        print(
+            "PRIMEROS EXPEDIENTES ENCONTRADOS:",
+            flush=True
+        )
+
+        print(
+            df_filtrado[
+                ["IDEXPEDIENTE", "FECHAALTA"]
+            ]
+            .head(10)
+            .to_string(index=False),
+            flush=True
+        )
+
+    # ========================================================
+    # 11) NO HAY DATOS
     # ========================================================
 
     if total_filtrados == 0:
-
-        # Mostrar las fechas más recientes encontradas
-        fechas = (
-            df["FECHAALTA"]
-            .dropna()
-            .value_counts()
-            .head(10)
-        )
 
         print(
             "IMPORTADOR: no se encontraron expedientes "
@@ -511,9 +387,17 @@ def importar_excel_expedientes(
             flush=True
         )
 
+        # Mostrar fechas existentes para diagnóstico.
         print(
-            "FECHAS ENCONTRADAS MÁS FRECUENTES:",
+            "ALGUNAS FECHAS ENCONTRADAS EN EL EXCEL:",
             flush=True
+        )
+
+        fechas = (
+            df["FECHAALTA"]
+            .dropna()
+            .value_counts()
+            .head(20)
         )
 
         for fecha, cantidad in fechas.items():
@@ -523,20 +407,9 @@ def importar_excel_expedientes(
                 flush=True
             )
 
-        print(
-            "============================================",
-            flush=True
-        )
-
-        print(
-            "IMPORTADOR ABSIS - FINALIZADO SIN DATOS",
-            flush=True
-        )
-
-        print(
-            "============================================",
-            flush=True
-        )
+        print("============================================", flush=True)
+        print("IMPORTADOR ABSIS - FINALIZADO SIN DATOS", flush=True)
+        print("============================================", flush=True)
 
         return {
             "creados": 0,
@@ -584,7 +457,7 @@ def importar_excel_expedientes(
         }
 
     # ========================================================
-    # 13) IDS ÚNICOS
+    # 13) OBTENER IDS ÚNICOS
     # ========================================================
 
     ids_excel = (
@@ -599,7 +472,7 @@ def importar_excel_expedientes(
     )
 
     # ========================================================
-    # 14) BUSCAR EXISTENTES
+    # 14) CONSULTAR BD
     # ========================================================
 
     print(
@@ -608,9 +481,6 @@ def importar_excel_expedientes(
     )
 
     existentes_por_id = {}
-
-    # Evitamos una consulta IN gigantesca si algún día
-    # se selecciona una fecha con muchísimos expedientes.
 
     for inicio in range(
         0,
@@ -652,7 +522,7 @@ def importar_excel_expedientes(
     procesados = 0
 
     # ========================================================
-    # 16) PROCESAR
+    # 16) PROCESAMIENTO
     # ========================================================
 
     print(
@@ -667,10 +537,6 @@ def importar_excel_expedientes(
         ).strip()
 
         try:
-
-            # ------------------------------------------------
-            # BUSCAR EXISTENTE
-            # ------------------------------------------------
 
             exp = existentes_por_id.get(idexp)
 
@@ -958,10 +824,6 @@ def importar_excel_expedientes(
 
             procesados += 1
 
-            # ------------------------------------------------
-            # PROGRESO
-            # ------------------------------------------------
-
             if procesados == 1:
 
                 print(
@@ -1052,3 +914,4 @@ def importar_excel_expedientes(
         "total_filtrados": total_filtrados,
         "total_procesados": procesados
     }
+

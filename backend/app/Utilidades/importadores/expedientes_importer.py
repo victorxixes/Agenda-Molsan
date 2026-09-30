@@ -1,6 +1,6 @@
+
 import io
-import math
-from datetime import date, datetime
+from datetime import date
 
 import pandas as pd
 from sqlalchemy.orm import Session
@@ -16,51 +16,16 @@ BATCH_SIZE = 500
 
 
 # ============================================================
-# UTILIDADES
+# FUNCIONES AUXILIARES
 # ============================================================
 
-def limpiar_nombre_columna(valor):
+def valor_excel(row, *columnas):
     """
-    Normaliza nombres de columnas del Excel.
-    """
+    Devuelve el primer valor válido encontrado entre las
+    columnas indicadas.
 
-    if valor is None:
-        return ""
-
-    return str(valor).strip().upper()
-
-
-def limpiar_valor(valor):
-    """
-    Convierte valores de pandas a valores compatibles
-    con SQLAlchemy.
-    """
-
-    if valor is None:
-        return None
-
-    try:
-        if pd.isna(valor):
-            return None
-    except Exception:
-        pass
-
-    if isinstance(valor, pd.Timestamp):
-        return valor.date()
-
-    if isinstance(valor, datetime):
-        return valor.date()
-
-    if isinstance(valor, float):
-        if math.isnan(valor) or math.isinf(valor):
-            return None
-
-    return valor
-
-
-def obtener_valor(row, *columnas):
-    """
-    Devuelve el primer valor válido encontrado.
+    Permite soportar tanto los nombres reales del Excel
+    como posibles variantes con guiones bajos.
     """
 
     for columna in columnas:
@@ -68,12 +33,13 @@ def obtener_valor(row, *columnas):
         if columna not in row.index:
             continue
 
-        valor = limpiar_valor(row[columna])
+        valor = row[columna]
 
-        if valor is None:
+        if pd.isna(valor):
             continue
 
         if isinstance(valor, str):
+
             valor = valor.strip()
 
             if not valor:
@@ -86,60 +52,28 @@ def obtener_valor(row, *columnas):
 
 def convertir_fecha(valor):
     """
-    Convierte una fecha del Excel a datetime.date.
+    Convierte una fecha procedente del Excel a date.
 
-    El formato habitual del Excel ABSIS es:
+    Soporta:
+        - datetime
+        - date
+        - DD/MM/YYYY
+        - YYYY-MM-DD
+        - otros formatos reconocibles por pandas
 
-        DD/MM/YYYY
-
-    Ejemplo:
-
-        08/11/2025
+    Si no se puede convertir devuelve None.
     """
 
-    valor = limpiar_valor(valor)
-
-    if valor is None:
+    if valor is None or pd.isna(valor):
         return None
 
-    if isinstance(valor, date) and not isinstance(valor, datetime):
+    if isinstance(valor, date):
         return valor
 
-    if isinstance(valor, datetime):
-        return valor.date()
-
-    if isinstance(valor, pd.Timestamp):
-        return valor.date()
-
-    texto = str(valor).strip()
-
-    if not texto:
-        return None
-
-    formatos = [
-        "%d/%m/%Y",
-        "%d/%m/%Y %H:%M:%S",
-        "%d-%m-%Y",
-        "%Y-%m-%d",
-        "%Y-%m-%d %H:%M:%S",
-    ]
-
-    for formato in formatos:
-
-        try:
-            return datetime.strptime(
-                texto,
-                formato
-            ).date()
-
-        except ValueError:
-            continue
-
-    # Último intento con pandas
     try:
 
         fecha = pd.to_datetime(
-            texto,
+            valor,
             dayfirst=True,
             errors="coerce"
         )
@@ -153,6 +87,23 @@ def convertir_fecha(valor):
         return None
 
 
+def convertir_float(valor):
+    """
+    Convierte valores numéricos del Excel a float.
+
+    Si no es posible convertir devuelve None.
+    """
+
+    if valor is None or pd.isna(valor):
+        return None
+
+    try:
+        return float(valor)
+
+    except (ValueError, TypeError):
+        return None
+
+
 # ============================================================
 # IMPORTADOR PRINCIPAL
 # ============================================================
@@ -163,23 +114,22 @@ def importar_excel_expedientes(
     fecha_objetivo: date = None
 ):
     """
-    Importa expedientes desde el Excel matriz ABSIS.
+    Importa únicamente los expedientes cuya FECHAALTA coincide
+    con la fecha_objetivo.
 
-    IMPORTANTE:
+    El Excel ABSIS puede contener más de 100.000 filas.
 
-    El Excel puede contener más de 100.000 filas.
+    Flujo:
 
-    El proceso es:
-
-        1. Leer Excel una sola vez.
-        2. Normalizar columnas.
+        1. Leer Excel con pandas.
+        2. Comprobar IDEXPEDIENTE y FECHAALTA.
         3. Convertir FECHAALTA.
-        4. Filtrar la fecha solicitada.
-        5. Solo después consultar la base de datos.
-        6. Crear/actualizar expedientes.
-        7. Guardar por lotes.
+        4. FILTRAR INMEDIATAMENTE por fecha.
+        5. Procesar solamente las filas filtradas.
+        6. Crear o actualizar Expediente.
+        7. Commit por lotes.
 
-    No se generan ExpedienteDetalle.
+    No genera ExpedienteDetalle.
     """
 
     print("============================================", flush=True)
@@ -187,7 +137,7 @@ def importar_excel_expedientes(
     print("============================================", flush=True)
 
     # ========================================================
-    # 1) FECHA OBJETIVO
+    # 0) FECHA OBJETIVO
     # ========================================================
 
     if fecha_objetivo is None:
@@ -204,21 +154,11 @@ def importar_excel_expedientes(
     )
 
     # ========================================================
-    # 2) VALIDAR FICHERO
-    # ========================================================
-
-    if not contenido_excel:
-
-        raise ValueError(
-            "El fichero Excel está vacío."
-        )
-
-    # ========================================================
-    # 3) LEER EXCEL
+    # 1) LEER EXCEL
     # ========================================================
 
     print(
-        "IMPORTADOR: leyendo Excel...",
+        "IMPORTADOR: leyendo Excel con pandas...",
         flush=True
     )
 
@@ -226,7 +166,6 @@ def importar_excel_expedientes(
 
         df = pd.read_excel(
             io.BytesIO(contenido_excel),
-            sheet_name=0,
             engine="openpyxl"
         )
 
@@ -238,12 +177,19 @@ def importar_excel_expedientes(
         )
 
         raise ValueError(
-            "No se pudo leer el archivo Excel."
+            "No se pudo leer el archivo Excel. "
+            "Formato inválido o archivo corrupto."
         )
 
     # ========================================================
-    # 4) INFORMACIÓN DEL EXCEL
+    # 2) LIMPIAR NOMBRES DE COLUMNAS
     # ========================================================
+
+    # Quitamos espacios accidentales de los nombres.
+    df.columns = [
+        str(col).strip()
+        for col in df.columns
+    ]
 
     print(
         "IMPORTADOR: Excel leído correctamente.",
@@ -261,29 +207,20 @@ def importar_excel_expedientes(
     )
 
     print(
-        f"COLUMNAS ORIGINALES: {list(df.columns)}",
+        f"COLUMNAS: {list(df.columns)}",
         flush=True
     )
 
     # ========================================================
-    # 5) NORMALIZAR COLUMNAS
-    # ========================================================
-
-    df.columns = [
-        limpiar_nombre_columna(col)
-        for col in df.columns
-    ]
-
-    print(
-        f"COLUMNAS NORMALIZADAS: {list(df.columns)}",
-        flush=True
-    )
-
-    # ========================================================
-    # 6) COMPROBAR COLUMNAS
+    # 3) COMPROBAR COLUMNAS OBLIGATORIAS
     # ========================================================
 
     if "FECHAALTA" not in df.columns:
+
+        print(
+            "ERROR: No existe FECHAALTA.",
+            flush=True
+        )
 
         raise ValueError(
             "El Excel no contiene la columna FECHAALTA."
@@ -291,28 +228,17 @@ def importar_excel_expedientes(
 
     if "IDEXPEDIENTE" not in df.columns:
 
+        print(
+            "ERROR: No existe IDEXPEDIENTE.",
+            flush=True
+        )
+
         raise ValueError(
             "El Excel no contiene la columna IDEXPEDIENTE."
         )
 
     # ========================================================
-    # 7) MOSTRAR PRIMERAS FILAS
-    # ========================================================
-
-    print(
-        "IMPORTADOR: primeras filas del Excel:",
-        flush=True
-    )
-
-    print(
-        df[
-            ["IDEXPEDIENTE", "FECHAALTA"]
-        ].head(5).to_string(index=False),
-        flush=True
-    )
-
-    # ========================================================
-    # 8) CONVERTIR FECHAALTA
+    # 4) CONVERTIR FECHAALTA
     # ========================================================
 
     print(
@@ -320,26 +246,30 @@ def importar_excel_expedientes(
         flush=True
     )
 
-    df["FECHAALTA"] = df["FECHAALTA"].apply(
-        convertir_fecha
-    )
+    df["FECHAALTA"] = pd.to_datetime(
+        df["FECHAALTA"],
+        dayfirst=True,
+        errors="coerce"
+    ).dt.date
 
-    fechas_validas = int(
-        df["FECHAALTA"].notna().sum()
+    fechas_validas = df["FECHAALTA"].notna().sum()
+
+    print(
+        f"FECHAS FECHAALTA VÁLIDAS: {fechas_validas}",
+        flush=True
     )
 
     print(
-        f"FECHAS VÁLIDAS: {fechas_validas}",
+        f"BUSCANDO FECHA EXACTA: {fecha_objetivo}",
         flush=True
     )
 
     # ========================================================
-    # 9) FILTRAR FECHA
+    # 5) FILTRAR INMEDIATAMENTE POR FECHA
     # ========================================================
 
     print(
-        "IMPORTADOR: filtrando únicamente la fecha "
-        f"{fecha_objetivo}...",
+        "IMPORTADOR: filtrando Excel por FECHAALTA...",
         flush=True
     )
 
@@ -347,69 +277,39 @@ def importar_excel_expedientes(
         df["FECHAALTA"] == fecha_objetivo
     ].copy()
 
-    total_filtrados = len(df_filtrado)
+    total_filtrados_inicial = len(df_filtrado)
 
     print(
         f"FILAS ENCONTRADAS PARA {fecha_objetivo}: "
-        f"{total_filtrados}",
+        f"{total_filtrados_inicial}",
         flush=True
     )
 
     # ========================================================
-    # 10) MOSTRAR PRIMEROS RESULTADOS
+    # 6) SI NO HAY DATOS
     # ========================================================
 
-    if total_filtrados > 0:
+    if df_filtrado.empty:
 
         print(
-            "PRIMEROS EXPEDIENTES ENCONTRADOS:",
+            "IMPORTADOR: no existen altas para la fecha indicada.",
             flush=True
         )
 
         print(
-            df_filtrado[
-                ["IDEXPEDIENTE", "FECHAALTA"]
-            ]
-            .head(10)
-            .to_string(index=False),
+            "============================================",
             flush=True
         )
-
-    # ========================================================
-    # 11) NO HAY DATOS
-    # ========================================================
-
-    if total_filtrados == 0:
 
         print(
-            "IMPORTADOR: no se encontraron expedientes "
-            "para la fecha indicada.",
+            "IMPORTADOR ABSIS - FINALIZADO SIN DATOS",
             flush=True
         )
 
-        # Mostrar fechas existentes para diagnóstico.
         print(
-            "ALGUNAS FECHAS ENCONTRADAS EN EL EXCEL:",
+            "============================================",
             flush=True
         )
-
-        fechas = (
-            df["FECHAALTA"]
-            .dropna()
-            .value_counts()
-            .head(20)
-        )
-
-        for fecha, cantidad in fechas.items():
-
-            print(
-                f"  {fecha}: {cantidad}",
-                flush=True
-            )
-
-        print("============================================", flush=True)
-        print("IMPORTADOR ABSIS - FINALIZADO SIN DATOS", flush=True)
-        print("============================================", flush=True)
 
         return {
             "creados": 0,
@@ -421,31 +321,65 @@ def importar_excel_expedientes(
         }
 
     # ========================================================
-    # 12) LIMPIAR IDEXPEDIENTE
+    # 7) LIMPIAR IDEXPEDIENTE
     # ========================================================
 
     df_filtrado["IDEXPEDIENTE"] = (
         df_filtrado["IDEXPEDIENTE"]
-        .apply(limpiar_valor)
-        .astype("string")
+        .astype(str)
         .str.strip()
     )
 
+    # Eliminamos valores inválidos.
     df_filtrado = df_filtrado[
-        df_filtrado["IDEXPEDIENTE"].notna()
-        & (df_filtrado["IDEXPEDIENTE"] != "")
-        & (df_filtrado["IDEXPEDIENTE"] != "nan")
+        ~df_filtrado["IDEXPEDIENTE"].isin([
+            "",
+            "nan",
+            "None",
+            "NaN"
+        ])
     ].copy()
+
+    # Eliminamos duplicados del mismo expediente.
+    df_filtrado = df_filtrado.drop_duplicates(
+        subset=["IDEXPEDIENTE"],
+        keep="last"
+    )
 
     total_filtrados = len(df_filtrado)
 
     print(
-        f"EXPEDIENTES CON IDEXPEDIENTE VÁLIDO: "
+        f"EXPEDIENTES VÁLIDOS PARA IMPORTAR: "
         f"{total_filtrados}",
         flush=True
     )
 
+    # ========================================================
+    # 8) MOSTRAR ALGUNOS IDS PARA COMPROBACIÓN
+    # ========================================================
+
+    ids_muestra = (
+        df_filtrado["IDEXPEDIENTE"]
+        .head(10)
+        .tolist()
+    )
+
+    print(
+        f"MUESTRA IDEXPEDIENTE: {ids_muestra}",
+        flush=True
+    )
+
+    # ========================================================
+    # 9) SI DESPUÉS DE LIMPIAR NO HAY DATOS
+    # ========================================================
+
     if total_filtrados == 0:
+
+        print(
+            "IMPORTADOR: no quedan expedientes válidos "
+            "después de limpiar IDEXPEDIENTE.",
+            flush=True
+        )
 
         return {
             "creados": 0,
@@ -457,7 +391,7 @@ def importar_excel_expedientes(
         }
 
     # ========================================================
-    # 13) OBTENER IDS ÚNICOS
+    # 10) OBTENER IDS
     # ========================================================
 
     ids_excel = (
@@ -472,39 +406,26 @@ def importar_excel_expedientes(
     )
 
     # ========================================================
-    # 14) CONSULTAR BD
+    # 11) BUSCAR EXISTENTES EN UNA SOLA CONSULTA
     # ========================================================
 
     print(
-        "IMPORTADOR: comprobando expedientes existentes...",
+        "IMPORTADOR: buscando expedientes existentes...",
         flush=True
     )
 
-    existentes_por_id = {}
-
-    for inicio in range(
-        0,
-        len(ids_excel),
-        BATCH_SIZE
-    ):
-
-        bloque_ids = ids_excel[
-            inicio:inicio + BATCH_SIZE
-        ]
-
-        existentes = (
-            db.query(Expediente)
-            .filter(
-                Expediente.id_expediente.in_(bloque_ids)
-            )
-            .all()
+    expedientes_existentes = (
+        db.query(Expediente)
+        .filter(
+            Expediente.id_expediente.in_(ids_excel)
         )
+        .all()
+    )
 
-        for exp in existentes:
-
-            existentes_por_id[
-                exp.id_expediente
-            ] = exp
+    existentes_por_id = {
+        exp.id_expediente: exp
+        for exp in expedientes_existentes
+    }
 
     print(
         f"EXPEDIENTES YA EXISTENTES: "
@@ -513,7 +434,7 @@ def importar_excel_expedientes(
     )
 
     # ========================================================
-    # 15) CONTADORES
+    # 12) CONTADORES
     # ========================================================
 
     creados = 0
@@ -522,11 +443,11 @@ def importar_excel_expedientes(
     procesados = 0
 
     # ========================================================
-    # 16) PROCESAMIENTO
+    # 13) PROCESAR SOLAMENTE LAS FILAS FILTRADAS
     # ========================================================
 
     print(
-        "IMPORTADOR: comenzando procesamiento...",
+        "IMPORTADOR: procesando expedientes filtrados...",
         flush=True
     )
 
@@ -538,11 +459,15 @@ def importar_excel_expedientes(
 
         try:
 
+            # ==================================================
+            # BUSCAR EN MEMORIA
+            # ==================================================
+
             exp = existentes_por_id.get(idexp)
 
-            # ------------------------------------------------
+            # ==================================================
             # CREAR
-            # ------------------------------------------------
+            # ==================================================
 
             if exp is None:
 
@@ -556,300 +481,309 @@ def importar_excel_expedientes(
 
                 creados += 1
 
-            # ------------------------------------------------
+            # ==================================================
             # ACTUALIZAR
-            # ------------------------------------------------
+            # ==================================================
 
             else:
 
                 actualizados += 1
 
-            # ------------------------------------------------
+            # ==================================================
             # FECHAS
-            # ------------------------------------------------
+            # ==================================================
 
             exp.fecha_alta = convertir_fecha(
-                obtener_valor(row, "FECHAALTA")
+                row.get("FECHAALTA")
             )
 
             exp.fecha_firma = convertir_fecha(
-                obtener_valor(row, "FECHAFIRMA")
+                row.get("FECHAFIRMA")
             )
 
             exp.fecha_inscripcion = convertir_fecha(
-                obtener_valor(row, "FECHAINSCRIPCION")
+                row.get("FECHAINSCRIPCION")
             )
 
             exp.fecha_entregado_cliente = convertir_fecha(
-                obtener_valor(row, "FECHAENTREGADOCLIENTE")
+                row.get("FECHAENTREGADOCLIENTE")
             )
 
             exp.fecha_prevista_firma = convertir_fecha(
-                obtener_valor(row, "FECHAPREVISTAFIRMA")
+                row.get("FECHAPREVISTAFIRMA")
             )
 
             exp.fecha_vencimiento = convertir_fecha(
-                obtener_valor(row, "FECHAVENCIMIENTO")
+                row.get("FECHAVENCIMIENTO")
             )
 
             exp.fecha_sol_cgn = convertir_fecha(
-                obtener_valor(row, "FECHASOLCGN")
+                row.get("FECHASOLCGN")
             )
 
             exp.fecha_firma_prev_val = convertir_fecha(
-                obtener_valor(row, "FECHAFIRMAPREVVAL")
+                row.get("FECHAFIRMAPREVVAL")
             )
 
             exp.fecha_firma_prev_cli = convertir_fecha(
-                obtener_valor(row, "FECHAFIRMAPREVCLI")
+                row.get("FECHAFIRMAPREVCLI")
             )
 
-            # ------------------------------------------------
+            # ==================================================
             # ESTADOS
-            # ------------------------------------------------
+            # ==================================================
 
-            exp.estado_expediente = obtener_valor(
+            exp.estado_expediente = valor_excel(
                 row,
-                "ESTADOEXPEDIENTE"
+                "ESTADOEXPEDIENTE",
+                "ESTADO_EXPEDIENTE"
             )
 
-            exp.estado_expediente_ancert = obtener_valor(
+            exp.estado_expediente_ancert = valor_excel(
                 row,
-                "ESTADOEXPEDIENTEANCERT"
+                "ESTADOEXPEDIENTEANCERT",
+                "ESTADO_EXPEDIENTE_ANCERT"
             )
 
-            # ------------------------------------------------
-            # ACTIVIDAD
-            # ------------------------------------------------
-
-            exp.actividad_actual = obtener_valor(
-                row,
-                "ACTIVIDADACTUAL"
-            )
-
-            exp.estado_actividad = obtener_valor(
-                row,
-                "ESTADOACTIVIDAD"
-            )
-
-            exp.fecha_inicio_actividad = convertir_fecha(
-                obtener_valor(
-                    row,
-                    "FECHAINICIOACTIVIDAD"
-                )
-            )
-
-            exp.fecha_fin_actividad = convertir_fecha(
-                obtener_valor(
-                    row,
-                    "FECHAFINACTIVIDAD"
-                )
-            )
-
-            # ------------------------------------------------
+            # ==================================================
             # TITULAR
-            # ------------------------------------------------
+            # ==================================================
 
-            exp.nombre_titular = obtener_valor(
+            exp.nombre_titular = valor_excel(
                 row,
-                "NOMBRETITULAR"
+                "NOMBRETITULAR",
+                "NOMBRE_TITULAR"
             )
 
-            exp.nif_titular = obtener_valor(
+            exp.nif_titular = valor_excel(
                 row,
-                "NIFTITULAR"
+                "NIFTITULAR",
+                "NIF_TITULAR"
             )
 
-            # ------------------------------------------------
+            # ==================================================
             # NOTARIO
-            # ------------------------------------------------
+            # ==================================================
 
-            exp.nombre_notario = obtener_valor(
+            exp.nombre_notario = valor_excel(
                 row,
-                "NOMBRENOTARIO"
+                "NOMBRENOTARIO",
+                "NOMBRE_NOTARIO"
             )
 
-            exp.nif_notario = obtener_valor(
+            exp.nif_notario = valor_excel(
                 row,
-                "NIFNOTARIO"
+                "NIFNOTARIO",
+                "NIF_NOTARIO"
             )
 
-            exp.notario = obtener_valor(
+            exp.notario = valor_excel(
                 row,
                 "NOTARIO",
                 "NOMBRENOTARIO"
             )
 
-            # ------------------------------------------------
+            # ==================================================
             # OFICINA
-            # ------------------------------------------------
+            # ==================================================
 
-            exp.oficina = obtener_valor(
+            exp.oficina = valor_excel(
                 row,
                 "OFICINA"
             )
 
-            exp.oficina_alta = obtener_valor(
+            exp.oficina_alta = valor_excel(
                 row,
                 "OFICINAALTA"
             )
 
-            exp.dan = obtener_valor(
+            exp.dan = valor_excel(
                 row,
                 "DAN"
             )
 
-            # ------------------------------------------------
+            # ==================================================
+            # ACTIVIDAD
+            # ==================================================
+
+            exp.actividad_actual = valor_excel(
+                row,
+                "ACTIVIDADACTUAL",
+                "ACTIVIDAD_ACTUAL"
+            )
+
+            exp.estado_actividad = valor_excel(
+                row,
+                "ESTADOACTIVIDAD",
+                "ESTADO_ACTIVIDAD"
+            )
+
+            exp.fecha_inicio_actividad = convertir_fecha(
+                row.get("FECHAINICIOACTIVIDAD")
+            )
+
+            exp.fecha_fin_actividad = convertir_fecha(
+                row.get("FECHAFINACTIVIDAD")
+            )
+
+            # ==================================================
             # ECONÓMICOS
-            # ------------------------------------------------
+            # ==================================================
 
-            exp.capital = obtener_valor(
-                row,
-                "CAPITAL"
+            exp.capital = convertir_float(
+                row.get("CAPITAL")
             )
 
-            exp.importe = obtener_valor(
-                row,
-                "IMPORTE"
+            exp.importe = convertir_float(
+                row.get("IMPORTE")
             )
 
-            exp.saldo_real = obtener_valor(
-                row,
-                "SALDOREAL"
+            exp.saldo_real = convertir_float(
+                row.get("SALDOREAL")
             )
 
-            exp.saldo_disponible = obtener_valor(
-                row,
-                "SALDODISPONIBLE"
+            exp.saldo_disponible = convertir_float(
+                row.get("SALDODISPONIBLE")
             )
 
-            # ------------------------------------------------
+            # ==================================================
             # OPERACIÓN
-            # ------------------------------------------------
+            # ==================================================
 
-            exp.contrato = obtener_valor(
+            exp.contrato = valor_excel(
                 row,
                 "CONTRATO"
             )
 
-            exp.num_solicitud_sia = obtener_valor(
+            exp.num_solicitud_sia = valor_excel(
                 row,
-                "NUMSOLICITUDSIA"
+                "NUMSOLICITUDSIA",
+                "NUM_SOLICITUD_SIA"
             )
 
-            exp.tipo_operacion = obtener_valor(
+            exp.tipo_operacion = valor_excel(
                 row,
-                "TIPOOPERACION"
+                "TIPOOPERACION",
+                "TIPO_OPERACION"
             )
 
-            exp.subtipo_operacion = obtener_valor(
+            exp.subtipo_operacion = valor_excel(
                 row,
-                "SUBTIPOOPERACION"
+                "SUBTIPOOPERACION",
+                "SUBTIPO_OPERACION"
             )
 
-            exp.vinccanc = obtener_valor(
+            exp.vinccanc = valor_excel(
                 row,
                 "VINCCANC"
             )
 
-            exp.protocolo = obtener_valor(
+            exp.protocolo = valor_excel(
                 row,
                 "PROTOCOLO"
             )
 
-            # ------------------------------------------------
+            # ==================================================
             # GTG / BANKIA
-            # ------------------------------------------------
+            # ==================================================
 
-            exp.origen_bankia = obtener_valor(
+            exp.origen_bankia = valor_excel(
                 row,
                 "ORIGENBANKIA"
             )
 
-            exp.producto_gtg = obtener_valor(
+            exp.producto_gtg = valor_excel(
                 row,
-                "PRODUCTOGTG"
+                "PRODUCTOGTG",
+                "PRODUCTO_GTG"
             )
 
-            exp.dt = obtener_valor(
+            exp.dt = valor_excel(
                 row,
                 "DT"
             )
 
-            # ------------------------------------------------
+            # ==================================================
             # GESTORÍA
-            # ------------------------------------------------
+            # ==================================================
 
-            exp.gestoria = obtener_valor(
+            # El Excel real contiene NOMBREGESTORIA.
+            # También soportamos GESTORIA por compatibilidad.
+
+            exp.gestoria = valor_excel(
                 row,
                 "NOMBREGESTORIA",
                 "GESTORIA"
             )
 
-            # ------------------------------------------------
+            # ==================================================
             # CGN
-            # ------------------------------------------------
+            # ==================================================
 
-            exp.id_expediente_cgn = obtener_valor(
+            exp.id_expediente_cgn = valor_excel(
                 row,
-                "IDEXPEDIENTECGN"
+                "IDEXPEDIENTECGN",
+                "ID_EXPEDIENTE_CGN"
             )
 
-            # ------------------------------------------------
+            # ==================================================
             # OTROS
-            # ------------------------------------------------
+            # ==================================================
 
-            exp.lucy = obtener_valor(
+            exp.lucy = valor_excel(
                 row,
                 "LUCY"
             )
 
-            exp.indicador_tt = obtener_valor(
+            exp.indicador_tt = valor_excel(
                 row,
                 "INDICADORTT"
             )
 
-            # ------------------------------------------------
+            # ==================================================
             # OBSERVACIONES
-            # ------------------------------------------------
+            # ==================================================
 
-            exp.observaciones = obtener_valor(
+            exp.observaciones = valor_excel(
                 row,
                 "OBSERVACIONES"
             )
 
-            # ------------------------------------------------
-            # CONTADOR
-            # ------------------------------------------------
+            # ==================================================
+            # CAMPOS DE FACTURACIÓN / REGISTRAL
+            # ==================================================
+
+            # Estos campos no vienen actualmente del Excel ABSIS,
+            # por lo que no se modifican aquí.
+
+            # ==================================================
+            # PROCESADO
+            # ==================================================
 
             procesados += 1
 
-            if procesados == 1:
-
-                print(
-                    f"PRIMER EXPEDIENTE PROCESADO: {idexp}",
-                    flush=True
-                )
+            # ==================================================
+            # LOG CADA 100
+            # ==================================================
 
             if procesados % 100 == 0:
 
                 print(
-                    f"PROGRESO: "
-                    f"{procesados}/{total_filtrados} "
+                    f"PROGRESO: {procesados}/{total_filtrados} "
                     f"| creados={creados} "
                     f"| actualizados={actualizados} "
                     f"| errores={errores}",
                     flush=True
                 )
 
-            # ------------------------------------------------
+            # ==================================================
             # COMMIT POR LOTES
-            # ------------------------------------------------
+            # ==================================================
 
             if procesados % BATCH_SIZE == 0:
 
                 print(
-                    f"IMPORTADOR: guardando lote "
+                    f"IMPORTADOR: commit lote "
                     f"{procesados // BATCH_SIZE}...",
                     flush=True
                 )
@@ -861,15 +795,22 @@ def importar_excel_expedientes(
             errores += 1
 
             print(
-                f"ERROR PROCESANDO EXPEDIENTE "
+                f"ERROR PROCESANDO IDEXPEDIENTE "
                 f"{idexp}: {e}",
                 flush=True
             )
 
+            # Rollback de la transacción actual.
             db.rollback()
 
+            # El objeto que falló puede quedar en un estado
+            # inconsistente, pero el siguiente expediente
+            # seguirá utilizando la sesión limpia.
+
+            continue
+
     # ========================================================
-    # 17) COMMIT FINAL
+    # 14) COMMIT FINAL
     # ========================================================
 
     print(
@@ -893,17 +834,48 @@ def importar_excel_expedientes(
         raise
 
     # ========================================================
-    # 18) RESULTADO
+    # 15) RESULTADO FINAL
     # ========================================================
 
     print("============================================", flush=True)
     print("IMPORTADOR ABSIS - FINALIZADO", flush=True)
-    print(f"FECHA: {fecha_objetivo}", flush=True)
-    print(f"FILAS FILTRADAS: {total_filtrados}", flush=True)
-    print(f"PROCESADOS: {procesados}", flush=True)
-    print(f"CREADOS: {creados}", flush=True)
-    print(f"ACTUALIZADOS: {actualizados}", flush=True)
-    print(f"ERRORES: {errores}", flush=True)
+    print("============================================", flush=True)
+
+    print(
+        f"FECHA: {fecha_objetivo}",
+        flush=True
+    )
+
+    print(
+        f"FILAS ENCONTRADAS: {total_filtrados_inicial}",
+        flush=True
+    )
+
+    print(
+        f"EXPEDIENTES VÁLIDOS: {total_filtrados}",
+        flush=True
+    )
+
+    print(
+        f"PROCESADOS: {procesados}",
+        flush=True
+    )
+
+    print(
+        f"CREADOS: {creados}",
+        flush=True
+    )
+
+    print(
+        f"ACTUALIZADOS: {actualizados}",
+        flush=True
+    )
+
+    print(
+        f"ERRORES: {errores}",
+        flush=True
+    )
+
     print("============================================", flush=True)
 
     return {

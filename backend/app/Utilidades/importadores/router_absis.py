@@ -1,4 +1,3 @@
-```python
 from fastapi import APIRouter, UploadFile, File, Query, Depends
 from sqlalchemy.orm import Session
 from datetime import date, datetime
@@ -184,4 +183,4 @@ async def importar_expedientes_absis(
             0
         )
     }
-```
+

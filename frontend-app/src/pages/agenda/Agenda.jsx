@@ -28,7 +28,6 @@ const MESES = [
 
 export default function Agenda() {
   const hoy = useMemo(() => new Date(), []);
-
   const [year, setYear] = useState(hoy.getFullYear());
   const [month, setMonth] = useState(hoy.getMonth() + 1);
   const [vista, setVista] = useState("mes");
@@ -67,7 +66,7 @@ export default function Agenda() {
     permisosAgenda.includes("eliminar");
 
   // ============================================================
-  // ESTADO MODAL
+  // MODAL
   // ============================================================
 
   const [mostrarModal, setMostrarModal] = useState(false);
@@ -134,10 +133,6 @@ export default function Agenda() {
   const guardarCita = useCallback(
     async (payload) => {
       try {
-        // --------------------------------------------------------
-        // CREAR
-        // --------------------------------------------------------
-
         if (modalModo === "crear") {
           if (!puedeCrear) {
             notify("No tienes permiso para crear citas.");
@@ -150,13 +145,7 @@ export default function Agenda() {
             marcarResaltada(creada.id);
             notify("Cita creada correctamente.");
           }
-        }
-
-        // --------------------------------------------------------
-        // EDITAR
-        // --------------------------------------------------------
-
-        else if (modalModo === "editar" && citaSeleccionada) {
+        } else if (modalModo === "editar" && citaSeleccionada) {
           if (!puedeEditar) {
             notify("No tienes permiso para editar citas.");
             return;
@@ -173,13 +162,7 @@ export default function Agenda() {
             marcarResaltada(editada.id);
             notify("Cita actualizada correctamente.");
           }
-        }
-
-        // --------------------------------------------------------
-        // SOLO VISUALIZACIÓN
-        // --------------------------------------------------------
-
-        else if (modalModo === "ver") {
+        } else if (modalModo === "ver") {
           setMostrarModal(false);
           return;
         }
@@ -235,7 +218,7 @@ export default function Agenda() {
   ]);
 
   // ============================================================
-  // NAVEGACIÓN DE MESES
+  // NAVEGACIÓN
   // ============================================================
 
   const mesAnterior = useCallback(() => {
@@ -269,10 +252,6 @@ export default function Agenda() {
     [citas]
   );
 
-  // ============================================================
-  // EVENTOS
-  // ============================================================
-
   const handleCitaClick = useCallback(
     (cita) => {
       abrirEditar(cita);
@@ -288,98 +267,78 @@ export default function Agenda() {
   );
 
   // ============================================================
-  // RENDER
+  // FECHA ACTUAL
   // ============================================================
 
+  const esMesActual =
+    year === hoy.getFullYear() &&
+    month === hoy.getMonth() + 1;
+
   return (
-    <div className="container-sj animate-fade-in">
-      {/* ========================================================
+    <div className="space-y-5 p-6 text-[var(--erp-text)] animate-fade-in">
+
+      {/* ======================================================
           CABECERA
-          ======================================================== */}
+          ====================================================== */}
 
-      <section className="mb-6">
-        <div
-          className="
-            bg-white
-            border border-slate-200
-            rounded-2xl
-            p-6
-            shadow-sm
-          "
-        >
-          <h1
-            className="
-              text-3xl
-              font-bold
-              tracking-tight
-            "
-            style={{ color: "var(--erp-text)" }}
-          >
-            Agenda corporativa
-          </h1>
+      <div className="erp-card p-5 shadow-sm">
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-3">
+            <div
+              className="
+                w-10 h-10 rounded-xl
+                bg-[var(--erp-primary-soft)]
+                text-[var(--erp-primary)]
+                flex items-center justify-center
+                font-bold
+              "
+            >
+              <svg className="w-5 h-5">
+                <use href="/icons/icons.svg#calendar" />
+              </svg>
+            </div>
 
-          <p
-            className="mt-1 text-sm"
-            style={{ color: "var(--sj-azul-claro)" }}
-          >
-            Calendario de citas SJ-2026.
-          </p>
+            <div>
+              <h1 className="text-2xl font-bold text-[var(--erp-text)]">
+                Agenda corporativa
+              </h1>
+
+              <p className="text-sm text-[var(--erp-text-soft)]">
+                Calendario de citas SJ-2026.
+              </p>
+            </div>
+          </div>
         </div>
-      </section>
+      </div>
 
-      {/* ========================================================
-          SELECTOR DE FECHA Y VISTA
-          ======================================================== */}
+      {/* ======================================================
+          NAVEGACIÓN
+          ====================================================== */}
 
-      <section className="mb-6">
-        <div
-          className="
-            bg-white
-            border border-slate-200
-            rounded-2xl
-            p-4
-            shadow-sm
-            flex
-            flex-wrap
-            items-center
-            gap-3
-          "
-        >
-          {/* ----------------------------------------------------
-              MES ANTERIOR
-              ---------------------------------------------------- */}
+      <div className="erp-card p-4 shadow-sm">
+        <div className="flex flex-wrap items-center gap-3">
 
           <button
             type="button"
             onClick={mesAnterior}
             className="
-              h-10
-              min-w-10
-              px-3
-              rounded-xl
-              border
-              border-slate-200
-              bg-white
-              text-slate-700
-              font-medium
-              hover:bg-slate-50
-              hover:border-slate-300
+              w-10 h-10 rounded-xl
+              border border-[var(--erp-border)]
+              bg-[var(--erp-surface-soft)]
+              text-[var(--erp-text)]
+              hover:bg-[var(--erp-primary-soft)]
+              hover:text-[var(--erp-primary)]
               transition
-              active:scale-95
+              font-semibold
             "
-            aria-label="Mes anterior"
             title="Mes anterior"
           >
             ←
           </button>
 
-          {/* ----------------------------------------------------
-              AÑO
-              ---------------------------------------------------- */}
-
           <SelectSJ
             value={year}
-            onChange={(v) => setYear(parseInt(v, 10))}
+            onChange={(v) => setYear(parseInt(v))}
             options={Array.from({ length: 10 }, (_, i) => {
               const y = hoy.getFullYear() - 5 + i;
 
@@ -391,13 +350,9 @@ export default function Agenda() {
             className="w-32"
           />
 
-          {/* ----------------------------------------------------
-              MES
-              ---------------------------------------------------- */}
-
           <SelectSJ
             value={month}
-            onChange={(v) => setMonth(parseInt(v, 10))}
+            onChange={(v) => setMonth(parseInt(v))}
             options={MESES.map((nombre, index) => ({
               value: index + 1,
               label: nombre,
@@ -405,129 +360,113 @@ export default function Agenda() {
             className="w-40"
           />
 
-          {/* ----------------------------------------------------
-              MES SIGUIENTE
-              ---------------------------------------------------- */}
-
           <button
             type="button"
             onClick={mesSiguiente}
             className="
-              h-10
-              min-w-10
-              px-3
-              rounded-xl
-              border
-              border-slate-200
-              bg-white
-              text-slate-700
-              font-medium
-              hover:bg-slate-50
-              hover:border-slate-300
+              w-10 h-10 rounded-xl
+              border border-[var(--erp-border)]
+              bg-[var(--erp-surface-soft)]
+              text-[var(--erp-text)]
+              hover:bg-[var(--erp-primary-soft)]
+              hover:text-[var(--erp-primary)]
               transition
-              active:scale-95
+              font-semibold
             "
-            aria-label="Mes siguiente"
             title="Mes siguiente"
           >
             →
           </button>
 
-          {/* ----------------------------------------------------
-              SEPARADOR
-              ---------------------------------------------------- */}
+          {esMesActual && (
+            <span
+              className="
+                hidden sm:inline-flex
+                px-3 py-1.5 rounded-full
+                text-xs font-semibold
+                bg-[var(--erp-primary-soft)]
+                text-[var(--erp-primary)]
+              "
+            >
+              Mes actual
+            </span>
+          )}
 
-          <div className="hidden md:block h-8 w-px bg-slate-200 mx-2" />
+          {/* VISTAS */}
 
-          {/* ----------------------------------------------------
-              VISTAS
-              ---------------------------------------------------- */}
-
-          <div className="ml-auto flex items-center gap-2">
-            {[
-              { value: "mes", label: "Mes" },
-              { value: "semana", label: "Semana" },
-              { value: "dia", label: "Día" },
-            ].map((opcion) => {
-              const activa = vista === opcion.value;
+          <div
+            className="
+              ml-auto flex items-center gap-1
+              p-1 rounded-xl
+              bg-[var(--erp-surface-soft)]
+              border border-[var(--erp-border)]
+            "
+          >
+            {["mes", "semana", "dia"].map((v) => {
+              const activo = vista === v;
 
               return (
                 <button
-                  key={opcion.value}
+                  key={v}
                   type="button"
-                  onClick={() => setVista(opcion.value)}
+                  onClick={() => setVista(v)}
                   className={`
-                    px-4
-                    py-2
-                    rounded-xl
-                    border
-                    text-sm
-                    font-medium
-                    transition
-                    active:scale-95
+                    px-4 py-2 rounded-lg
+                    text-sm font-medium
+                    transition-all duration-200
                     ${
-                      activa
-                        ? "bg-blue-600 border-blue-600 text-white shadow-sm"
-                        : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300"
+                      activo
+                        ? "bg-[var(--erp-primary)] text-white shadow-sm"
+                        : "text-[var(--erp-text-soft)] hover:text-[var(--erp-text)] hover:bg-white"
                     }
                   `}
                 >
-                  {opcion.label}
+                  {v.charAt(0).toUpperCase() + v.slice(1)}
                 </button>
               );
             })}
           </div>
         </div>
-      </section>
+      </div>
 
-      {/* ========================================================
-          VISTA DEL CALENDARIO
-          ======================================================== */}
+      {/* ======================================================
+          CALENDARIO
+          ====================================================== */}
 
-      <section>
-        <div
-          className="
-            bg-white
-            border border-slate-200
-            rounded-2xl
-            p-4
-            shadow-sm
-            overflow-hidden
-          "
-        >
-          {vista === "mes" && (
-            <VistaMes
-              year={year}
-              month={month}
-              citas={citasSeguras}
-              onDiaClick={handleDiaClick}
-              onCitaClick={handleCitaClick}
-            />
-          )}
+      <div className="erp-card p-4 shadow-sm overflow-hidden">
 
-          {vista === "semana" && (
-            <VistaSemana
-              fechaBase={`${year}-${String(month).padStart(2, "0")}-01`}
-              citas={citasSeguras}
-              onCitaClick={handleCitaClick}
-              onCrearCita={handleDiaClick}
-            />
-          )}
+        {vista === "mes" && (
+          <VistaMes
+            year={year}
+            month={month}
+            citas={citasSeguras}
+            onDiaClick={handleDiaClick}
+            onCitaClick={handleCitaClick}
+          />
+        )}
 
-          {vista === "dia" && (
-            <VistaDia
-              fechaDia={new Date()}
-              citas={citasSeguras}
-              onCitaClick={handleCitaClick}
-              onCrearCita={handleDiaClick}
-            />
-          )}
-        </div>
-      </section>
+        {vista === "semana" && (
+          <VistaSemana
+            fechaBase={`${year}-${String(month).padStart(2, "0")}-01`}
+            citas={citasSeguras}
+            onCitaClick={handleCitaClick}
+            onCrearCita={handleDiaClick}
+          />
+        )}
 
-      {/* ========================================================
-          MODAL NUEVA CITA / EDICIÓN
-          ======================================================== */}
+        {vista === "dia" && (
+          <VistaDia
+            fechaDia={new Date()}
+            citas={citasSeguras}
+            onCitaClick={handleCitaClick}
+            onCrearCita={handleDiaClick}
+          />
+        )}
+      </div>
+
+      {/* ======================================================
+          MODAL
+          ====================================================== */}
 
       {mostrarModal && (
         <ModalNuevaCita
@@ -543,10 +482,6 @@ export default function Agenda() {
           }
         />
       )}
-
-      {/* ========================================================
-          TOAST
-          ======================================================== */}
 
       <AgendaToast />
     </div>

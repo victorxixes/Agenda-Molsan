@@ -1,0 +1,17 @@
+:root {
+  --erp-bg: #eef3f9;
+  --erp-surface: #ffffff;
+  --erp-surface-soft: #f6f8fc;
+  --erp-border: #dbe3ef;
+
+  --erp-primary: #3156b3;
+  --erp-primary-dark: #274694;
+  --erp-primary-soft: #edf3ff;
+
+  --erp-text: #24324a;
+  --erp-text-soft: #64748b;
+
+  --erp-success: #198754;
+  --erp-warning: #d97706;
+  --erp-danger: #dc3545;
+}

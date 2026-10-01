@@ -1,48 +1,128 @@
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 import { useAgendaStore } from "../../store/agendaStore";
 
 /**
- * AgendaToast — SJ‑2026 Premium
- * Notificaciones flotantes para eventos de agenda.
- * - Auto‑desvanecen el resaltado en 3s
- * - Animación glass‑UI
- * - Sin re‑renders innecesarios
+ * AgendaToast — SJ-2026
+ *
+ * Notificaciones flotantes de Agenda.
+ * - Glass UI
+ * - Auto-limpieza del resaltado
+ * - Cierre automático
+ * - Sin useMemo innecesario
  */
 
 export default function AgendaToast() {
-  const notificaciones = useAgendaStore((s) => s.notificaciones);
-  const limpiarResaltada = useAgendaStore((s) => s.limpiarResaltada);
-
-  // Memo para evitar recalcular en cada render
-  const hasNotificaciones = useMemo(
-    () => notificaciones.length > 0,
-    [notificaciones]
+  const notificaciones = useAgendaStore(
+    (s) => s.notificaciones
   );
 
-  // Auto-limpieza del resaltado después de 3s
+  const limpiarResaltada =
+    useAgendaStore(
+      (s) => s.limpiarResaltada
+    );
+
+  // ==========================================================
+  // AUTO-LIMPIEZA DEL RESALTADO
+  // ==========================================================
+
   useEffect(() => {
-    if (!hasNotificaciones) return;
+    if (
+      !Array.isArray(notificaciones) ||
+      notificaciones.length === 0
+    ) {
+      return;
+    }
 
     const timer = setTimeout(() => {
       limpiarResaltada();
     }, 3000);
 
-    return () => clearTimeout(timer);
-  }, [hasNotificaciones, limpiarResaltada]);
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [
+    notificaciones,
+    limpiarResaltada,
+  ]);
+
+  if (
+    !Array.isArray(notificaciones) ||
+    notificaciones.length === 0
+  ) {
+    return null;
+  }
 
   return (
-    <div className="fixed bottom-6 right-6 space-y-3 z-50 pointer-events-none">
+    <div
+      className="
+        fixed
+        bottom-6
+        right-6
+        z-[200]
+        space-y-3
+        pointer-events-none
+        w-[min(380px,calc(100vw-2rem))]
+      "
+      aria-live="polite"
+      aria-atomic="true"
+    >
       {notificaciones.map((n) => (
         <div
           key={n.id}
           className="
-            pointer-events-auto px-4 py-3 rounded-xl shadow-2xl text-sm
-            bg-white/10 backdrop-blur-xl border border-white/20 text-white
+            pointer-events-auto
+            flex
+            items-start
+            gap-3
+            px-4
+            py-3
+            rounded-xl
+            shadow-xl
+            bg-white
+            border
+            border-slate-200
+            text-slate-700
+            text-sm
             animate-[fadeIn_0.3s_ease,slideUp_0.3s_ease]
           "
-          style={{ animationFillMode: "both" }}
+          style={{
+            animationFillMode: "both",
+          }}
         >
-          {n.msg}
+          {/* ICONO */}
+
+          <div
+            className="
+              flex
+              items-center
+              justify-center
+              w-8
+              h-8
+              rounded-lg
+              bg-blue-50
+              text-blue-600
+              shrink-0
+            "
+          >
+            <svg
+              className="w-4 h-4"
+              aria-hidden="true"
+            >
+              <use href="/icons/icons.svg#calendar" />
+            </svg>
+          </div>
+
+          {/* MENSAJE */}
+
+          <div className="flex-1 min-w-0">
+            <div className="font-semibold text-slate-800">
+              Agenda
+            </div>
+
+            <div className="text-xs text-slate-500 mt-0.5 break-words">
+              {n.msg}
+            </div>
+          </div>
         </div>
       ))}
     </div>

@@ -1,24 +1,19 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+
 import {
   obtenerListadoExpedientes,
   exportarExcelExpedientes,
   obtenerResumenExpedientes,
 } from "../../api/expedientes";
 
-/*
- * ============================================================
- * COLUMNAS DEL EXPEDIENTE
- * ============================================================
- *
- * Estas columnas corresponden a los campos que devuelve:
- *
- * GET /api/expedientes/listado
- *
- * Incluye también "gestoria".
- */
+
+// ============================================================
+// COLUMNAS DEL EXCEL / EXPEDIENTE
+// ============================================================
 
 const COLUMNAS = [
+
   // ==========================================================
   // IDENTIFICACIÓN
   // ==========================================================
@@ -26,16 +21,13 @@ const COLUMNAS = [
   {
     key: "id_expediente",
     label: "Nº Expediente",
+    tipo: "texto",
   },
 
   {
     key: "id",
     label: "ID",
-  },
-
-  {
-    key: "id_expediente_cgn",
-    label: "ID Expediente CGN",
+    tipo: "numero",
   },
 
   // ==========================================================
@@ -45,66 +37,67 @@ const COLUMNAS = [
   {
     key: "fecha_alta",
     label: "Fecha Alta",
+    tipo: "fecha",
   },
 
   {
     key: "fecha_firma",
     label: "Fecha Firma",
+    tipo: "fecha",
   },
 
   {
     key: "fecha_inscripcion",
     label: "Fecha Inscripción",
+    tipo: "fecha",
   },
 
   {
     key: "fecha_entregado_cliente",
     label: "Fecha Entregado Cliente",
+    tipo: "fecha",
   },
 
   {
     key: "fecha_prevista_firma",
     label: "Fecha Prevista Firma",
+    tipo: "fecha",
   },
 
   {
     key: "fecha_vencimiento",
     label: "Fecha Vencimiento",
+    tipo: "fecha",
   },
 
   {
     key: "fecha_sol_cgn",
     label: "Fecha Solicitud CGN",
+    tipo: "fecha",
   },
 
   {
     key: "fecha_firma_prev_val",
     label: "Fecha Firma Prev. Validación",
+    tipo: "fecha",
   },
 
   {
     key: "fecha_firma_prev_cli",
     label: "Fecha Firma Prev. Cliente",
+    tipo: "fecha",
   },
 
   {
     key: "fecha_inicio_actividad",
     label: "Inicio Actividad",
+    tipo: "fecha",
   },
 
   {
     key: "fecha_fin_actividad",
     label: "Fin Actividad",
-  },
-
-  {
-    key: "facturacion_fecha",
-    label: "Fecha Facturación",
-  },
-
-  {
-    key: "registral_fecha",
-    label: "Fecha Registral",
+    tipo: "fecha",
   },
 
   // ==========================================================
@@ -113,27 +106,32 @@ const COLUMNAS = [
 
   {
     key: "estado_expediente",
-    label: "Estado Expediente",
+    label: "Estado expediente",
+    tipo: "texto",
   },
 
   {
     key: "estado_expediente_ancert",
     label: "Estado ANCERT",
+    tipo: "texto",
   },
 
   {
     key: "estado_actividad",
-    label: "Estado Actividad",
+    label: "Estado actividad",
+    tipo: "texto",
   },
 
   {
     key: "facturacion_estado",
-    label: "Estado Facturación",
+    label: "Estado facturación",
+    tipo: "texto",
   },
 
   {
     key: "registral_estado",
-    label: "Estado Registral",
+    label: "Estado registral",
+    tipo: "texto",
   },
 
   // ==========================================================
@@ -142,7 +140,8 @@ const COLUMNAS = [
 
   {
     key: "actividad_actual",
-    label: "Actividad Actual",
+    label: "Actividad actual",
+    tipo: "texto",
   },
 
   // ==========================================================
@@ -151,12 +150,14 @@ const COLUMNAS = [
 
   {
     key: "nombre_titular",
-    label: "Nombre Titular",
+    label: "Nombre titular",
+    tipo: "texto",
   },
 
   {
     key: "nif_titular",
-    label: "NIF Titular",
+    label: "NIF titular",
+    tipo: "texto",
   },
 
   // ==========================================================
@@ -165,17 +166,20 @@ const COLUMNAS = [
 
   {
     key: "nombre_notario",
-    label: "Nombre Notario",
+    label: "Nombre notario",
+    tipo: "texto",
   },
 
   {
     key: "nif_notario",
-    label: "NIF Notario",
+    label: "NIF notario",
+    tipo: "texto",
   },
 
   {
     key: "notario",
     label: "Notario",
+    tipo: "texto",
   },
 
   // ==========================================================
@@ -185,16 +189,19 @@ const COLUMNAS = [
   {
     key: "oficina",
     label: "Oficina",
+    tipo: "texto",
   },
 
   {
     key: "oficina_alta",
     label: "Oficina Alta",
+    tipo: "texto",
   },
 
   {
     key: "dan",
     label: "DAN",
+    tipo: "texto",
   },
 
   // ==========================================================
@@ -204,21 +211,25 @@ const COLUMNAS = [
   {
     key: "importe",
     label: "Importe",
+    tipo: "numero",
   },
 
   {
     key: "capital",
     label: "Capital",
+    tipo: "numero",
   },
 
   {
     key: "saldo_real",
-    label: "Saldo Real",
+    label: "Saldo real",
+    tipo: "numero",
   },
 
   {
     key: "saldo_disponible",
-    label: "Saldo Disponible",
+    label: "Saldo disponible",
+    tipo: "numero",
   },
 
   // ==========================================================
@@ -227,32 +238,38 @@ const COLUMNAS = [
 
   {
     key: "tipo_operacion",
-    label: "Tipo Operación",
+    label: "Tipo operación",
+    tipo: "texto",
   },
 
   {
     key: "subtipo_operacion",
-    label: "Subtipo Operación",
+    label: "Subtipo operación",
+    tipo: "texto",
   },
 
   {
     key: "contrato",
     label: "Contrato",
+    tipo: "texto",
   },
 
   {
     key: "num_solicitud_sia",
     label: "Nº Solicitud SIA",
+    tipo: "texto",
   },
 
   {
     key: "vinccanc",
     label: "VincCanc",
+    tipo: "texto",
   },
 
   {
     key: "protocolo",
     label: "Protocolo",
+    tipo: "texto",
   },
 
   // ==========================================================
@@ -262,16 +279,19 @@ const COLUMNAS = [
   {
     key: "producto_gtg",
     label: "Producto GTG",
+    tipo: "texto",
   },
 
   {
     key: "origen_bankia",
     label: "Origen Bankia",
+    tipo: "texto",
   },
 
   {
     key: "dt",
     label: "DT",
+    tipo: "texto",
   },
 
   // ==========================================================
@@ -281,6 +301,17 @@ const COLUMNAS = [
   {
     key: "gestoria",
     label: "Gestoría",
+    tipo: "texto",
+  },
+
+  // ==========================================================
+  // CGN
+  // ==========================================================
+
+  {
+    key: "id_expediente_cgn",
+    label: "ID Expediente CGN",
+    tipo: "texto",
   },
 
   // ==========================================================
@@ -290,11 +321,13 @@ const COLUMNAS = [
   {
     key: "lucy",
     label: "Lucy",
+    tipo: "texto",
   },
 
   {
     key: "indicador_tt",
     label: "Indicador TT",
+    tipo: "texto",
   },
 
   // ==========================================================
@@ -304,6 +337,27 @@ const COLUMNAS = [
   {
     key: "observaciones",
     label: "Observaciones",
+    tipo: "texto",
+  },
+
+  // ==========================================================
+  // FACTURACIÓN
+  // ==========================================================
+
+  {
+    key: "facturacion_fecha",
+    label: "Fecha facturación",
+    tipo: "fecha",
+  },
+
+  // ==========================================================
+  // REGISTRAL
+  // ==========================================================
+
+  {
+    key: "registral_fecha",
+    label: "Fecha registral",
+    tipo: "fecha",
   },
 
   // ==========================================================
@@ -313,55 +367,51 @@ const COLUMNAS = [
   {
     key: "cliente_id",
     label: "ID Cliente",
+    tipo: "numero",
   },
 ];
 
 
-/*
- * ============================================================
- * FORMATEAR VALOR
- * ============================================================
- *
- * Convierte null / undefined / "" en "—".
- *
- * Las fechas se mantienen como vienen del backend:
- * YYYY-MM-DD
- *
- * Los números se muestran con formato español.
- */
+// ============================================================
+// FORMATEAR VALOR
+// ============================================================
 
-function mostrarValor(valor, clave) {
+function formatearValor(valor, tipo) {
+
   if (valor === null || valor === undefined || valor === "") {
     return "—";
   }
 
-  // Valores numéricos
-  if (
-    typeof valor === "number" &&
-    [
-      "importe",
-      "capital",
-      "saldo_real",
-      "saldo_disponible",
-    ].includes(clave)
-  ) {
-    return valor.toLocaleString("es-ES", {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 2,
-    });
+  if (tipo === "fecha") {
+
+    if (typeof valor === "string" && valor.includes("-")) {
+      return valor;
+    }
+
+    return String(valor);
   }
 
-  return String(valor);
+  if (tipo === "numero") {
+
+    if (typeof valor === "number") {
+      return new Intl.NumberFormat("es-ES", {
+        maximumFractionDigits: 2,
+      }).format(valor);
+    }
+
+    return valor;
+  }
+
+  return valor;
 }
 
 
-/*
- * ============================================================
- * COMPONENTE
- * ============================================================
- */
+// ============================================================
+// COMPONENTE
+// ============================================================
 
 export default function ExpedientesListado() {
+
   const [expedientes, setExpedientes] = useState([]);
 
   const [loading, setLoading] = useState(true);
@@ -371,6 +421,7 @@ export default function ExpedientesListado() {
   const [mostrarFiltros, setMostrarFiltros] = useState(false);
 
   const [mostrarColumnas, setMostrarColumnas] = useState(false);
+
 
   // ==========================================================
   // FILTROS
@@ -392,11 +443,13 @@ export default function ExpedientesListado() {
 
   const [filtroImporteMax, setFiltroImporteMax] = useState("");
 
+
   // ==========================================================
-  // ORDENACIÓN
+  // ORDEN
   // ==========================================================
 
   const [ordenMultiple, setOrdenMultiple] = useState([]);
+
 
   // ==========================================================
   // PAGINACIÓN
@@ -408,6 +461,7 @@ export default function ExpedientesListado() {
 
   const porPagina = 20;
 
+
   // ==========================================================
   // COLUMNAS VISIBLES
   // ==========================================================
@@ -415,6 +469,7 @@ export default function ExpedientesListado() {
   const [columnasVisibles, setColumnasVisibles] = useState(
     COLUMNAS.map((c) => c.key)
   );
+
 
   // ==========================================================
   // RESUMEN
@@ -427,19 +482,21 @@ export default function ExpedientesListado() {
   });
 
 
-  /*
-   * ==========================================================
-   * CARGAR LISTADO
-   * ==========================================================
-   */
+  // ==========================================================
+  // CARGAR EXPEDIENTES
+  // ==========================================================
 
   const cargar = async () => {
+
     setLoading(true);
     setError("");
 
     try {
+
       const res = await obtenerListadoExpedientes({
+
         pagina,
+
         porPagina,
 
         nif: filtroNif || undefined,
@@ -458,17 +515,19 @@ export default function ExpedientesListado() {
 
         importeMax: filtroImporteMax || undefined,
 
-        ordenMultiple: ordenMultiple.length
-          ? JSON.stringify(ordenMultiple)
-          : undefined,
+        ordenMultiple:
+          ordenMultiple.length
+            ? JSON.stringify(ordenMultiple)
+            : undefined,
       });
 
-      setExpedientes(res?.items || []);
 
-      setTotalPaginas(
-        res?.total_paginas || 1
-      );
+      setExpedientes(res.items || []);
+
+      setTotalPaginas(res.total_paginas || 1);
+
     } catch (err) {
+
       console.error(
         "Error cargando expedientes:",
         err
@@ -478,23 +537,22 @@ export default function ExpedientesListado() {
         "No se han podido cargar los expedientes."
       );
 
-      setExpedientes([]);
-
-      setTotalPaginas(1);
     } finally {
+
       setLoading(false);
+
     }
   };
 
 
-  /*
-   * ==========================================================
-   * CARGAR RESUMEN
-   * ==========================================================
-   */
+  // ==========================================================
+  // CARGAR RESUMEN
+  // ==========================================================
 
   const cargarResumen = async () => {
+
     try {
+
       const res =
         await obtenerResumenExpedientes();
 
@@ -505,118 +563,72 @@ export default function ExpedientesListado() {
           finalizados: 0,
         }
       );
+
     } catch (err) {
+
       console.error(
         "Error cargando resumen:",
         err
       );
+
     }
   };
 
 
-  /*
-   * ==========================================================
-   * CARGA INICIAL / PAGINACIÓN / ORDENACIÓN
-   * ==========================================================
-   */
+  // ==========================================================
+  // EFECTO
+  // ==========================================================
 
   useEffect(() => {
+
     cargar();
+
   }, [pagina, ordenMultiple]);
 
 
   useEffect(() => {
+
     cargarResumen();
+
   }, []);
 
 
-  /*
-   * ==========================================================
-   * APLICAR FILTROS
-   * ==========================================================
-   */
+  // ==========================================================
+  // FILTROS
+  // ==========================================================
 
-  const aplicarFiltros = async () => {
-    setPagina(1);
-
-    /*
-     * Si ya estamos en página 1, cambiar pagina no provoca
-     * un nuevo useEffect. Por eso cargamos directamente.
-     */
-    if (pagina === 1) {
-      await cargar();
-    }
-  };
-
-
-  /*
-   * ==========================================================
-   * LIMPIAR FILTROS
-   * ==========================================================
-   */
-
-  const limpiarFiltros = async () => {
-    setFiltroNif("");
-    setFiltroActividad("");
-    setFiltroFechaInicio("");
-    setFiltroFechaFin("");
-    setFiltroNotario("");
-    setFiltroOficina("");
-    setFiltroImporteMin("");
-    setFiltroImporteMax("");
+  const aplicarFiltros = () => {
 
     setPagina(1);
 
-    /*
-     * Carga directa con filtros vacíos.
-     */
+    cargar();
 
-    try {
-      setLoading(true);
-
-      const res =
-        await obtenerListadoExpedientes({
-          pagina: 1,
-          porPagina,
-          ordenMultiple: ordenMultiple.length
-            ? JSON.stringify(ordenMultiple)
-            : undefined,
-        });
-
-      setExpedientes(res?.items || []);
-
-      setTotalPaginas(
-        res?.total_paginas || 1
-      );
-    } catch (err) {
-      console.error(err);
-
-      setError(
-        "No se han podido cargar los expedientes."
-      );
-    } finally {
-      setLoading(false);
-    }
   };
 
 
-  /*
-   * ==========================================================
-   * ORDENAR
-   * ==========================================================
-   */
+  // ==========================================================
+  // ORDENACIÓN
+  // ==========================================================
 
-  const ordenar = (col, shiftKey) => {
+  const ordenar = (columna, shiftKey) => {
+
+    // --------------------------------------------------------
+    // ORDEN NORMAL
+    // --------------------------------------------------------
+
     if (!shiftKey) {
-      const actual = ordenMultiple[0];
+
+      const actual =
+        ordenMultiple[0];
 
       if (
         actual &&
-        actual.columna === col
+        actual.columna === columna
       ) {
+
         setOrdenMultiple([
           {
-            columna: col,
+            columna,
 
             direccion:
               actual.direccion === "asc"
@@ -624,27 +636,43 @@ export default function ExpedientesListado() {
                 : "asc",
           },
         ]);
+
       } else {
+
         setOrdenMultiple([
           {
-            columna: col,
+            columna,
+
             direccion: "asc",
           },
         ]);
+
       }
 
       return;
     }
 
+
+    // --------------------------------------------------------
+    // ORDEN MÚLTIPLE
+    // Shift + clic
+    // --------------------------------------------------------
+
     const existe =
       ordenMultiple.find(
-        (o) => o.columna === col
+        (o) =>
+          o.columna === columna
       );
 
+
     if (existe) {
+
       setOrdenMultiple(
+
         ordenMultiple.map((o) =>
-          o.columna === col
+
+          o.columna === columna
+
             ? {
                 ...o,
 
@@ -653,54 +681,76 @@ export default function ExpedientesListado() {
                     ? "desc"
                     : "asc",
               }
+
             : o
         )
       );
+
     } else {
+
       setOrdenMultiple([
+
         ...ordenMultiple,
 
         {
-          columna: col,
+          columna,
+
           direccion: "asc",
         },
+
       ]);
+
     }
+
   };
 
 
-  /*
-   * ==========================================================
-   * ICONO ORDENACIÓN
-   * ==========================================================
-   */
+  // ==========================================================
+  // ICONO ORDEN
+  // ==========================================================
 
-  const iconoOrden = (col) => {
-    const o =
-      ordenMultiple.find(
-        (x) => x.columna === col
+  const iconoOrden = (columna) => {
+
+    const indice =
+      ordenMultiple.findIndex(
+        (x) =>
+          x.columna === columna
       );
 
-    if (!o) {
+    if (indice === -1) {
       return "↕";
     }
 
-    return o.direccion === "asc"
-      ? "↑"
-      : "↓";
+    const orden =
+      ordenMultiple[indice];
+
+    const flecha =
+      orden.direccion === "asc"
+        ? "↑"
+        : "↓";
+
+    if (ordenMultiple.length > 1) {
+
+      return `${flecha}${indice + 1}`;
+
+    }
+
+    return flecha;
   };
 
 
-  /*
-   * ==========================================================
-   * EXPORTAR EXCEL
-   * ==========================================================
-   */
+  // ==========================================================
+  // EXPORTAR EXCEL
+  // ==========================================================
 
   const exportarExcel = async () => {
+
     try {
+
       await exportarExcelExpedientes({
-        nif: filtroNif || undefined,
+
+        nif:
+          filtroNif || undefined,
 
         actividad:
           filtroActividad || undefined,
@@ -722,53 +772,28 @@ export default function ExpedientesListado() {
 
         importeMax:
           filtroImporteMax || undefined,
+
       });
+
     } catch (err) {
+
       console.error(
         "Error exportando Excel:",
         err
       );
 
-      setError(
-        "No se ha podido exportar el Excel."
-      );
     }
   };
 
 
-  /*
-   * ==========================================================
-   * CAMBIAR COLUMNA
-   * ==========================================================
-   */
-
-  const cambiarColumna = (
-    key,
-    checked
-  ) => {
-    if (checked) {
-      setColumnasVisibles((actuales) => [
-        ...actuales,
-        key,
-      ]);
-    } else {
-      setColumnasVisibles((actuales) =>
-        actuales.filter(
-          (x) => x !== key
-        )
-      );
-    }
-  };
-
-
-  /*
-   * ==========================================================
-   * RENDER
-   * ==========================================================
-   */
+  // ==========================================================
+  // RENDER
+  // ==========================================================
 
   return (
+
     <div className="p-6 text-white space-y-6 animate-fade-in">
+
 
       {/* ======================================================
           TÍTULO
@@ -784,9 +809,20 @@ export default function ExpedientesListado() {
       ====================================================== */}
 
       {error && (
-        <div className="bg-red-500/20 border border-red-400/30 rounded-xl p-4 text-red-200">
+
+        <div className="
+          bg-red-500/20
+          border
+          border-red-400/30
+          rounded-xl
+          p-4
+          text-red-200
+        ">
+
           {error}
+
         </div>
+
       )}
 
 
@@ -794,44 +830,108 @@ export default function ExpedientesListado() {
           RESUMEN
       ====================================================== */}
 
-      <section className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-xl">
+      <section className="
+        bg-white/10
+        backdrop-blur-xl
+        border
+        border-white/10
+        rounded-2xl
+        p-4
+        shadow-xl
+      ">
 
-        <h2 className="text-xl font-semibold mb-4">
+        <h2 className="
+          text-xl
+          font-semibold
+          mb-4
+        ">
+
           Estado de expedientes
+
         </h2>
 
-        <div className="grid grid-cols-3 gap-4 text-sm text-white/80">
 
-          <div className="bg-white/5 p-3 rounded-xl border border-white/10">
+        <div className="
+          grid
+          grid-cols-3
+          gap-4
+          text-sm
+          text-white/80
+        ">
+
+
+          <div className="
+            bg-white/5
+            p-3
+            rounded-xl
+            border
+            border-white/10
+          ">
+
             <p className="text-white/60">
               Pendientes
             </p>
 
-            <p className="text-white font-semibold text-xl">
+            <p className="
+              text-white
+              font-semibold
+              text-lg
+            ">
+
               {resumen.pendientes}
+
             </p>
+
           </div>
 
 
-          <div className="bg-white/5 p-3 rounded-xl border border-white/10">
+          <div className="
+            bg-white/5
+            p-3
+            rounded-xl
+            border
+            border-white/10
+          ">
+
             <p className="text-white/60">
               En curso
             </p>
 
-            <p className="text-white font-semibold text-xl">
+            <p className="
+              text-white
+              font-semibold
+              text-lg
+            ">
+
               {resumen.enCurso}
+
             </p>
+
           </div>
 
 
-          <div className="bg-white/5 p-3 rounded-xl border border-white/10">
+          <div className="
+            bg-white/5
+            p-3
+            rounded-xl
+            border
+            border-white/10
+          ">
+
             <p className="text-white/60">
               Finalizados
             </p>
 
-            <p className="text-white font-semibold text-xl">
+            <p className="
+              text-white
+              font-semibold
+              text-lg
+            ">
+
               {resumen.finalizados}
+
             </p>
+
           </div>
 
         </div>
@@ -843,7 +943,16 @@ export default function ExpedientesListado() {
           FILTROS
       ====================================================== */}
 
-      <section className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-xl">
+      <section className="
+        bg-white/10
+        backdrop-blur-xl
+        border
+        border-white/10
+        rounded-2xl
+        p-4
+        shadow-xl
+      ">
+
 
         <button
           onClick={() =>
@@ -851,7 +960,17 @@ export default function ExpedientesListado() {
               !mostrarFiltros
             )
           }
-          className="w-full flex items-center justify-between text-xl font-semibold text-left hover:text-blue-300 transition"
+          className="
+            w-full
+            flex
+            items-center
+            justify-between
+            text-xl
+            font-semibold
+            text-left
+            hover:text-blue-300
+            transition
+          "
         >
 
           <span>
@@ -859,24 +978,38 @@ export default function ExpedientesListado() {
           </span>
 
           <span className="text-sm">
+
             {mostrarFiltros
               ? "▲ Ocultar"
               : "▼ Mostrar"}
+
           </span>
 
         </button>
 
 
         {mostrarFiltros && (
+
           <div className="mt-4">
 
-            <div className="grid grid-cols-3 gap-4">
+            <div className="
+              grid
+              grid-cols-3
+              gap-4
+            ">
 
-              {/* NIF TITULAR */}
+
+              {/* NIF */}
 
               <div>
-                <label className="text-sm text-white/70">
+
+                <label className="
+                  text-sm
+                  text-white/70
+                ">
+
                   NIF titular
+
                 </label>
 
                 <input
@@ -887,16 +1020,33 @@ export default function ExpedientesListado() {
                       e.target.value
                     )
                   }
-                  className="w-full mt-1 px-3 py-2 rounded-xl bg-white/10 border border-white/20 text-white"
+                  className="
+                    w-full
+                    mt-1
+                    px-3
+                    py-2
+                    rounded-xl
+                    bg-white/10
+                    border
+                    border-white/20
+                    text-white
+                  "
                 />
+
               </div>
 
 
               {/* ACTIVIDAD */}
 
               <div>
-                <label className="text-sm text-white/70">
+
+                <label className="
+                  text-sm
+                  text-white/70
+                ">
+
                   Actividad actual
+
                 </label>
 
                 <input
@@ -907,16 +1057,33 @@ export default function ExpedientesListado() {
                       e.target.value
                     )
                   }
-                  className="w-full mt-1 px-3 py-2 rounded-xl bg-white/10 border border-white/20 text-white"
+                  className="
+                    w-full
+                    mt-1
+                    px-3
+                    py-2
+                    rounded-xl
+                    bg-white/10
+                    border
+                    border-white/20
+                    text-white
+                  "
                 />
+
               </div>
 
 
               {/* FECHA INICIO */}
 
               <div>
-                <label className="text-sm text-white/70">
+
+                <label className="
+                  text-sm
+                  text-white/70
+                ">
+
                   Fecha inicio
+
                 </label>
 
                 <input
@@ -927,16 +1094,33 @@ export default function ExpedientesListado() {
                       e.target.value
                     )
                   }
-                  className="w-full mt-1 px-3 py-2 rounded-xl bg-white/10 border border-white/20 text-white"
+                  className="
+                    w-full
+                    mt-1
+                    px-3
+                    py-2
+                    rounded-xl
+                    bg-white/10
+                    border
+                    border-white/20
+                    text-white
+                  "
                 />
+
               </div>
 
 
               {/* FECHA FIN */}
 
               <div>
-                <label className="text-sm text-white/70">
+
+                <label className="
+                  text-sm
+                  text-white/70
+                ">
+
                   Fecha fin
+
                 </label>
 
                 <input
@@ -947,16 +1131,33 @@ export default function ExpedientesListado() {
                       e.target.value
                     )
                   }
-                  className="w-full mt-1 px-3 py-2 rounded-xl bg-white/10 border border-white/20 text-white"
+                  className="
+                    w-full
+                    mt-1
+                    px-3
+                    py-2
+                    rounded-xl
+                    bg-white/10
+                    border
+                    border-white/20
+                    text-white
+                  "
                 />
+
               </div>
 
 
-              {/* NIF NOTARIO */}
+              {/* NOTARIO */}
 
               <div>
-                <label className="text-sm text-white/70">
+
+                <label className="
+                  text-sm
+                  text-white/70
+                ">
+
                   NIF notario
+
                 </label>
 
                 <input
@@ -967,16 +1168,33 @@ export default function ExpedientesListado() {
                       e.target.value
                     )
                   }
-                  className="w-full mt-1 px-3 py-2 rounded-xl bg-white/10 border border-white/20 text-white"
+                  className="
+                    w-full
+                    mt-1
+                    px-3
+                    py-2
+                    rounded-xl
+                    bg-white/10
+                    border
+                    border-white/20
+                    text-white
+                  "
                 />
+
               </div>
 
 
               {/* OFICINA */}
 
               <div>
-                <label className="text-sm text-white/70">
+
+                <label className="
+                  text-sm
+                  text-white/70
+                ">
+
                   Oficina
+
                 </label>
 
                 <input
@@ -987,16 +1205,33 @@ export default function ExpedientesListado() {
                       e.target.value
                     )
                   }
-                  className="w-full mt-1 px-3 py-2 rounded-xl bg-white/10 border border-white/20 text-white"
+                  className="
+                    w-full
+                    mt-1
+                    px-3
+                    py-2
+                    rounded-xl
+                    bg-white/10
+                    border
+                    border-white/20
+                    text-white
+                  "
                 />
+
               </div>
 
 
               {/* IMPORTE MIN */}
 
               <div>
-                <label className="text-sm text-white/70">
+
+                <label className="
+                  text-sm
+                  text-white/70
+                ">
+
                   Importe mínimo
+
                 </label>
 
                 <input
@@ -1007,16 +1242,33 @@ export default function ExpedientesListado() {
                       e.target.value
                     )
                   }
-                  className="w-full mt-1 px-3 py-2 rounded-xl bg-white/10 border border-white/20 text-white"
+                  className="
+                    w-full
+                    mt-1
+                    px-3
+                    py-2
+                    rounded-xl
+                    bg-white/10
+                    border
+                    border-white/20
+                    text-white
+                  "
                 />
+
               </div>
 
 
               {/* IMPORTE MAX */}
 
               <div>
-                <label className="text-sm text-white/70">
+
+                <label className="
+                  text-sm
+                  text-white/70
+                ">
+
                   Importe máximo
+
                 </label>
 
                 <input
@@ -1027,36 +1279,65 @@ export default function ExpedientesListado() {
                       e.target.value
                     )
                   }
-                  className="w-full mt-1 px-3 py-2 rounded-xl bg-white/10 border border-white/20 text-white"
+                  className="
+                    w-full
+                    mt-1
+                    px-3
+                    py-2
+                    rounded-xl
+                    bg-white/10
+                    border
+                    border-white/20
+                    text-white
+                  "
                 />
+
               </div>
 
 
               {/* BOTONES */}
 
-              <div className="flex items-end gap-3">
+              <div className="
+                flex
+                items-end
+                gap-3
+              ">
 
                 <button
                   onClick={aplicarFiltros}
-                  className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-lg transition"
+                  className="
+                    px-4
+                    py-2
+                    rounded-xl
+                    bg-blue-600
+                    hover:bg-blue-700
+                    text-white
+                    shadow-lg
+                    transition
+                  "
                 >
+
                   Aplicar filtros
-                </button>
 
-
-                <button
-                  onClick={limpiarFiltros}
-                  className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white shadow-lg transition"
-                >
-                  Limpiar
                 </button>
 
 
                 <button
                   onClick={exportarExcel}
-                  className="px-4 py-2 rounded-xl bg-green-600 hover:bg-green-700 text-white shadow-lg transition"
+                  className="
+                    px-4
+                    py-2
+                    rounded-xl
+                    bg-green-600
+                    hover:bg-green-700
+                    text-white
+                    shadow-lg
+                    transition
+                  "
                 >
+
                   Exportar Excel
+
                 </button>
 
               </div>
@@ -1064,16 +1345,26 @@ export default function ExpedientesListado() {
             </div>
 
           </div>
+
         )}
 
       </section>
 
 
       {/* ======================================================
-          SELECTOR DE COLUMNAS
+          COLUMNAS
       ====================================================== */}
 
-      <section className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-xl">
+      <section className="
+        bg-white/10
+        backdrop-blur-xl
+        border
+        border-white/10
+        rounded-2xl
+        p-4
+        shadow-xl
+      ">
+
 
         <button
           onClick={() =>
@@ -1081,7 +1372,17 @@ export default function ExpedientesListado() {
               !mostrarColumnas
             )
           }
-          className="w-full flex items-center justify-between text-xl font-semibold text-left hover:text-blue-300 transition"
+          className="
+            w-full
+            flex
+            items-center
+            justify-between
+            text-xl
+            font-semibold
+            text-left
+            hover:text-blue-300
+            transition
+          "
         >
 
           <span>
@@ -1089,46 +1390,83 @@ export default function ExpedientesListado() {
           </span>
 
           <span className="text-sm">
+
             {mostrarColumnas
               ? "▲ Ocultar"
               : "▼ Mostrar"}
+
           </span>
 
         </button>
 
 
         {mostrarColumnas && (
+
           <div className="mt-4">
 
-            <div className="grid grid-cols-3 gap-2">
+            <div className="
+              grid
+              grid-cols-3
+              md:grid-cols-4
+              lg:grid-cols-5
+              gap-2
+            ">
 
-              {COLUMNAS.map((c) => (
+              {COLUMNAS.map((columna) => (
+
                 <label
-                  key={c.key}
-                  className="flex items-center gap-2 text-sm text-white/70"
+                  key={columna.key}
+                  className="
+                    flex
+                    items-center
+                    gap-2
+                    text-sm
+                    text-white/70
+                    cursor-pointer
+                  "
                 >
 
                   <input
                     type="checkbox"
                     checked={columnasVisibles.includes(
-                      c.key
+                      columna.key
                     )}
-                    onChange={(e) =>
-                      cambiarColumna(
-                        c.key,
+                    onChange={(e) => {
+
+                      if (
                         e.target.checked
-                      )
-                    }
+                      ) {
+
+                        setColumnasVisibles([
+                          ...columnasVisibles,
+                          columna.key,
+                        ]);
+
+                      } else {
+
+                        setColumnasVisibles(
+                          columnasVisibles.filter(
+                            (x) =>
+                              x !==
+                              columna.key
+                          )
+                        );
+
+                      }
+
+                    }}
                   />
 
-                  {c.label}
+                  {columna.label}
 
                 </label>
+
               ))}
 
             </div>
 
           </div>
+
         )}
 
       </section>
@@ -1138,62 +1476,137 @@ export default function ExpedientesListado() {
           TABLA
       ====================================================== */}
 
-      <section className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-xl overflow-auto">
+      <section className="
+        bg-white/10
+        backdrop-blur-xl
+        border
+        border-white/10
+        rounded-2xl
+        p-4
+        shadow-xl
+        overflow-auto
+      ">
+
 
         {loading ? (
 
-          <div className="text-white/70 animate-pulse p-4">
+          <div className="
+            text-white/70
+            animate-pulse
+            py-8
+            text-center
+          ">
+
             Cargando expedientes…
+
           </div>
 
         ) : expedientes.length === 0 ? (
 
-          <div className="text-white/60 p-4">
-            No hay expedientes que mostrar.
+          <div className="
+            text-white/60
+            py-8
+            text-center
+          ">
+
+            No hay expedientes para mostrar.
+
           </div>
 
         ) : (
 
-          <table className="min-w-full text-sm text-white/80">
+          <table className="
+            min-w-max
+            w-full
+            text-sm
+            text-white/80
+          ">
+
+
+            {/* =================================================
+                CABECERA
+            ================================================= */}
 
             <thead>
 
-              <tr className="text-left bg-white/5">
+              <tr className="
+                text-left
+                bg-white/5
+                sticky
+                top-0
+                z-10
+              ">
+
 
                 {COLUMNAS
+
                   .filter((c) =>
                     columnasVisibles.includes(
                       c.key
                     )
                   )
+
                   .map((c) => (
 
                     <th
                       key={c.key}
-                      className="px-3 py-2 cursor-pointer select-none whitespace-nowrap"
+                      className="
+                        px-3
+                        py-3
+                        cursor-pointer
+                        select-none
+                        whitespace-nowrap
+                        hover:bg-white/10
+                      "
                       onClick={(e) =>
                         ordenar(
                           c.key,
                           e.shiftKey
                         )
                       }
+                      title="
+                        Clic para ordenar.
+                        Shift + clic para
+                        añadir orden.
+                      "
                     >
 
-                      {c.label}
+                      <div className="
+                        flex
+                        items-center
+                        gap-2
+                      ">
 
-                      {" "}
+                        <span>
+                          {c.label}
+                        </span>
 
-                      <span className="text-white/40">
-                        {iconoOrden(c.key)}
-                      </span>
+                        <span className="
+                          text-white/40
+                          text-xs
+                        ">
+
+                          {iconoOrden(
+                            c.key
+                          )}
+
+                        </span>
+
+                      </div>
 
                     </th>
 
                   ))}
 
 
-                <th className="px-3 py-2 whitespace-nowrap">
+                <th className="
+                  px-3
+                  py-3
+                  whitespace-nowrap
+                ">
+
                   Acciones
+
                 </th>
 
               </tr>
@@ -1201,67 +1614,84 @@ export default function ExpedientesListado() {
             </thead>
 
 
+            {/* =================================================
+                CUERPO
+            ================================================= */}
+
             <tbody>
 
-              {expedientes.map((exp) => (
+              {expedientes.map(
+                (exp) => (
 
-                <tr
-                  key={
-                    exp.id_expediente ??
-                    exp.id
-                  }
-                  className="border-t border-white/10 hover:bg-white/5"
-                >
+                  <tr
+                    key={
+                      exp.id_expediente ||
+                      exp.id
+                    }
+                    className="
+                      border-t
+                      border-white/10
+                      hover:bg-white/5
+                    "
+                  >
 
-                  {COLUMNAS
-                    .filter((c) =>
-                      columnasVisibles.includes(
-                        c.key
-                      )
-                    )
-                    .map((c) => (
 
-                      <td
-                        key={c.key}
-                        className="px-3 py-2 whitespace-nowrap"
-                      >
+                    {COLUMNAS
 
-                        {mostrarValor(
-                          exp[c.key],
+                      .filter((c) =>
+                        columnasVisibles.includes(
                           c.key
-                        )}
+                        )
+                      )
 
-                      </td>
+                      .map((c) => (
 
-                    ))}
+                        <td
+                          key={c.key}
+                          className="
+                            px-3
+                            py-2
+                            whitespace-nowrap
+                          "
+                        >
+
+                          {formatearValor(
+                            exp[c.key],
+                            c.tipo
+                          )}
+
+                        </td>
+
+                      ))}
 
 
-                  {/* ACCIONES */}
-
-                  <td className="px-3 py-2 whitespace-nowrap">
-
-                    {exp.id_expediente ? (
+                    <td className="
+                      px-3
+                      py-2
+                      whitespace-nowrap
+                    ">
 
                       <Link
-                        to={`/expedientes/${exp.id_expediente}`}
-                        className="text-blue-400 hover:text-blue-300 underline"
+                        to={`/expedientes/${
+                          exp.id_expediente
+                        }`}
+                        className="
+                          text-blue-400
+                          hover:text-blue-300
+                          underline
+                        "
                       >
+
                         Ver ficha
+
                       </Link>
 
-                    ) : (
+                    </td>
 
-                      <span className="text-white/40">
-                        —
-                      </span>
+                  </tr>
 
-                    )}
-
-                  </td>
-
-                </tr>
-
-              ))}
+                )
+              )}
 
             </tbody>
 
@@ -1276,7 +1706,13 @@ export default function ExpedientesListado() {
           PAGINACIÓN
       ====================================================== */}
 
-      <div className="flex items-center justify-center gap-4">
+      <div className="
+        flex
+        items-center
+        justify-center
+        gap-4
+      ">
+
 
         <button
           disabled={pagina <= 1}
@@ -1285,15 +1721,30 @@ export default function ExpedientesListado() {
               pagina - 1
             )
           }
-          className="px-3 py-2 rounded-xl bg-white/10 border border-white/20 hover:bg-white/20 transition disabled:opacity-40"
+          className="
+            px-3
+            py-2
+            rounded-xl
+            bg-white/10
+            border
+            border-white/20
+            hover:bg-white/20
+            transition
+            disabled:opacity-40
+          "
         >
+
           Anterior
+
         </button>
 
 
-        <span className="text-white/70">
-          Página {pagina} de{" "}
-          {totalPaginas}
+        <span className="
+          text-white/70
+        ">
+
+          Página {pagina} de {totalPaginas}
+
         </span>
 
 
@@ -1306,13 +1757,29 @@ export default function ExpedientesListado() {
               pagina + 1
             )
           }
-          className="px-3 py-2 rounded-xl bg-white/10 border border-white/20 hover:bg-white/20 transition disabled:opacity-40"
+          className="
+            px-3
+            py-2
+            rounded-xl
+            bg-white/10
+            border
+            border-white/20
+            hover:bg-white/20
+            transition
+            disabled:opacity-40
+          "
         >
+
           Siguiente
+
         </button>
+
 
       </div>
 
+
     </div>
+
   );
+
 }

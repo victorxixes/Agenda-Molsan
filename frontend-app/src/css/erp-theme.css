@@ -1,281 +1,663 @@
+/* ============================================================
+   ERP SJ-2026 — TEMA VISUAL GLOBAL
+   ============================================================
+
+   Objetivo:
+   - Fondo general azul/gris muy suave.
+   - Superficies blancas claramente diferenciadas.
+   - Texto oscuro y perfectamente legible.
+   - Azul corporativo para acciones y elementos activos.
+   - Evitar textos blancos sobre fondos claros.
+   - Mantener modales oscuros y botones corporativos.
+   ============================================================ */
+
 :root {
-  --erp-bg: #e8eef6;
+  /* ==========================================================
+     FONDOS
+     ========================================================== */
+
+  --erp-bg: #eef3f9;
   --erp-surface: #ffffff;
-  --erp-surface-soft: #f4f7fb;
-  --erp-border: #cfd9e8;
+  --erp-surface-soft: #f6f8fc;
+  --erp-surface-muted: #edf2f8;
+
+  /* ==========================================================
+     BORDES
+     ========================================================== */
+
+  --erp-border: #d7e0ec;
+  --erp-border-soft: #e4eaf2;
+  --erp-border-strong: #c4d0df;
+
+  /* ==========================================================
+     AZUL CORPORATIVO
+     ========================================================== */
 
   --erp-primary: #3156b3;
   --erp-primary-dark: #274694;
-  --erp-primary-soft: #e8efff;
+  --erp-primary-hover: #3d66c8;
+  --erp-primary-soft: #edf3ff;
+  --erp-primary-pale: #e5edff;
+
+  /* ==========================================================
+     TEXTO
+     ========================================================== */
 
   --erp-text: #24324a;
+  --erp-text-strong: #17243a;
   --erp-text-soft: #64748b;
+  --erp-text-muted: #8290a3;
+  --erp-text-disabled: #a5afbd;
+
+  /* ==========================================================
+     ESTADOS
+     ========================================================== */
 
   --erp-success: #198754;
+  --erp-success-soft: #e9f8ef;
+
   --erp-warning: #d97706;
+  --erp-warning-soft: #fff4df;
+
   --erp-danger: #dc3545;
+  --erp-danger-soft: #fdecef;
+
+  --erp-info: #2563eb;
+  --erp-info-soft: #eaf1ff;
+
+  /* ==========================================================
+     SOMBRAS
+     ========================================================== */
+
+  --erp-shadow-sm:
+    0 2px 8px rgba(36, 50, 74, 0.05);
+
+  --erp-shadow:
+    0 6px 18px rgba(36, 50, 74, 0.08);
+
+  --erp-shadow-lg:
+    0 12px 30px rgba(36, 50, 74, 0.12);
+
+  /* ==========================================================
+     RADIOS
+     ========================================================== */
+
+  --erp-radius-sm: 10px;
+  --erp-radius: 14px;
+  --erp-radius-lg: 18px;
 }
 
+
 /* ============================================================
-   BASE ERP
+   PÁGINA ERP
    ============================================================ */
 
 .erp-page {
+  min-height: 100vh;
+
   background: var(--erp-bg);
   color: var(--erp-text);
+
+  isolation: isolate;
 }
 
+
 /* ============================================================
-   TARJETAS
+   TEXTO GLOBAL DENTRO DE LAS PÁGINAS ERP
+   ============================================================ */
+
+/*
+   Algunos componentes antiguos utilizan text-white.
+   En las páginas claras eso provoca exactamente el problema
+   que vemos en Agenda, CTN, Dashboard y Seguridad.
+
+   Forzamos los elementos de contenido a utilizar el color
+   corporativo oscuro.
+
+   NO incluimos span/div genéricos porque pueden pertenecer
+   a botones, iconos, badges o navegación.
+*/
+
+.erp-page :where(
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  p,
+  li,
+  td,
+  th,
+  label,
+  legend,
+  small,
+  strong
+) {
+  color: var(--erp-text) !important;
+}
+
+
+/* Títulos */
+
+.erp-page :where(h1, h2, h3, h4, h5, h6) {
+  color: var(--erp-text-strong) !important;
+}
+
+
+/* Texto secundario */
+
+.erp-page :where(.text-muted, .text-secondary) {
+  color: var(--erp-text-soft) !important;
+}
+
+
+/* ============================================================
+   SUPERFICIES
    ============================================================ */
 
 .erp-card {
   background: var(--erp-surface);
   color: var(--erp-text);
+
   border: 1px solid var(--erp-border);
-  border-radius: 16px;
+  border-radius: var(--erp-radius);
+
+  box-shadow: var(--erp-shadow);
 }
+
 
 .erp-card-soft {
   background: var(--erp-surface-soft);
   color: var(--erp-text);
-  border: 1px solid var(--erp-border);
+
+  border: 1px solid var(--erp-border-soft);
+  border-radius: var(--erp-radius);
 }
+
+
+/*
+   Clase para paneles grandes.
+*/
+
+.erp-panel {
+  background: var(--erp-surface);
+  color: var(--erp-text);
+
+  border: 1px solid var(--erp-border);
+  border-radius: var(--erp-radius-lg);
+
+  box-shadow: var(--erp-shadow);
+}
+
+
+/*
+   Clase para zonas interiores.
+*/
+
+.erp-surface {
+  background: var(--erp-surface);
+  color: var(--erp-text);
+}
+
 
 /* ============================================================
    TABLAS
    ============================================================ */
 
+.erp-table {
+  background: var(--erp-surface);
+  color: var(--erp-text);
+
+  border: 1px solid var(--erp-border);
+  border-radius: var(--erp-radius);
+  overflow: hidden;
+}
+
+
 .erp-table-header {
   background: var(--erp-primary);
-  color: #ffffff;
+  color: #ffffff !important;
 }
+
+
+.erp-table-header :where(th, td, span) {
+  color: #ffffff !important;
+}
+
 
 .erp-table-row {
   background: var(--erp-surface);
   color: var(--erp-text);
+
   border-color: var(--erp-border);
 }
+
+
+.erp-table-row :where(td, th) {
+  color: var(--erp-text) !important;
+}
+
 
 .erp-table-row:hover {
   background: var(--erp-primary-soft);
 }
 
-/* ============================================================
-   TEXTOS ERP
-   ============================================================ */
 
-.erp-page h1,
-.erp-page h2,
-.erp-page h3,
-.erp-page h4,
-.erp-page h5,
-.erp-page h6 {
-  color: var(--erp-text);
+/* Filas alternas */
+
+.erp-table-row:nth-child(even) {
+  background: #fbfcfe;
 }
 
-.erp-page p,
-.erp-page span,
-.erp-page label {
-  color: inherit;
-}
-
-/* Texto secundario */
-
-.erp-text-soft {
-  color: var(--erp-text-soft);
-}
 
 /* ============================================================
-   CONTENEDORES
+   INPUTS / SELECTS / TEXTAREA
    ============================================================ */
 
-.erp-section {
-  background: var(--erp-surface);
-  color: var(--erp-text);
-  border: 1px solid var(--erp-border);
-  border-radius: 16px;
-}
-
-/* ============================================================
-   INPUTS
-   ============================================================ */
-
-.erp-page input,
-.erp-page select,
-.erp-page textarea {
+.erp-page :where(
+  input,
+  textarea,
+  select
+) {
   background: #ffffff;
   color: var(--erp-text);
-  border-color: var(--erp-border);
-}
 
-.erp-page input::placeholder,
-.erp-page textarea::placeholder {
-  color: #94a3b8;
-}
-
-/* ============================================================
-   ESTADOS
-   ============================================================ */
-
-.erp-success {
-  color: var(--erp-success);
-}
-
-.erp-warning {
-  color: var(--erp-warning);
-}
-
-.erp-danger {
-  color: var(--erp-danger);
-}
-/* ============================================================
-   ERP SJ-2026 — CORRECCIÓN GLOBAL DE LEGIBILIDAD
-   ============================================================ */
-
-/* ------------------------------------------------------------
-   CONTENIDO GENERAL
-   ------------------------------------------------------------ */
-
-.erp-page {
-  background: var(--erp-bg);
-  color: var(--erp-text);
-}
-
-.erp-page h1,
-.erp-page h2,
-.erp-page h3,
-.erp-page h4,
-.erp-page h5,
-.erp-page h6 {
-  color: var(--erp-text);
-}
-
-.erp-page p,
-.erp-page span,
-.erp-page label,
-.erp-page li {
-  color: var(--erp-text);
+  border-color: var(--erp-border-strong);
 }
 
 
-/* ------------------------------------------------------------
-   TEXTO SECUNDARIO
-   ------------------------------------------------------------ */
-
-.erp-page .text-muted,
-.erp-page .text-secondary,
-.erp-page .erp-text-soft {
-  color: var(--erp-text-soft);
-}
-
-
-/* ------------------------------------------------------------
-   FORMULARIOS
-   ------------------------------------------------------------ */
-
-.erp-page input,
-.erp-page textarea,
-.erp-page select {
-  color: var(--erp-text);
-  background: var(--erp-surface);
-  border-color: var(--erp-border);
-}
-
-.erp-page input::placeholder,
-.erp-page textarea::placeholder {
-  color: var(--erp-text-soft);
+.erp-page :where(
+  input::placeholder,
+  textarea::placeholder
+) {
+  color: var(--erp-text-muted);
   opacity: 1;
 }
 
 
-/* ------------------------------------------------------------
-   TABLAS
-   ------------------------------------------------------------ */
+.erp-page :where(
+  input,
+  textarea,
+  select
+):focus {
+  border-color: var(--erp-primary);
 
-.erp-page table {
+  outline: none;
+
+  box-shadow:
+    0 0 0 3px rgba(49, 86, 179, 0.12);
+}
+
+
+/* ============================================================
+   SELECTS NATIVOS
+   ============================================================ */
+
+.erp-page select {
+  background-color: #ffffff;
   color: var(--erp-text);
 }
 
-.erp-page tbody td {
+
+/* ============================================================
+   CALENDARIO
+   ============================================================ */
+
+/*
+   Esta parte es especialmente importante para la Agenda.
+
+   El calendario de las capturas estaba utilizando colores muy
+   claros tanto para las celdas como para el texto.
+*/
+
+.erp-calendar {
+  background: var(--erp-surface);
   color: var(--erp-text);
+
+  border: 1px solid var(--erp-border);
+  border-radius: var(--erp-radius-lg);
+
+  box-shadow: var(--erp-shadow);
 }
 
 
-/* ------------------------------------------------------------
+/* Cabecera de días */
+
+.erp-calendar :where(
+  .calendar-header,
+  .calendar-weekday,
+  .weekday
+) {
+  color: var(--erp-text-soft) !important;
+  font-weight: 600;
+}
+
+
+/* Celdas */
+
+.erp-calendar :where(
+  .calendar-day,
+  .day-cell,
+  .calendar-cell
+) {
+  background: #ffffff;
+  color: var(--erp-text) !important;
+
+  border-color: var(--erp-border-soft);
+}
+
+
+/* Número del día */
+
+.erp-calendar :where(
+  .day-number,
+  .calendar-day-number
+) {
+  color: var(--erp-text) !important;
+  font-weight: 600;
+}
+
+
+/* Día actual */
+
+.erp-calendar :where(
+  .today,
+  .is-today
+) {
+  background: var(--erp-primary-soft);
+  color: var(--erp-primary-dark) !important;
+
+  border-color: #b9caf0;
+}
+
+
+/* Día seleccionado */
+
+.erp-calendar :where(
+  .selected,
+  .is-selected
+) {
+  background: var(--erp-primary);
+  color: #ffffff !important;
+}
+
+
+/* ============================================================
+   ELEMENTOS GLASS HEREDADOS
+   ============================================================ */
+
+/*
+   Evitamos que los antiguos fondos tipo:
+
+       bg-white/10
+       bg-white/20
+       border-white/20
+
+   hagan desaparecer el contenido sobre el fondo claro.
+
+   Las tarjetas ERP deben ser superficies reales.
+*/
+
+.erp-page :where(
+  .erp-card,
+  .erp-card-soft,
+  .erp-panel,
+  .card-sj
+) {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+
+/* ============================================================
+   CARDS EXISTENTES
+   ============================================================ */
+
+.erp-page .card-sj {
+  background: var(--erp-surface);
+  color: var(--erp-text);
+
+  border: 1px solid var(--erp-border);
+  border-radius: var(--erp-radius);
+
+  box-shadow: var(--erp-shadow);
+}
+
+
+.erp-page .card-sj :where(
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  p,
+  label,
+  strong
+) {
+  color: var(--erp-text) !important;
+}
+
+
+/* ============================================================
    ENLACES
-   ------------------------------------------------------------ */
+   ============================================================ */
 
 .erp-page a {
   color: var(--erp-primary);
 }
 
 
-/* ------------------------------------------------------------
-   EXCEPCIONES: ELEMENTOS AZULES
-   ------------------------------------------------------------ */
-
-.erp-page .erp-table-header,
-.erp-page .erp-table-header *,
-.erp-page thead,
-.erp-page thead *,
-.erp-page .btn-primary,
-.erp-page .btn-primary * {
-  color: #ffffff;
+.erp-page a:hover {
+  color: var(--erp-primary-dark);
 }
 
 
-/* ------------------------------------------------------------
-   EXCEPCIONES: BOTONES
-   ------------------------------------------------------------ */
+/* ============================================================
+   BOTONES
+   ============================================================ */
+
+/*
+   NO forzamos aquí el color de todos los botones.
+   buttons.css controla los estados corporativos.
+*/
 
 .erp-page button {
-  color: var(--erp-text);
-}
-
-.erp-page button.btn-primary,
-.erp-page button.primary {
-  color: #ffffff;
+  font-family: inherit;
 }
 
 
-/* ------------------------------------------------------------
-   TARJETAS
-   ------------------------------------------------------------ */
+/* Botón primario */
 
-.erp-card {
-  color: var(--erp-text);
-}
+.erp-btn-primary {
+  background: var(--erp-primary);
+  color: #ffffff !important;
 
-.erp-card h1,
-.erp-card h2,
-.erp-card h3,
-.erp-card h4,
-.erp-card h5,
-.erp-card h6,
-.erp-card p,
-.erp-card span,
-.erp-card label {
-  color: var(--erp-text);
+  border: 1px solid var(--erp-primary);
 }
 
 
-/* ------------------------------------------------------------
-   TARJETAS SUAVES
-   ------------------------------------------------------------ */
-
-.erp-card-soft {
-  color: var(--erp-text);
+.erp-btn-primary:hover {
+  background: var(--erp-primary-hover);
 }
 
-.erp-card-soft h1,
-.erp-card-soft h2,
-.erp-card-soft h3,
-.erp-card-soft h4,
-.erp-card-soft h5,
-.erp-card-soft h6,
-.erp-card-soft p,
-.erp-card-soft span,
-.erp-card-soft label {
+
+/* Botón secundario */
+
+.erp-btn-secondary {
+  background: #ffffff;
+  color: var(--erp-text) !important;
+
+  border: 1px solid var(--erp-border-strong);
+}
+
+
+.erp-btn-secondary:hover {
+  background: var(--erp-surface-soft);
+}
+
+
+/* ============================================================
+   BADGES / ESTADOS
+   ============================================================ */
+
+.erp-success {
+  background: var(--erp-success-soft);
+  color: var(--erp-success) !important;
+}
+
+
+.erp-warning {
+  background: var(--erp-warning-soft);
+  color: var(--erp-warning) !important;
+}
+
+
+.erp-danger {
+  background: var(--erp-danger-soft);
+  color: var(--erp-danger) !important;
+}
+
+
+.erp-info {
+  background: var(--erp-info-soft);
+  color: var(--erp-info) !important;
+}
+
+
+/* ============================================================
+   SEPARADORES
+   ============================================================ */
+
+.erp-page hr {
+  border: 0;
+  border-top: 1px solid var(--erp-border);
+}
+
+
+/* ============================================================
+   SCROLL
+   ============================================================ */
+
+.erp-page ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+
+.erp-page ::-webkit-scrollbar-thumb {
+  background: #b9c5d5;
+  border-radius: 999px;
+}
+
+
+.erp-page ::-webkit-scrollbar-thumb:hover {
+  background: #9aaabd;
+}
+
+
+.erp-page ::-webkit-scrollbar-track {
+  background: #e9eef5;
+}
+
+
+/* ============================================================
+   MODALES CLAROS
+   ============================================================ */
+
+/*
+   Si algún modal utiliza explícitamente .erp-modal-light,
+   tendrá siempre apariencia clara.
+*/
+
+.erp-modal-light {
+  background: #ffffff;
   color: var(--erp-text);
+
+  border: 1px solid var(--erp-border);
+  border-radius: var(--erp-radius-lg);
+
+  box-shadow: var(--erp-shadow-lg);
+}
+
+
+.erp-modal-light :where(
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  p,
+  label,
+  strong
+) {
+  color: var(--erp-text) !important;
+}
+
+
+/* ============================================================
+   ACCESIBILIDAD / FOCO
+   ============================================================ */
+
+.erp-page :focus-visible {
+  outline: 3px solid rgba(49, 86, 179, 0.28);
+  outline-offset: 2px;
+}
+
+
+/* ============================================================
+   COMPATIBILIDAD CON EL TEMA ANTERIOR
+   ============================================================ */
+
+.erp-page .text-erp {
+  color: var(--erp-text) !important;
+}
+
+
+.erp-page .text-erp-soft {
+  color: var(--erp-text-soft) !important;
+}
+
+
+.erp-page .bg-erp {
+  background: var(--erp-bg) !important;
+}
+
+
+.erp-page .bg-erp-surface {
+  background: var(--erp-surface) !important;
+}
+
+
+/* ============================================================
+   REGLA FINAL DE SEGURIDAD VISUAL
+   ============================================================ */
+
+/*
+   Si un título o párrafo de un módulo antiguo trae
+   accidentalmente text-white, no permitimos que desaparezca
+   sobre el fondo claro.
+
+   Los botones/enlaces quedan fuera de esta regla.
+*/
+
+.erp-page :where(
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  p,
+  li,
+  td,
+  th,
+  label,
+  legend,
+  small,
+  strong
+).text-white {
+  color: var(--erp-text) !important;
 }

@@ -427,7 +427,7 @@ const COLUMNAS = [
 
 
 // ============================================================
-// FORMATEAR
+// FORMATEAR VALOR
 // ============================================================
 
 function formatearValor(valor, tipo) {
@@ -479,7 +479,44 @@ function formatearValor(valor, tipo) {
 
 
 // ============================================================
-// COMPONENTE
+// NORMALIZAR ACTIVIDADES
+// ============================================================
+
+function normalizarActividades(datos) {
+
+  if (
+    !datos ||
+    typeof datos !== "object" ||
+    Array.isArray(datos)
+  ) {
+    return [];
+  }
+
+  return Object.entries(datos)
+    .map(([nombre, cantidad]) => ({
+      nombre:
+        nombre === null ||
+        nombre === undefined ||
+        String(nombre).trim() === ""
+          ? "Sin actividad"
+          : String(nombre),
+
+      cantidad:
+        Number(cantidad) || 0,
+    }))
+    .filter(
+      (actividad) =>
+        actividad.cantidad > 0
+    )
+    .sort(
+      (a, b) =>
+        b.cantidad - a.cantidad
+    );
+}
+
+
+// ============================================================
+// COMPONENTE PRINCIPAL
 // ============================================================
 
 export default function ExpedientesListado() {
@@ -568,7 +605,7 @@ export default function ExpedientesListado() {
 
 
   // ==========================================================
-  // COLUMNAS
+  // COLUMNAS VISIBLES
   // ==========================================================
 
   const [columnasVisibles, setColumnasVisibles] =
@@ -580,15 +617,11 @@ export default function ExpedientesListado() {
 
 
   // ==========================================================
-  // RESUMEN
+  // ACTIVIDADES
   // ==========================================================
 
-  const [resumen, setResumen] =
-    useState({
-      pendientes: 0,
-      enCurso: 0,
-      finalizados: 0,
-    });
+  const [actividades, setActividades] =
+    useState([]);
 
 
   // ==========================================================
@@ -663,11 +696,12 @@ export default function ExpedientesListado() {
           return;
         }
 
-        setExpedientes(
+        const items =
           Array.isArray(res?.items)
             ? res.items
-            : []
-        );
+            : [];
+
+        setExpedientes(items);
 
         setTotalPaginas(
           Math.max(
@@ -677,6 +711,67 @@ export default function ExpedientesListado() {
             )
           )
         );
+
+        /*
+         * FALLBACK:
+         *
+         * Si todavía no tenemos actividades
+         * calculadas por el backend, calculamos
+         * las actividades de los expedientes
+         * actualmente cargados.
+         *
+         * Cuando el backend devuelva:
+         *
+         * {
+         *   actividades: {
+         *     "Tramitación inscripción": 125,
+         *     "Firma": 43
+         *   }
+         * }
+         *
+         * este valor será sustituido por los
+         * totales reales.
+         */
+
+        if (
+          res?.actividades &&
+          typeof res.actividades === "object"
+        ) {
+
+          setActividades(
+            normalizarActividades(
+              res.actividades
+            )
+          );
+
+        } else {
+
+          const contador = {};
+
+          items.forEach(
+            (expediente) => {
+
+              const actividad =
+                expediente?.actividad_actual;
+
+              const nombre =
+                actividad === null ||
+                actividad === undefined ||
+                String(actividad).trim() === ""
+                  ? "Sin actividad"
+                  : String(actividad).trim();
+
+              contador[nombre] =
+                (contador[nombre] || 0) + 1;
+            }
+          );
+
+          setActividades(
+            normalizarActividades(
+              contador
+            )
+          );
+        }
 
       } catch (err) {
 
@@ -717,7 +812,7 @@ export default function ExpedientesListado() {
 
 
   // ==========================================================
-  // RESUMEN
+  // CARGAR RESUMEN DE ACTIVIDADES
   // ==========================================================
 
   useEffect(() => {
@@ -731,30 +826,41 @@ export default function ExpedientesListado() {
         const res =
           await obtenerResumenExpedientes();
 
-        if (activo) {
+        if (!activo) {
+          return;
+        }
 
-          setResumen({
-            pendientes:
-              Number(
-                res?.pendientes || 0
-              ),
+        /*
+         * Si el endpoint de resumen ya devuelve
+         * actividades, utilizamos esos datos.
+         *
+         * Ejemplo:
+         *
+         * {
+         *   actividades: {
+         *     "Tramitación inscripción": 125,
+         *     "Firma": 43,
+         *     "Pendiente documentación": 18
+         *   }
+         * }
+         */
 
-            enCurso:
-              Number(
-                res?.enCurso || 0
-              ),
+        if (
+          res?.actividades &&
+          typeof res.actividades === "object"
+        ) {
 
-            finalizados:
-              Number(
-                res?.finalizados || 0
-              ),
-          });
+          setActividades(
+            normalizarActividades(
+              res.actividades
+            )
+          );
         }
 
       } catch (err) {
 
         console.error(
-          "Error cargando resumen:",
+          "Error cargando resumen de actividades:",
           err
         );
       }
@@ -776,14 +882,30 @@ export default function ExpedientesListado() {
   const aplicarFiltros = () => {
 
     setFiltrosAplicados({
-      nif: filtroNif.trim(),
-      actividad: filtroActividad.trim(),
-      fechaInicio: filtroFechaInicio,
-      fechaFin: filtroFechaFin,
-      notario: filtroNotario.trim(),
-      oficina: filtroOficina.trim(),
-      importeMin: filtroImporteMin,
-      importeMax: filtroImporteMax,
+
+      nif:
+        filtroNif.trim(),
+
+      actividad:
+        filtroActividad.trim(),
+
+      fechaInicio:
+        filtroFechaInicio,
+
+      fechaFin:
+        filtroFechaFin,
+
+      notario:
+        filtroNotario.trim(),
+
+      oficina:
+        filtroOficina.trim(),
+
+      importeMin:
+        filtroImporteMin,
+
+      importeMax:
+        filtroImporteMax,
     });
 
     setPagina(1);
@@ -807,6 +929,7 @@ export default function ExpedientesListado() {
     setFiltroImporteMax("");
 
     setFiltrosAplicados({
+
       nif: "",
       actividad: "",
       fechaInicio: "",
@@ -887,6 +1010,7 @@ export default function ExpedientesListado() {
 
               return {
                 ...orden,
+
                 direccion:
                   orden.direccion === "asc"
                     ? "desc"
@@ -901,6 +1025,7 @@ export default function ExpedientesListado() {
       setOrdenMultiple(
         (actual) => [
           ...actual,
+
           {
             columna,
             direccion: "asc",
@@ -946,7 +1071,7 @@ export default function ExpedientesListado() {
 
 
   // ==========================================================
-  // EXPORTAR
+  // EXPORTAR EXCEL
   // ==========================================================
 
   const exportarExcel = async () => {
@@ -1058,802 +1183,831 @@ export default function ExpedientesListado() {
     <div
       className="
         w-full
+        max-w-[1800px]
+        mx-auto
         px-4
         sm:px-6
         lg:px-8
-        xl:px-10
         py-6
         text-white
+        space-y-6
         animate-fade-in
       "
     >
 
-      {/* ======================================================
-          CONTENEDOR PRINCIPAL CENTRADO
-      ====================================================== */}
+      {/* ================================================== */}
+      {/* CABECERA */}
+      {/* ================================================== */}
 
       <div
         className="
-          w-full
-          max-w-[1800px]
-          mx-auto
-          space-y-6
+          flex
+          flex-col
+          md:flex-row
+          md:items-center
+          md:justify-between
+          gap-4
         "
       >
 
-        {/* ====================================================
-            CABECERA
-        ==================================================== */}
+        <div>
+
+          <h1
+            className="
+              text-3xl
+              font-bold
+              drop-shadow
+            "
+          >
+            Expedientes
+          </h1>
+
+          <p className="text-white/50 mt-1">
+            Gestión y consulta de expedientes
+          </p>
+
+        </div>
+
+        <button
+          onClick={exportarExcel}
+          disabled={loading}
+          className="
+            px-4
+            py-2
+            rounded-xl
+            bg-green-600
+            hover:bg-green-700
+            text-white
+            shadow-lg
+            transition
+            disabled:opacity-50
+            disabled:cursor-not-allowed
+          "
+        >
+          Exportar Excel
+        </button>
+
+      </div>
+
+
+      {/* ================================================== */}
+      {/* ERROR */}
+      {/* ================================================== */}
+
+      {error && (
+
+        <div
+          className="
+            bg-red-500/20
+            border
+            border-red-400/30
+            rounded-xl
+            p-4
+            text-red-200
+          "
+        >
+          {error}
+        </div>
+
+      )}
+
+
+      {/* ================================================== */}
+      {/* ACTIVIDADES DE EXPEDIENTES */}
+      {/* ================================================== */}
+
+      <section
+        className="
+          bg-white/10
+          backdrop-blur-xl
+          border
+          border-white/10
+          rounded-2xl
+          p-4
+          shadow-xl
+        "
+      >
 
         <div
           className="
             flex
-            flex-col
-            md:flex-row
-            md:items-center
-            md:justify-between
-            gap-4
+            items-center
+            justify-between
+            mb-4
           "
         >
 
           <div>
 
-            <h1
+            <h2
               className="
-                text-3xl
-                font-bold
-                drop-shadow
+                text-xl
+                font-semibold
               "
             >
-              Expedientes
-            </h1>
+              Actividades de expedientes
+            </h2>
 
-            <p className="text-white/50 mt-1">
-              Gestión y consulta de expedientes
+            <p
+              className="
+                text-sm
+                text-white/50
+                mt-1
+              "
+            >
+              Número de expedientes por actividad actual
             </p>
 
           </div>
 
-          <button
-            onClick={exportarExcel}
-            disabled={loading}
-            className="
-              self-start
-              md:self-auto
-              px-4
-              py-2
-              rounded-xl
-              bg-green-600
-              hover:bg-green-700
-              text-white
-              shadow-lg
-              transition
-              disabled:opacity-50
-              disabled:cursor-not-allowed
-            "
-          >
-            Exportar Excel
-          </button>
-
         </div>
 
 
-        {/* ====================================================
-            ERROR
-        ==================================================== */}
-
-        {error && (
-
-          <div
-            className="
-              bg-red-500/20
-              border
-              border-red-400/30
-              rounded-xl
-              p-4
-              text-red-200
-            "
-          >
-            {error}
-          </div>
-
-        )}
-
-
-        {/* ====================================================
-            RESUMEN
-        ==================================================== */}
-
-        <section
-          className="
-            bg-white/10
-            backdrop-blur-xl
-            border
-            border-white/10
-            rounded-2xl
-            p-4
-            sm:p-5
-            shadow-xl
-          "
-        >
-
-          <h2
-            className="
-              text-xl
-              font-semibold
-              mb-4
-            "
-          >
-            Estado de expedientes
-          </h2>
+        {loading && actividades.length === 0 ? (
 
           <div
             className="
               grid
               grid-cols-1
-              sm:grid-cols-3
+              sm:grid-cols-2
+              lg:grid-cols-3
+              xl:grid-cols-4
               gap-4
             "
           >
 
-            <ResumenCard
-              titulo="Pendientes"
-              valor={resumen.pendientes}
-            />
+            {[1, 2, 3].map(
+              (item) => (
 
-            <ResumenCard
-              titulo="En curso"
-              valor={resumen.enCurso}
-            />
+                <div
+                  key={item}
+                  className="
+                    bg-white/5
+                    p-4
+                    rounded-xl
+                    border
+                    border-white/10
+                    animate-pulse
+                    h-[92px]
+                  "
+                />
 
-            <ResumenCard
-              titulo="Finalizados"
-              valor={resumen.finalizados}
-            />
+              )
+            )}
 
           </div>
 
-        </section>
-
-
-        {/* ====================================================
-            FILTROS
-        ==================================================== */}
-
-        <section
-          className="
-            bg-white/10
-            backdrop-blur-xl
-            border
-            border-white/10
-            rounded-2xl
-            p-4
-            sm:p-5
-            shadow-xl
-          "
-        >
-
-          <button
-            type="button"
-            onClick={() =>
-              setMostrarFiltros(
-                (actual) => !actual
-              )
-            }
-            className="
-              w-full
-              flex
-              items-center
-              justify-between
-              text-xl
-              font-semibold
-              text-left
-              hover:text-blue-300
-              transition
-            "
-          >
-
-            <span>
-              Filtros avanzados
-            </span>
-
-            <span className="text-sm text-white/60">
-
-              {mostrarFiltros
-                ? "▲ Ocultar"
-                : "▼ Mostrar"}
-
-            </span>
-
-          </button>
-
-
-          {mostrarFiltros && (
-
-            <div
-              className="
-                mt-4
-                grid
-                grid-cols-1
-                md:grid-cols-2
-                lg:grid-cols-3
-                gap-4
-              "
-            >
-
-              <FiltroInput
-                label="NIF titular"
-                value={filtroNif}
-                onChange={setFiltroNif}
-              />
-
-              <FiltroInput
-                label="Actividad actual"
-                value={filtroActividad}
-                onChange={setFiltroActividad}
-              />
-
-              <FiltroInput
-                label="NIF / nombre notario"
-                value={filtroNotario}
-                onChange={setFiltroNotario}
-              />
-
-              <FiltroInput
-                label="Oficina"
-                value={filtroOficina}
-                onChange={setFiltroOficina}
-              />
-
-              <FiltroInput
-                label="Fecha inicio"
-                type="date"
-                value={filtroFechaInicio}
-                onChange={setFiltroFechaInicio}
-              />
-
-              <FiltroInput
-                label="Fecha fin"
-                type="date"
-                value={filtroFechaFin}
-                onChange={setFiltroFechaFin}
-              />
-
-              <FiltroInput
-                label="Importe mínimo"
-                type="number"
-                value={filtroImporteMin}
-                onChange={setFiltroImporteMin}
-              />
-
-              <FiltroInput
-                label="Importe máximo"
-                type="number"
-                value={filtroImporteMax}
-                onChange={setFiltroImporteMax}
-              />
-
-              <div
-                className="
-                  flex
-                  items-end
-                  gap-3
-                "
-              >
-
-                <button
-                  type="button"
-                  onClick={aplicarFiltros}
-                  className="
-                    px-4
-                    py-2
-                    rounded-xl
-                    bg-blue-600
-                    hover:bg-blue-700
-                    transition
-                  "
-                >
-                  Aplicar filtros
-                </button>
-
-                <button
-                  type="button"
-                  onClick={limpiarFiltros}
-                  className="
-                    px-4
-                    py-2
-                    rounded-xl
-                    bg-white/10
-                    border
-                    border-white/20
-                    hover:bg-white/20
-                    transition
-                  "
-                >
-                  Limpiar
-                </button>
-
-              </div>
-
-            </div>
-
-          )}
-
-        </section>
-
-
-        {/* ====================================================
-            COLUMNAS
-        ==================================================== */}
-
-        <section
-          className="
-            bg-white/10
-            backdrop-blur-xl
-            border
-            border-white/10
-            rounded-2xl
-            p-4
-            sm:p-5
-            shadow-xl
-          "
-        >
-
-          <button
-            type="button"
-            onClick={() =>
-              setMostrarColumnas(
-                (actual) => !actual
-              )
-            }
-            className="
-              w-full
-              flex
-              items-center
-              justify-between
-              text-xl
-              font-semibold
-              text-left
-              hover:text-blue-300
-              transition
-            "
-          >
-
-            <span>
-              Columnas visibles
-            </span>
-
-            <span className="text-sm text-white/60">
-
-              {mostrarColumnas
-                ? "▲ Ocultar"
-                : "▼ Mostrar"}
-
-            </span>
-
-          </button>
-
-
-          {mostrarColumnas && (
-
-            <div
-              className="
-                mt-4
-                grid
-                grid-cols-2
-                md:grid-cols-4
-                lg:grid-cols-6
-                gap-2
-              "
-            >
-
-              {COLUMNAS.map(
-                (columna) => (
-
-                  <label
-                    key={columna.key}
-                    className="
-                      flex
-                      items-center
-                      gap-2
-                      text-sm
-                      text-white/70
-                      cursor-pointer
-                    "
-                  >
-
-                    <input
-                      type="checkbox"
-                      checked={columnasVisibles.includes(
-                        columna.key
-                      )}
-                      onChange={() =>
-                        toggleColumna(
-                          columna.key
-                        )
-                      }
-                    />
-
-                    <span>
-                      {columna.label}
-                    </span>
-
-                  </label>
-
-                )
-              )}
-
-            </div>
-
-          )}
-
-        </section>
-
-
-        {/* ====================================================
-            TABLA
-        ==================================================== */}
-
-        <section
-          className="
-            w-full
-            bg-white/10
-            backdrop-blur-xl
-            border
-            border-white/10
-            rounded-2xl
-            shadow-xl
-            overflow-hidden
-          "
-        >
-
-          {/* Margen visual interior de la tabla */}
+        ) : actividades.length === 0 ? (
 
           <div
             className="
-              p-2
-              sm:p-3
-              lg:p-4
+              bg-white/5
+              p-6
+              rounded-xl
+              border
+              border-white/10
+              text-center
+              text-white/50
+            "
+          >
+            No hay actividades para mostrar.
+          </div>
+
+        ) : (
+
+          <div
+            className="
+              grid
+              grid-cols-1
+              sm:grid-cols-2
+              lg:grid-cols-3
+              xl:grid-cols-4
+              gap-4
             "
           >
 
+            {actividades.map(
+              (actividad) => (
+
+                <ActividadCard
+                  key={actividad.nombre}
+                  nombre={actividad.nombre}
+                  cantidad={actividad.cantidad}
+                />
+
+              )
+            )}
+
+          </div>
+
+        )}
+
+      </section>
+
+
+      {/* ================================================== */}
+      {/* FILTROS */}
+      {/* ================================================== */}
+
+      <section
+        className="
+          bg-white/10
+          backdrop-blur-xl
+          border
+          border-white/10
+          rounded-2xl
+          p-4
+          shadow-xl
+        "
+      >
+
+        <button
+          type="button"
+          onClick={() =>
+            setMostrarFiltros(
+              (actual) => !actual
+            )
+          }
+          className="
+            w-full
+            flex
+            items-center
+            justify-between
+            text-xl
+            font-semibold
+            text-left
+            hover:text-blue-300
+            transition
+          "
+        >
+
+          <span>
+            Filtros avanzados
+          </span>
+
+          <span className="text-sm">
+
+            {mostrarFiltros
+              ? "▲ Ocultar"
+              : "▼ Mostrar"}
+
+          </span>
+
+        </button>
+
+
+        {mostrarFiltros && (
+
+          <div
+            className="
+              mt-4
+              grid
+              grid-cols-1
+              md:grid-cols-2
+              lg:grid-cols-3
+              gap-4
+            "
+          >
+
+            <FiltroInput
+              label="NIF titular"
+              value={filtroNif}
+              onChange={setFiltroNif}
+            />
+
+            <FiltroInput
+              label="Actividad actual"
+              value={filtroActividad}
+              onChange={setFiltroActividad}
+            />
+
+            <FiltroInput
+              label="NIF / nombre notario"
+              value={filtroNotario}
+              onChange={setFiltroNotario}
+            />
+
+            <FiltroInput
+              label="Oficina"
+              value={filtroOficina}
+              onChange={setFiltroOficina}
+            />
+
+            <FiltroInput
+              label="Fecha inicio"
+              type="date"
+              value={filtroFechaInicio}
+              onChange={setFiltroFechaInicio}
+            />
+
+            <FiltroInput
+              label="Fecha fin"
+              type="date"
+              value={filtroFechaFin}
+              onChange={setFiltroFechaFin}
+            />
+
+            <FiltroInput
+              label="Importe mínimo"
+              type="number"
+              value={filtroImporteMin}
+              onChange={setFiltroImporteMin}
+            />
+
+            <FiltroInput
+              label="Importe máximo"
+              type="number"
+              value={filtroImporteMax}
+              onChange={setFiltroImporteMax}
+            />
+
             <div
               className="
-                w-full
-                overflow-x-auto
-                overflow-y-auto
-                max-h-[70vh]
-                rounded-xl
-                border
-                border-white/10
-                bg-black/10
-                shadow-inner
+                flex
+                items-end
+                gap-3
               "
             >
 
-              {loading ? (
+              <button
+                type="button"
+                onClick={aplicarFiltros}
+                className="
+                  px-4
+                  py-2
+                  rounded-xl
+                  bg-blue-600
+                  hover:bg-blue-700
+                  transition
+                "
+              >
+                Aplicar filtros
+              </button>
 
-                <div
+              <button
+                type="button"
+                onClick={limpiarFiltros}
+                className="
+                  px-4
+                  py-2
+                  rounded-xl
+                  bg-white/10
+                  border
+                  border-white/20
+                  hover:bg-white/20
+                  transition
+                "
+              >
+                Limpiar
+              </button>
+
+            </div>
+
+          </div>
+
+        )}
+
+      </section>
+
+
+      {/* ================================================== */}
+      {/* COLUMNAS */}
+      {/* ================================================== */}
+
+      <section
+        className="
+          bg-white/10
+          backdrop-blur-xl
+          border
+          border-white/10
+          rounded-2xl
+          p-4
+          shadow-xl
+        "
+      >
+
+        <button
+          type="button"
+          onClick={() =>
+            setMostrarColumnas(
+              (actual) => !actual
+            )
+          }
+          className="
+            w-full
+            flex
+            items-center
+            justify-between
+            text-xl
+            font-semibold
+            text-left
+            hover:text-blue-300
+            transition
+          "
+        >
+
+          <span>
+            Columnas visibles
+          </span>
+
+          <span className="text-sm">
+
+            {mostrarColumnas
+              ? "▲ Ocultar"
+              : "▼ Mostrar"}
+
+          </span>
+
+        </button>
+
+
+        {mostrarColumnas && (
+
+          <div
+            className="
+              mt-4
+              grid
+              grid-cols-2
+              md:grid-cols-4
+              lg:grid-cols-6
+              gap-2
+            "
+          >
+
+            {COLUMNAS.map(
+              (columna) => (
+
+                <label
+                  key={columna.key}
                   className="
-                    text-white/70
-                    animate-pulse
-                    py-12
-                    text-center
-                  "
-                >
-                  Cargando expedientes…
-                </div>
-
-              ) : expedientes.length === 0 ? (
-
-                <div
-                  className="
-                    text-white/60
-                    py-12
-                    text-center
-                  "
-                >
-                  No hay expedientes para mostrar.
-                </div>
-
-              ) : (
-
-                <table
-                  className="
-                    min-w-max
-                    w-full
+                    flex
+                    items-center
+                    gap-2
                     text-sm
-                    text-white/80
-                    border-collapse
+                    text-white/70
+                    cursor-pointer
                   "
                 >
 
-                  <thead>
+                  <input
+                    type="checkbox"
+                    checked={columnasVisibles.includes(
+                      columna.key
+                    )}
+                    onChange={() =>
+                      toggleColumna(
+                        columna.key
+                      )
+                    }
+                  />
+
+                  <span>
+                    {columna.label}
+                  </span>
+
+                </label>
+
+              )
+            )}
+
+          </div>
+
+        )}
+
+      </section>
+
+
+      {/* ================================================== */}
+      {/* TABLA */}
+      {/* ================================================== */}
+
+      <section
+        className="
+          bg-white/10
+          backdrop-blur-xl
+          border
+          border-white/10
+          rounded-2xl
+          shadow-xl
+          overflow-hidden
+          p-2
+        "
+      >
+
+        {loading ? (
+
+          <div
+            className="
+              text-white/70
+              animate-pulse
+              py-12
+              text-center
+            "
+          >
+            Cargando expedientes…
+          </div>
+
+        ) : expedientes.length === 0 ? (
+
+          <div
+            className="
+              text-white/60
+              py-12
+              text-center
+            "
+          >
+            No hay expedientes para mostrar.
+          </div>
+
+        ) : (
+
+          <div
+            className="
+              overflow-auto
+              rounded-xl
+            "
+          >
+
+            <table
+              className="
+                min-w-max
+                w-full
+                text-sm
+                text-white/80
+                border-separate
+                border-spacing-0
+              "
+            >
+
+              <thead>
+
+                <tr
+                  className="
+                    text-left
+                  "
+                >
+
+                  {columnasActivas.map(
+                    (columna) => (
+
+                      <th
+                        key={columna.key}
+                        className="
+                          px-3
+                          py-3
+                          cursor-pointer
+                          select-none
+                          whitespace-nowrap
+                          hover:bg-[#607bc1]
+                          sticky
+                          top-0
+                          bg-[#526db5]
+                          z-20
+                          border-b
+                          border-white/20
+                          font-semibold
+                        "
+                        onClick={(event) =>
+                          ordenar(
+                            columna.key,
+                            event.shiftKey
+                          )
+                        }
+                        title={
+                          "Clic para ordenar. " +
+                          "Shift + clic para añadir " +
+                          "ordenación múltiple."
+                        }
+                      >
+
+                        <div
+                          className="
+                            flex
+                            items-center
+                            gap-2
+                          "
+                        >
+
+                          <span>
+                            {columna.label}
+                          </span>
+
+                          <span
+                            className="
+                              text-white/50
+                              text-xs
+                            "
+                          >
+                            {iconoOrden(
+                              columna.key
+                            )}
+                          </span>
+
+                        </div>
+
+                      </th>
+
+                    )
+                  )}
+
+                  <th
+                    className="
+                      px-3
+                      py-3
+                      whitespace-nowrap
+                      sticky
+                      top-0
+                      bg-[#526db5]
+                      z-20
+                      border-b
+                      border-white/20
+                      font-semibold
+                    "
+                  >
+                    Acciones
+                  </th>
+
+                </tr>
+
+              </thead>
+
+
+              <tbody>
+
+                {expedientes.map(
+                  (expediente) => (
 
                     <tr
+                      key={
+                        expediente.id_expediente ||
+                        expediente.id
+                      }
                       className="
-                        text-left
-                        bg-slate-900/80
-                        border-b
+                        border-t
                         border-white/10
+                        hover:bg-white/10
+                        transition
                       "
                     >
 
                       {columnasActivas.map(
                         (columna) => (
 
-                          <th
+                          <td
                             key={columna.key}
                             className="
-                              px-4
-                              py-3
-                              cursor-pointer
-                              select-none
+                              px-3
+                              py-2
                               whitespace-nowrap
-                              hover:bg-white/10
-                              sticky
-                              top-0
-                              bg-slate-900/90
-                              backdrop-blur-md
-                              z-20
-                              font-semibold
-                              text-white/90
+                              max-w-[400px]
+                              overflow-hidden
+                              text-ellipsis
+                              border-b
+                              border-white/10
                             "
-                            onClick={(event) =>
-                              ordenar(
-                                columna.key,
-                                event.shiftKey
-                              )
-                            }
                             title={
-                              "Clic para ordenar. " +
-                              "Shift + clic para añadir " +
-                              "ordenación múltiple."
+                              expediente[
+                                columna.key
+                              ] ?? ""
                             }
                           >
 
-                            <div
-                              className="
-                                flex
-                                items-center
-                                gap-2
-                              "
-                            >
+                            {formatearValor(
+                              expediente[
+                                columna.key
+                              ],
+                              columna.tipo
+                            )}
 
-                              <span>
-                                {columna.label}
-                              </span>
-
-                              <span
-                                className="
-                                  text-white/40
-                                  text-xs
-                                "
-                              >
-                                {iconoOrden(
-                                  columna.key
-                                )}
-                              </span>
-
-                            </div>
-
-                          </th>
+                          </td>
 
                         )
                       )}
 
-                      <th
+                      <td
                         className="
-                          px-4
-                          py-3
+                          px-3
+                          py-2
                           whitespace-nowrap
-                          sticky
-                          top-0
-                          bg-slate-900/90
-                          backdrop-blur-md
-                          z-20
-                          font-semibold
-                          text-white/90
+                          border-b
+                          border-white/10
                         "
                       >
-                        Acciones
-                      </th>
+
+                        <Link
+                          to={
+                            `/expedientes/${encodeURIComponent(
+                              expediente.id_expediente
+                            )}`
+                          }
+                          className="
+                            text-blue-300
+                            hover:text-blue-200
+                            underline
+                          "
+                        >
+                          Ver ficha
+                        </Link>
+
+                      </td>
 
                     </tr>
 
-                  </thead>
+                  )
+                )}
 
+              </tbody>
 
-                  <tbody>
-
-                    {expedientes.map(
-                      (expediente, indice) => (
-
-                        <tr
-                          key={
-                            expediente.id_expediente ||
-                            expediente.id
-                          }
-                          className={`
-                            border-b
-                            border-white/10
-                            transition
-                            ${
-                              indice % 2 === 0
-                                ? "bg-white/[0.015]"
-                                : "bg-transparent"
-                            }
-                            hover:bg-white/[0.07]
-                          `}
-                        >
-
-                          {columnasActivas.map(
-                            (columna) => (
-
-                              <td
-                                key={columna.key}
-                                className="
-                                  px-4
-                                  py-3
-                                  whitespace-nowrap
-                                  max-w-[400px]
-                                  overflow-hidden
-                                  text-ellipsis
-                                "
-                                title={
-                                  expediente[
-                                    columna.key
-                                  ] ?? ""
-                                }
-                              >
-
-                                {formatearValor(
-                                  expediente[
-                                    columna.key
-                                  ],
-                                  columna.tipo
-                                )}
-
-                              </td>
-
-                            )
-                          )}
-
-                          <td
-                            className="
-                              px-4
-                              py-3
-                              whitespace-nowrap
-                            "
-                          >
-
-                            <Link
-                              to={
-                                `/expedientes/${encodeURIComponent(
-                                  expediente.id_expediente
-                                )}`
-                              }
-                              className="
-                                inline-flex
-                                items-center
-                                px-3
-                                py-1.5
-                                rounded-lg
-                                bg-blue-500/10
-                                border
-                                border-blue-400/20
-                                text-blue-400
-                                hover:text-blue-300
-                                hover:bg-blue-500/20
-                                transition
-                              "
-                            >
-                              Ver ficha
-                            </Link>
-
-                          </td>
-
-                        </tr>
-
-                      )
-                    )}
-
-                  </tbody>
-
-                </table>
-
-              )}
-
-            </div>
+            </table>
 
           </div>
 
-        </section>
+        )}
+
+      </section>
 
 
-        {/* ====================================================
-            PAGINACIÓN
-        ==================================================== */}
+      {/* ================================================== */}
+      {/* PAGINACIÓN */}
+      {/* ================================================== */}
 
-        <div
+      <div
+        className="
+          flex
+          flex-col
+          sm:flex-row
+          items-center
+          justify-center
+          gap-4
+          pb-4
+        "
+      >
+
+        <button
+          disabled={
+            pagina <= 1 ||
+            loading
+          }
+          onClick={() =>
+            setPagina(
+              (actual) =>
+                Math.max(
+                  1,
+                  actual - 1
+                )
+            )
+          }
           className="
-            flex
-            flex-col
-            sm:flex-row
-            items-center
-            justify-center
-            gap-4
-            pb-4
+            px-4
+            py-2
+            rounded-xl
+            bg-white/10
+            border
+            border-white/20
+            hover:bg-white/20
+            transition
+            disabled:opacity-40
+            disabled:cursor-not-allowed
           "
         >
-
-          <button
-            disabled={
-              pagina <= 1 ||
-              loading
-            }
-            onClick={() =>
-              setPagina(
-                (actual) =>
-                  Math.max(
-                    1,
-                    actual - 1
-                  )
-              )
-            }
-            className="
-              px-4
-              py-2
-              rounded-xl
-              bg-white/10
-              border
-              border-white/20
-              hover:bg-white/20
-              transition
-              disabled:opacity-40
-              disabled:cursor-not-allowed
-            "
-          >
-            Anterior
-          </button>
+          Anterior
+        </button>
 
 
-          <span className="text-white/70">
-            Página {pagina} de {totalPaginas}
-          </span>
+        <span className="text-white/70">
+          Página {pagina} de {totalPaginas}
+        </span>
 
 
-          <button
-            disabled={
-              pagina >= totalPaginas ||
-              loading
-            }
-            onClick={() =>
-              setPagina(
-                (actual) =>
-                  Math.min(
-                    totalPaginas,
-                    actual + 1
-                  )
-              )
-            }
-            className="
-              px-4
-              py-2
-              rounded-xl
-              bg-white/10
-              border
-              border-white/20
-              hover:bg-white/20
-              transition
-              disabled:opacity-40
-              disabled:cursor-not-allowed
-            "
-          >
-            Siguiente
-          </button>
-
-        </div>
+        <button
+          disabled={
+            pagina >= totalPaginas ||
+            loading
+          }
+          onClick={() =>
+            setPagina(
+              (actual) =>
+                Math.min(
+                  totalPaginas,
+                  actual + 1
+                )
+            )
+          }
+          className="
+            px-4
+            py-2
+            rounded-xl
+            bg-white/10
+            border
+            border-white/20
+            hover:bg-white/20
+            transition
+            disabled:opacity-40
+            disabled:cursor-not-allowed
+          "
+        >
+          Siguiente
+        </button>
 
       </div>
 
@@ -1863,12 +2017,12 @@ export default function ExpedientesListado() {
 
 
 // ============================================================
-// COMPONENTES AUXILIARES
+// TARJETA DE ACTIVIDAD
 // ============================================================
 
-function ResumenCard({
-  titulo,
-  valor,
+function ActividadCard({
+  nombre,
+  cantidad,
 }) {
 
   return (
@@ -1880,11 +2034,25 @@ function ResumenCard({
         rounded-xl
         border
         border-white/10
+        hover:bg-white/10
+        hover:border-white/20
+        transition
+        min-h-[92px]
+        flex
+        flex-col
+        justify-between
       "
     >
 
-      <p className="text-white/60 text-sm">
-        {titulo}
+      <p
+        className="
+          text-white/60
+          text-sm
+          leading-5
+          break-words
+        "
+      >
+        {nombre}
       </p>
 
       <p
@@ -1892,16 +2060,20 @@ function ResumenCard({
           text-white
           font-semibold
           text-2xl
-          mt-1
+          mt-2
         "
       >
-        {valor}
+        {cantidad}
       </p>
 
     </div>
   );
 }
 
+
+// ============================================================
+// INPUT FILTRO
+// ============================================================
 
 function FiltroInput({
   label,
@@ -1943,6 +2115,8 @@ function FiltroInput({
           text-white
           outline-none
           focus:border-blue-400
+          focus:ring-1
+          focus:ring-blue-400/40
         "
       />
 

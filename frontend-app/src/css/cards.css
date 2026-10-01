@@ -1,35 +1,61 @@
 /* ============================================================
-   ERP SJ‑2026 — Cards premium
+   ERP SJ-2026 — Cards
+   Tema ERP claro
    ============================================================ */
 
 .card-sj {
-  background: var(--sj-blanco);
-  border: 1px solid var(--sj-gris-azulado);
+  background: var(--erp-surface);
+  border: 1px solid var(--erp-border);
   border-radius: var(--sj-radius);
   padding: 24px;
-  box-shadow: var(--sj-shadow);
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  box-shadow: 0 4px 14px rgba(36, 50, 74, 0.06);
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
   animation: fadeInSJ 0.35s ease-out;
 }
 
 .card-sj:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.10);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(36, 50, 74, 0.10);
+  border-color: #cbd6e6;
 }
+
+
+/* ============================================================
+   CABECERA DE TARJETA
+   ============================================================ */
 
 .card-sj-header {
   font-weight: 600;
   margin-bottom: 12px;
-  color: var(--sj-azul);
+  color: var(--erp-text);
 }
+
+
+/* ============================================================
+   PIE DE TARJETA
+   ============================================================ */
 
 .card-sj-footer {
   margin-top: 16px;
   text-align: right;
 }
 
-/* Fade-in corporativo */
+
+/* ============================================================
+   FADE-IN CORPORATIVO
+   ============================================================ */
+
 @keyframes fadeInSJ {
-  0% { opacity: 0; transform: translateY(6px); }
-  100% { opacity: 1; transform: translateY(0); }
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

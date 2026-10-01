@@ -15,3 +15,33 @@
   --erp-warning: #d97706;
   --erp-danger: #dc3545;
 }
+.erp-page {
+  background: var(--erp-bg);
+  color: var(--erp-text);
+}
+
+.erp-card {
+  background: var(--erp-surface);
+  border: 1px solid var(--erp-border);
+  border-radius: 16px;
+}
+
+.erp-card-soft {
+  background: var(--erp-surface-soft);
+  border: 1px solid var(--erp-border);
+}
+
+.erp-table-header {
+  background: var(--erp-primary);
+  color: #ffffff;
+}
+
+.erp-table-row {
+  background: var(--erp-surface);
+  color: var(--erp-text);
+  border-color: var(--erp-border);
+}
+
+.erp-table-row:hover {
+  background: var(--erp-primary-soft);
+}

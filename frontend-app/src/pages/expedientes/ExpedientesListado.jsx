@@ -485,21 +485,35 @@ const COLUMNAS = [
 // ============================================================
 // COLUMNAS VISIBLES POR DEFECTO
 // ============================================================
+//
+// Estas son EXACTAMENTE las columnas marcadas por defecto
+// en la selección que aparece actualmente en el ERP.
+//
+// El resto de columnas sigue disponible desde:
+// "Columnas visibles".
+//
+// ============================================================
 
 const COLUMNAS_POR_DEFECTO = [
   "id_expediente",
   "estado_expediente",
+  "estado_actividad",
   "fecha_alta",
   "fecha_firma",
+  "actividad_actual",
   "nombre_titular",
   "nif_titular",
+  "nombre_solicitante",
+  "nif_solicitante",
   "nombre_notario",
+  "nif_notario",
   "oficina",
+  "capital",
   "importe",
-  "actividad_actual",
-  "estado_actividad",
-  "nombre_gestoria",
-  "tiene_defectos_abiertos",
+  "saldo_disponible",
+  "contrato",
+  "tipo_operacion",
+  "observaciones",
 ];
 
 
@@ -1144,7 +1158,6 @@ export default function ExpedientesListado() {
 
 
     setPagina(1);
-
     setError("");
   };
 
@@ -1166,7 +1179,6 @@ export default function ExpedientesListado() {
 
 
     setFiltrosAplicados({
-
       nif: "",
       actividad: "",
       fechaInicio: "",
@@ -1179,7 +1191,6 @@ export default function ExpedientesListado() {
 
 
     setPagina(1);
-
     setError("");
   };
 
@@ -1268,6 +1279,7 @@ export default function ExpedientesListado() {
               ) {
                 return orden;
               }
+
 
               return {
 
@@ -1661,7 +1673,6 @@ export default function ExpedientesListado() {
                 totalActividades
               )}
             </strong>
-
           </div>
 
         </div>

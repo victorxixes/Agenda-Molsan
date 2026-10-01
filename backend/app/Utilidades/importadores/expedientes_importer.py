@@ -1,6 +1,6 @@
 import io
 from datetime import date, datetime
-from typing import Any
+from typing import Any, Optional
 
 import pandas as pd
 from sqlalchemy.orm import Session
@@ -12,7 +12,10 @@ from backend.app.expedientes.models import Expediente
 # CONFIGURACIÓN
 # ============================================================
 
-# Número de expedientes que se procesan antes de hacer commit.
+# Número máximo de expedientes que se procesan antes de hacer
+# commit.
+#
+# Esto evita mantener una única transacción gigantesca.
 BATCH_SIZE = 500
 
 
@@ -45,9 +48,11 @@ def limpiar_valor(valor: Any):
     return valor
 
 
-def limpiar_texto(valor: Any):
+def limpiar_texto(valor: Any) -> Optional[str]:
     """
     Convierte cualquier valor a texto limpio.
+
+    Devuelve None si el valor está vacío.
     """
 
     valor = limpiar_valor(valor)
@@ -68,8 +73,7 @@ def obtener_valor(row, *columnas):
     Devuelve el primer valor válido encontrado entre las
     columnas indicadas.
 
-    Permite trabajar con diferentes nombres de columnas
-    del Excel sin romper la importación.
+    Permite aceptar diferentes nombres para una misma columna.
     """
 
     for columna in columnas:
@@ -96,7 +100,7 @@ def obtener_valor(row, *columnas):
 
 def convertir_fecha(valor):
     """
-    Convierte cualquier fecha procedente del Excel a date.
+    Convierte un valor procedente de Excel a datetime.date.
 
     Acepta, entre otros:
 
@@ -104,6 +108,8 @@ def convertir_fecha(valor):
     - 08/11/2025 00:00:00
     - 2025-11-08
     - pandas.Timestamp
+    - datetime
+    - date
     """
 
     valor = limpiar_valor(valor)
@@ -136,15 +142,15 @@ def convertir_fecha(valor):
 
 def convertir_numero(valor):
     """
-    Convierte números procedentes del Excel.
+    Convierte valores numéricos procedentes de Excel.
 
     Gestiona:
 
+    - números
     - NaN
     - strings vacíos
-    - números
     - decimales con coma
-    - valores tipo 1.234,56
+    - formato europeo 1.234,56
     """
 
     valor = limpiar_valor(valor)
@@ -175,7 +181,6 @@ def convertir_numero(valor):
 
         else:
 
-            # Si no hay coma, mantenemos el punto decimal.
             valor = valor.replace(" ", "")
 
     try:
@@ -199,23 +204,25 @@ def importar_excel_expedientes(
     """
     Importa expedientes desde el Excel matriz ABSIS.
 
-    IMPORTANTE:
-
     El Excel puede contener un histórico muy grande.
 
-    El importador NO procesa todo el histórico como expedientes.
+    El importador:
 
-    Primero:
+    1. Lee el Excel.
+    2. Normaliza los nombres de columnas.
+    3. Comprueba FECHAALTA e IDEXPEDIENTE.
+    4. Filtra exclusivamente por fecha_objetivo.
+    5. Elimina filas sin IDEXPEDIENTE.
+    6. Busca en bloque los expedientes que ya existen.
+    7. Crea los nuevos.
+    8. Actualiza los existentes.
+    9. Hace commits por lotes.
 
-        1. Lee el Excel.
-        2. Normaliza las columnas.
-        3. Comprueba FECHAALTA e IDEXPEDIENTE.
-        4. Filtra por fecha_objetivo.
-        5. Solo entonces procesa los expedientes encontrados.
+    IMPORTANTE:
+
+    NO crea ExpedienteDetalle por cada columna del Excel.
 
     Los datos se guardan directamente en Expediente.
-
-    NO se crean ExpedienteDetalle por cada columna del Excel.
     """
 
     print("============================================", flush=True)
@@ -244,7 +251,7 @@ def importar_excel_expedientes(
     # ========================================================
 
     print(
-        "IMPORTADOR: leyendo Excel con pandas...",
+        "IMPORTADOR: leyendo Excel...",
         flush=True,
     )
 
@@ -294,10 +301,6 @@ def importar_excel_expedientes(
 
     print(
         "COLUMNAS NORMALIZADAS:",
-        flush=True,
-    )
-
-    print(
         list(df.columns),
         flush=True,
     )
@@ -306,16 +309,19 @@ def importar_excel_expedientes(
     # 3) COMPROBAR COLUMNAS OBLIGATORIAS
     # ========================================================
 
-    if "FECHAALTA" not in df.columns:
+    columnas_faltantes = []
 
-        raise ValueError(
-            "El Excel no contiene la columna FECHAALTA."
-        )
+    if "FECHAALTA" not in df.columns:
+        columnas_faltantes.append("FECHAALTA")
 
     if "IDEXPEDIENTE" not in df.columns:
+        columnas_faltantes.append("IDEXPEDIENTE")
+
+    if columnas_faltantes:
 
         raise ValueError(
-            "El Excel no contiene la columna IDEXPEDIENTE."
+            "El Excel no contiene las columnas obligatorias: "
+            + ", ".join(columnas_faltantes)
         )
 
     # ========================================================
@@ -343,7 +349,7 @@ def importar_excel_expedientes(
     )
 
     # ========================================================
-    # 5) FILTRAR POR FECHA
+    # 5) FILTRAR POR FECHA OBJETIVO
     # ========================================================
 
     print(
@@ -365,14 +371,13 @@ def importar_excel_expedientes(
     )
 
     print(
-        f"FILAS ENCONTRADAS PARA "
-        f"{fecha_objetivo}: "
+        f"FILAS ENCONTRADAS PARA {fecha_objetivo}: "
         f"{total_filtrados_fecha}",
         flush=True,
     )
 
     # ========================================================
-    # 6) SI NO HAY FILAS PARA LA FECHA
+    # 6) SI NO HAY FILAS PARA ESA FECHA
     # ========================================================
 
     if total_filtrados_fecha == 0:
@@ -393,7 +398,7 @@ def importar_excel_expedientes(
         }
 
     # ========================================================
-    # 7) LIMPIAR IDENTIFICADORES
+    # 7) LIMPIAR IDEXPEDIENTE
     # ========================================================
 
     df_filtrado["IDEXPEDIENTE"] = (
@@ -403,10 +408,6 @@ def importar_excel_expedientes(
 
     df_filtrado = df_filtrado[
         df_filtrado["IDEXPEDIENTE"].notna()
-    ].copy()
-
-    df_filtrado = df_filtrado[
-        df_filtrado["IDEXPEDIENTE"] != ""
     ].copy()
 
     total_filtrados = len(
@@ -426,8 +427,7 @@ def importar_excel_expedientes(
     if total_filtrados == 0:
 
         print(
-            "IMPORTADOR: las filas encontradas "
-            "no contienen IDEXPEDIENTE válido.",
+            "IMPORTADOR: no hay IDEXPEDIENTE válidos.",
             flush=True,
         )
 
@@ -441,29 +441,68 @@ def importar_excel_expedientes(
         }
 
     # ========================================================
-    # 9) OBTENER IDS ÚNICOS
+    # 9) ELIMINAR DUPLICADOS DEL MISMO EXCEL
+    #
+    # Expediente.id_expediente es UNIQUE.
+    #
+    # Si por alguna razón el Excel contiene dos filas con el
+    # mismo IDEXPEDIENTE para la misma fecha, utilizamos la
+    # última fila del Excel.
     # ========================================================
 
-    ids_excel = (
+    duplicados = (
         df_filtrado["IDEXPEDIENTE"]
-        .drop_duplicates()
-        .tolist()
+        .duplicated(keep="last")
+        .sum()
+    )
+
+    if duplicados:
+
+        print(
+            f"AVISO: se han encontrado "
+            f"{duplicados} filas duplicadas por IDEXPEDIENTE. "
+            f"Se conservará la última.",
+            flush=True,
+        )
+
+        df_filtrado = (
+            df_filtrado
+            .drop_duplicates(
+                subset=["IDEXPEDIENTE"],
+                keep="last",
+            )
+            .copy()
+        )
+
+    total_filtrados = len(
+        df_filtrado
     )
 
     print(
-        f"IDS ÚNICOS EN EL EXCEL PARA LA FECHA: "
-        f"{len(ids_excel)}",
+        f"EXPEDIENTES ÚNICOS A PROCESAR: "
+        f"{total_filtrados}",
         flush=True,
     )
 
     # ========================================================
-    # 10) BUSCAR EXPEDIENTES YA EXISTENTES
-    #
-    # Lo hacemos en bloques para no lanzar una consulta
-    # gigantesca contra la base de datos.
+    # 10) IDS DEL EXCEL
+    # ========================================================
+
+    ids_excel = (
+        df_filtrado["IDEXPEDIENTE"]
+        .tolist()
+    )
+
+    # ========================================================
+    # 11) BUSCAR EXISTENTES EN BLOQUES
     # ========================================================
 
     existentes_por_id = {}
+
+    print(
+        "IMPORTADOR: buscando expedientes existentes...",
+        flush=True,
+    )
 
     for inicio in range(
         0,
@@ -504,7 +543,7 @@ def importar_excel_expedientes(
     )
 
     # ========================================================
-    # 11) CONTADORES
+    # 12) CONTADORES
     # ========================================================
 
     creados = 0
@@ -513,7 +552,7 @@ def importar_excel_expedientes(
     procesados = 0
 
     # ========================================================
-    # 12) PROCESAR FILAS
+    # 13) PROCESAR EXPEDIENTES
     # ========================================================
 
     for _, row in df_filtrado.iterrows():
@@ -536,7 +575,7 @@ def importar_excel_expedientes(
             )
 
             # ==================================================
-            # CREAR EXPEDIENTE
+            # CREAR O RECUPERAR
             # ==================================================
 
             if exp is None:
@@ -630,11 +669,13 @@ def importar_excel_expedientes(
             exp.actividad_actual = obtener_valor(
                 row,
                 "ACTIVIDADACTUAL",
+                "ACTIVIDAD_ACTUAL",
             )
 
             exp.estado_actividad = obtener_valor(
                 row,
                 "ESTADOACTIVIDAD",
+                "ESTADO_ACTIVIDAD",
             )
 
             # ==================================================
@@ -921,9 +962,6 @@ def importar_excel_expedientes(
 
             # ==================================================
             # FACTURACIÓN
-            #
-            # Estos campos pueden no existir todavía en el Excel.
-            # Si existen, se importan.
             # ==================================================
 
             exp.facturacion_estado = obtener_valor(
@@ -989,8 +1027,7 @@ def importar_excel_expedientes(
             if procesados % BATCH_SIZE == 0:
 
                 print(
-                    f"IMPORTADOR: "
-                    f"guardando lote "
+                    f"IMPORTADOR: guardando lote "
                     f"{procesados // BATCH_SIZE}...",
                     flush=True,
                 )
@@ -1007,62 +1044,59 @@ def importar_excel_expedientes(
                 flush=True,
             )
 
-            # ------------------------------------------------
-            # IMPORTANTE
-            #
-            # El error de una fila no debe tirar abajo toda
-            # la importación.
-            #
-            # Hacemos rollback y continuamos.
-            # ------------------------------------------------
+            # ==================================================
+            # ROLLBACK DEL ERROR
+            # ==================================================
 
             db.rollback()
 
-            # ------------------------------------------------
-            # Después de rollback, reconstruimos el mapa
-            # de objetos que realmente existen en BD.
-            # ------------------------------------------------
+            # ==================================================
+            # RECONSTRUIR MAPA DE EXPEDIENTES
+            #
+            # Después de rollback() no debemos confiar en los
+            # objetos nuevos que teníamos pendientes.
+            # ==================================================
 
             existentes_por_id = {}
 
-            ids_actuales = list(
-                existentes_por_id.keys()
-            )
-
-            # ------------------------------------------------
-            # No utilizamos aquí objetos pendientes de SQLAlchemy.
-            # Volvemos a consultar los IDs originales del Excel.
-            # ------------------------------------------------
-
             try:
 
-                existentes_db = (
-                    db.query(Expediente)
-                    .filter(
-                        Expediente.id_expediente.in_(
-                            ids_excel
+                for inicio in range(
+                    0,
+                    len(ids_excel),
+                    BATCH_SIZE,
+                ):
+
+                    bloque_ids = ids_excel[
+                        inicio:inicio + BATCH_SIZE
+                    ]
+
+                    existentes = (
+                        db.query(Expediente)
+                        .filter(
+                            Expediente.id_expediente.in_(
+                                bloque_ids
+                            )
                         )
-                    )
-                    .all()
-                )
-
-                for expediente_db in existentes_db:
-
-                    clave = limpiar_texto(
-                        expediente_db.id_expediente
+                        .all()
                     )
 
-                    if clave:
+                    for expediente_db in existentes:
 
-                        existentes_por_id[
-                            clave
-                        ] = expediente_db
+                        clave = limpiar_texto(
+                            expediente_db.id_expediente
+                        )
+
+                        if clave:
+
+                            existentes_por_id[
+                                clave
+                            ] = expediente_db
 
             except Exception as reconstruccion_error:
 
                 print(
-                    "ERROR RECONSTRUYENDO MAPA "
-                    f"DE EXPEDIENTES: "
+                    "ERROR RECONSTRUYENDO MAPA: "
                     f"{reconstruccion_error}",
                     flush=True,
                 )
@@ -1070,7 +1104,7 @@ def importar_excel_expedientes(
                 raise
 
     # ========================================================
-    # 13) COMMIT FINAL
+    # 14) COMMIT FINAL
     # ========================================================
 
     print(
@@ -1094,7 +1128,7 @@ def importar_excel_expedientes(
         raise
 
     # ========================================================
-    # 14) RESULTADO
+    # 15) RESULTADO
     # ========================================================
 
     print("============================================", flush=True)

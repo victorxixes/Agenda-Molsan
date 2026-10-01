@@ -1,13 +1,23 @@
 import axios from "./axios";
 
+
 /* =========================================================
-   CRUD
+   CRUD EMPLEADOS
 ========================================================= */
 
-export const buscarEmpleados = async (params = {}) => {
-  const res = await axios.get("/empleados/search", {
-    params,
-  });
+
+/**
+ * Buscar empleados utilizando los parámetros indicados.
+ */
+export const buscarEmpleados = async (
+  params = {}
+) => {
+  const res = await axios.get(
+    "/empleados/search",
+    {
+      params,
+    }
+  );
 
   return {
     data: Array.isArray(res.data)
@@ -17,8 +27,13 @@ export const buscarEmpleados = async (params = {}) => {
 };
 
 
+/**
+ * Obtener todos los empleados.
+ */
 export const listarEmpleados = async () => {
-  const res = await axios.get("/empleados/");
+  const res = await axios.get(
+    "/empleados/"
+  );
 
   return {
     data: Array.isArray(res.data)
@@ -28,7 +43,12 @@ export const listarEmpleados = async () => {
 };
 
 
-export const obtenerEmpleado = async (id) => {
+/**
+ * Obtener un empleado por ID.
+ */
+export const obtenerEmpleado = async (
+  id
+) => {
   const res = await axios.get(
     `/empleados/${id}`
   );
@@ -39,7 +59,12 @@ export const obtenerEmpleado = async (id) => {
 };
 
 
-export const crearEmpleado = async (payload) => {
+/**
+ * Crear empleado.
+ */
+export const crearEmpleado = async (
+  payload
+) => {
   const res = await axios.post(
     "/empleados/",
     payload
@@ -51,11 +76,13 @@ export const crearEmpleado = async (payload) => {
 };
 
 
+/**
+ * Editar empleado.
+ */
 export const editarEmpleado = async (
   id,
   payload
 ) => {
-
   const res = await axios.put(
     `/empleados/${id}`,
     payload
@@ -67,8 +94,12 @@ export const editarEmpleado = async (
 };
 
 
-export const eliminarEmpleado = async (id) => {
-
+/**
+ * Eliminar empleado.
+ */
+export const eliminarEmpleado = async (
+  id
+) => {
   const res = await axios.delete(
     `/empleados/${id}`
   );
@@ -83,12 +114,17 @@ export const eliminarEmpleado = async (id) => {
    FOTO
 ========================================================= */
 
+
+/**
+ * Subir o actualizar la fotografía
+ * de un empleado.
+ */
 export const subirFotoEmpleado = async (
   id,
   file
 ) => {
-
-  const formData = new FormData();
+  const formData =
+    new FormData();
 
   formData.append(
     "archivo",
@@ -107,113 +143,146 @@ export const subirFotoEmpleado = async (
 
 
 /* =========================================================
-   FICHA
+   FICHA COMPLETA
 ========================================================= */
 
-export const obtenerFichaEmpleado = async (
-  id
-) => {
 
-  const res = await axios.get(
-    `/empleados/${id}/ficha`
-  );
+/**
+ * Obtener la ficha completa del empleado.
+ *
+ * Incluye:
+ * - datos del empleado
+ * - módulos visibles
+ * - permisos
+ * - auditoría
+ */
+export const obtenerFichaEmpleado =
+  async (id) => {
+    const res = await axios.get(
+      `/empleados/${id}/ficha`
+    );
 
-  return {
-    data: res.data || null,
+    return {
+      data: res.data || null,
+    };
   };
-};
 
 
-/*
- * Alias para no romper el ModalEmpleado actual.
+/**
+ * Alias utilizado por ModalEmpleado.
+ *
+ * Se mantiene para compatibilidad
+ * con el componente actual.
  */
 export const obtenerFichaCompleta =
   obtenerFichaEmpleado;
 
 
 /* =========================================================
-   MÓDULOS
+   MÓDULOS VISIBLES
 ========================================================= */
 
-export const actualizarModulosVisibles = async (
-  id,
-  modulos_visibles_list
-) => {
 
-  const res = await axios.put(
-    `/empleados/${id}/modulos`,
-    {
-      modulos_visibles_list,
-    }
-  );
+/**
+ * Actualizar módulos visibles
+ * del empleado.
+ */
+export const actualizarModulosVisibles =
+  async (
+    id,
+    modulos_visibles_list
+  ) => {
+    const res = await axios.put(
+      `/empleados/${id}/modulos`,
+      {
+        modulos_visibles_list,
+      }
+    );
 
-  return {
-    data: res.data || null,
+    return {
+      data: res.data || null,
+    };
   };
-};
 
 
 /* =========================================================
    PERMISOS
 ========================================================= */
 
-export const actualizarPermisosModulo = async (
-  id,
-  permisos_modulo_dict
-) => {
 
-  const res = await axios.put(
-    `/empleados/${id}/permisos`,
-    {
-      permisos_modulo_dict,
-    }
-  );
+/**
+ * Actualizar permisos por módulo.
+ */
+export const actualizarPermisosModulo =
+  async (
+    id,
+    permisos_modulo_dict
+  ) => {
+    const res = await axios.put(
+      `/empleados/${id}/permisos`,
+      {
+        permisos_modulo_dict,
+      }
+    );
 
-  return {
-    data: res.data || null,
+    return {
+      data: res.data || null,
+    };
   };
-};
 
 
 /* =========================================================
    PASSWORD
 ========================================================= */
 
-export const resetPasswordEmpleado = async (
-  id
-) => {
 
-  const res = await axios.post(
-    `/empleados/${id}/reset-password`
-  );
+/**
+ * Resetear contraseña del empleado.
+ */
+export const resetPasswordEmpleado =
+  async (id) => {
+    const res = await axios.post(
+      `/empleados/${id}/reset-password`
+    );
 
-  return {
-    data: res.data || null,
+    return {
+      data: res.data || null,
+    };
   };
-};
 
 
 /* =========================================================
    APODERADOS
 ========================================================= */
 
-export const listarApoderados = async () => {
 
-  const res = await listarEmpleados();
+/**
+ * Obtener empleados que actúan
+ * como apoderados.
+ *
+ * Se mantienen varias comprobaciones
+ * por compatibilidad con las diferentes
+ * estructuras que puede devolver el backend.
+ */
+export const listarApoderados =
+  async () => {
+    const res =
+      await listarEmpleados();
 
-  const lista = Array.isArray(res.data)
-    ? res.data.filter(
-        (empleado) =>
-          empleado.apoderado === true ||
-          empleado.es_apoderado === true ||
-          empleado.rol === "apoderado" ||
-          empleado.rol?.nombre
-            ?.toLowerCase()
-            === "apoderado"
-      )
-    : [];
+    const lista =
+      Array.isArray(res.data)
+        ? res.data.filter(
+            (empleado) =>
+              empleado.apoderado === true ||
+              empleado.es_apoderado === true ||
+              empleado.rol === "apoderado" ||
+              empleado.rol?.nombre
+                ?.toLowerCase() ===
+                "apoderado"
+          )
+        : [];
 
-  return {
-    data: lista,
+    return {
+      data: lista,
+    };
   };
-};

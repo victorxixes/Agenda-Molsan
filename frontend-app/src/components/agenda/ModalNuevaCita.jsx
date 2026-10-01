@@ -1,33 +1,73 @@
 import { useEffect, useState, useCallback } from "react";
 import AutocompleteNotario from "./AutocompleteNotario";
 import { obtenerNotaria } from "../../api/ctn";
-import SelectSJ from "../ui/SelectSJ"; // ⭐ NUEVO
+import SelectSJ from "../ui/SelectSJ";
 
-const TIPOS_CITA = ["Firma notarial", "Reunión", "Visita", "Otros"];
+const TIPOS_CITA = [
+  "Firma notarial",
+  "Reunión",
+  "Visita",
+  "Otros",
+];
+
+// ============================================================
+// NORMALIZAR TIPO DE FIRMA
+// ============================================================
 
 const normalizarTipoFirma = (vc) => {
-  const v = vc?.toUpperCase();
-  return v === "SI" || v === "VC" || v === "VIDEOCONFERENCIA"
+  const v = String(vc || "").trim().toUpperCase();
+
+  return v === "SI" ||
+    v === "VC" ||
+    v === "VIDEOCONFERENCIA"
     ? "Videoconferencia"
     : "Presencial";
 };
 
-const normalizarNotario = (n, tipoFirmaOverride = null) => ({
-  id: n.id,
-  codigo: n.codigo || "",
-  nombre: n.nombre || "",
-  apellidos: n.apellidos || "",
-  nif: n.nif || "",
-  telefono: n.telefono || "",
-  provincia: n.provincia || "",
-  municipio: n.municipio || "",
-  cp: n.cp || "",
-  direccion: n.direccion || "",
-  vc: n.vc || "",
-  apoderado: n.apoderado_s || n.apoderado || "",
-  observacion: n.observacion || "",
-  tipo_firma: tipoFirmaOverride || normalizarTipoFirma(n.vc),
+// ============================================================
+// NORMALIZAR NOTARIO
+// ============================================================
+
+const normalizarNotario = (
+  n,
+  tipoFirmaOverride = null
+) => ({
+  id: n?.id ?? null,
+  codigo: n?.codigo || "",
+  nombre: n?.nombre || "",
+  apellidos: n?.apellidos || "",
+  nif: n?.nif || "",
+  telefono: n?.telefono || "",
+  provincia: n?.provincia || "",
+  municipio: n?.municipio || "",
+  cp: n?.cp || "",
+  direccion: n?.direccion || "",
+  vc: n?.vc || "",
+  apoderado:
+    n?.apoderado_s ||
+    n?.apoderado ||
+    "",
+  observacion: n?.observacion || "",
+  lat: n?.lat ?? null,
+  lng: n?.lng ?? null,
+  tipo_firma:
+    tipoFirmaOverride ||
+    normalizarTipoFirma(n?.vc),
 });
+
+// ============================================================
+// FORMULARIO INICIAL
+// ============================================================
+
+const FORM_INICIAL = {
+  hora_inicio: "",
+  hora_fin: "",
+  tipo_cita: "",
+  notario_id: null,
+  tipo_firma: "",
+  apoderado_visible: "",
+  observaciones: "",
+};
 
 export default function ModalNuevaCita({
   fecha,
@@ -38,30 +78,48 @@ export default function ModalNuevaCita({
   onDelete,
 }) {
   const soloLectura = modo === "ver";
+
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const [form, setForm] = useState({
-    hora_inicio: "",
-    hora_fin: "",
-    tipo_cita: "",
-    notario_id: null,
-    tipo_firma: "",
-    apoderado_visible: "",
-    observaciones: "",
-  });
+  const [form, setForm] = useState(FORM_INICIAL);
 
-  const [notarioSeleccionado, setNotarioSeleccionado] = useState(null);
+  const [notarioSeleccionado, setNotarioSeleccionado] =
+    useState(null);
+
+  // ==========================================================
+  // CAMBIAR CAMPO
+  // ==========================================================
 
   const handleChange = useCallback(
     (campo, valor) => {
       if (soloLectura) return;
-      setForm((f) => ({ ...f, [campo]: valor }));
+
+      setForm((actual) => ({
+        ...actual,
+        [campo]: valor,
+      }));
+
+      setError("");
     },
     [soloLectura]
   );
 
+  // ==========================================================
+  // CARGAR CITA
+  // ==========================================================
+
   useEffect(() => {
-    if (modo === "crear") return;
+    if (!fecha) return;
+
+    setError("");
+
+    if (modo === "crear") {
+      setForm(FORM_INICIAL);
+      setNotarioSeleccionado(null);
+      return;
+    }
+
     if (!cita) return;
 
     setForm({
@@ -69,227 +127,770 @@ export default function ModalNuevaCita({
       hora_fin: cita.hora_fin || "",
       tipo_cita: cita.tipo_cita || "",
       notario_id: cita.notario_id || null,
-      tipo_firma: typeof cita.tipo_firma === "string" ? cita.tipo_firma : "",
-      apoderado_visible: cita.apoderado_nombre || "",
-      observaciones: cita.observaciones || "",
+      tipo_firma:
+        typeof cita.tipo_firma === "string"
+          ? cita.tipo_firma
+          : "",
+      apoderado_visible:
+        cita.apoderado_nombre || "",
+      observaciones:
+        cita.observaciones || "",
     });
 
-    if (cita.notario_id) {
-      obtenerNotaria(cita.notario_id).then((res) => {
-        const n = res.data;
-        if (!n) return;
-
-        const notarioCompleto = normalizarNotario(n, cita.tipo_firma);
-        setNotarioSeleccionado(notarioCompleto);
-
-        handleChange("tipo_firma", notarioCompleto.tipo_firma);
-        handleChange("apoderado_visible", notarioCompleto.apoderado || "");
-        handleChange("observaciones", notarioCompleto.observacion || "");
-      });
+    if (!cita.notario_id) {
+      setNotarioSeleccionado(null);
+      return;
     }
-  }, [modo, cita, handleChange]);
+
+    let cancelado = false;
+
+    obtenerNotaria(cita.notario_id)
+      .then((res) => {
+        if (cancelado) return;
+
+        const n = res?.data;
+
+        if (!n) {
+          setNotarioSeleccionado(null);
+          return;
+        }
+
+        const notarioCompleto =
+          normalizarNotario(
+            n,
+            cita.tipo_firma
+          );
+
+        setNotarioSeleccionado(
+          notarioCompleto
+        );
+
+        setForm((actual) => ({
+          ...actual,
+          tipo_firma:
+            notarioCompleto.tipo_firma,
+          apoderado_visible:
+            notarioCompleto.apoderado || "",
+          observaciones:
+            cita.observaciones ||
+            notarioCompleto.observacion ||
+            "",
+        }));
+      })
+      .catch((err) => {
+        if (cancelado) return;
+
+        console.error(
+          "ERROR CARGANDO NOTARIO:",
+          err
+        );
+
+        setNotarioSeleccionado(null);
+      });
+
+    return () => {
+      cancelado = true;
+    };
+  }, [modo, cita, fecha]);
+
+  // ==========================================================
+  // ESC
+  // ==========================================================
+
+  useEffect(() => {
+    if (!fecha) return;
+
+    const handleEscape = (event) => {
+      if (event.key === "Escape" && !loading) {
+        onClose();
+      }
+    };
+
+    window.addEventListener(
+      "keydown",
+      handleEscape
+    );
+
+    return () => {
+      window.removeEventListener(
+        "keydown",
+        handleEscape
+      );
+    };
+  }, [fecha, loading, onClose]);
+
+  // ==========================================================
+  // GUARDAR
+  // ==========================================================
 
   const guardar = useCallback(async () => {
-    if (soloLectura) return;
+    if (soloLectura || loading) return;
 
-    setLoading(true);
+    setError("");
+
+    if (!form.hora_inicio) {
+      setError("Indica la hora de inicio.");
+      return;
+    }
+
+    if (!form.hora_fin) {
+      setError("Indica la hora de fin.");
+      return;
+    }
+
+    if (form.hora_fin <= form.hora_inicio) {
+      setError(
+        "La hora de fin debe ser posterior a la hora de inicio."
+      );
+      return;
+    }
+
+    if (!form.tipo_cita) {
+      setError("Selecciona el tipo de cita.");
+      return;
+    }
 
     const fechaNormalizada =
       typeof fecha === "string"
         ? fecha
-        : fecha.toLocaleDateString("sv-SE");
+        : fecha?.toLocaleDateString("sv-SE");
+
+    if (!fechaNormalizada) {
+      setError("La fecha de la cita no es válida.");
+      return;
+    }
 
     const payload = {
       fecha: fechaNormalizada,
-      hora_inicio: form.hora_inicio || "",
-      hora_fin: form.hora_fin || "",
-      tipo_cita: form.tipo_cita || "",
-      notario_id: form.notario_id || null,
-      tipo_firma: typeof form.tipo_firma === "string" ? form.tipo_firma : "",
-      apoderado: form.apoderado_visible || "",
-      observaciones: form.observaciones || "",
+      hora_inicio:
+        form.hora_inicio || "",
+      hora_fin:
+        form.hora_fin || "",
+      tipo_cita:
+        form.tipo_cita || "",
+      notario_id:
+        form.notario_id || null,
+      tipo_firma:
+        typeof form.tipo_firma === "string"
+          ? form.tipo_firma
+          : "",
+      apoderado:
+        form.apoderado_visible || "",
+      observaciones:
+        form.observaciones || "",
     };
 
     try {
+      setLoading(true);
+
       await onGuardar(payload);
     } catch (err) {
-      console.error("ERROR AL GUARDAR CITA:", err);
-    }
+      console.error(
+        "ERROR AL GUARDAR CITA:",
+        err
+      );
 
-    setLoading(false);
-  }, [soloLectura, fecha, form, onGuardar]);
+      setError(
+        err?.response?.data?.detail ||
+          err?.message ||
+          "No se pudo guardar la cita."
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, [
+    soloLectura,
+    loading,
+    form,
+    fecha,
+    onGuardar,
+  ]);
+
+  // ==========================================================
+  // SELECCIONAR NOTARIO
+  // ==========================================================
+
+  const seleccionarNotario = useCallback(
+    (n) => {
+      if (soloLectura || !n) return;
+
+      const notarioCompleto =
+        normalizarNotario(n);
+
+      setNotarioSeleccionado(
+        notarioCompleto
+      );
+
+      setForm((actual) => ({
+        ...actual,
+        notario_id:
+          notarioCompleto.id,
+        tipo_firma:
+          notarioCompleto.tipo_firma,
+        apoderado_visible:
+          notarioCompleto.apoderado || "",
+        observaciones:
+          notarioCompleto.observacion || "",
+      }));
+
+      setError("");
+    },
+    [soloLectura]
+  );
 
   if (!fecha) return null;
 
+  const titulo =
+    modo === "crear"
+      ? "Nueva cita"
+      : modo === "editar"
+      ? "Editar cita"
+      : "Ver cita";
+
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
-      <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl w-full max-w-xl p-6 text-white">
+    <div
+      className="
+        fixed inset-0
+        bg-slate-950/50
+        backdrop-blur-sm
+        flex items-center justify-center
+        z-50
+        p-4
+        animate-fade-in
+      "
+      onMouseDown={(e) => {
+        if (
+          e.target === e.currentTarget &&
+          !loading
+        ) {
+          onClose();
+        }
+      }}
+    >
+      <div
+        className="
+          bg-white
+          border border-slate-200
+          rounded-2xl
+          shadow-2xl
+          w-full
+          max-w-2xl
+          max-h-[92vh]
+          overflow-y-auto
+          text-slate-800
+        "
+        onMouseDown={(e) =>
+          e.stopPropagation()
+        }
+      >
+        {/* ====================================================
+            CABECERA
+           ==================================================== */}
 
-        <h2 className="text-2xl font-semibold mb-4 drop-shadow">
-          {modo === "crear"
-            ? "Nueva cita"
-            : modo === "editar"
-            ? "Editar cita"
-            : "Ver cita"}{" "}
-          — {fecha}
-        </h2>
-
-        <div className="grid grid-cols-2 gap-4 text-sm">
-
-          {/* Hora inicio */}
+        <div
+          className="
+            sticky top-0 z-20
+            bg-white/95 backdrop-blur-xl
+            border-b border-slate-200
+            px-6 py-4
+            flex items-start justify-between
+            gap-4
+          "
+        >
           <div>
-            <label className="block mb-1 text-white/80">Hora inicio</label>
-            <input
-              type="time"
-              disabled={soloLectura}
-              className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white disabled:opacity-50"
-              value={form.hora_inicio}
-              onChange={(e) => handleChange("hora_inicio", e.target.value)}
-            />
+            <h2 className="text-xl font-bold text-slate-800">
+              {titulo}
+            </h2>
+
+            <p className="text-sm text-slate-500 mt-1">
+              {fecha}
+            </p>
           </div>
 
-          {/* Hora fin */}
-          <div>
-            <label className="block mb-1 text-white/80">Hora fin</label>
-            <input
-              type="time"
-              disabled={soloLectura}
-              className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white disabled:opacity-50"
-              value={form.hora_fin}
-              onChange={(e) => handleChange("hora_fin", e.target.value)}
-            />
-          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={loading}
+            className="
+              w-9 h-9
+              rounded-xl
+              flex items-center justify-center
+              text-slate-500
+              hover:bg-slate-100
+              hover:text-slate-800
+              transition
+              disabled:opacity-40
+            "
+            aria-label="Cerrar"
+          >
+            ×
+          </button>
+        </div>
 
-          {/* Tipo de cita — ⭐ SelectSJ */}
-          <div className="col-span-2">
-            <label className="block mb-1 text-white/80">Tipo de cita</label>
+        {/* ====================================================
+            CONTENIDO
+           ==================================================== */}
 
-            <SelectSJ
-              value={form.tipo_cita}
-              onChange={(v) => handleChange("tipo_cita", v)}
-              placeholder="Seleccionar tipo"
-              disabled={soloLectura}
-              options={TIPOS_CITA.map((t) => ({
-                value: t,
-                label: t,
-              }))}
-            />
-          </div>
+        <div className="p-6 space-y-5">
 
-          {/* Autocomplete Notario */}
-          <div className="col-span-2">
-            <label className="block mb-1 text-white/80">Buscar notario</label>
+          {/* ERROR */}
 
-            <AutocompleteNotario
-              disabled={soloLectura}
-              value={notarioSeleccionado}
-              onSelect={(n) => {
-                if (soloLectura) return;
-
-                const notarioCompleto = normalizarNotario(n);
-                setNotarioSeleccionado(notarioCompleto);
-
-                handleChange("notario_id", n.id);
-                handleChange("tipo_firma", notarioCompleto.tipo_firma);
-                handleChange("apoderado_visible", notarioCompleto.apoderado || "");
-                handleChange("observaciones", notarioCompleto.observacion || "");
-              }}
-            />
-          </div>
-
-          {/* Tarjeta del notario */}
-          {notarioSeleccionado && (
-            <div className="col-span-2 border border-white/20 rounded-xl p-4 bg-white/5 backdrop-blur-xl shadow-lg">
-              <h4 className="font-semibold text-sm mb-2 text-white">
-                {notarioSeleccionado.nombre} {notarioSeleccionado.apellidos}
-              </h4>
-
-              <div className="space-y-1 text-white/80 text-xs">
-                <p>Código: {notarioSeleccionado.codigo}</p>
-                <p>NIF: {notarioSeleccionado.nif}</p>
-                <p>Teléfono: {notarioSeleccionado.telefono}</p>
-                <p>Provincia: {notarioSeleccionado.provincia}</p>
-                <p>Municipio: {notarioSeleccionado.municipio}</p>
-                <p>CP: {notarioSeleccionado.cp}</p>
-                <p>Dirección: {notarioSeleccionado.direccion}</p>
-                <p>VC: {notarioSeleccionado.tipo_firma}</p>
-                <p>Apoderado: {notarioSeleccionado.apoderado}</p>
-                <p>Observación: {notarioSeleccionado.observacion}</p>
-              </div>
-
-              <iframe
-                className="w-full h-40 mt-3 rounded-xl border border-white/20"
-                src={`https://www.google.com/maps?q=${encodeURIComponent(
-                  `${notarioSeleccionado.direccion}, ${notarioSeleccionado.cp} ${notarioSeleccionado.municipio}`
-                )}&output=embed`}
-              ></iframe>
+          {error && (
+            <div
+              className="
+                rounded-xl
+                border border-red-200
+                bg-red-50
+                px-4 py-3
+                text-sm
+                text-red-700
+              "
+            >
+              {error}
             </div>
           )}
 
-          {/* Tipo firma */}
-          <div>
-            <label className="block mb-1 text-white/80">Tipo firma</label>
-            <input
-              disabled={soloLectura}
-              className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white disabled:opacity-50"
-              value={form.tipo_firma}
-              onChange={(e) => handleChange("tipo_firma", e.target.value)}
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+            {/* =================================================
+                HORA INICIO
+               ================================================= */}
+
+            <div>
+              <label className="block mb-1.5 text-sm font-medium text-slate-700">
+                Hora inicio
+              </label>
+
+              <input
+                type="time"
+                disabled={soloLectura || loading}
+                className="
+                  w-full
+                  min-h-[42px]
+                  bg-white
+                  border border-slate-300
+                  rounded-xl
+                  px-3 py-2
+                  text-slate-700
+                  shadow-sm
+                  focus:outline-none
+                  focus:ring-2
+                  focus:ring-blue-500/20
+                  focus:border-blue-400
+                  disabled:bg-slate-100
+                  disabled:text-slate-400
+                "
+                value={form.hora_inicio}
+                onChange={(e) =>
+                  handleChange(
+                    "hora_inicio",
+                    e.target.value
+                  )
+                }
+              />
+            </div>
+
+            {/* =================================================
+                HORA FIN
+               ================================================= */}
+
+            <div>
+              <label className="block mb-1.5 text-sm font-medium text-slate-700">
+                Hora fin
+              </label>
+
+              <input
+                type="time"
+                disabled={soloLectura || loading}
+                className="
+                  w-full
+                  min-h-[42px]
+                  bg-white
+                  border border-slate-300
+                  rounded-xl
+                  px-3 py-2
+                  text-slate-700
+                  shadow-sm
+                  focus:outline-none
+                  focus:ring-2
+                  focus:ring-blue-500/20
+                  focus:border-blue-400
+                  disabled:bg-slate-100
+                  disabled:text-slate-400
+                "
+                value={form.hora_fin}
+                onChange={(e) =>
+                  handleChange(
+                    "hora_fin",
+                    e.target.value
+                  )
+                }
+              />
+            </div>
+
+            {/* =================================================
+                TIPO CITA
+               ================================================= */}
+
+            <div className="sm:col-span-2">
+              <label className="block mb-1.5 text-sm font-medium text-slate-700">
+                Tipo de cita
+              </label>
+
+              <SelectSJ
+                value={form.tipo_cita}
+                onChange={(v) =>
+                  handleChange(
+                    "tipo_cita",
+                    v
+                  )
+                }
+                placeholder="Seleccionar tipo"
+                disabled={
+                  soloLectura || loading
+                }
+                options={TIPOS_CITA.map(
+                  (tipo) => ({
+                    value: tipo,
+                    label: tipo,
+                  })
+                )}
+              />
+            </div>
+
+            {/* =================================================
+                NOTARIO
+               ================================================= */}
+
+            <div className="sm:col-span-2">
+              <label className="block mb-1.5 text-sm font-medium text-slate-700">
+                Notario
+              </label>
+
+              <AutocompleteNotario
+                disabled={
+                  soloLectura || loading
+                }
+                value={
+                  notarioSeleccionado
+                }
+                onSelect={
+                  seleccionarNotario
+                }
+              />
+            </div>
           </div>
 
-          {/* Apoderado */}
-          <div>
-            <label className="block mb-1 text-white/80">Apoderado</label>
-            <input
-              disabled
-              className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white disabled:opacity-50"
-              value={form.apoderado_visible || ""}
-            />
+          {/* ==================================================
+              TARJETA NOTARIO
+             ================================================== */}
+
+          {notarioSeleccionado && (
+            <div
+              className="
+                rounded-2xl
+                border border-blue-100
+                bg-blue-50/60
+                p-4
+              "
+            >
+              <div className="flex items-start justify-between gap-4 mb-3">
+                <div>
+                  <h3 className="font-semibold text-slate-800">
+                    {
+                      notarioSeleccionado.nombre
+                    }{" "}
+                    {
+                      notarioSeleccionado.apellidos
+                    }
+                  </h3>
+
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Código{" "}
+                    {
+                      notarioSeleccionado.codigo ||
+                      "—"
+                    }
+                  </p>
+                </div>
+
+                <span
+                  className={`
+                    inline-flex
+                    px-2.5 py-1
+                    rounded-full
+                    text-xs
+                    font-semibold
+                    ${
+                      notarioSeleccionado.tipo_firma ===
+                      "Videoconferencia"
+                        ? "bg-purple-100 text-purple-700"
+                        : "bg-sky-100 text-sky-700"
+                    }
+                  `}
+                >
+                  {
+                    notarioSeleccionado.tipo_firma
+                  }
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-xs text-slate-600">
+                <p>
+                  <strong className="text-slate-700">
+                    NIF:
+                  </strong>{" "}
+                  {notarioSeleccionado.nif ||
+                    "—"}
+                </p>
+
+                <p>
+                  <strong className="text-slate-700">
+                    Teléfono:
+                  </strong>{" "}
+                  {notarioSeleccionado.telefono ||
+                    "—"}
+                </p>
+
+                <p>
+                  <strong className="text-slate-700">
+                    Provincia:
+                  </strong>{" "}
+                  {notarioSeleccionado.provincia ||
+                    "—"}
+                </p>
+
+                <p>
+                  <strong className="text-slate-700">
+                    Municipio:
+                  </strong>{" "}
+                  {notarioSeleccionado.municipio ||
+                    "—"}
+                </p>
+
+                <p>
+                  <strong className="text-slate-700">
+                    CP:
+                  </strong>{" "}
+                  {notarioSeleccionado.cp ||
+                    "—"}
+                </p>
+
+                <p>
+                  <strong className="text-slate-700">
+                    Apoderado:
+                  </strong>{" "}
+                  {notarioSeleccionado.apoderado ||
+                    "—"}
+                </p>
+
+                <p className="sm:col-span-2">
+                  <strong className="text-slate-700">
+                    Dirección:
+                  </strong>{" "}
+                  {notarioSeleccionado.direccion ||
+                    "—"}
+                </p>
+              </div>
+
+              {notarioSeleccionado.direccion && (
+                <iframe
+                  title="Ubicación de la notaría"
+                  className="
+                    w-full
+                    h-44
+                    mt-4
+                    rounded-xl
+                    border border-slate-200
+                  "
+                  loading="lazy"
+                  src={`https://www.google.com/maps?q=${encodeURIComponent(
+                    `${notarioSeleccionado.direccion}, ${notarioSeleccionado.cp} ${notarioSeleccionado.municipio}`
+                  )}&output=embed`}
+                />
+              )}
+            </div>
+          )}
+
+          {/* ==================================================
+              TIPO FIRMA / APODERADO
+             ================================================== */}
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+            <div>
+              <label className="block mb-1.5 text-sm font-medium text-slate-700">
+                Tipo de firma
+              </label>
+
+              <input
+                disabled
+                className="
+                  w-full
+                  min-h-[42px]
+                  bg-slate-100
+                  border border-slate-200
+                  rounded-xl
+                  px-3 py-2
+                  text-slate-600
+                "
+                value={
+                  form.tipo_firma || "—"
+                }
+              />
+            </div>
+
+            <div>
+              <label className="block mb-1.5 text-sm font-medium text-slate-700">
+                Apoderado
+              </label>
+
+              <input
+                disabled
+                className="
+                  w-full
+                  min-h-[42px]
+                  bg-slate-100
+                  border border-slate-200
+                  rounded-xl
+                  px-3 py-2
+                  text-slate-600
+                "
+                value={
+                  form.apoderado_visible ||
+                  "—"
+                }
+              />
+            </div>
           </div>
 
-          {/* Observaciones */}
-          <div className="col-span-2">
-            <label className="block mb-1 text-white/80">Observaciones</label>
+          {/* ==================================================
+              OBSERVACIONES
+             ================================================== */}
+
+          <div>
+            <label className="block mb-1.5 text-sm font-medium text-slate-700">
+              Observaciones
+            </label>
+
             <textarea
-              disabled={soloLectura}
-              className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white disabled:opacity-50"
-              rows={3}
+              disabled={
+                soloLectura || loading
+              }
+              className="
+                w-full
+                bg-white
+                border border-slate-300
+                rounded-xl
+                px-3 py-2
+                text-slate-700
+                shadow-sm
+                resize-none
+                focus:outline-none
+                focus:ring-2
+                focus:ring-blue-500/20
+                focus:border-blue-400
+                disabled:bg-slate-100
+                disabled:text-slate-400
+              "
+              rows={4}
               value={form.observaciones}
               onChange={(e) =>
-                handleChange("observaciones", e.target.value)
+                handleChange(
+                  "observaciones",
+                  e.target.value
+                )
               }
             />
           </div>
         </div>
 
-        {/* Botones finales */}
-        <div className="mt-6 flex justify-end gap-3">
+        {/* ====================================================
+            FOOTER
+           ==================================================== */}
 
-          {modo === "editar" && onDelete && !soloLectura && (
+        <div
+          className="
+            border-t border-slate-200
+            bg-slate-50/80
+            px-6 py-4
+            flex flex-col-reverse sm:flex-row
+            justify-between
+            gap-3
+          "
+        >
+          <div>
+            {modo === "editar" &&
+              onDelete &&
+              !soloLectura && (
+                <button
+                  type="button"
+                  disabled={loading}
+                  className="
+                    px-4 py-2
+                    rounded-xl
+                    bg-red-50
+                    border border-red-200
+                    text-red-700
+                    hover:bg-red-100
+                    transition
+                    disabled:opacity-50
+                  "
+                  onClick={onDelete}
+                >
+                  Eliminar
+                </button>
+              )}
+          </div>
+
+          <div className="flex justify-end gap-3">
             <button
-              className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white transition shadow-lg"
-              onClick={onDelete}
-            >
-              Eliminar
-            </button>
-          )}
-
-          <button
-            className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition shadow-lg"
-            onClick={onClose}
-          >
-            {soloLectura ? "Cerrar" : "Cancelar"}
-          </button>
-
-          {!soloLectura && (
-            <button
-              className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white transition shadow-lg"
-              onClick={guardar}
+              type="button"
               disabled={loading}
+              onClick={onClose}
+              className="
+                px-4 py-2
+                rounded-xl
+                bg-white
+                border border-slate-300
+                text-slate-700
+                hover:bg-slate-50
+                transition
+                disabled:opacity-50
+              "
             >
-              {modo === "crear" ? "Crear cita" : "Guardar cambios"}
+              {soloLectura
+                ? "Cerrar"
+                : "Cancelar"}
             </button>
-          )}
+
+            {!soloLectura && (
+              <button
+                type="button"
+                disabled={loading}
+                onClick={guardar}
+                className="
+                  px-5 py-2
+                  rounded-xl
+                  bg-blue-600
+                  hover:bg-blue-700
+                  text-white
+                  font-medium
+                  shadow-sm
+                  transition
+                  active:scale-[0.98]
+                  disabled:opacity-60
+                  disabled:cursor-not-allowed
+                "
+              >
+                {loading
+                  ? "Guardando…"
+                  : modo === "crear"
+                  ? "Crear cita"
+                  : "Guardar cambios"}
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>

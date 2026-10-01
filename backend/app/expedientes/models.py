@@ -1,25 +1,33 @@
 from sqlalchemy import Column, Integer, String, Float, Date, ForeignKey
+
 from backend.app.database import Base
 
 
 class Expediente(Base):
     __tablename__ = "expedientes"
 
-    id = Column(Integer, primary_key=True)
+    # ============================================================
+    # IDENTIFICACIÓN INTERNA
+    # ============================================================
+
+    id = Column(
+        Integer,
+        primary_key=True,
+        index=True,
+    )
 
     # ============================================================
-    # RELACIÓN CON CLIENTE
+    # RELACIÓN CON CLIENTE TITULAR
     # ============================================================
 
     cliente_id = Column(
         Integer,
         ForeignKey("clientes.id"),
         nullable=True,
-        index=True,
     )
 
     # ============================================================
-    # IDENTIFICACIÓN
+    # IDENTIFICACIÓN DEL EXPEDIENTE
     # ============================================================
 
     id_expediente = Column(
@@ -33,168 +41,355 @@ class Expediente(Base):
     # ESTADOS
     # ============================================================
 
-    estado_expediente = Column(String(200))
-    estado_expediente_ancert = Column(String(200))
+    estado_expediente = Column(
+        String(200),
+        nullable=True,
+    )
+
+    estado_expediente_ancert = Column(
+        String(200),
+        nullable=True,
+    )
 
     # ============================================================
     # FECHAS
     # ============================================================
 
-    fecha_alta = Column(Date)
-    fecha_firma = Column(Date)
-    fecha_inscripcion = Column(Date)
-    fecha_entregado_cliente = Column(Date)
-    fecha_prevista_firma = Column(Date)
-    fecha_vencimiento = Column(Date)
-    fecha_sol_cgn = Column(Date)
+    fecha_alta = Column(Date, nullable=True)
 
-    fecha_firma_prev_val = Column(Date)
-    fecha_firma_prev_cli = Column(Date)
+    fecha_firma = Column(Date, nullable=True)
 
-    fecha_inicio_actividad = Column(Date)
-    fecha_fin_actividad = Column(Date)
+    fecha_inscripcion = Column(Date, nullable=True)
 
-    # ============================================================
-    # ACTIVIDAD
-    # ============================================================
+    fecha_entregado_cliente = Column(Date, nullable=True)
 
-    actividad_actual = Column(String(300))
-    estado_actividad = Column(String(200))
+    fecha_prevista_firma = Column(Date, nullable=True)
 
-    # ============================================================
-    # SOLICITANTE
-    # ============================================================
+    fecha_vencimiento = Column(Date, nullable=True)
 
-    nombresolicitante = Column(String(300))
-    nifsoclicitante = Column(String(50))
+    fecha_sol_cgn = Column(Date, nullable=True)
+
+    fecha_firma_prev_val = Column(Date, nullable=True)
+
+    fecha_firma_prev_cli = Column(Date, nullable=True)
+
+    fecha_inicio_actividad = Column(Date, nullable=True)
+
+    fecha_fin_actividad = Column(Date, nullable=True)
 
     # ============================================================
     # TITULAR
     # ============================================================
 
-    nombre_titular = Column(String(300))
-    nif_titular = Column(String(50))
+    nombre_titular = Column(
+        String(300),
+        nullable=True,
+    )
+
+    nif_titular = Column(
+        String(50),
+        nullable=True,
+    )
+
+    # ============================================================
+    # SOLICITANTE
+    # ============================================================
+
+    nombre_solicitante = Column(
+        String(300),
+        nullable=True,
+    )
+
+    nif_solicitante = Column(
+        String(50),
+        nullable=True,
+    )
 
     # ============================================================
     # APODERADO
     # ============================================================
 
-    apoderado = Column(String(300))
+    apoderado = Column(
+        String(300),
+        nullable=True,
+    )
 
     # ============================================================
     # NOTARIO
     # ============================================================
 
-    nombre_notario = Column(String(300))
-    nif_notario = Column(String(50))
-    notario = Column(String(300))
+    nombre_notario = Column(
+        String(300),
+        nullable=True,
+    )
+
+    nif_notario = Column(
+        String(50),
+        nullable=True,
+    )
+
+    notario = Column(
+        String(300),
+        nullable=True,
+    )
 
     # ============================================================
     # OFICINA
     # ============================================================
 
-    oficina = Column(String(200))
-    oficina_alta = Column(String(200))
-    dan = Column(String(200))
+    oficina = Column(
+        String(200),
+        nullable=True,
+    )
+
+    dan = Column(
+        String(200),
+        nullable=True,
+    )
+
+    oficina_alta = Column(
+        String(200),
+        nullable=True,
+    )
 
     # ============================================================
     # ECONÓMICOS
     # ============================================================
 
-    capital = Column(Float)
-    importe = Column(Float)
-    saldo_real = Column(Float)
-    saldo_disponible = Column(Float)
+    capital = Column(
+        Float,
+        nullable=True,
+    )
 
-    # ============================================================
-    # OPERACIÓN
-    # ============================================================
+    importe = Column(
+        Float,
+        nullable=True,
+    )
 
-    contrato = Column(String(300))
-    num_solicitud_sia = Column(String(200))
+    saldo_real = Column(
+        Float,
+        nullable=True,
+    )
 
-    tipo_operacion = Column(String(300))
-    subtipo_operacion = Column(String(300))
-
-    vinccanc = Column(String(200))
-    protocolo = Column(String(200))
+    saldo_disponible = Column(
+        Float,
+        nullable=True,
+    )
 
     # ============================================================
     # PROVISIÓN
     # ============================================================
 
-    id_provision = Column(String(200))
-    tipo_provision = Column(String(200))
+    id_provision = Column(
+        String(100),
+        nullable=True,
+    )
+
+    tipo_provision = Column(
+        String(100),
+        nullable=True,
+    )
+
+    # ============================================================
+    # OPERACIÓN
+    # ============================================================
+
+    contrato = Column(
+        String(200),
+        nullable=True,
+    )
+
+    num_solicitud_sia = Column(
+        String(200),
+        nullable=True,
+    )
+
+    tipo_operacion = Column(
+        String(300),
+        nullable=True,
+    )
+
+    subtipo_operacion = Column(
+        String(300),
+        nullable=True,
+    )
+
+    vinccanc = Column(
+        String(200),
+        nullable=True,
+    )
+
+    protocolo = Column(
+        String(200),
+        nullable=True,
+    )
 
     # ============================================================
     # GTG / BANKIA
     # ============================================================
 
-    origen_bankia = Column(String(200))
-    producto_gtg = Column(String(300))
-    dt = Column(String(200))
+    origen_bankia = Column(
+        String(200),
+        nullable=True,
+    )
+
+    producto_gtg = Column(
+        String(300),
+        nullable=True,
+    )
+
+    dt = Column(
+        String(200),
+        nullable=True,
+    )
+
+    # ============================================================
+    # ACTIVIDAD
+    # ============================================================
+
+    actividad_actual = Column(
+        String(300),
+        nullable=True,
+    )
+
+    estado_actividad = Column(
+        String(200),
+        nullable=True,
+    )
+
+    fecha_inicio_actividad = Column(
+        Date,
+        nullable=True,
+    )
+
+    fecha_fin_actividad = Column(
+        Date,
+        nullable=True,
+    )
 
     # ============================================================
     # GESTORÍA
     # ============================================================
 
-    id_gestoria_tramite = Column(String(200))
-    nombre_gestoria = Column(String(500))
+    id_gestoria_tramite = Column(
+        String(100),
+        nullable=True,
+    )
 
-    # Alias interno existente
-    gestoria = Column(String(500))
+    nombre_gestoria = Column(
+        String(300),
+        nullable=True,
+    )
+
+    # Campo adicional utilizado actualmente por el sistema
+    gestoria = Column(
+        String(300),
+        nullable=True,
+    )
 
     # ============================================================
-    # REGISTRAL / FINCA
+    # FINCA
     # ============================================================
 
-    finca = Column(String(200))
+    finca = Column(
+        String(200),
+        nullable=True,
+    )
 
     # ============================================================
     # DEFECTOS
     # ============================================================
 
-    tiene_defectos_abiertos = Column(String(50))
-    tipo_error = Column(String(300))
-    descripcion_error = Column(String(1000))
-    falta_defecto = Column(String(1000))
-    fecha_cierre_defecto = Column(Date)
+    tiene_defectos_abiertos = Column(
+        String(50),
+        nullable=True,
+    )
+
+    tipo_error = Column(
+        String(300),
+        nullable=True,
+    )
+
+    descripcion_error = Column(
+        String(1000),
+        nullable=True,
+    )
+
+    falta_defecto = Column(
+        String(1000),
+        nullable=True,
+    )
+
+    fcierre_defecto = Column(
+        Date,
+        nullable=True,
+    )
 
     # ============================================================
     # CGN
     # ============================================================
 
-    id_expediente_cgn = Column(String(200))
+    id_expediente_cgn = Column(
+        String(200),
+        nullable=True,
+    )
 
     # ============================================================
     # ACTA
     # ============================================================
 
-    tipo_acta = Column(String(300))
+    tipo_acta = Column(
+        String(200),
+        nullable=True,
+    )
 
     # ============================================================
     # OTROS
     # ============================================================
 
-    lucy = Column(String(200))
-    indicador_tt = Column(String(200))
+    lucy = Column(
+        String(200),
+        nullable=True,
+    )
+
+    indicador_tt = Column(
+        String(200),
+        nullable=True,
+    )
 
     # ============================================================
     # OBSERVACIONES
     # ============================================================
 
-    observaciones = Column(String(2000))
+    observaciones = Column(
+        String(2000),
+        nullable=True,
+    )
 
     # ============================================================
     # FACTURACIÓN
     # ============================================================
 
-    facturacion_estado = Column(String(200))
-    facturacion_fecha = Column(Date)
+    facturacion_estado = Column(
+        String(200),
+        nullable=True,
+    )
+
+    facturacion_fecha = Column(
+        Date,
+        nullable=True,
+    )
 
     # ============================================================
     # REGISTRAL
     # ============================================================
 
-    registral_estado = Column(String(200))
-    registral_fecha = Column(Date)
+    registral_estado = Column(
+        String(200),
+        nullable=True,
+    )
+
+    registral_fecha = Column(
+        Date,
+        nullable=True,
+    )

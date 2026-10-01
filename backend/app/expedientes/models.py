@@ -257,15 +257,6 @@ class Expediente(Base):
         nullable=True,
     )
 
-    fecha_inicio_actividad = Column(
-        Date,
-        nullable=True,
-    )
-
-    fecha_fin_actividad = Column(
-        Date,
-        nullable=True,
-    )
 
     # ============================================================
     # GESTORÍA

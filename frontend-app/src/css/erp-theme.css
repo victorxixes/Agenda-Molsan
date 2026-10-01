@@ -1,12 +1,12 @@
 :root {
-  --erp-bg: #eef3f9;
+  --erp-bg: #e8eef6;
   --erp-surface: #ffffff;
-  --erp-surface-soft: #f6f8fc;
-  --erp-border: #dbe3ef;
+  --erp-surface-soft: #f4f7fb;
+  --erp-border: #cfd9e8;
 
   --erp-primary: #3156b3;
   --erp-primary-dark: #274694;
-  --erp-primary-soft: #edf3ff;
+  --erp-primary-soft: #e8efff;
 
   --erp-text: #24324a;
   --erp-text-soft: #64748b;
@@ -15,21 +15,36 @@
   --erp-warning: #d97706;
   --erp-danger: #dc3545;
 }
+
+/* ============================================================
+   BASE ERP
+   ============================================================ */
+
 .erp-page {
   background: var(--erp-bg);
   color: var(--erp-text);
 }
 
+/* ============================================================
+   TARJETAS
+   ============================================================ */
+
 .erp-card {
   background: var(--erp-surface);
+  color: var(--erp-text);
   border: 1px solid var(--erp-border);
   border-radius: 16px;
 }
 
 .erp-card-soft {
   background: var(--erp-surface-soft);
+  color: var(--erp-text);
   border: 1px solid var(--erp-border);
 }
+
+/* ============================================================
+   TABLAS
+   ============================================================ */
 
 .erp-table-header {
   background: var(--erp-primary);
@@ -44,4 +59,73 @@
 
 .erp-table-row:hover {
   background: var(--erp-primary-soft);
+}
+
+/* ============================================================
+   TEXTOS ERP
+   ============================================================ */
+
+.erp-page h1,
+.erp-page h2,
+.erp-page h3,
+.erp-page h4,
+.erp-page h5,
+.erp-page h6 {
+  color: var(--erp-text);
+}
+
+.erp-page p,
+.erp-page span,
+.erp-page label {
+  color: inherit;
+}
+
+/* Texto secundario */
+
+.erp-text-soft {
+  color: var(--erp-text-soft);
+}
+
+/* ============================================================
+   CONTENEDORES
+   ============================================================ */
+
+.erp-section {
+  background: var(--erp-surface);
+  color: var(--erp-text);
+  border: 1px solid var(--erp-border);
+  border-radius: 16px;
+}
+
+/* ============================================================
+   INPUTS
+   ============================================================ */
+
+.erp-page input,
+.erp-page select,
+.erp-page textarea {
+  background: #ffffff;
+  color: var(--erp-text);
+  border-color: var(--erp-border);
+}
+
+.erp-page input::placeholder,
+.erp-page textarea::placeholder {
+  color: #94a3b8;
+}
+
+/* ============================================================
+   ESTADOS
+   ============================================================ */
+
+.erp-success {
+  color: var(--erp-success);
+}
+
+.erp-warning {
+  color: var(--erp-warning);
+}
+
+.erp-danger {
+  color: var(--erp-danger);
 }

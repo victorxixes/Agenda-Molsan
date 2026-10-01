@@ -1,10 +1,10 @@
-import axios from "axios";
+import axios from "./axios";
 
 /**
  * Obtiene el listado paginado de expedientes.
  */
 export async function obtenerListadoExpedientes(params = {}) {
-  const res = await axios.get("/api/expedientes/listado", {
+  const res = await axios.get("/expedientes/listado", {
     params,
   });
 
@@ -15,7 +15,7 @@ export async function obtenerListadoExpedientes(params = {}) {
  * Obtiene el resumen general de expedientes.
  */
 export async function obtenerResumenExpedientes() {
-  const res = await axios.get("/api/expedientes/resumen");
+  const res = await axios.get("/expedientes/resumen");
 
   return res.data;
 }
@@ -25,7 +25,7 @@ export async function obtenerResumenExpedientes() {
  */
 export async function obtenerExpediente(idExpediente) {
   const res = await axios.get(
-    `/api/expedientes/${encodeURIComponent(idExpediente)}`
+    `/expedientes/${encodeURIComponent(idExpediente)}`
   );
 
   return res.data;
@@ -36,7 +36,7 @@ export async function obtenerExpediente(idExpediente) {
  */
 export async function exportarExcelExpedientes(params = {}) {
   const res = await axios.get(
-    "/api/expedientes/exportar-excel",
+    "/expedientes/exportar-excel",
     {
       params,
       responseType: "blob",

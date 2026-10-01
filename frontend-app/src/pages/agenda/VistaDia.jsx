@@ -1,128 +1,234 @@
 import { useMemo, useCallback } from "react";
 import { useAgendaStore } from "../../store/agendaStore";
 
-/**
- * VistaDia — SJ‑2026 Premium
- * - Timeline glass‑UI
- * - Animaciones suaves
- * - Render optimizado
- */
-
-const HORAS = Array.from({ length: 12 }, (_, i) => `${9 + i}:00`);
+const HORAS = Array.from(
+  { length: 12 },
+  (_, i) => `${9 + i}:00`
+);
 
 const colorPorTipo = (tipo) => {
   switch (tipo) {
     case "Firma notarial":
-      return "bg-blue-500/20 border-blue-400 text-blue-200";
+      return {
+        box: "bg-[var(--erp-primary-soft)] border-[var(--erp-primary)]/30",
+        text: "text-[var(--erp-primary)]",
+        accent: "bg-[var(--erp-primary)]",
+      };
+
     case "Reunión":
-      return "bg-green-500/20 border-green-400 text-green-200";
+      return {
+        box: "bg-emerald-50 border-emerald-200",
+        text: "text-emerald-700",
+        accent: "bg-emerald-500",
+      };
+
     default:
-      return "bg-white/10 border-white/20 text-white";
+      return {
+        box: "bg-[var(--erp-surface-soft)] border-[var(--erp-border)]",
+        text: "text-[var(--erp-text)]",
+        accent: "bg-slate-400",
+      };
   }
 };
 
-export default function VistaDia({ fechaDia, citas = [], onCitaClick, onCrearCita }) {
-  const resaltadaId = useAgendaStore((s) => s.resaltadaId);
+export default function VistaDia({
+  fechaDia,
+  citas = [],
+  onCitaClick,
+  onCrearCita,
+}) {
+  const resaltadaId = useAgendaStore(
+    (s) => s.resaltadaId
+  );
 
   const fechaNormalizada = useMemo(
-    () => fechaDia.toLocaleDateString("sv-SE"),
+    () =>
+      fechaDia.toLocaleDateString("sv-SE"),
     [fechaDia]
   );
 
-  const citasSeguras = useMemo(() => (Array.isArray(citas) ? citas : []), [citas]);
+  const citasSeguras = useMemo(
+    () => (Array.isArray(citas) ? citas : []),
+    [citas]
+  );
 
   const crearCitaDia = useCallback(() => {
     onCrearCita(fechaNormalizada);
-  }, [fechaNormalizada, onCrearCita]);
+  }, [
+    fechaNormalizada,
+    onCrearCita,
+  ]);
 
   const citasPosicionadas = useMemo(() => {
     return citasSeguras.map((cita) => {
-      const inicioHora = parseInt(cita.hora_inicio.split(":")[0], 10);
-      const finHora = parseInt(cita.hora_fin.split(":")[0], 10);
+      const inicioHora =
+        parseInt(
+          cita.hora_inicio.split(":")[0],
+          10
+        );
+
+      const finHora =
+        parseInt(
+          cita.hora_fin.split(":")[0],
+          10
+        );
 
       return {
         ...cita,
         top: (inicioHora - 9) * 48,
-        height: (finHora - inicioHora) * 48 - 4,
+        height:
+          (finHora - inicioHora) * 48 - 4,
       };
     });
   }, [citasSeguras]);
 
   return (
-    <div className="grid grid-cols-[80px,1fr] gap-4 text-xs animate-fade-in">
+    <div className="grid grid-cols-[70px,1fr] gap-4 text-xs animate-fade-in">
 
-      {/* Columna de horas */}
-      <div className="text-white/70 flex flex-col">
-        {HORAS.map((h) => (
-          <div key={h} className="h-12 flex items-start justify-end pr-2">
-            {h}
-          </div>
-        ))}
-      </div>
+      {/* HORAS */}
 
-      {/* Timeline */}
-      <div
-        className="
-          relative border border-white/10 rounded-2xl bg-white/5 backdrop-blur-xl shadow-xl
-          overflow-hidden
-        "
-      >
-        {/* Bloques horarios */}
+      <div className="text-[var(--erp-text-soft)] flex flex-col">
+
         {HORAS.map((h) => (
           <div
             key={h}
             className="
-              h-12 border-b border-white/10 hover:bg-white/10 cursor-pointer
-              transition-all duration-300
+              h-12
+              flex items-start
+              justify-end
+              pr-2
+              pt-1
+              font-medium
+            "
+          >
+            {h}
+          </div>
+        ))}
+
+      </div>
+
+      {/* TIMELINE */}
+
+      <div
+        className="
+          relative
+          border border-[var(--erp-border)]
+          rounded-xl
+          bg-[var(--erp-surface)]
+          overflow-hidden
+          shadow-sm
+        "
+      >
+
+        {/* BLOQUES HORARIOS */}
+
+        {HORAS.map((h) => (
+          <div
+            key={h}
+            className="
+              h-12
+              border-b border-[var(--erp-border)]
+              hover:bg-[var(--erp-surface-soft)]
+              cursor-pointer
+              transition
             "
             onDoubleClick={crearCitaDia}
           />
         ))}
 
-        {/* Citas posicionadas */}
-        {citasPosicionadas.map((cita) => (
-          <div
-            key={cita.id}
-            className={`
-              absolute left-4 right-4 mt-1 p-3 rounded-xl border shadow-lg cursor-pointer
-              backdrop-blur-xl
-              ${colorPorTipo(cita.tipo_cita)}
-              transition-all duration-300
-              ${
-                resaltadaId === cita.id
-                  ? "ring-2 ring-yellow-400 bg-yellow-500/20 scale-[1.03]"
-                  : "hover:scale-[1.02]"
+        {/* CITAS */}
+
+        {citasPosicionadas.map((cita) => {
+
+          const colores =
+            colorPorTipo(cita.tipo_cita);
+
+          const resaltada =
+            resaltadaId === cita.id;
+
+          return (
+            <div
+              key={cita.id}
+              className={`
+                absolute
+                left-4
+                right-4
+                mt-1
+                p-3
+                rounded-xl
+                border
+                shadow-sm
+                cursor-pointer
+                overflow-hidden
+                ${colores.box}
+                ${colores.text}
+                transition-all duration-200
+                ${
+                  resaltada
+                    ? "ring-2 ring-amber-400 bg-amber-50"
+                    : "hover:shadow-md hover:scale-[1.005]"
+                }
+              `}
+              style={{
+                top: cita.top,
+                height: cita.height,
+              }}
+              onClick={() =>
+                onCitaClick(cita)
               }
-            `}
-            style={{
-              top: cita.top,
-              height: cita.height,
-            }}
-            onClick={() => onCitaClick(cita)}
-          >
-            <div className="font-semibold truncate text-white">
-              {cita.tipo_cita} — {cita.hora_inicio} - {cita.hora_fin}
-            </div>
+            >
 
-            <div className="truncate text-white/80">
-              Notario: {cita.notario_nombre || "—"}
-            </div>
+              {/* ACENTO */}
 
-            <div className="truncate text-white/80">
-              Firma: {cita.tipo_firma}
-            </div>
+              <span
+                className={`
+                  absolute
+                  left-0
+                  top-0
+                  bottom-0
+                  w-1
+                  ${colores.accent}
+                `}
+              />
 
-            <div className="truncate text-white/80">
-              Apoderado: {cita.apoderado_nombre || "—"}
-            </div>
-
-            {cita.observaciones && (
-              <div className="text-[11px] mt-1 truncate text-white/70">
-                Obs: {cita.observaciones}
+              <div className="font-semibold truncate pl-1">
+                {cita.tipo_cita} —{" "}
+                {cita.hora_inicio} -{" "}
+                {cita.hora_fin}
               </div>
-            )}
-          </div>
-        ))}
+
+              <div className="truncate text-[var(--erp-text-soft)] pl-1">
+                Notario:{" "}
+                {cita.notario_nombre || "—"}
+              </div>
+
+              <div className="truncate text-[var(--erp-text-soft)] pl-1">
+                Firma: {cita.tipo_firma}
+              </div>
+
+              <div className="truncate text-[var(--erp-text-soft)] pl-1">
+                Apoderado:{" "}
+                {cita.apoderado_nombre || "—"}
+              </div>
+
+              {cita.observaciones && (
+                <div
+                  className="
+                    text-[11px]
+                    mt-1
+                    truncate
+                    text-[var(--erp-text-soft)]
+                    pl-1
+                  "
+                >
+                  Obs: {cita.observaciones}
+                </div>
+              )}
+
+            </div>
+          );
+        })}
+
       </div>
     </div>
   );

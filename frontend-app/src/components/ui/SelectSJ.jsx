@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function SelectSJ({
   value,
@@ -6,6 +6,7 @@ export default function SelectSJ({
   options = [],
   placeholder = "Seleccionar",
   className = "",
+  disabled = false,
 }) {
   const [open, setOpen] = useState(false);
   const selectRef = useRef(null);
@@ -14,7 +15,10 @@ export default function SelectSJ({
     (o) => String(o.value) === String(value)
   );
 
-  // Cerrar al hacer clic fuera
+  // =========================================================
+  // CERRAR AL HACER CLICK FUERA
+  // =========================================================
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -32,7 +36,10 @@ export default function SelectSJ({
     };
   }, []);
 
-  // Cerrar con ESC
+  // =========================================================
+  // CERRAR CON ESC
+  // =========================================================
+
   useEffect(() => {
     const handleEscape = (event) => {
       if (event.key === "Escape") {
@@ -47,7 +54,23 @@ export default function SelectSJ({
     };
   }, []);
 
+  // =========================================================
+  // CERRAR SI PASA A DISABLED
+  // =========================================================
+
+  useEffect(() => {
+    if (disabled) {
+      setOpen(false);
+    }
+  }, [disabled]);
+
+  // =========================================================
+  // SELECCIONAR
+  // =========================================================
+
   const seleccionar = (option) => {
+    if (disabled) return;
+
     onChange(option.value);
     setOpen(false);
   };
@@ -59,13 +82,18 @@ export default function SelectSJ({
     >
       {/* =====================================================
           BOTÓN PRINCIPAL
-          ===================================================== */}
+         ===================================================== */}
+
       <button
         type="button"
-        onClick={() => setOpen((actual) => !actual)}
+        disabled={disabled}
+        onClick={() => {
+          if (disabled) return;
+          setOpen((actual) => !actual);
+        }}
         aria-haspopup="listbox"
         aria-expanded={open}
-        className="
+        className={`
           w-full
           min-h-[42px]
           bg-white
@@ -80,14 +108,15 @@ export default function SelectSJ({
           items-center
           gap-3
           shadow-sm
-          hover:border-blue-400
-          hover:bg-slate-50
-          focus:outline-none
-          focus:ring-2
-          focus:ring-blue-500/20
           transition-all
           duration-200
-        "
+
+          ${
+            disabled
+              ? "opacity-60 cursor-not-allowed bg-slate-100"
+              : "hover:border-blue-400 hover:bg-slate-50 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+          }
+        `}
       >
         <span className="truncate">
           {opcionSeleccionada?.label ?? placeholder}
@@ -110,8 +139,9 @@ export default function SelectSJ({
 
       {/* =====================================================
           DESPLEGABLE
-          ===================================================== */}
-      {open && (
+         ===================================================== */}
+
+      {open && !disabled && (
         <div
           role="listbox"
           className="
@@ -160,6 +190,7 @@ export default function SelectSJ({
                     items-center
                     justify-between
                     gap-3
+                    cursor-pointer
 
                     ${
                       seleccionada

@@ -8,7 +8,9 @@ from pydantic import BaseModel
 # =========================================================
 
 class LoginEmpleado(BaseModel):
+
     usuario: str
+
     password: str
 
 
@@ -17,7 +19,9 @@ class LoginEmpleado(BaseModel):
 # =========================================================
 
 class RolEmpleadoOut(BaseModel):
+
     id: Optional[int] = None
+
     nombre: Optional[str] = None
 
     class Config:
@@ -29,31 +33,39 @@ class RolEmpleadoOut(BaseModel):
 # =========================================================
 
 class EmpleadoBase(BaseModel):
+
     id: int
 
-    # -----------------------------------------------------
+    # =====================================================
     # BÁSICOS
-    # -----------------------------------------------------
+    # =====================================================
 
     nombre: Optional[str] = None
+
     apellidos: Optional[str] = None
 
     dni: Optional[str] = None
 
     telefono: Optional[str] = None
+
     email_personal: Optional[str] = None
+
     email_empresa: Optional[str] = None
+
     extension: Optional[str] = None
 
     usuario: Optional[str] = None
 
-    # -----------------------------------------------------
+    # =====================================================
     # PERSONALES
-    # -----------------------------------------------------
+    # =====================================================
 
     direccion: Optional[str] = None
+
     codigo_postal: Optional[str] = None
+
     poblacion: Optional[str] = None
+
     provincia: Optional[str] = None
 
     fecha_nacimiento: Optional[str] = None
@@ -61,49 +73,57 @@ class EmpleadoBase(BaseModel):
     alergias: Optional[str] = None
 
     persona_contacto: Optional[str] = None
+
     telefono_contacto: Optional[str] = None
 
     observaciones: Optional[str] = None
 
     foto: Optional[str] = None
 
-    # -----------------------------------------------------
+    # =====================================================
     # LABORALES
-    # -----------------------------------------------------
+    # =====================================================
 
     departamento_id: Optional[int] = None
+
     seccion_id: Optional[int] = None
+
     cargo_id: Optional[int] = None
 
     fecha_alta: Optional[str] = None
+
     fecha_baja: Optional[str] = None
 
-    # -----------------------------------------------------
+    # =====================================================
     # ESTADO
-    # -----------------------------------------------------
+    # =====================================================
 
     activo: Optional[bool] = True
 
-    # -----------------------------------------------------
+    # =====================================================
     # SEGURIDAD
-    # -----------------------------------------------------
+    # =====================================================
 
     modulos_visibles_list: Optional[list] = None
+
     permisos_modulo_dict: Optional[dict] = None
 
-    # -----------------------------------------------------
+    # =====================================================
     # ROL
-    # -----------------------------------------------------
+    # =====================================================
 
     rol_id: Optional[int] = None
+
     rol: Optional[RolEmpleadoOut] = None
 
-    # -----------------------------------------------------
+    # =====================================================
     # NOMBRES MAESTROS
-    # -----------------------------------------------------
+    # =====================================================
 
     departamento_nombre: Optional[str] = None
+
     seccion_nombre: Optional[str] = None
+
     cargo_nombre: Optional[str] = None
 
     class Config:
@@ -115,17 +135,23 @@ class EmpleadoBase(BaseModel):
 # =========================================================
 
 class EmpleadoCreate(BaseModel):
+
     nombre: str
+
     apellidos: Optional[str] = None
 
     dni: str
 
     usuario: str
+
     password: str
 
     telefono: Optional[str] = None
+
     email_personal: Optional[str] = None
+
     email_empresa: Optional[str] = None
+
     extension: Optional[str] = None
 
 
@@ -135,17 +161,20 @@ class EmpleadoCreate(BaseModel):
 
 class EmpleadoUpdate(BaseModel):
 
-    # -----------------------------------------------------
+    # =====================================================
     # BÁSICOS
-    # -----------------------------------------------------
+    # =====================================================
 
     nombre: Optional[str] = None
+
     apellidos: Optional[str] = None
+
     dni: Optional[str] = None
 
     telefono: Optional[str] = None
 
     email_personal: Optional[str] = None
+
     email_empresa: Optional[str] = None
 
     extension: Optional[str] = None
@@ -154,13 +183,16 @@ class EmpleadoUpdate(BaseModel):
 
     password: Optional[str] = None
 
-    # -----------------------------------------------------
+    # =====================================================
     # PERSONALES
-    # -----------------------------------------------------
+    # =====================================================
 
     direccion: Optional[str] = None
+
     codigo_postal: Optional[str] = None
+
     poblacion: Optional[str] = None
+
     provincia: Optional[str] = None
 
     fecha_nacimiento: Optional[str] = None
@@ -168,36 +200,52 @@ class EmpleadoUpdate(BaseModel):
     alergias: Optional[str] = None
 
     persona_contacto: Optional[str] = None
+
     telefono_contacto: Optional[str] = None
 
     observaciones: Optional[str] = None
 
-    # -----------------------------------------------------
+    foto: Optional[str] = None
+
+    # =====================================================
     # LABORALES
-    # -----------------------------------------------------
+    # =====================================================
 
     departamento_id: Optional[int] = None
+
     seccion_id: Optional[int] = None
+
     cargo_id: Optional[int] = None
 
     fecha_alta: Optional[str] = None
+
     fecha_baja: Optional[str] = None
 
-    # -----------------------------------------------------
+    # =====================================================
     # ESTADO
-    # -----------------------------------------------------
+    # =====================================================
 
     activo: Optional[bool] = None
 
-    # -----------------------------------------------------
+    # =====================================================
     # SEGURIDAD
-    # -----------------------------------------------------
+    # =====================================================
 
     modulos_visibles_list: Optional[list] = None
+
     permisos_modulo_dict: Optional[dict] = None
 
-    # -----------------------------------------------------
+    # =====================================================
     # ROL
-    # -----------------------------------------------------
+    # =====================================================
 
     rol_id: Optional[int] = None
+
+
+# =========================================================
+# FICHA COMPLETA
+# =========================================================
+
+class EmpleadoFichaOut(EmpleadoBase):
+
+    pass

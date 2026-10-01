@@ -10,6 +10,7 @@ import { useNavigate } from "react-router-dom";
  * - Fondo claro corporativo
  * - Coherente con el resto del ERP
  * - Responsive
+ * - Animaciones suaves
  * - Sin dependencias adicionales
  *
  * Lógica:
@@ -91,7 +92,7 @@ export default function LoginPage() {
       password,
       cargando,
       iniciarSesion,
-      navigate
+      navigate,
     ]
   );
 
@@ -104,15 +105,17 @@ export default function LoginPage() {
       className="
         min-h-screen
         relative
+
         flex
         items-center
         justify-center
+
         overflow-hidden
 
         px-4
         py-8
 
-        bg-slate-100
+        bg-slate-50
 
         animate-fadeIn
       "
@@ -126,21 +129,23 @@ export default function LoginPage() {
         className="
           absolute
           inset-0
+
           pointer-events-none
           overflow-hidden
         "
       >
 
-        {/* Luz superior izquierda */}
+        {/* Luz azul superior izquierda */}
 
         <div
           className="
             absolute
-            -top-48
-            -left-48
 
-            w-[520px]
-            h-[520px]
+            -top-56
+            -left-56
+
+            w-[620px]
+            h-[620px]
 
             rounded-full
 
@@ -150,16 +155,18 @@ export default function LoginPage() {
           "
         />
 
-        {/* Luz inferior derecha */}
+
+        {/* Luz cyan inferior derecha */}
 
         <div
           className="
             absolute
-            -bottom-48
-            -right-48
 
-            w-[520px]
-            h-[520px]
+            -bottom-56
+            -right-56
+
+            w-[620px]
+            h-[620px]
 
             rounded-full
 
@@ -169,29 +176,32 @@ export default function LoginPage() {
           "
         />
 
+
         {/* Luz central */}
 
         <div
           className="
             absolute
+
             top-1/2
             left-1/2
 
-            w-[700px]
-            h-[700px]
+            w-[760px]
+            h-[760px]
 
             -translate-x-1/2
             -translate-y-1/2
 
             rounded-full
 
-            bg-white/70
+            bg-white/80
 
             blur-3xl
           "
         />
 
-        {/* Capa sutil */}
+
+        {/* Gradiente general */}
 
         <div
           className="
@@ -199,9 +209,25 @@ export default function LoginPage() {
             inset-0
 
             bg-gradient-to-br
-            from-white/70
-            via-transparent
+            from-white
+            via-slate-50/60
             to-blue-50/70
+          "
+        />
+
+
+        {/* Rejilla decorativa extremadamente sutil */}
+
+        <div
+          className="
+            absolute
+            inset-0
+
+            opacity-[0.025]
+
+            bg-[linear-gradient(rgba(15,23,42,1)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,1)_1px,transparent_1px)]
+
+            bg-[size:32px_32px]
           "
         />
 
@@ -209,7 +235,7 @@ export default function LoginPage() {
 
 
       {/* =====================================================
-          CONTENEDOR
+          LOGIN
       ===================================================== */}
 
       <div
@@ -218,14 +244,14 @@ export default function LoginPage() {
           z-10
 
           w-full
-          max-w-md
+          max-w-[430px]
 
           animate-slideUp
         "
       >
 
         {/* ===================================================
-            TARJETA LOGIN
+            TARJETA GLASS
         =================================================== */}
 
         <div
@@ -233,25 +259,23 @@ export default function LoginPage() {
             relative
             overflow-hidden
 
-            rounded-[28px]
+            rounded-[30px]
 
             border
-            border-white/80
+            border-white/90
 
-            bg-white/75
+            bg-white/80
 
             backdrop-blur-2xl
 
-            shadow-[0_25px_80px_rgba(15,23,42,0.12)]
+            shadow-[0_30px_100px_rgba(15,23,42,0.12)]
 
             p-7
             sm:p-9
           "
         >
 
-          {/* =================================================
-              BRILLO SUPERIOR
-          ================================================= */}
+          {/* Brillo superior */}
 
           <div
             className="
@@ -260,14 +284,40 @@ export default function LoginPage() {
               left-0
               right-0
 
-              h-px
+              h-[2px]
 
               bg-gradient-to-r
               from-transparent
-              via-blue-400/50
+              via-blue-500/40
               to-transparent
             "
           />
+
+
+          {/* Brillo interior */}
+
+          <div
+            className="
+              absolute
+
+              -top-24
+              left-1/2
+
+              w-64
+              h-64
+
+              -translate-x-1/2
+
+              rounded-full
+
+              bg-blue-400/[0.035]
+
+              blur-3xl
+
+              pointer-events-none
+            "
+          />
+
 
           {/* =================================================
               CABECERA
@@ -275,14 +325,14 @@ export default function LoginPage() {
 
           <div
             className="
+              relative
               text-center
+
               mb-8
             "
           >
 
-            {/* =================================================
-                LOGO
-            ================================================= */}
+            {/* LOGO */}
 
             <div
               className="
@@ -299,27 +349,43 @@ export default function LoginPage() {
 
                   p-2
 
-                  rounded-2xl
+                  rounded-[22px]
 
                   bg-white
 
                   border
                   border-slate-200/80
 
-                  shadow-[0_12px_30px_rgba(15,23,42,0.10)]
+                  shadow-[0_14px_35px_rgba(15,23,42,0.10)]
                 "
               >
+
+                <div
+                  className="
+                    absolute
+                    inset-0
+
+                    rounded-[22px]
+
+                    ring-1
+                    ring-blue-500/5
+
+                    pointer-events-none
+                  "
+                />
 
                 <img
                   src="/img/logo.jpg"
                   alt="Molsan"
                   className="
+                    relative
+
                     h-20
                     sm:h-24
 
                     w-auto
 
-                    rounded-xl
+                    rounded-[16px]
 
                     object-contain
                   "
@@ -330,18 +396,16 @@ export default function LoginPage() {
             </div>
 
 
-            {/* =================================================
-                TÍTULO
-            ================================================= */}
+            {/* TÍTULO */}
 
             <h1
               className="
                 text-3xl
-                sm:text-4xl
+                sm:text-[34px]
 
                 font-bold
 
-                tracking-tight
+                tracking-[-0.03em]
 
                 text-slate-800
               "
@@ -355,7 +419,7 @@ export default function LoginPage() {
                 mt-2
 
                 text-sm
-                sm:text-base
+                sm:text-[15px]
 
                 text-slate-500
               "
@@ -375,12 +439,12 @@ export default function LoginPage() {
               className="
                 mb-5
 
-                rounded-xl
+                rounded-2xl
 
                 border
-                border-red-200
+                border-red-200/80
 
-                bg-red-50
+                bg-red-50/80
 
                 px-4
                 py-3
@@ -433,7 +497,7 @@ export default function LoginPage() {
 
                   text-sm
 
-                  font-medium
+                  font-semibold
 
                   text-slate-700
                 "
@@ -448,8 +512,6 @@ export default function LoginPage() {
                 "
               >
 
-                {/* Icono */}
-
                 <span
                   className="
                     absolute
@@ -462,6 +524,8 @@ export default function LoginPage() {
                     text-slate-400
 
                     pointer-events-none
+
+                    transition-colors
                   "
                   aria-hidden="true"
                 >
@@ -472,28 +536,35 @@ export default function LoginPage() {
                 <input
                   id="usuario"
                   type="text"
+
                   value={usuario}
+
                   onChange={(e) =>
                     setUsuario(e.target.value)
                   }
+
                   autoFocus
                   autoComplete="username"
+
                   disabled={cargando}
+
                   placeholder="Introduce tu usuario"
 
                   className="
                     w-full
 
-                    rounded-xl
+                    rounded-2xl
 
                     border
                     border-slate-200
 
-                    bg-white/80
+                    bg-white/75
 
                     px-4
-                    py-3
+                    py-3.5
                     pl-11
+
+                    text-[15px]
 
                     text-slate-800
 
@@ -504,7 +575,9 @@ export default function LoginPage() {
                     transition-all
                     duration-200
 
-                    shadow-sm
+                    shadow-[0_4px_15px_rgba(15,23,42,0.03)]
+
+                    hover:border-slate-300
 
                     focus:border-blue-400
 
@@ -538,7 +611,7 @@ export default function LoginPage() {
 
                   text-sm
 
-                  font-medium
+                  font-semibold
 
                   text-slate-700
                 "
@@ -552,8 +625,6 @@ export default function LoginPage() {
                   relative
                 "
               >
-
-                {/* Icono */}
 
                 <span
                   className="
@@ -576,33 +647,41 @@ export default function LoginPage() {
 
                 <input
                   id="password"
+
                   type={
                     mostrarPass
                       ? "text"
                       : "password"
                   }
+
                   value={password}
+
                   onChange={(e) =>
                     setPassword(e.target.value)
                   }
+
                   autoComplete="current-password"
+
                   disabled={cargando}
+
                   placeholder="Introduce tu contraseña"
 
                   className="
                     w-full
 
-                    rounded-xl
+                    rounded-2xl
 
                     border
                     border-slate-200
 
-                    bg-white/80
+                    bg-white/75
 
                     px-4
-                    py-3
+                    py-3.5
                     pl-11
                     pr-12
+
+                    text-[15px]
 
                     text-slate-800
 
@@ -613,7 +692,9 @@ export default function LoginPage() {
                     transition-all
                     duration-200
 
-                    shadow-sm
+                    shadow-[0_4px_15px_rgba(15,23,42,0.03)]
+
+                    hover:border-slate-300
 
                     focus:border-blue-400
 
@@ -628,17 +709,17 @@ export default function LoginPage() {
                 />
 
 
-                {/* =================================================
-                    MOSTRAR PASSWORD
-                ================================================= */}
+                {/* MOSTRAR PASSWORD */}
 
                 <button
                   type="button"
+
                   onClick={() =>
                     setMostrarPass(
                       (valor) => !valor
                     )
                   }
+
                   disabled={cargando}
 
                   aria-label={
@@ -659,10 +740,10 @@ export default function LoginPage() {
                     items-center
                     justify-center
 
-                    w-8
-                    h-8
+                    w-9
+                    h-9
 
-                    rounded-lg
+                    rounded-xl
 
                     text-slate-400
 
@@ -686,11 +767,12 @@ export default function LoginPage() {
 
 
             {/* =================================================
-                BOTÓN LOGIN
+                BOTÓN
             ================================================= */}
 
             <button
               type="submit"
+
               disabled={cargando}
 
               className="
@@ -700,14 +782,14 @@ export default function LoginPage() {
 
                 overflow-hidden
 
-                rounded-xl
+                rounded-2xl
 
                 border
                 border-blue-500/20
 
                 bg-gradient-to-r
                 from-blue-600
-                to-blue-500
+                to-cyan-500
 
                 py-3.5
 
@@ -716,17 +798,17 @@ export default function LoginPage() {
 
                 text-white
 
-                shadow-[0_10px_25px_rgba(37,99,235,0.20)]
+                shadow-[0_12px_30px_rgba(37,99,235,0.20)]
 
                 transition-all
                 duration-200
 
                 hover:from-blue-500
-                hover:to-blue-400
+                hover:to-cyan-400
 
-                hover:shadow-[0_14px_35px_rgba(37,99,235,0.28)]
+                hover:shadow-[0_16px_40px_rgba(37,99,235,0.28)]
 
-                active:scale-[0.98]
+                active:scale-[0.985]
 
                 disabled:cursor-not-allowed
                 disabled:opacity-60
@@ -734,37 +816,63 @@ export default function LoginPage() {
               "
             >
 
-              {cargando ? (
-                <span
-                  className="
-                    flex
-                    items-center
-                    justify-center
-                    gap-2
-                  "
-                >
+              {/* brillo del botón */}
 
-                  <span
-                    className="
-                      h-4
-                      w-4
+              <span
+                className="
+                  absolute
+                  inset-0
 
-                      rounded-full
+                  bg-gradient-to-r
+                  from-white/0
+                  via-white/10
+                  to-white/0
 
-                      border-2
-                      border-white/30
-                      border-t-white
+                  opacity-0
 
-                      animate-spin
-                    "
-                  />
+                  hover:opacity-100
 
-                  Accediendo...
+                  transition-opacity
+                "
+              />
 
-                </span>
-              ) : (
-                "Entrar en Molsan ERP"
-              )}
+
+              <span
+                className="
+                  relative
+
+                  flex
+                  items-center
+                  justify-center
+
+                  gap-2
+                "
+              >
+
+                {cargando ? (
+                  <>
+                    <span
+                      className="
+                        h-4
+                        w-4
+
+                        rounded-full
+
+                        border-2
+                        border-white/30
+                        border-t-white
+
+                        animate-spin
+                      "
+                    />
+
+                    Accediendo...
+                  </>
+                ) : (
+                  "Entrar en Molsan ERP"
+                )}
+
+              </span>
 
             </button>
 
@@ -792,11 +900,14 @@ export default function LoginPage() {
               className="
                 text-xs
 
+                font-medium
+
                 text-slate-400
               "
             >
               Molsan ERP · Plataforma empresarial
             </p>
+
 
             <p
               className="
@@ -805,7 +916,8 @@ export default function LoginPage() {
                 text-[10px]
 
                 uppercase
-                tracking-[0.2em]
+
+                tracking-[0.22em]
 
                 text-slate-300
               "

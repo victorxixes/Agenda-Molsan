@@ -1,4 +1,9 @@
-import { useEffect, useCallback, useMemo } from "react";
+import {
+  useEffect,
+  useCallback,
+  useMemo,
+} from "react";
+
 import { useParams } from "react-router-dom";
 import { useCtn } from "../../hooks/useCtn";
 
@@ -12,10 +17,6 @@ export default function CtnDetallePage() {
     cargarFirmasNotaria,
     loading,
   } = useCtn();
-
-  // ==========================================================
-  // CARGAR
-  // ==========================================================
 
   const cargar = useCallback(() => {
     cargarNotaria(id);
@@ -40,536 +41,291 @@ export default function CtnDetallePage() {
     [firmas]
   );
 
-  // ==========================================================
-  // LOADING
-  // ==========================================================
-
-  if (loading || !datosNotaria) {
+  if (loading) {
     return (
-      <div className="erp-page min-h-screen p-6">
-
-        <div className="erp-card p-10">
-
-          <div className="flex flex-col items-center justify-center">
-
-            <div
-              className="
-                w-10
-                h-10
-                rounded-full
-                border-4
-                border-[var(--erp-border)]
-                border-t-[var(--erp-primary)]
-                animate-spin
-              "
-            />
-
-            <p
-              className="
-                mt-4
-                text-sm
-                text-[var(--erp-text-soft)]
-              "
-            >
-              Cargando notaría…
-            </p>
-
-          </div>
-
+      <div className="erp-page min-h-full p-6">
+        <div className="erp-card p-8 text-center">
+          <p className="text-sm text-[var(--erp-text-soft)] animate-pulse">
+            Cargando notaría…
+          </p>
         </div>
-
       </div>
     );
   }
 
-  // ==========================================================
-  // RENDER
-  // ==========================================================
+  if (!datosNotaria) {
+    return (
+      <div className="erp-page min-h-full p-6">
+        <div
+          className="
+            max-w-[1200px]
+            mx-auto
+            bg-red-50
+            border
+            border-red-200
+            rounded-xl
+            p-5
+            text-red-700
+          "
+        >
+          No se ha encontrado la notaría solicitada.
+        </div>
+      </div>
+    );
+  }
+
+  const nombreCompleto =
+    [
+      datosNotaria.nombre,
+      datosNotaria.apellidos,
+    ]
+      .filter(Boolean)
+      .join(" ") || "Notaría";
 
   return (
-    <div className="erp-page min-h-screen p-6 space-y-6">
+    <div
+      className="
+        erp-page
+        min-h-full
+        p-4
+        sm:p-6
+        lg:p-8
+        text-[var(--erp-text)]
+        animate-fade-in
+      "
+    >
+      <div className="max-w-[1400px] mx-auto space-y-6">
 
-      {/* ======================================================
-          CABECERA
-         ====================================================== */}
+        {/* ==================================================
+            CABECERA
+           ================================================== */}
 
-      <div className="erp-card p-6">
+        <div>
+          <p className="text-sm text-[var(--erp-text-soft)] mb-1">
+            CTN / Notarías / Detalle
+          </p>
 
-        <div className="flex items-start gap-4">
+          <h1 className="text-3xl font-bold text-[var(--erp-text)]">
+            {nombreCompleto}
+          </h1>
 
-          <div
-            className="
-              flex
-              items-center
-              justify-center
-              w-12
-              h-12
-              rounded-2xl
-              bg-[var(--erp-primary-soft)]
-              text-[var(--erp-primary)]
-              border border-[var(--erp-border)]
-              shrink-0
-            "
-          >
-            <span className="text-lg font-bold">
-              CTN
-            </span>
-          </div>
-
-          <div className="min-w-0">
-
-            <div
-              className="
-                flex
-                flex-col
-                sm:flex-row
-                sm:items-center
-                gap-2
-              "
-            >
-
-              <h1
-                className="
-                  text-2xl
-                  sm:text-3xl
-                  font-bold
-                  tracking-tight
-                  text-[var(--erp-text)]
-                "
-              >
-                {datosNotaria.nombre || "—"}{" "}
-                {datosNotaria.apellidos || ""}
-              </h1>
-
-              <span
-                className="
-                  inline-flex
-                  w-fit
-                  items-center
-                  rounded-full
-                  bg-[var(--erp-primary-soft)]
-                  border border-[var(--erp-border)]
-                  px-3
-                  py-1
-                  text-xs
-                  font-semibold
-                  text-[var(--erp-primary)]
-                "
-              >
-                Notaría #{datosNotaria.id}
-              </span>
-
-            </div>
-
-            <p
-              className="
-                mt-1
-                text-sm
-                text-[var(--erp-text-soft)]
-              "
-            >
-              Ficha completa de la notaría.
-            </p>
-
-          </div>
-
+          <p className="mt-1 text-sm text-[var(--erp-text-soft)]">
+            Ficha completa de la notaría #{datosNotaria.id}
+          </p>
         </div>
 
-      </div>
+        {/* ==================================================
+            DATOS PRINCIPALES
+           ================================================== */}
 
-      {/* ======================================================
-          DATOS PRINCIPALES
-         ====================================================== */}
-
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-
-        {/* ----------------------------------------------------
-            IDENTIFICACIÓN
-           ---------------------------------------------------- */}
-
-        <section className="erp-card p-6">
+        <section className="erp-card p-6 shadow-sm">
 
           <div className="mb-5">
-
-            <h2
-              className="
-                text-lg
-                font-bold
-                text-[var(--erp-text)]
-              "
-            >
-              Identificación
+            <h2 className="text-xl font-semibold">
+              Datos de la notaría
             </h2>
 
-            <p
-              className="
-                text-sm
-                text-[var(--erp-text-soft)]
-                mt-1
-              "
-            >
-              Datos básicos de la notaría.
+            <p className="text-sm text-[var(--erp-text-soft)] mt-1">
+              Información principal registrada en CTN.
             </p>
-
-          </div>
-
-          <div className="space-y-4">
-
-            <Dato
-              etiqueta="Código"
-              valor={datosNotaria.codigo}
-            />
-
-            <Dato
-              etiqueta="NIF"
-              valor={datosNotaria.nif}
-            />
-
-            <Dato
-              etiqueta="Teléfono"
-              valor={datosNotaria.telefono}
-            />
-
-            <Dato
-              etiqueta="VC"
-              valor={datosNotaria.vc}
-            />
-
-          </div>
-
-        </section>
-
-        {/* ----------------------------------------------------
-            UBICACIÓN
-           ---------------------------------------------------- */}
-
-        <section className="erp-card p-6">
-
-          <div className="mb-5">
-
-            <h2
-              className="
-                text-lg
-                font-bold
-                text-[var(--erp-text)]
-              "
-            >
-              Ubicación
-            </h2>
-
-            <p
-              className="
-                text-sm
-                text-[var(--erp-text-soft)]
-                mt-1
-              "
-            >
-              Localización y dirección.
-            </p>
-
-          </div>
-
-          <div className="space-y-4">
-
-            <Dato
-              etiqueta="Provincia"
-              valor={datosNotaria.provincia}
-            />
-
-            <Dato
-              etiqueta="Municipio"
-              valor={datosNotaria.municipio}
-            />
-
-            <Dato
-              etiqueta="Código postal"
-              valor={datosNotaria.cp}
-            />
-
-            <Dato
-              etiqueta="Dirección"
-              valor={datosNotaria.direccion}
-            />
-
-          </div>
-
-        </section>
-
-        {/* ----------------------------------------------------
-            GESTIÓN
-           ---------------------------------------------------- */}
-
-        <section className="erp-card p-6">
-
-          <div className="mb-5">
-
-            <h2
-              className="
-                text-lg
-                font-bold
-                text-[var(--erp-text)]
-              "
-            >
-              Gestión
-            </h2>
-
-            <p
-              className="
-                text-sm
-                text-[var(--erp-text-soft)]
-                mt-1
-              "
-            >
-              Información de gestión asociada.
-            </p>
-
-          </div>
-
-          <div className="space-y-4">
-
-            <Dato
-              etiqueta="Apoderado"
-              valor={datosNotaria.apoderado}
-            />
-
-            <Dato
-              etiqueta="Observación"
-              valor={datosNotaria.observacion}
-            />
-
-          </div>
-
-        </section>
-
-      </div>
-
-      {/* ======================================================
-          FIRMAS
-         ====================================================== */}
-
-      {datosFirmas && (
-        <section className="erp-card p-6">
-
-          <div
-            className="
-              flex
-              flex-col
-              sm:flex-row
-              sm:items-center
-              sm:justify-between
-              gap-4
-              mb-6
-            "
-          >
-
-            <div>
-
-              <h2
-                className="
-                  text-xl
-                  font-bold
-                  text-[var(--erp-text)]
-                "
-              >
-                Actividad de firmas
-              </h2>
-
-              <p
-                className="
-                  text-sm
-                  text-[var(--erp-text-soft)]
-                  mt-1
-                "
-              >
-                Resumen de firmas asociadas a esta notaría.
-              </p>
-
-            </div>
-
-            <div
-              className="
-                inline-flex
-                items-center
-                w-fit
-                rounded-full
-                bg-[var(--erp-primary-soft)]
-                border border-[var(--erp-border)]
-                px-3
-                py-1.5
-                text-xs
-                font-semibold
-                text-[var(--erp-primary)]
-              "
-            >
-              {datosFirmas.total_firmas ?? 0} firmas
-            </div>
-
           </div>
 
           <div
             className="
               grid
               grid-cols-1
-              md:grid-cols-3
-              gap-4
+              sm:grid-cols-2
+              lg:grid-cols-3
+              gap-x-8
+              gap-y-5
             "
           >
-
-            {/* Total */}
-
-            <ResumenFirma
-              titulo="Total"
-              valor={datosFirmas.total_firmas}
-              descripcion="Firmas registradas"
-              clase="text-[var(--erp-primary)] bg-[var(--erp-primary-soft)]"
+            <Dato
+              label="Código"
+              value={datosNotaria.codigo}
             />
 
-            {/* VC */}
-
-            <ResumenFirma
-              titulo="VC"
-              valor={datosFirmas.total_vc}
-              descripcion="Firmas por videoconferencia"
-              clase="text-green-600 bg-green-50"
+            <Dato
+              label="NIF"
+              value={datosNotaria.nif}
             />
 
-            {/* Presencial */}
-
-            <ResumenFirma
-              titulo="Presencial"
-              valor={datosFirmas.total_presencial}
-              descripcion="Firmas presenciales"
-              clase="text-purple-600 bg-purple-50"
+            <Dato
+              label="Teléfono"
+              value={datosNotaria.telefono}
             />
 
+            <Dato
+              label="Provincia"
+              value={datosNotaria.provincia}
+            />
+
+            <Dato
+              label="Municipio"
+              value={datosNotaria.municipio}
+            />
+
+            <Dato
+              label="Código postal"
+              value={datosNotaria.cp}
+            />
+
+            <Dato
+              label="Dirección"
+              value={datosNotaria.direccion}
+              className="lg:col-span-2"
+            />
+
+            <Dato
+              label="Videoconferencia"
+              value={
+                datosNotaria.vc
+                  ? "Sí"
+                  : "No"
+              }
+            />
+
+            <Dato
+              label="Apoderado"
+              value={datosNotaria.apoderado}
+            />
+
+            <Dato
+              label="Observación"
+              value={
+                datosNotaria.observacion
+              }
+              className="sm:col-span-2 lg:col-span-3"
+            />
           </div>
-
         </section>
-      )}
 
-    </div>
-  );
-}
+        {/* ==================================================
+            FIRMAS
+           ================================================== */}
 
-// ============================================================
-// COMPONENTE DATO
-// ============================================================
+        {datosFirmas && (
+          <section className="erp-card p-6 shadow-sm">
 
-function Dato({ etiqueta, valor }) {
-  return (
-    <div
-      className="
-        border-b
-        border-[var(--erp-border)]
-        pb-3
-        last:border-b-0
-        last:pb-0
-      "
-    >
+            <div className="mb-5">
+              <h2 className="text-xl font-semibold">
+                Actividad de firmas
+              </h2>
 
-      <p
-        className="
-          text-xs
-          font-semibold
-          uppercase
-          tracking-wide
-          text-[var(--erp-text-soft)]
-        "
-      >
-        {etiqueta}
-      </p>
+              <p className="text-sm text-[var(--erp-text-soft)] mt-1">
+                Resumen de firmas asociadas a esta notaría.
+              </p>
+            </div>
 
-      <p
-        className="
-          mt-1
-          text-sm
-          font-medium
-          text-[var(--erp-text)]
-          break-words
-        "
-      >
-        {valor || "—"}
-      </p>
+            <div
+              className="
+                grid
+                grid-cols-1
+                sm:grid-cols-3
+                gap-4
+              "
+            >
+              <ResumenFirma
+                label="Total firmas"
+                value={datosFirmas.total_firmas}
+                color="blue"
+              />
 
-    </div>
-  );
-}
+              <ResumenFirma
+                label="Videoconferencia"
+                value={datosFirmas.total_vc}
+                color="green"
+              />
 
-// ============================================================
-// COMPONENTE RESUMEN FIRMAS
-// ============================================================
+              <ResumenFirma
+                label="Presencial"
+                value={datosFirmas.total_presencial}
+                color="purple"
+              />
+            </div>
 
-function ResumenFirma({
-  titulo,
-  valor,
-  descripcion,
-  clase,
-}) {
-  return (
-    <div
-      className="
-        rounded-2xl
-        border
-        border-[var(--erp-border)]
-        bg-[var(--erp-surface-soft)]
-        p-5
-      "
-    >
-
-      <div className="flex items-start justify-between gap-3">
-
-        <div>
-
-          <p
-            className="
-              text-sm
-              font-semibold
-              text-[var(--erp-text)]
-            "
-          >
-            {titulo}
-          </p>
-
-          <p
-            className="
-              mt-1
-              text-xs
-              text-[var(--erp-text-soft)]
-            "
-          >
-            {descripcion}
-          </p>
-
-        </div>
-
-        <div
-          className={`
-            flex
-            items-center
-            justify-center
-            w-10
-            h-10
-            rounded-xl
-            font-bold
-            ${clase}
-          `}
-        >
-          {valor ?? 0}
-        </div>
+          </section>
+        )}
 
       </div>
+    </div>
+  );
+}
 
-      <p
-        className="
-          mt-5
-          text-3xl
-          font-bold
-          text-[var(--erp-text)]
-        "
-      >
-        {valor ?? 0}
+
+/* ============================================================
+   COMPONENTES AUXILIARES
+   ============================================================ */
+
+function Dato({
+  label,
+  value,
+  className = "",
+}) {
+  return (
+    <div className={className}>
+      <p className="text-xs font-semibold uppercase tracking-wide text-[var(--erp-text-soft)]">
+        {label}
       </p>
 
+      <p className="mt-1 text-sm font-medium text-[var(--erp-text)] break-words">
+        {value || "—"}
+      </p>
+    </div>
+  );
+}
+
+
+function ResumenFirma({
+  label,
+  value,
+  color,
+}) {
+  const estilos = {
+    blue: {
+      bg: "bg-blue-50",
+      border: "border-blue-100",
+      text: "text-blue-700",
+    },
+    green: {
+      bg: "bg-green-50",
+      border: "border-green-100",
+      text: "text-green-700",
+    },
+    purple: {
+      bg: "bg-purple-50",
+      border: "border-purple-100",
+      text: "text-purple-700",
+    },
+  };
+
+  const estilo =
+    estilos[color] || estilos.blue;
+
+  return (
+    <div
+      className={`
+        ${estilo.bg}
+        ${estilo.border}
+        border
+        rounded-2xl
+        p-5
+      `}
+    >
+      <p className="text-sm text-[var(--erp-text-soft)]">
+        {label}
+      </p>
+
+      <p
+        className={`
+          mt-2
+          text-3xl
+          font-bold
+          ${estilo.text}
+        `}
+      >
+        {value ?? 0}
+      </p>
     </div>
   );
 }

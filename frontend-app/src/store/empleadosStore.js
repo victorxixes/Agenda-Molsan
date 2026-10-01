@@ -7,14 +7,19 @@ import {
   editarEmpleado,
   eliminarEmpleado,
   listarApoderados,
+  buscarEmpleados,
 } from "../api/empleados";
 
 
-const safe = (valor) => {
+/* ============================================================
+   HELPERS
+============================================================ */
 
+const safe = (valor) => {
   if (
     valor === null ||
-    valor === undefined
+    valor === undefined ||
+    valor === ""
   ) {
     return "-";
   }
@@ -22,7 +27,6 @@ const safe = (valor) => {
   if (
     typeof valor === "object"
   ) {
-
     try {
       return JSON.stringify(valor);
     } catch {
@@ -34,8 +38,16 @@ const safe = (valor) => {
 };
 
 
-const safeEmpleado = (empleado) => {
+const safeId = (valor) => {
+  const numero = Number(valor);
 
+  return Number.isFinite(numero)
+    ? numero
+    : null;
+};
+
+
+const safeEmpleado = (empleado) => {
   if (!empleado) {
     return null;
   }
@@ -43,7 +55,7 @@ const safeEmpleado = (empleado) => {
   return {
     ...empleado,
 
-    id: Number(
+    id: safeId(
       empleado.id
     ),
 
@@ -55,8 +67,16 @@ const safeEmpleado = (empleado) => {
       empleado.apellidos
     ),
 
+    dni: safe(
+      empleado.dni
+    ),
+
     telefono: safe(
       empleado.telefono
+    ),
+
+    email_personal: safe(
+      empleado.email_personal
     ),
 
     email_empresa: safe(
@@ -86,9 +106,10 @@ const safeEmpleado = (empleado) => {
         empleado.cargo_nombre
       ),
 
-    foto: safe(
-      empleado.foto
-    ),
+    foto:
+      typeof empleado.foto === "string"
+        ? empleado.foto
+        : "-",
 
     usuario: safe(
       empleado.usuario
@@ -97,6 +118,10 @@ const safeEmpleado = (empleado) => {
 };
 
 
+/* ============================================================
+   STORE
+============================================================ */
+
 export const useEmpleadosStore = create(
   (set, get) => ({
 
@@ -104,14 +129,16 @@ export const useEmpleadosStore = create(
 
     apoderados: [],
 
+    empleadoActual: null,
+
     cargando: false,
 
     error: null,
 
 
-    // =====================================================
-    // EMPLEADOS
-    // =====================================================
+    /* ========================================================
+       CARGAR EMPLEADOS
+    ======================================================== */
 
     cargarEmpleados: async () => {
 
@@ -125,17 +152,28 @@ export const useEmpleadosStore = create(
         const res =
           await listarEmpleados();
 
-        const lista =
-          Array.isArray(res.data)
-            ? res.data.map(
-                safeEmpleado
+        const origen =
+          Array.isArray(res?.data)
+            ? res.data
+            : Array.isArray(
+                res?.data?.empleados
               )
-            : [];
+              ? res.data.empleados
+              : [];
+
+        const lista =
+          origen
+            .map(safeEmpleado)
+            .filter(
+              Boolean
+            );
 
         set({
           empleados: lista,
           cargando: false,
         });
+
+        return lista;
 
       } catch (err) {
 
@@ -151,13 +189,15 @@ export const useEmpleadosStore = create(
             err?.message ||
             "Error cargando empleados",
         });
+
+        return [];
       }
     },
 
 
-    // =====================================================
-    // APODERADOS
-    // =====================================================
+    /* ========================================================
+       CARGAR APODERADOS
+    ======================================================== */
 
     cargarApoderados: async () => {
 
@@ -171,17 +211,28 @@ export const useEmpleadosStore = create(
         const res =
           await listarApoderados();
 
-        const lista =
-          Array.isArray(res.data)
-            ? res.data.map(
-                safeEmpleado
+        const origen =
+          Array.isArray(res?.data)
+            ? res.data
+            : Array.isArray(
+                res?.data?.empleados
               )
-            : [];
+              ? res.data.empleados
+              : [];
+
+        const lista =
+          origen
+            .map(safeEmpleado)
+            .filter(
+              Boolean
+            );
 
         set({
           apoderados: lista,
           cargando: false,
         });
+
+        return lista;
 
       } catch (err) {
 
@@ -197,26 +248,110 @@ export const useEmpleadosStore = create(
             err?.message ||
             "Error cargando apoderados",
         });
+
+        return [];
       }
     },
 
 
-    // =====================================================
-    // OBTENER
-    // =====================================================
+    /* ========================================================
+       BUSCAR
+    ======================================================== */
 
-    obtener: async (id) => {
+    buscar: async (
+      params = {}
+    ) => {
+
+      try {
+
+        set({
+          cargando: true,
+          error: null,
+        });
+
+        const res =
+          await buscarEmpleados(
+            params
+          );
+
+        const origen =
+          Array.isArray(res?.data)
+            ? res.data
+            : Array.isArray(
+                res?.data?.empleados
+              )
+              ? res.data.empleados
+              : [];
+
+        const lista =
+          origen
+            .map(safeEmpleado)
+            .filter(
+              Boolean
+            );
+
+        set({
+          empleados: lista,
+          cargando: false,
+        });
+
+        return lista;
+
+      } catch (err) {
+
+        console.error(
+          "Error buscando empleados:",
+          err
+        );
+
+        set({
+          cargando: false,
+          error:
+            err?.response?.data?.detail ||
+            err?.message ||
+            "Error buscando empleados",
+        });
+
+        return [];
+      }
+    },
+
+
+    /* ========================================================
+       OBTENER
+    ======================================================== */
+
+    obtener: async (
+      id
+    ) => {
+
+      const idNum =
+        safeId(id);
+
+      if (!idNum) {
+        return null;
+      }
 
       try {
 
         const res =
-          await obtenerEmpleado(id);
+          await obtenerEmpleado(
+            idNum
+          );
 
-        return res.data
-          ? safeEmpleado(
-              res.data
-            )
-          : null;
+        const empleado =
+          res?.data
+            ? safeEmpleado(
+                res.data
+              )
+            : null;
+
+        set({
+          empleadoActual:
+            empleado,
+        });
+
+        return empleado;
 
       } catch (err) {
 
@@ -225,71 +360,210 @@ export const useEmpleadosStore = create(
           err
         );
 
+        set({
+          empleadoActual:
+            null,
+          error:
+            err?.response?.data?.detail ||
+            err?.message ||
+            "Error obteniendo empleado",
+        });
+
         return null;
       }
     },
 
 
-    // =====================================================
-    // CREAR
-    // =====================================================
+    /* ========================================================
+       CREAR
+    ======================================================== */
 
-    crear: async (payload) => {
+    crear: async (
+      payload
+    ) => {
 
-      const res =
-        await crearEmpleado(
-          payload
+      try {
+
+        set({
+          cargando: true,
+          error: null,
+        });
+
+        const res =
+          await crearEmpleado(
+            payload
+          );
+
+        await get()
+          .cargarEmpleados();
+
+        set({
+          cargando: false,
+        });
+
+        return res?.data
+          ? safeEmpleado(
+              res.data
+            )
+          : null;
+
+      } catch (err) {
+
+        console.error(
+          "Error creando empleado:",
+          err
         );
 
-      await get()
-        .cargarEmpleados();
+        set({
+          cargando: false,
+          error:
+            err?.response?.data?.detail ||
+            err?.message ||
+            "Error creando empleado",
+        });
 
-      return res.data
-        ? safeEmpleado(
-            res.data
-          )
-        : null;
+        throw err;
+      }
     },
 
 
-    // =====================================================
-    // EDITAR
-    // =====================================================
+    /* ========================================================
+       EDITAR
+    ======================================================== */
 
     editar: async (
       id,
       payload
     ) => {
 
-      const res =
-        await editarEmpleado(
-          id,
-          payload
+      const idNum =
+        safeId(id);
+
+      if (!idNum) {
+        throw new Error(
+          "ID de empleado inválido."
+        );
+      }
+
+      try {
+
+        set({
+          cargando: true,
+          error: null,
+        });
+
+        const res =
+          await editarEmpleado(
+            idNum,
+            payload
+          );
+
+        await get()
+          .cargarEmpleados();
+
+        const empleado =
+          res?.data
+            ? safeEmpleado(
+                res.data
+              )
+            : null;
+
+        set({
+          empleadoActual:
+            empleado,
+          cargando: false,
+        });
+
+        return empleado;
+
+      } catch (err) {
+
+        console.error(
+          "Error editando empleado:",
+          err
         );
 
-      await get()
-        .cargarEmpleados();
+        set({
+          cargando: false,
+          error:
+            err?.response?.data?.detail ||
+            err?.message ||
+            "Error editando empleado",
+        });
 
-      return res.data
-        ? safeEmpleado(
-            res.data
-          )
-        : null;
+        throw err;
+      }
     },
 
 
-    // =====================================================
-    // ELIMINAR
-    // =====================================================
+    /* ========================================================
+       ELIMINAR
+    ======================================================== */
 
-    eliminar: async (id) => {
+    eliminar: async (
+      id
+    ) => {
 
-      await eliminarEmpleado(
-        id
-      );
+      const idNum =
+        safeId(id);
 
-      await get()
-        .cargarEmpleados();
+      if (!idNum) {
+        throw new Error(
+          "ID de empleado inválido."
+        );
+      }
+
+      try {
+
+        set({
+          cargando: true,
+          error: null,
+        });
+
+        await eliminarEmpleado(
+          idNum
+        );
+
+        await get()
+          .cargarEmpleados();
+
+        set({
+          empleadoActual:
+            null,
+          cargando: false,
+        });
+
+      } catch (err) {
+
+        console.error(
+          "Error eliminando empleado:",
+          err
+        );
+
+        set({
+          cargando: false,
+          error:
+            err?.response?.data?.detail ||
+            err?.message ||
+            "Error eliminando empleado",
+        });
+
+        throw err;
+      }
     },
+
+
+    /* ========================================================
+       LIMPIAR EMPLEADO ACTUAL
+    ======================================================== */
+
+    limpiarEmpleadoActual: () => {
+
+      set({
+        empleadoActual: null,
+      });
+
+    },
+
   })
 );

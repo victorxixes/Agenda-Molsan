@@ -14,9 +14,7 @@ import {
 
 const COLUMNAS = [
 
-  // ----------------------------------------------------------
   // IDENTIFICACIÓN
-  // ----------------------------------------------------------
 
   {
     key: "id_expediente",
@@ -36,10 +34,7 @@ const COLUMNAS = [
     tipo: "numero",
   },
 
-
-  // ----------------------------------------------------------
   // ESTADOS
-  // ----------------------------------------------------------
 
   {
     key: "estado_expediente",
@@ -71,10 +66,7 @@ const COLUMNAS = [
     tipo: "texto",
   },
 
-
-  // ----------------------------------------------------------
   // FECHAS
-  // ----------------------------------------------------------
 
   {
     key: "fecha_alta",
@@ -160,10 +152,7 @@ const COLUMNAS = [
     tipo: "fecha",
   },
 
-
-  // ----------------------------------------------------------
   // ACTIVIDAD
-  // ----------------------------------------------------------
 
   {
     key: "actividad_actual",
@@ -171,10 +160,7 @@ const COLUMNAS = [
     tipo: "texto",
   },
 
-
-  // ----------------------------------------------------------
   // TITULAR
-  // ----------------------------------------------------------
 
   {
     key: "nombre_titular",
@@ -188,10 +174,7 @@ const COLUMNAS = [
     tipo: "texto",
   },
 
-
-  // ----------------------------------------------------------
   // SOLICITANTE
-  // ----------------------------------------------------------
 
   {
     key: "nombre_solicitante",
@@ -211,10 +194,7 @@ const COLUMNAS = [
     tipo: "texto",
   },
 
-
-  // ----------------------------------------------------------
   // NOTARIO
-  // ----------------------------------------------------------
 
   {
     key: "nombre_notario",
@@ -234,10 +214,7 @@ const COLUMNAS = [
     tipo: "texto",
   },
 
-
-  // ----------------------------------------------------------
   // OFICINA
-  // ----------------------------------------------------------
 
   {
     key: "oficina",
@@ -257,10 +234,7 @@ const COLUMNAS = [
     tipo: "texto",
   },
 
-
-  // ----------------------------------------------------------
   // ECONÓMICOS
-  // ----------------------------------------------------------
 
   {
     key: "capital",
@@ -286,10 +260,7 @@ const COLUMNAS = [
     tipo: "numero",
   },
 
-
-  // ----------------------------------------------------------
   // PROVISIÓN
-  // ----------------------------------------------------------
 
   {
     key: "id_provision",
@@ -303,10 +274,7 @@ const COLUMNAS = [
     tipo: "texto",
   },
 
-
-  // ----------------------------------------------------------
   // OPERACIÓN
-  // ----------------------------------------------------------
 
   {
     key: "contrato",
@@ -344,10 +312,7 @@ const COLUMNAS = [
     tipo: "texto",
   },
 
-
-  // ----------------------------------------------------------
   // GTG / BANKIA
-  // ----------------------------------------------------------
 
   {
     key: "origen_bankia",
@@ -367,10 +332,7 @@ const COLUMNAS = [
     tipo: "texto",
   },
 
-
-  // ----------------------------------------------------------
   // GESTORÍA
-  // ----------------------------------------------------------
 
   {
     key: "id_gestoria_tramite",
@@ -390,10 +352,7 @@ const COLUMNAS = [
     tipo: "texto",
   },
 
-
-  // ----------------------------------------------------------
   // FINCA
-  // ----------------------------------------------------------
 
   {
     key: "finca",
@@ -401,10 +360,7 @@ const COLUMNAS = [
     tipo: "texto",
   },
 
-
-  // ----------------------------------------------------------
   // DEFECTOS
-  // ----------------------------------------------------------
 
   {
     key: "tiene_defectos_abiertos",
@@ -430,10 +386,7 @@ const COLUMNAS = [
     tipo: "texto",
   },
 
-
-  // ----------------------------------------------------------
   // CGN
-  // ----------------------------------------------------------
 
   {
     key: "id_expediente_cgn",
@@ -441,10 +394,7 @@ const COLUMNAS = [
     tipo: "texto",
   },
 
-
-  // ----------------------------------------------------------
   // ACTA
-  // ----------------------------------------------------------
 
   {
     key: "tipo_acta",
@@ -452,10 +402,7 @@ const COLUMNAS = [
     tipo: "texto",
   },
 
-
-  // ----------------------------------------------------------
   // OTROS
-  // ----------------------------------------------------------
 
   {
     key: "lucy",
@@ -469,17 +416,13 @@ const COLUMNAS = [
     tipo: "texto",
   },
 
-
-  // ----------------------------------------------------------
   // OBSERVACIONES
-  // ----------------------------------------------------------
 
   {
     key: "observaciones",
     label: "Observaciones",
     tipo: "texto",
   },
-
 ];
 
 
@@ -488,6 +431,7 @@ const COLUMNAS = [
 // ============================================================
 
 function formatearValor(valor, tipo) {
+
   if (
     valor === null ||
     valor === undefined ||
@@ -497,11 +441,16 @@ function formatearValor(valor, tipo) {
   }
 
   if (tipo === "fecha") {
+
     const texto = String(valor);
 
     if (/^\d{4}-\d{2}-\d{2}$/.test(texto)) {
-      const [year, month, day] =
-        texto.split("-");
+
+      const [
+        year,
+        month,
+        day,
+      ] = texto.split("-");
 
       return `${day}/${month}/${year}`;
     }
@@ -510,15 +459,19 @@ function formatearValor(valor, tipo) {
   }
 
   if (tipo === "numero") {
+
     const numero = Number(valor);
 
     if (Number.isNaN(numero)) {
       return String(valor);
     }
 
-    return new Intl.NumberFormat("es-ES", {
-      maximumFractionDigits: 2,
-    }).format(numero);
+    return new Intl.NumberFormat(
+      "es-ES",
+      {
+        maximumFractionDigits: 2,
+      }
+    ).format(numero);
   }
 
   return String(valor);
@@ -548,7 +501,7 @@ export default function ExpedientesListado() {
 
 
   // ==========================================================
-  // FILTROS
+  // FILTROS EDITABLES
   // ==========================================================
 
   const [filtroNif, setFiltroNif] =
@@ -574,6 +527,23 @@ export default function ExpedientesListado() {
 
   const [filtroImporteMax, setFiltroImporteMax] =
     useState("");
+
+
+  // ==========================================================
+  // FILTROS APLICADOS
+  // ==========================================================
+
+  const [filtrosAplicados, setFiltrosAplicados] =
+    useState({
+      nif: "",
+      actividad: "",
+      fechaInicio: "",
+      fechaFin: "",
+      notario: "",
+      oficina: "",
+      importeMin: "",
+      importeMax: "",
+    });
 
 
   // ==========================================================
@@ -603,7 +573,9 @@ export default function ExpedientesListado() {
 
   const [columnasVisibles, setColumnasVisibles] =
     useState(
-      COLUMNAS.map((columna) => columna.key)
+      COLUMNAS.map(
+        (columna) => columna.key
+      )
     );
 
 
@@ -642,31 +614,41 @@ export default function ExpedientesListado() {
             porPagina,
 
             nif:
-              filtroNif || undefined,
+              filtrosAplicados.nif ||
+              undefined,
 
             actividad:
-              filtroActividad || undefined,
+              filtrosAplicados.actividad ||
+              undefined,
 
             fechaInicio:
-              filtroFechaInicio || undefined,
+              filtrosAplicados.fechaInicio ||
+              undefined,
 
             fechaFin:
-              filtroFechaFin || undefined,
+              filtrosAplicados.fechaFin ||
+              undefined,
 
             notario:
-              filtroNotario || undefined,
+              filtrosAplicados.notario ||
+              undefined,
 
             oficina:
-              filtroOficina || undefined,
+              filtrosAplicados.oficina ||
+              undefined,
 
             importeMin:
-              filtroImporteMin !== ""
-                ? Number(filtroImporteMin)
+              filtrosAplicados.importeMin !== ""
+                ? Number(
+                    filtrosAplicados.importeMin
+                  )
                 : undefined,
 
             importeMax:
-              filtroImporteMax !== ""
-                ? Number(filtroImporteMax)
+              filtrosAplicados.importeMax !== ""
+                ? Number(
+                    filtrosAplicados.importeMax
+                  )
                 : undefined,
 
             ordenMultiple:
@@ -676,7 +658,6 @@ export default function ExpedientesListado() {
                   )
                 : undefined,
           });
-
 
         if (!activo) {
           return;
@@ -705,9 +686,10 @@ export default function ExpedientesListado() {
         );
 
         if (activo) {
+
           setError(
             err?.response?.data?.detail ||
-              "No se han podido cargar los expedientes."
+            "No se han podido cargar los expedientes."
           );
 
           setExpedientes([]);
@@ -718,7 +700,6 @@ export default function ExpedientesListado() {
         if (activo) {
           setLoading(false);
         }
-
       }
     }
 
@@ -730,15 +711,8 @@ export default function ExpedientesListado() {
 
   }, [
     pagina,
+    filtrosAplicados,
     ordenMultiple,
-    filtroNif,
-    filtroActividad,
-    filtroFechaInicio,
-    filtroFechaFin,
-    filtroNotario,
-    filtroOficina,
-    filtroImporteMin,
-    filtroImporteMax,
   ]);
 
 
@@ -758,15 +732,22 @@ export default function ExpedientesListado() {
           await obtenerResumenExpedientes();
 
         if (activo) {
+
           setResumen({
             pendientes:
-              Number(res?.pendientes || 0),
+              Number(
+                res?.pendientes || 0
+              ),
 
             enCurso:
-              Number(res?.enCurso || 0),
+              Number(
+                res?.enCurso || 0
+              ),
 
             finalizados:
-              Number(res?.finalizados || 0),
+              Number(
+                res?.finalizados || 0
+              ),
           });
         }
 
@@ -776,7 +757,6 @@ export default function ExpedientesListado() {
           "Error cargando resumen:",
           err
         );
-
       }
     }
 
@@ -794,7 +774,20 @@ export default function ExpedientesListado() {
   // ==========================================================
 
   const aplicarFiltros = () => {
+
+    setFiltrosAplicados({
+      nif: filtroNif.trim(),
+      actividad: filtroActividad.trim(),
+      fechaInicio: filtroFechaInicio,
+      fechaFin: filtroFechaFin,
+      notario: filtroNotario.trim(),
+      oficina: filtroOficina.trim(),
+      importeMin: filtroImporteMin,
+      importeMax: filtroImporteMax,
+    });
+
     setPagina(1);
+    setError("");
   };
 
 
@@ -813,7 +806,19 @@ export default function ExpedientesListado() {
     setFiltroImporteMin("");
     setFiltroImporteMax("");
 
+    setFiltrosAplicados({
+      nif: "",
+      actividad: "",
+      fechaInicio: "",
+      fechaFin: "",
+      notario: "",
+      oficina: "",
+      importeMin: "",
+      importeMax: "",
+    });
+
     setPagina(1);
+    setError("");
   };
 
 
@@ -839,7 +844,6 @@ export default function ExpedientesListado() {
         setOrdenMultiple([
           {
             columna,
-
             direccion:
               actual.direccion === "asc"
                 ? "desc"
@@ -852,11 +856,9 @@ export default function ExpedientesListado() {
         setOrdenMultiple([
           {
             columna,
-
             direccion: "asc",
           },
         ]);
-
       }
 
       setPagina(1);
@@ -865,48 +867,46 @@ export default function ExpedientesListado() {
     }
 
 
-    const existe =
-      ordenMultiple.find(
+    const indice =
+      ordenMultiple.findIndex(
         (orden) =>
           orden.columna === columna
       );
 
 
-    if (existe) {
+    if (indice !== -1) {
 
       setOrdenMultiple(
-        ordenMultiple.map((orden) => {
+        (actual) =>
+          actual.map(
+            (orden, index) => {
 
-          if (
-            orden.columna !== columna
-          ) {
-            return orden;
-          }
+              if (index !== indice) {
+                return orden;
+              }
 
-          return {
-            ...orden,
-
-            direccion:
-              orden.direccion === "asc"
-                ? "desc"
-                : "asc",
-          };
-
-        })
+              return {
+                ...orden,
+                direccion:
+                  orden.direccion === "asc"
+                    ? "desc"
+                    : "asc",
+              };
+            }
+          )
       );
 
     } else {
 
-      setOrdenMultiple([
-        ...ordenMultiple,
-
-        {
-          columna,
-
-          direccion: "asc",
-        },
-      ]);
-
+      setOrdenMultiple(
+        (actual) => [
+          ...actual,
+          {
+            columna,
+            direccion: "asc",
+          },
+        ]
+      );
     }
 
     setPagina(1);
@@ -953,34 +953,46 @@ export default function ExpedientesListado() {
 
     try {
 
+      setError("");
+
       await exportarExcelExpedientes({
 
         nif:
-          filtroNif || undefined,
+          filtrosAplicados.nif ||
+          undefined,
 
         actividad:
-          filtroActividad || undefined,
+          filtrosAplicados.actividad ||
+          undefined,
 
         fechaInicio:
-          filtroFechaInicio || undefined,
+          filtrosAplicados.fechaInicio ||
+          undefined,
 
         fechaFin:
-          filtroFechaFin || undefined,
+          filtrosAplicados.fechaFin ||
+          undefined,
 
         notario:
-          filtroNotario || undefined,
+          filtrosAplicados.notario ||
+          undefined,
 
         oficina:
-          filtroOficina || undefined,
+          filtrosAplicados.oficina ||
+          undefined,
 
         importeMin:
-          filtroImporteMin !== ""
-            ? Number(filtroImporteMin)
+          filtrosAplicados.importeMin !== ""
+            ? Number(
+                filtrosAplicados.importeMin
+              )
             : undefined,
 
         importeMax:
-          filtroImporteMax !== ""
-            ? Number(filtroImporteMax)
+          filtrosAplicados.importeMax !== ""
+            ? Number(
+                filtrosAplicados.importeMax
+              )
             : undefined,
       });
 
@@ -992,6 +1004,7 @@ export default function ExpedientesListado() {
       );
 
       setError(
+        err?.response?.data?.detail ||
         "No se ha podido exportar el Excel."
       );
     }
@@ -1012,14 +1025,12 @@ export default function ExpedientesListado() {
           return actuales.filter(
             (item) => item !== key
           );
-
         }
 
         return [
           ...actuales,
           key,
         ];
-
       }
     );
   };
@@ -1053,9 +1064,7 @@ export default function ExpedientesListado() {
       "
     >
 
-      {/* ====================================================
-          CABECERA
-      ==================================================== */}
+      {/* CABECERA */}
 
       <div
         className="
@@ -1088,6 +1097,7 @@ export default function ExpedientesListado() {
 
         <button
           onClick={exportarExcel}
+          disabled={loading}
           className="
             px-4
             py-2
@@ -1097,6 +1107,8 @@ export default function ExpedientesListado() {
             text-white
             shadow-lg
             transition
+            disabled:opacity-50
+            disabled:cursor-not-allowed
           "
         >
           Exportar Excel
@@ -1105,9 +1117,7 @@ export default function ExpedientesListado() {
       </div>
 
 
-      {/* ====================================================
-          ERROR
-      ==================================================== */}
+      {/* ERROR */}
 
       {error && (
 
@@ -1127,9 +1137,7 @@ export default function ExpedientesListado() {
       )}
 
 
-      {/* ====================================================
-          RESUMEN
-      ==================================================== */}
+      {/* RESUMEN */}
 
       <section
         className="
@@ -1182,9 +1190,7 @@ export default function ExpedientesListado() {
       </section>
 
 
-      {/* ====================================================
-          FILTROS
-      ==================================================== */}
+      {/* FILTROS */}
 
       <section
         className="
@@ -1347,9 +1353,7 @@ export default function ExpedientesListado() {
       </section>
 
 
-      {/* ====================================================
-          COLUMNAS
-      ==================================================== */}
+      {/* COLUMNAS */}
 
       <section
         className="
@@ -1454,9 +1458,7 @@ export default function ExpedientesListado() {
       </section>
 
 
-      {/* ====================================================
-          TABLA
-      ==================================================== */}
+      {/* TABLA */}
 
       <section
         className="
@@ -1531,6 +1533,8 @@ export default function ExpedientesListado() {
                           hover:bg-white/10
                           sticky
                           top-0
+                          bg-white/5
+                          z-10
                         "
                         onClick={(event) =>
                           ordenar(
@@ -1538,11 +1542,11 @@ export default function ExpedientesListado() {
                             event.shiftKey
                           )
                         }
-                        title="
-                          Clic para ordenar.
-                          Shift + clic para añadir
-                          ordenación múltiple.
-                        "
+                        title={
+                          "Clic para ordenar. " +
+                          "Shift + clic para añadir " +
+                          "ordenación múltiple."
+                        }
                       >
 
                         <div
@@ -1583,6 +1587,7 @@ export default function ExpedientesListado() {
                       sticky
                       top-0
                       bg-white/5
+                      z-10
                     "
                   >
                     Acciones
@@ -1629,12 +1634,14 @@ export default function ExpedientesListado() {
                               ] ?? ""
                             }
                           >
+
                             {formatearValor(
                               expediente[
                                 columna.key
                               ],
                               columna.tipo
                             )}
+
                           </td>
 
                         )
@@ -1649,9 +1656,11 @@ export default function ExpedientesListado() {
                       >
 
                         <Link
-                          to={`/expedientes/${encodeURIComponent(
-                            expediente.id_expediente
-                          )}`}
+                          to={
+                            `/expedientes/${encodeURIComponent(
+                              expediente.id_expediente
+                            )}`
+                          }
                           className="
                             text-blue-400
                             hover:text-blue-300
@@ -1679,9 +1688,7 @@ export default function ExpedientesListado() {
       </section>
 
 
-      {/* ====================================================
-          PAGINACIÓN
-      ==================================================== */}
+      {/* PAGINACIÓN */}
 
       <div
         className="
@@ -1695,11 +1702,17 @@ export default function ExpedientesListado() {
       >
 
         <button
-          disabled={pagina <= 1 || loading}
+          disabled={
+            pagina <= 1 ||
+            loading
+          }
           onClick={() =>
             setPagina(
               (actual) =>
-                Math.max(1, actual - 1)
+                Math.max(
+                  1,
+                  actual - 1
+                )
             )
           }
           className="
@@ -1769,7 +1782,9 @@ function ResumenCard({
   titulo,
   valor,
 }) {
+
   return (
+
     <div
       className="
         bg-white/5
@@ -1806,7 +1821,9 @@ function FiltroInput({
   onChange,
   type = "text",
 }) {
+
   return (
+
     <div>
 
       <label

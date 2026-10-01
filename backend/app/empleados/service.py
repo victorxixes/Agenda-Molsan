@@ -103,6 +103,111 @@ def obtener_empleado_por_usuario(
 
 
 # =========================================================
+# CREAR / ASEGURAR ADMIN
+# =========================================================
+
+def crear_admin_por_defecto(
+    db: Session
+):
+
+    # -----------------------------------------------------
+    # MÓDULOS COMPLETOS DEL ADMIN
+    # -----------------------------------------------------
+
+    modulos_admin = [
+        "dashboard",
+        "agenda",
+        "empleados",
+        "informes",
+        "intranet",
+        "auditoria",
+        "seguridad",
+        "utilidades",
+        "logs",
+        "ctn",
+        "maestros",
+        "mensajes",
+        "realtime",
+        "notarios",
+        "documentos"
+    ]
+
+    permisos_admin = {
+        "*": [
+            "ver",
+            "crear",
+            "editar",
+            "eliminar"
+        ]
+    }
+
+    # -----------------------------------------------------
+    # BUSCAR ADMIN EXISTENTE
+    # -----------------------------------------------------
+
+    admin = obtener_empleado_por_usuario(
+        db,
+        "admin"
+    )
+
+    # -----------------------------------------------------
+    # SI NO EXISTE -> CREAR
+    # -----------------------------------------------------
+
+    if not admin:
+
+        admin = Empleado(
+
+            nombre="Administrador",
+
+            apellidos="",
+
+            dni="",
+
+            usuario="admin",
+
+            password=hash_password(
+                "admin"
+            ),
+
+            activo=True,
+
+            foto="default-avatar.png",
+
+            rol_id=0,
+
+            modulos_visibles_list=modulos_admin,
+
+            permisos_modulo_dict=permisos_admin
+        )
+
+        db.add(admin)
+
+        db.commit()
+
+        db.refresh(admin)
+
+        return admin
+
+    # -----------------------------------------------------
+    # SI YA EXISTE -> ACTUALIZARLO COMO ADMIN
+    # -----------------------------------------------------
+
+    admin.activo = True
+
+    admin.rol_id = 0
+
+    admin.modulos_visibles_list = modulos_admin
+
+    admin.permisos_modulo_dict = permisos_admin
+
+    db.commit()
+
+    db.refresh(admin)
+
+    return admin
+    
+# =========================================================
 # CREAR
 # =========================================================
 

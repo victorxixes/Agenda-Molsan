@@ -1,12 +1,13 @@
 from fastapi import APIRouter, Query, Depends, HTTPException
 from sqlalchemy.orm import Session
-from sqlalchemy import or_
-from typing import Optional, List
-from datetime import datetime
+from sqlalchemy import or_, func
+from typing import Optional
+from datetime import datetime, date
 import json
 import io
 
 import openpyxl
+from openpyxl.styles import Font
 from openpyxl.utils import get_column_letter
 from fastapi.responses import StreamingResponse
 
@@ -21,11 +22,113 @@ router = APIRouter(
 
 
 # ============================================================
+# CAMPOS DEL EXPEDIENTE
+#
+# Se mantienen centralizados para que:
+#
+# - listado
+# - ficha
+# - Excel
+#
+# trabajen siempre con la misma información.
+# ============================================================
+
+CAMPOS_EXPEDIENTE = [
+    "id",
+    "cliente_id",
+
+    "id_expediente",
+
+    "estado_expediente",
+    "estado_expediente_ancert",
+
+    "fecha_alta",
+    "fecha_firma",
+    "fecha_inscripcion",
+    "fecha_entregado_cliente",
+    "fecha_prevista_firma",
+    "fecha_vencimiento",
+    "fecha_sol_cgn",
+    "fecha_firma_prev_val",
+    "fecha_firma_prev_cli",
+    "fecha_inicio_actividad",
+    "fecha_fin_actividad",
+
+    "nombre_titular",
+    "nif_titular",
+
+    "nombre_solicitante",
+    "nif_solicitante",
+
+    "apoderado",
+
+    "nombre_notario",
+    "nif_notario",
+    "notario",
+
+    "oficina",
+    "dan",
+    "oficina_alta",
+
+    "capital",
+    "importe",
+    "saldo_real",
+    "saldo_disponible",
+
+    "id_provision",
+    "tipo_provision",
+
+    "contrato",
+    "num_solicitud_sia",
+    "tipo_operacion",
+    "subtipo_operacion",
+    "vinccanc",
+    "protocolo",
+
+    "origen_bankia",
+    "producto_gtg",
+    "dt",
+
+    "actividad_actual",
+    "estado_actividad",
+
+    "id_gestoria_tramite",
+    "nombre_gestoria",
+    "gestoria",
+
+    "finca",
+
+    "tiene_defectos_abiertos",
+    "tipo_error",
+    "descripcion_error",
+    "falta_defecto",
+    "fcierre_defecto",
+
+    "id_expediente_cgn",
+
+    "tipo_acta",
+
+    "lucy",
+    "indicador_tt",
+
+    "observaciones",
+
+    "facturacion_estado",
+    "facturacion_fecha",
+
+    "registral_estado",
+    "registral_fecha",
+]
+
+
+# ============================================================
 # COLUMNAS ORDENABLES
 # ============================================================
 
 COLUMNAS_ORDENABLES = {
     "id": Expediente.id,
+    "cliente_id": Expediente.cliente_id,
+
     "id_expediente": Expediente.id_expediente,
 
     # ESTADOS
@@ -130,77 +233,149 @@ COLUMNAS_ORDENABLES = {
     # REGISTRAL
     "registral_estado": Expediente.registral_estado,
     "registral_fecha": Expediente.registral_fecha,
-
-    # RELACIÓN
-    "cliente_id": Expediente.cliente_id,
 }
 
 
 # ============================================================
 # COLUMNAS DEL EXCEL ABSIS
-#
-# IMPORTANTE:
-# Este listado reproduce las columnas reales del Excel
-# que has proporcionado.
 # ============================================================
 
 COLUMNAS_EXCEL = [
+    ("ID", "id"),
+    ("CLIENTEID", "cliente_id"),
+
     ("IDEXPEDIENTE", "id_expediente"),
+
     ("ESTADOEXPEDIENTE", "estado_expediente"),
+    ("ESTADOEXPEDIENTEANCERT", "estado_expediente_ancert"),
+
     ("FECHAALTA", "fecha_alta"),
-    ("ORIGENBANKIA", "origen_bankia"),
-    ("OBSERVACIONES", "observaciones"),
-    ("DT", "dt"),
-    ("PRODUCTOGTG", "producto_gtg"),
     ("FECHAFIRMA", "fecha_firma"),
-    ("APODERADO", "apoderado"),
     ("FECHAINSCRIPCION", "fecha_inscripcion"),
-    ("ACTIVIDADACTUAL", "actividad_actual"),
-    ("ESTADOACTIVIDAD", "estado_actividad"),
+    ("FECHAENTREGADOCLIENTE", "fecha_entregado_cliente"),
+    ("FECHAPREVISTAFIRMA", "fecha_prevista_firma"),
+    ("FECHAVENCIMIENTO", "fecha_vencimiento"),
+    ("FECHASOLCGN", "fecha_sol_cgn"),
+    ("FECHAFIRMAPREVVAL", "fecha_firma_prev_val"),
+    ("FECHAFIRMAPREVCLI", "fecha_firma_prev_cli"),
     ("FECHAINICIOACTIVIDAD", "fecha_inicio_actividad"),
     ("FECHAFINACTIVIDAD", "fecha_fin_actividad"),
-    ("IDPROVISION", "id_provision"),
-    ("TIPOPROVISION", "tipo_provision"),
-    ("CONTRATO", "contrato"),
-    ("NUMSOLICITUDSIA", "num_solicitud_sia"),
-    ("TIPOOPERACION", "tipo_operacion"),
-    ("SUBTIPOOPERACION", "subtipo_operacion"),
-    ("IDGESTORIATRAMITE", "id_gestoria_tramite"),
-    ("NOMBREGESTORIA", "nombre_gestoria"),
+
+    ("NOMBRETITULAR", "nombre_titular"),
+    ("NIFTITULAR", "nif_titular"),
+
+    ("NOMBRESOLICITANTE", "nombre_solicitante"),
+    ("NIFSOLICITANTE", "nif_solicitante"),
+
+    ("APODERADO", "apoderado"),
+
+    ("NOMBRENOTARIO", "nombre_notario"),
+    ("NIFNOTARIO", "nif_notario"),
+    ("NOTARIO", "notario"),
+
     ("OFICINA", "oficina"),
     ("DAN", "dan"),
     ("OFICINAALTA", "oficina_alta"),
+
     ("CAPITAL", "capital"),
     ("IMPORTE", "importe"),
     ("SALDOREAL", "saldo_real"),
     ("SALDODISPONIBLE", "saldo_disponible"),
+
+    ("IDPROVISION", "id_provision"),
+    ("TIPOPROVISION", "tipo_provision"),
+
+    ("CONTRATO", "contrato"),
+    ("NUMSOLICITUDSIA", "num_solicitud_sia"),
+    ("TIPOOPERACION", "tipo_operacion"),
+    ("SUBTIPOOPERACION", "subtipo_operacion"),
     ("VINCCANC", "vinccanc"),
     ("PROTOCOLO", "protocolo"),
+
+    ("ORIGENBANKIA", "origen_bankia"),
+    ("PRODUCTOGTG", "producto_gtg"),
+    ("DT", "dt"),
+
+    ("ACTIVIDADACTUAL", "actividad_actual"),
+    ("ESTADOACTIVIDAD", "estado_actividad"),
+
+    ("IDGESTORIATRAMITE", "id_gestoria_tramite"),
+    ("NOMBREGESTORIA", "nombre_gestoria"),
+    ("GESTORIA", "gestoria"),
+
     ("FINCA", "finca"),
-    ("NOMBRESOLICITANTE", "nombre_solicitante"),
-    ("NIFSOLICITANTE", "nif_solicitante"),
-    ("NOMBRETITULAR", "nombre_titular"),
-    ("NIFTITULAR", "nif_titular"),
-    ("NOMBRENOTARIO", "nombre_notario"),
-    ("NIFNOTARIO", "nif_notario"),
+
     ("TIENEDEFECTOSABIERTOS", "tiene_defectos_abiertos"),
     ("TIPOERROR", "tipo_error"),
     ("DESCRIPCIONERROR", "descripcion_error"),
     ("FALTADEFECTO", "falta_defecto"),
     ("FCIERREDEFECTO", "fcierre_defecto"),
-    ("ESTADOEXPEDIENTEANCERT", "estado_expediente_ancert"),
+
     ("IDEXPEDIENTECGN", "id_expediente_cgn"),
-    ("FECHASOLCGN", "fecha_sol_cgn"),
-    ("FECHAENTREGADOCLIENTE", "fecha_entregado_cliente"),
-    ("FECHAPREVISTAFIRMA", "fecha_prevista_firma"),
-    ("FECHAVENCIMIENTO", "fecha_vencimiento"),
-    ("NOTARIO", "notario"),
+
     ("TIPOACTA", "tipo_acta"),
-    ("FECHAFIRMAPREVVAL", "fecha_firma_prev_val"),
-    ("FECHAFIRMAPREVCLI", "fecha_firma_prev_cli"),
+
     ("LUCY", "lucy"),
     ("INDICADORTT", "indicador_tt"),
+
+    ("OBSERVACIONES", "observaciones"),
+
+    ("FACTURACIONESTADO", "facturacion_estado"),
+    ("FACTURACIONFECHA", "facturacion_fecha"),
+
+    ("REGISTRALESTADO", "registral_estado"),
+    ("REGISTRALFECHA", "registral_fecha"),
 ]
+
+
+# ============================================================
+# SERIALIZAR EXPEDIENTE
+#
+# No devolvemos directamente el objeto SQLAlchemy.
+# Esto garantiza que el frontend reciba todos los campos
+# y evita problemas de serialización.
+# ============================================================
+
+def expediente_a_dict(expediente: Expediente) -> dict:
+    resultado = {}
+
+    for campo in CAMPOS_EXPEDIENTE:
+        valor = getattr(expediente, campo, None)
+
+        if isinstance(valor, (date, datetime)):
+            valor = valor.isoformat()
+
+        resultado[campo] = valor
+
+    return resultado
+
+
+# ============================================================
+# PARSEAR FECHA
+# ============================================================
+
+def parsear_fecha(
+    valor: Optional[str],
+    nombre_campo: str,
+) -> Optional[date]:
+
+    if not valor:
+        return None
+
+    try:
+        return datetime.strptime(
+            valor,
+            "%Y-%m-%d",
+        ).date()
+
+    except ValueError:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"{nombre_campo} debe tener formato "
+                f"YYYY-MM-DD."
+            ),
+        )
 
 
 # ============================================================
@@ -218,13 +393,6 @@ def aplicar_filtros(
     importeMin: Optional[float] = None,
     importeMax: Optional[float] = None,
 ):
-    """
-    Aplica los filtros comunes utilizados por:
-
-    - listado
-    - exportación Excel
-    """
-
     # ========================================================
     # NIF TITULAR
     # ========================================================
@@ -253,43 +421,49 @@ def aplicar_filtros(
     # FECHA INICIO
     # ========================================================
 
-    if fechaInicio:
+    fecha_inicio = parsear_fecha(
+        fechaInicio,
+        "fechaInicio",
+    )
 
-        try:
+    if fecha_inicio:
 
-            fecha_inicio = datetime.strptime(
-                fechaInicio,
-                "%Y-%m-%d",
-            ).date()
-
-            q = q.filter(
-                Expediente.fecha_alta >= fecha_inicio
-            )
-
-        except ValueError:
-
-            pass
+        q = q.filter(
+            Expediente.fecha_alta >= fecha_inicio
+        )
 
     # ========================================================
     # FECHA FIN
     # ========================================================
 
-    if fechaFin:
+    fecha_fin = parsear_fecha(
+        fechaFin,
+        "fechaFin",
+    )
 
-        try:
+    if fecha_fin:
 
-            fecha_fin = datetime.strptime(
-                fechaFin,
-                "%Y-%m-%d",
-            ).date()
+        q = q.filter(
+            Expediente.fecha_alta <= fecha_fin
+        )
 
-            q = q.filter(
-                Expediente.fecha_alta <= fecha_fin
-            )
+    # ========================================================
+    # VALIDACIÓN DE RANGO DE FECHAS
+    # ========================================================
 
-        except ValueError:
+    if (
+        fecha_inicio
+        and fecha_fin
+        and fecha_inicio > fecha_fin
+    ):
 
-            pass
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "La fecha de inicio no puede ser "
+                "posterior a la fecha de fin."
+            ),
+        )
 
     # ========================================================
     # NOTARIO
@@ -339,6 +513,24 @@ def aplicar_filtros(
             Expediente.importe <= importeMax
         )
 
+    # ========================================================
+    # VALIDACIÓN IMPORTE
+    # ========================================================
+
+    if (
+        importeMin is not None
+        and importeMax is not None
+        and importeMin > importeMax
+    ):
+
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "El importe mínimo no puede ser "
+                "superior al importe máximo."
+            ),
+        )
+
     return q
 
 
@@ -348,8 +540,8 @@ def aplicar_filtros(
 
 @router.get("/listado")
 def listado_expedientes(
-    pagina: int = 1,
-    porPagina: int = 20,
+    pagina: int = Query(1, ge=1),
+    porPagina: int = Query(20, ge=1, le=200),
 
     nif: Optional[str] = None,
     actividad: Optional[str] = None,
@@ -364,14 +556,6 @@ def listado_expedientes(
 
     db: Session = Depends(get_db),
 ):
-
-    # ========================================================
-    # PAGINACIÓN
-    # ========================================================
-
-    pagina = max(pagina, 1)
-    porPagina = max(min(porPagina, 200), 1)
-
     # ========================================================
     # QUERY BASE
     # ========================================================
@@ -403,45 +587,7 @@ def listado_expedientes(
     if ordenMultiple:
 
         try:
-
             ordenes = json.loads(ordenMultiple)
-
-            if isinstance(ordenes, list):
-
-                for orden in ordenes:
-
-                    if not isinstance(orden, dict):
-                        continue
-
-                    columna = orden.get("columna")
-
-                    direccion = str(
-                        orden.get(
-                            "direccion",
-                            "asc",
-                        )
-                    ).lower()
-
-                    campo = COLUMNAS_ORDENABLES.get(
-                        columna
-                    )
-
-                    if campo is None:
-                        continue
-
-                    if direccion == "desc":
-
-                        q = q.order_by(
-                            campo.desc()
-                        )
-
-                    else:
-
-                        q = q.order_by(
-                            campo.asc()
-                        )
-
-                    orden_aplicado = True
 
         except (
             json.JSONDecodeError,
@@ -449,7 +595,50 @@ def listado_expedientes(
             ValueError,
         ):
 
-            pass
+            raise HTTPException(
+                status_code=400,
+                detail="ordenMultiple no contiene un JSON válido.",
+            )
+
+        if not isinstance(ordenes, list):
+
+            raise HTTPException(
+                status_code=400,
+                detail="ordenMultiple debe ser una lista.",
+            )
+
+        for orden in ordenes:
+
+            if not isinstance(orden, dict):
+                continue
+
+            columna = orden.get("columna")
+
+            direccion = str(
+                orden.get(
+                    "direccion",
+                    "asc",
+                )
+            ).lower()
+
+            campo = COLUMNAS_ORDENABLES.get(columna)
+
+            if campo is None:
+                continue
+
+            if direccion == "desc":
+
+                q = q.order_by(
+                    campo.desc()
+                )
+
+            else:
+
+                q = q.order_by(
+                    campo.asc()
+                )
+
+            orden_aplicado = True
 
     # ========================================================
     # ORDEN POR DEFECTO
@@ -460,6 +649,7 @@ def listado_expedientes(
         q = q.order_by(
             Expediente.fecha_alta.desc(),
             Expediente.id_expediente.desc(),
+            Expediente.id.desc(),
         )
 
     # ========================================================
@@ -474,17 +664,35 @@ def listado_expedientes(
     )
 
     # ========================================================
+    # SI SE PIDE UNA PÁGINA FUERA DE RANGO
+    # ========================================================
+
+    pagina_real = min(
+        pagina,
+        total_paginas,
+    )
+
+    # ========================================================
     # PAGINACIÓN
     # ========================================================
 
-    items = (
+    items_db = (
         q
         .offset(
-            (pagina - 1) * porPagina
+            (pagina_real - 1) * porPagina
         )
         .limit(porPagina)
         .all()
     )
+
+    # ========================================================
+    # SERIALIZAR
+    # ========================================================
+
+    items = [
+        expediente_a_dict(expediente)
+        for expediente in items_db
+    ]
 
     # ========================================================
     # RESPUESTA
@@ -493,7 +701,7 @@ def listado_expedientes(
     return {
         "items": items,
         "total": total,
-        "pagina": pagina,
+        "pagina": pagina_real,
         "porPagina": porPagina,
         "total_paginas": total_paginas,
     }
@@ -507,27 +715,47 @@ def listado_expedientes(
 def resumen_expedientes(
     db: Session = Depends(get_db),
 ):
+    # ========================================================
+    # PENDIENTES
+    #
+    # Se utiliza UPPER para no depender de si la base de datos
+    # contiene "PENDIENTE", "pendiente", "Pendiente", etc.
+    # ========================================================
 
     pendientes = (
         db.query(Expediente)
         .filter(
-            Expediente.estado_expediente == "PENDIENTE"
+            func.upper(
+                Expediente.estado_expediente
+            ) == "PENDIENTE"
         )
         .count()
     )
+
+    # ========================================================
+    # EN CURSO
+    # ========================================================
 
     en_curso = (
         db.query(Expediente)
         .filter(
-            Expediente.estado_expediente == "EN CURSO"
+            func.upper(
+                Expediente.estado_expediente
+            ) == "EN CURSO"
         )
         .count()
     )
 
+    # ========================================================
+    # FINALIZADOS
+    # ========================================================
+
     finalizados = (
         db.query(Expediente)
         .filter(
-            Expediente.estado_expediente == "FINALIZADO"
+            func.upper(
+                Expediente.estado_expediente
+            ) == "FINALIZADO"
         )
         .count()
     )
@@ -556,7 +784,6 @@ def exportar_excel_expedientes(
 
     db: Session = Depends(get_db),
 ):
-
     # ========================================================
     # QUERY
     # ========================================================
@@ -580,6 +807,7 @@ def exportar_excel_expedientes(
         .order_by(
             Expediente.fecha_alta.desc(),
             Expediente.id_expediente.desc(),
+            Expediente.id.desc(),
         )
         .all()
     )
@@ -597,7 +825,10 @@ def exportar_excel_expedientes(
     # CABECERAS
     # ========================================================
 
-    for numero_columna, (cabecera, _) in enumerate(
+    for numero_columna, (
+        cabecera,
+        _,
+    ) in enumerate(
         COLUMNAS_EXCEL,
         start=1,
     ):
@@ -608,7 +839,7 @@ def exportar_excel_expedientes(
             value=cabecera,
         )
 
-        cell.font = openpyxl.styles.Font(
+        cell.font = Font(
             bold=True
         )
 
@@ -621,7 +852,10 @@ def exportar_excel_expedientes(
         start=2,
     ):
 
-        for numero_columna, (_, atributo) in enumerate(
+        for numero_columna, (
+            _,
+            atributo,
+        ) in enumerate(
             COLUMNAS_EXCEL,
             start=1,
         ):
@@ -638,17 +872,13 @@ def exportar_excel_expedientes(
                 value=valor,
             )
 
-            # Formato de fechas
-            if isinstance(valor, datetime):
+            # -----------------------------------------------
+            # FECHAS
+            # -----------------------------------------------
 
-                cell.number_format = "dd/mm/yyyy"
-
-            elif hasattr(valor, "year") and hasattr(
+            if isinstance(
                 valor,
-                "month",
-            ) and hasattr(
-                valor,
-                "day",
+                (date, datetime),
             ):
 
                 cell.number_format = "dd/mm/yyyy"
@@ -663,33 +893,47 @@ def exportar_excel_expedientes(
     # FILTROS DEL EXCEL
     # ========================================================
 
+    ultima_columna = get_column_letter(
+        len(COLUMNAS_EXCEL)
+    )
+
     if expedientes:
 
         ws.auto_filter.ref = (
-            f"A1:{get_column_letter(len(COLUMNAS_EXCEL))}"
+            f"A1:{ultima_columna}"
             f"{len(expedientes) + 1}"
         )
 
     else:
 
         ws.auto_filter.ref = (
-            f"A1:{get_column_letter(len(COLUMNAS_EXCEL))}1"
+            f"A1:{ultima_columna}1"
         )
 
     # ========================================================
     # ANCHO DE COLUMNAS
     # ========================================================
 
-    for numero_columna, (cabecera, _) in enumerate(
+    for numero_columna, (
+        cabecera,
+        _,
+    ) in enumerate(
         COLUMNAS_EXCEL,
         start=1,
     ):
 
-        max_length = len(cabecera)
+        max_length = len(
+            str(cabecera)
+        )
+
+        limite_filas = min(
+            len(expedientes) + 2,
+            500,
+        )
 
         for numero_fila in range(
             2,
-            min(len(expedientes) + 2, 500),
+            limite_filas,
         ):
 
             valor = ws.cell(
@@ -738,14 +982,12 @@ def exportar_excel_expedientes(
 # OBTENER EXPEDIENTE
 #
 # IMPORTANTE:
-# Esta ruta dinámica debe estar AL FINAL.
-# De lo contrario podría capturar:
+# ESTA RUTA TIENE QUE ESTAR DESPUÉS DE:
 #
+# /listado
 # /resumen
 # /exportar-excel
-# /listado
 #
-# como si fueran IDs de expediente.
 # ============================================================
 
 @router.get("/{id_expediente}")
@@ -753,7 +995,6 @@ def obtener_expediente(
     id_expediente: str,
     db: Session = Depends(get_db),
 ):
-
     expediente = (
         db.query(Expediente)
         .filter(
@@ -769,4 +1010,10 @@ def obtener_expediente(
             detail="Expediente no encontrado",
         )
 
-    return expediente
+    # ========================================================
+    # DEVOLVER TODOS LOS CAMPOS
+    # ========================================================
+
+    return expediente_a_dict(
+        expediente
+    )

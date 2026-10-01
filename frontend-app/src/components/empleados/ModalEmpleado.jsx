@@ -1,14 +1,7 @@
 import axios from "axios";
+import { useCallback, useEffect, useState } from "react";
 
-import {
-  useEffect,
-  useState,
-  useCallback,
-} from "react";
-
-import {
-  API_BASE,
-} from "../../api/config";
+import { API_BASE } from "../../api/config";
 
 import {
   obtenerFichaCompleta,
@@ -19,12 +12,14 @@ import {
   resetPasswordEmpleado,
 } from "../../api/empleados";
 
-import {
-  getMaestros,
-} from "../../api/maestros";
+import { getMaestros } from "../../api/maestros";
 
 import SelectSJ from "../ui/SelectSJ";
 
+
+/* =========================================================
+   CONFIGURACIÓN
+========================================================= */
 
 const MODULOS_SJ2026 = [
   "dashboard",
@@ -47,7 +42,6 @@ const MODULOS_SJ2026 = [
   "expedientes",
 ];
 
-
 const PERMISOS_SJ2026 = [
   "ver",
   "crear",
@@ -55,19 +49,35 @@ const PERMISOS_SJ2026 = [
   "eliminar",
 ];
 
+const TABS = [
+  ["basicos", "Datos básicos"],
+  ["personales", "Datos personales"],
+  ["laborales", "Datos laborales"],
+  ["seguridad", "Seguridad"],
+  ["auditoria", "Auditoría"],
+];
+
+
+/* =========================================================
+   COMPONENTE PRINCIPAL
+========================================================= */
 
 export default function ModalEmpleado({
   open,
+  empleadoId,
   onClose,
+  onOverlayClick,
 }) {
+  const idNum = Number(empleadoId);
 
-  const empleadoId =
-    arguments[0]?.empleadoId;
+  const idValido =
+    Number.isFinite(idNum) &&
+    idNum > 0;
 
 
-  const onOverlayClick =
-    arguments[0]?.onOverlayClick;
-
+  /* =======================================================
+     ESTADO
+  ======================================================= */
 
   const [loading, setLoading] =
     useState(false);
@@ -109,30 +119,66 @@ export default function ModalEmpleado({
     useState("");
 
 
+  /* =======================================================
+     TOAST
+  ======================================================= */
+
   const mostrarToast = useCallback(
     (tipo, mensaje) => {
-
       setToast({
         tipo,
         mensaje,
       });
 
-      setTimeout(
-        () => setToast(null),
-        3000
-      );
-
+      setTimeout(() => {
+        setToast(null);
+      }, 3000);
     },
     []
   );
 
 
+  /* =======================================================
+     ESCAPE
+  ======================================================= */
+
+  useEffect(() => {
+    if (!open) {
+      return undefined;
+    }
+
+    const handleEsc = (event) => {
+      if (event.key === "Escape") {
+        onClose?.();
+      }
+    };
+
+    window.addEventListener(
+      "keydown",
+      handleEsc
+    );
+
+    return () => {
+      window.removeEventListener(
+        "keydown",
+        handleEsc
+      );
+    };
+  }, [
+    open,
+    onClose,
+  ]);
+
+
+  /* =======================================================
+     CARGAR FICHA
+  ======================================================= */
+
   const cargarFicha = useCallback(
     async () => {
-
       if (
         !open ||
-        !empleadoId
+        !idValido
       ) {
         return;
       }
@@ -141,10 +187,9 @@ export default function ModalEmpleado({
       setError("");
 
       try {
-
         const res =
           await obtenerFichaCompleta(
-            empleadoId
+            idNum
           );
 
         const data =
@@ -183,6 +228,11 @@ export default function ModalEmpleado({
             : []
         );
 
+
+        /* ---------------------------------------------------
+           MAESTROS
+        --------------------------------------------------- */
+
         const [
           depRes,
           secRes,
@@ -207,61 +257,76 @@ export default function ModalEmpleado({
         ]);
 
         setDepartamentos(
-          depRes.data || []
+          Array.isArray(
+            depRes.data
+          )
+            ? depRes.data
+            : []
         );
 
         setSecciones(
-          secRes.data || []
+          Array.isArray(
+            secRes.data
+          )
+            ? secRes.data
+            : []
         );
 
         setCargos(
-          carRes.data || []
+          Array.isArray(
+            carRes.data
+          )
+            ? carRes.data
+            : []
         );
 
         setRoles(
-          rolesRes.data || []
+          Array.isArray(
+            rolesRes.data
+          )
+            ? rolesRes.data
+            : []
         );
 
       } catch (err) {
-
         console.error(
-          "Error cargando ficha:",
+          "Error cargando ficha de empleado:",
           err
         );
 
         setError(
           err?.response?.data?.detail ||
           err?.message ||
-          "No se ha podido cargar la ficha."
+          "No se ha podido cargar la ficha del empleado."
         );
 
       } finally {
-
         setLoading(false);
       }
-
     },
     [
       open,
-      empleadoId,
+      idNum,
+      idValido,
     ]
   );
 
 
   useEffect(() => {
-
     cargarFicha();
-
   }, [
     cargarFicha,
   ]);
 
 
+  /* =======================================================
+     CAMBIOS EMPLEADO
+  ======================================================= */
+
   const handleEmpleadoChange = (
     campo,
     valor
   ) => {
-
     setEmpleado(
       (actual) => ({
         ...actual,
@@ -271,14 +336,16 @@ export default function ModalEmpleado({
   };
 
 
-  const guardarEmpleado = async () => {
+  /* =======================================================
+     GUARDAR EMPLEADO
+  ======================================================= */
 
+  const guardarEmpleado = async () => {
     if (!empleado?.id) {
       return;
     }
 
     try {
-
       await editarEmpleado(
         empleado.id,
         empleado
@@ -292,21 +359,24 @@ export default function ModalEmpleado({
       );
 
     } catch (err) {
-
       console.error(err);
 
       mostrarToast(
         "error",
+        err?.response?.data?.detail ||
         "No se han podido guardar los datos"
       );
     }
   };
 
 
+  /* =======================================================
+     FOTO
+  ======================================================= */
+
   const handleFoto = async (
     event
   ) => {
-
     const file =
       event.target.files?.[0];
 
@@ -318,7 +388,6 @@ export default function ModalEmpleado({
     }
 
     try {
-
       await subirFotoEmpleado(
         empleado.id,
         file
@@ -332,25 +401,27 @@ export default function ModalEmpleado({
       );
 
     } catch (err) {
-
       console.error(err);
 
       mostrarToast(
         "error",
+        err?.response?.data?.detail ||
         "No se ha podido actualizar la foto"
       );
     }
   };
 
 
-  const guardarModulos = async () => {
+  /* =======================================================
+     MÓDULOS
+  ======================================================= */
 
+  const guardarModulos = async () => {
     if (!empleado?.id) {
       return;
     }
 
     try {
-
       await actualizarModulosVisibles(
         empleado.id,
         modulos
@@ -362,25 +433,27 @@ export default function ModalEmpleado({
       );
 
     } catch (err) {
-
       console.error(err);
 
       mostrarToast(
         "error",
+        err?.response?.data?.detail ||
         "No se han podido guardar los módulos"
       );
     }
   };
 
 
-  const guardarPermisos = async () => {
+  /* =======================================================
+     PERMISOS
+  ======================================================= */
 
+  const guardarPermisos = async () => {
     if (!empleado?.id) {
       return;
     }
 
     try {
-
       await actualizarPermisosModulo(
         empleado.id,
         permisos
@@ -392,30 +465,37 @@ export default function ModalEmpleado({
       );
 
     } catch (err) {
-
       console.error(err);
 
       mostrarToast(
         "error",
+        err?.response?.data?.detail ||
         "No se han podido guardar los permisos"
       );
     }
   };
 
 
-  const guardarRol = async () => {
+  /* =======================================================
+     ROL
+  ======================================================= */
 
+  const guardarRol = async () => {
     if (
       !empleado?.id ||
-      !empleado?.rol?.id
+      !empleado?.rol_id
     ) {
+      mostrarToast(
+        "error",
+        "Selecciona un rol antes de guardar"
+      );
+
       return;
     }
 
     try {
-
       await axios.post(
-        `${API_BASE}/seguridad/asignar/empleado/${empleado.id}/rol/${empleado.rol.id}`
+        `${API_BASE}/seguridad/asignar/empleado/${empleado.id}/rol/${empleado.rol_id}`
       );
 
       await cargarFicha();
@@ -426,25 +506,27 @@ export default function ModalEmpleado({
       );
 
     } catch (err) {
-
       console.error(err);
 
       mostrarToast(
         "error",
+        err?.response?.data?.detail ||
         "No se ha podido actualizar el rol"
       );
     }
   };
 
 
-  const bloquearEmpleado = async () => {
+  /* =======================================================
+     BLOQUEAR
+  ======================================================= */
 
+  const bloquearEmpleado = async () => {
     if (!empleado?.id) {
       return;
     }
 
     try {
-
       await axios.post(
         `${API_BASE}/seguridad/asignar/empleado/${empleado.id}/bloquear`
       );
@@ -457,26 +539,28 @@ export default function ModalEmpleado({
       );
 
     } catch (err) {
-
       console.error(err);
 
       mostrarToast(
         "error",
+        err?.response?.data?.detail ||
         "No se ha podido bloquear el empleado"
       );
     }
   };
 
 
+  /* =======================================================
+     DESBLOQUEAR
+  ======================================================= */
+
   const desbloquearEmpleado =
     async () => {
-
       if (!empleado?.id) {
         return;
       }
 
       try {
-
         await axios.post(
           `${API_BASE}/seguridad/asignar/empleado/${empleado.id}/desbloquear`
         );
@@ -489,181 +573,371 @@ export default function ModalEmpleado({
         );
 
       } catch (err) {
-
         console.error(err);
 
         mostrarToast(
           "error",
+          err?.response?.data?.detail ||
           "No se ha podido desbloquear el empleado"
         );
       }
     };
 
 
+  /* =======================================================
+     RESET PASSWORD
+  ======================================================= */
+
   const resetPassword =
     async () => {
-
       if (!empleado?.id) {
         return;
       }
 
       try {
-
         const res =
           await resetPasswordEmpleado(
             empleado.id
           );
 
+        const temporal =
+          res.data?.password_temporal;
+
         mostrarToast(
           "ok",
-          res.data?.password_temporal
-            ? `Contraseña temporal: ${res.data.password_temporal}`
+          temporal
+            ? `Contraseña temporal: ${temporal}`
             : "Contraseña reseteada"
         );
 
       } catch (err) {
-
         console.error(err);
 
         mostrarToast(
           "error",
+          err?.response?.data?.detail ||
           "No se ha podido resetear la contraseña"
         );
       }
     };
 
 
-  if (!open) {
+  /* =======================================================
+     NO MOSTRAR
+  ======================================================= */
+
+  if (
+    !open ||
+    !idValido
+  ) {
     return null;
   }
 
+
+  /* =======================================================
+     OVERLAY
+  ======================================================= */
+
+  const handleOverlay =
+    (event) => {
+      if (
+        event.target ===
+        event.currentTarget
+      ) {
+        if (onOverlayClick) {
+          onOverlayClick(event);
+        } else {
+          onClose?.();
+        }
+      }
+    };
+
+
+  /* =======================================================
+     RENDER
+  ======================================================= */
 
   return (
     <div
       className="
         fixed
         inset-0
-        z-50
-        bg-black/40
+        z-[60]
+        bg-black/50
+        backdrop-blur-sm
         flex
         items-center
         justify-center
         p-4
       "
-      onClick={
-        onOverlayClick
-      }
+      onClick={handleOverlay}
     >
 
-      {/* =================================================
-          MODAL PRINCIPAL
-      ================================================= */}
+      {/* ===================================================
+          MODAL
+      =================================================== */}
 
       <div
         className="
-          bg-[var(--erp-surface)]
+          w-full
+          max-w-[1250px]
+          max-h-[94vh]
+          overflow-hidden
+          rounded-2xl
           border
           border-[var(--erp-border)]
-          rounded-2xl
-          shadow-2xl
-          w-full
-          max-w-[1200px]
-          max-h-[92vh]
-          overflow-hidden
+          bg-[var(--erp-surface)]
           text-[var(--erp-text)]
+          shadow-2xl
+          flex
+          flex-col
         "
         onClick={(event) =>
           event.stopPropagation()
         }
       >
 
-        {/* ===============================================
-            HEADER
-        =============================================== */}
+        {/* ================================================
+            CABECERA
+        ================================================= */}
 
-        <div className="
-          flex
-          items-center
-          justify-between
-          gap-4
-          px-6
-          py-4
-          border-b
-          border-[var(--erp-border)]
-          bg-[var(--erp-surface-soft)]
-        ">
+        <div
+          className="
+            shrink-0
+            px-6
+            py-5
+            border-b
+            border-[var(--erp-border)]
+            bg-[var(--erp-surface-soft)]
+          "
+        >
 
-          <div>
-
-            <div className="
-              text-xs
-              text-[var(--erp-text-soft)]
-              mb-1
-            ">
-              Gestión de empleados
-            </div>
-
-            <h2 className="
-              text-xl
-              font-semibold
-              text-[var(--erp-text)]
-            ">
-              {empleado?.nombre || "Empleado"}{" "}
-              {empleado?.apellidos || ""}
-            </h2>
-
-          </div>
-
-
-          <button
-            type="button"
-            onClick={onClose}
+          <div
             className="
-              px-4
-              py-2
-              rounded-xl
-              bg-white
-              border
-              border-[var(--erp-border)]
-              text-[var(--erp-text)]
-              hover:bg-[var(--erp-surface-soft)]
-              transition
+              flex
+              flex-col
+              lg:flex-row
+              lg:items-center
+              lg:justify-between
+              gap-5
             "
           >
-            Cerrar
-          </button>
+
+            {/* IDENTIDAD */}
+
+            <div
+              className="
+                flex
+                items-center
+                gap-4
+              "
+            >
+
+              <div
+                className="
+                  h-14
+                  w-14
+                  shrink-0
+                  rounded-2xl
+                  overflow-hidden
+                  border
+                  border-[var(--erp-border)]
+                  bg-[var(--erp-primary-soft)]
+                  flex
+                  items-center
+                  justify-center
+                  text-[var(--erp-primary)]
+                  font-bold
+                  text-lg
+                "
+              >
+
+                {empleado?.foto ? (
+                  <img
+                    src={empleado.foto}
+                    alt={
+                      empleado?.nombre ||
+                      "Empleado"
+                    }
+                    className="
+                      w-full
+                      h-full
+                      object-cover
+                    "
+                  />
+                ) : (
+                  (
+                    empleado?.nombre?.[0] ||
+                    "E"
+                  ).toUpperCase()
+                )}
+
+              </div>
+
+
+              <div>
+
+                <div
+                  className="
+                    text-xs
+                    font-medium
+                    uppercase
+                    tracking-wide
+                    text-[var(--erp-text-soft)]
+                    mb-1
+                  "
+                >
+                  Ficha de empleado
+                </div>
+
+                <h2
+                  className="
+                    text-xl
+                    lg:text-2xl
+                    font-semibold
+                    text-[var(--erp-text)]
+                  "
+                >
+                  {empleado?.nombre ||
+                    "Empleado"}{" "}
+                  {empleado?.apellidos ||
+                    ""}
+                </h2>
+
+                <div
+                  className="
+                    flex
+                    flex-wrap
+                    items-center
+                    gap-2
+                    mt-1
+                  "
+                >
+
+                  {empleado?.usuario && (
+                    <span
+                      className="
+                        text-sm
+                        text-[var(--erp-text-soft)]
+                      "
+                    >
+                      @{empleado.usuario}
+                    </span>
+                  )}
+
+                  <span
+                    className="
+                      text-[var(--erp-text-soft)]
+                    "
+                  >
+                    ·
+                  </span>
+
+                  <span
+                    className="
+                      text-sm
+                      text-[var(--erp-text-soft)]
+                    "
+                  >
+                    ID #{empleado?.id}
+                  </span>
+
+                  <span
+                    className={`
+                      inline-flex
+                      items-center
+                      px-2.5
+                      py-1
+                      rounded-lg
+                      text-xs
+                      font-semibold
+                      ${
+                        empleado?.activo
+                          ? "bg-green-50 text-green-700 border border-green-200"
+                          : "bg-red-50 text-red-700 border border-red-200"
+                      }
+                    `}
+                  >
+                    {empleado?.activo
+                      ? "Activo"
+                      : "Bloqueado"}
+                  </span>
+
+                </div>
+
+              </div>
+
+            </div>
+
+
+            {/* ACCIONES */}
+
+            <div
+              className="
+                flex
+                items-center
+                gap-2
+              "
+            >
+
+              <button
+                type="button"
+                onClick={onClose}
+                className="
+                  inline-flex
+                  items-center
+                  justify-center
+                  px-4
+                  py-2.5
+                  rounded-xl
+                  border
+                  border-[var(--erp-border)]
+                  bg-[var(--erp-surface)]
+                  text-[var(--erp-text)]
+                  text-sm
+                  font-medium
+                  hover:bg-[var(--erp-primary-soft)]
+                  transition
+                "
+              >
+                Cerrar
+              </button>
+
+            </div>
+
+          </div>
 
         </div>
 
 
-        {/* ===============================================
+        {/* =================================================
             TABS
-        =============================================== */}
+        ================================================== */}
 
-        <div className="
-          px-6
-          py-3
-          border-b
-          border-[var(--erp-border)]
-          bg-[var(--erp-surface)]
-          overflow-x-auto
-        ">
+        <div
+          className="
+            shrink-0
+            px-5
+            lg:px-6
+            py-2
+            border-b
+            border-[var(--erp-border)]
+            bg-[var(--erp-surface)]
+            overflow-x-auto
+          "
+        >
 
-          <div className="
-            flex
-            gap-2
-            min-w-max
-          ">
+          <div
+            className="
+              flex
+              items-center
+              gap-1
+              min-w-max
+            "
+          >
 
-            {[
-              ["basicos", "Datos básicos"],
-              ["personales", "Datos personales"],
-              ["laborales", "Datos laborales"],
-              ["seguridad", "Seguridad"],
-              ["auditoria", "Auditoría"],
-            ].map(
+            {TABS.map(
               ([key, label]) => (
-
                 <button
                   key={key}
                   type="button"
@@ -671,21 +945,44 @@ export default function ModalEmpleado({
                     setTab(key)
                   }
                   className={`
+                    relative
                     px-4
-                    py-2
-                    rounded-xl
+                    py-3
+                    rounded-lg
                     text-sm
+                    font-medium
                     transition
                     ${
                       tab === key
-                        ? "bg-[var(--erp-primary)] text-white"
-                        : "bg-[var(--erp-surface-soft)] text-[var(--erp-text)] hover:bg-[var(--erp-primary-soft)]"
+                        ? `
+                          bg-[var(--erp-primary-soft)]
+                          text-[var(--erp-primary)]
+                        `
+                        : `
+                          text-[var(--erp-text-soft)]
+                          hover:text-[var(--erp-text)]
+                          hover:bg-[var(--erp-surface-soft)]
+                        `
                     }
                   `}
                 >
                   {label}
-                </button>
 
+                  {tab === key && (
+                    <span
+                      className="
+                        absolute
+                        left-3
+                        right-3
+                        bottom-0
+                        h-0.5
+                        rounded-full
+                        bg-[var(--erp-primary)]
+                      "
+                    />
+                  )}
+
+                </button>
               )
             )}
 
@@ -694,84 +991,111 @@ export default function ModalEmpleado({
         </div>
 
 
-        {/* ===============================================
+        {/* =================================================
             CONTENIDO
-        =============================================== */}
+        ================================================== */}
 
-        <div className="
-          px-6
-          py-5
-          overflow-y-auto
-          max-h-[calc(92vh-130px)]
-        ">
+        <div
+          className="
+            flex-1
+            overflow-y-auto
+            px-5
+            lg:px-6
+            py-6
+            bg-[var(--erp-background)]
+          "
+        >
+
+          {/* LOADING */}
 
           {loading && (
+            <div
+              className="
+                min-h-[350px]
+                flex
+                flex-col
+                items-center
+                justify-center
+                text-[var(--erp-text-soft)]
+              "
+            >
 
-            <div className="
-              py-16
-              text-center
-              text-[var(--erp-text-soft)]
-              animate-pulse
-            ">
-              Cargando ficha…
+              <div
+                className="
+                  h-9
+                  w-9
+                  rounded-full
+                  border-2
+                  border-[var(--erp-border)]
+                  border-t-[var(--erp-primary)]
+                  animate-spin
+                  mb-4
+                "
+              />
+
+              <span
+                className="
+                  text-sm
+                "
+              >
+                Cargando ficha del empleado…
+              </span>
+
             </div>
-
           )}
 
+
+          {/* ERROR */}
 
           {error && !loading && (
-
-            <div className="
-              rounded-xl
-              border
-              border-red-200
-              bg-red-50
-              text-red-700
-              px-4
-              py-3
-              mb-5
-            ">
+            <div
+              className="
+                rounded-xl
+                border
+                border-red-200
+                bg-red-50
+                px-4
+                py-4
+                text-sm
+                text-red-700
+              "
+            >
               {error}
             </div>
-
           )}
 
+
+          {/* =================================================
+              DATOS BÁSICOS
+          ================================================== */}
 
           {!loading &&
             !error &&
             tab === "basicos" && (
 
-              <section className="
-                erp-card
-                p-5
-              ">
+              <section className="erp-card p-6">
 
-                <h3 className="
-                  text-lg
-                  font-semibold
-                  mb-5
-                ">
-                  Datos básicos
-                </h3>
+                <SectionHeader
+                  title="Datos básicos"
+                  description="Información principal y datos de contacto corporativos."
+                />
 
+                <div
+                  className="
+                    grid
+                    grid-cols-1
+                    md:grid-cols-2
+                    xl:grid-cols-3
+                    gap-5
+                  "
+                >
 
-                <div className="
-                  grid
-                  grid-cols-1
-                  md:grid-cols-2
-                  lg:grid-cols-3
-                  gap-4
-                ">
-
-                  <Campo
-                    label="Estado"
-                  >
+                  <Campo label="Estado">
                     <SelectSJ
                       value={
-                        empleado.estado ??
-                        (empleado.activo
+                        empleado.activo
                           ? 1
-                          : 0)
+                          : 0
                       }
                       onChange={(value) =>
                         handleEmpleadoChange(
@@ -786,16 +1110,14 @@ export default function ModalEmpleado({
                         },
                         {
                           value: 0,
-                          label: "Baja",
+                          label: "Baja / bloqueado",
                         },
                       ]}
                     />
                   </Campo>
 
 
-                  <Campo
-                    label="Nombre"
-                  >
+                  <Campo label="Nombre">
                     <Input
                       value={
                         empleado.nombre
@@ -810,9 +1132,7 @@ export default function ModalEmpleado({
                   </Campo>
 
 
-                  <Campo
-                    label="Apellidos"
-                  >
+                  <Campo label="Apellidos">
                     <Input
                       value={
                         empleado.apellidos
@@ -827,9 +1147,7 @@ export default function ModalEmpleado({
                   </Campo>
 
 
-                  <Campo
-                    label="DNI"
-                  >
+                  <Campo label="DNI">
                     <Input
                       value={
                         empleado.dni
@@ -844,9 +1162,7 @@ export default function ModalEmpleado({
                   </Campo>
 
 
-                  <Campo
-                    label="Teléfono"
-                  >
+                  <Campo label="Teléfono">
                     <Input
                       value={
                         empleado.telefono
@@ -861,9 +1177,7 @@ export default function ModalEmpleado({
                   </Campo>
 
 
-                  <Campo
-                    label="Email empresa"
-                  >
+                  <Campo label="Email empresa">
                     <Input
                       value={
                         empleado.email_empresa
@@ -878,9 +1192,7 @@ export default function ModalEmpleado({
                   </Campo>
 
 
-                  <Campo
-                    label="Extensión"
-                  >
+                  <Campo label="Extensión">
                     <Input
                       value={
                         empleado.extension
@@ -894,6 +1206,16 @@ export default function ModalEmpleado({
                     />
                   </Campo>
 
+
+                  <Campo label="Usuario">
+                    <Input
+                      value={
+                        empleado.usuario
+                      }
+                      readOnly
+                    />
+                  </Campo>
+
                 </div>
 
 
@@ -904,35 +1226,34 @@ export default function ModalEmpleado({
                 />
 
               </section>
-
             )}
 
+
+          {/* =================================================
+              DATOS PERSONALES
+          ================================================== */}
 
           {!loading &&
             !error &&
             tab === "personales" && (
 
-              <section className="
-                erp-card
-                p-5
-              ">
+              <section className="erp-card p-6">
 
-                <h3 className="
-                  text-lg
-                  font-semibold
-                  mb-5
-                ">
-                  Datos personales
-                </h3>
+                <SectionHeader
+                  title="Datos personales"
+                  description="Información personal, contacto de emergencia y fotografía."
+                />
 
 
-                <div className="
-                  grid
-                  grid-cols-1
-                  md:grid-cols-2
-                  lg:grid-cols-3
-                  gap-4
-                ">
+                <div
+                  className="
+                    grid
+                    grid-cols-1
+                    md:grid-cols-2
+                    xl:grid-cols-3
+                    gap-5
+                  "
+                >
 
                   <Campo label="Dirección">
                     <Input
@@ -1025,7 +1346,7 @@ export default function ModalEmpleado({
                   </Campo>
 
 
-                  <Campo label="Persona contacto">
+                  <Campo label="Persona de contacto">
                     <Input
                       value={
                         empleado.persona_contacto
@@ -1040,7 +1361,7 @@ export default function ModalEmpleado({
                   </Campo>
 
 
-                  <Campo label="Teléfono contacto">
+                  <Campo label="Teléfono de contacto">
                     <Input
                       value={
                         empleado.telefono_contacto
@@ -1055,40 +1376,98 @@ export default function ModalEmpleado({
                   </Campo>
 
 
-                  <Campo label="Foto">
-                    <input
-                      type="file"
-                      accept="image/jpeg,image/png,image/webp"
-                      onChange={
-                        handleFoto
-                      }
+                  <Campo label="Fotografía">
+
+                    <div
                       className="
-                        block
-                        w-full
-                        text-sm
-                        text-[var(--erp-text)]
-                        file:mr-3
-                        file:px-3
-                        file:py-2
-                        file:rounded-lg
-                        file:border-0
-                        file:bg-[var(--erp-primary-soft)]
-                        file:text-[var(--erp-primary)]
-                        hover:file:bg-[var(--erp-primary)]
-                        hover:file:text-white
+                        flex
+                        items-center
+                        gap-3
                       "
-                    />
+                    >
+
+                      <div
+                        className="
+                          h-12
+                          w-12
+                          rounded-xl
+                          overflow-hidden
+                          shrink-0
+                          border
+                          border-[var(--erp-border)]
+                          bg-[var(--erp-surface-soft)]
+                          flex
+                          items-center
+                          justify-center
+                          text-[var(--erp-text-soft)]
+                        "
+                      >
+
+                        {empleado?.foto ? (
+                          <img
+                            src={empleado.foto}
+                            alt="Foto empleado"
+                            className="
+                              w-full
+                              h-full
+                              object-cover
+                            "
+                          />
+                        ) : (
+                          "—"
+                        )}
+
+                      </div>
+
+
+                      <label
+                        className="
+                          inline-flex
+                          items-center
+                          justify-center
+                          px-3
+                          py-2
+                          rounded-xl
+                          border
+                          border-[var(--erp-border)]
+                          bg-[var(--erp-surface)]
+                          text-sm
+                          font-medium
+                          cursor-pointer
+                          hover:bg-[var(--erp-primary-soft)]
+                          transition
+                        "
+                      >
+                        Cambiar foto
+
+                        <input
+                          type="file"
+                          accept="
+                            image/jpeg,
+                            image/png,
+                            image/webp
+                          "
+                          onChange={
+                            handleFoto
+                          }
+                          className="hidden"
+                        />
+
+                      </label>
+
+                    </div>
+
                   </Campo>
 
                 </div>
 
 
-                <div className="mt-4">
+                <div className="mt-5">
 
                   <Campo label="Observaciones">
 
                     <textarea
-                      rows={4}
+                      rows={5}
                       value={
                         empleado.observaciones ||
                         ""
@@ -1109,8 +1488,8 @@ export default function ModalEmpleado({
                         px-3
                         py-2.5
                         outline-none
-                        focus:border-[var(--erp-primary)]
                         resize-y
+                        focus:border-[var(--erp-primary)]
                       "
                     />
 
@@ -1126,34 +1505,33 @@ export default function ModalEmpleado({
                 />
 
               </section>
-
             )}
 
+
+          {/* =================================================
+              DATOS LABORALES
+          ================================================== */}
 
           {!loading &&
             !error &&
             tab === "laborales" && (
 
-              <section className="
-                erp-card
-                p-5
-              ">
+              <section className="erp-card p-6">
 
-                <h3 className="
-                  text-lg
-                  font-semibold
-                  mb-5
-                ">
-                  Datos laborales
-                </h3>
+                <SectionHeader
+                  title="Datos laborales"
+                  description="Organización, puesto y fechas laborales del empleado."
+                />
 
 
-                <div className="
-                  grid
-                  grid-cols-1
-                  md:grid-cols-2
-                  gap-4
-                ">
+                <div
+                  className="
+                    grid
+                    grid-cols-1
+                    md:grid-cols-2
+                    gap-5
+                  "
+                >
 
                   <Campo label="Departamento">
 
@@ -1176,11 +1554,11 @@ export default function ModalEmpleado({
                           label:
                             "Sin departamento",
                         },
-
                         ...departamentos.map(
                           (item) => ({
                             value: item.id,
-                            label: item.nombre,
+                            label:
+                              item.nombre,
                           })
                         ),
                       ]}
@@ -1210,11 +1588,11 @@ export default function ModalEmpleado({
                           label:
                             "Sin sección",
                         },
-
                         ...secciones.map(
                           (item) => ({
                             value: item.id,
-                            label: item.nombre,
+                            label:
+                              item.nombre,
                           })
                         ),
                       ]}
@@ -1244,11 +1622,11 @@ export default function ModalEmpleado({
                           label:
                             "Sin cargo",
                         },
-
                         ...cargos.map(
                           (item) => ({
                             value: item.id,
-                            label: item.nombre,
+                            label:
+                              item.nombre,
                           })
                         ),
                       ]}
@@ -1302,38 +1680,43 @@ export default function ModalEmpleado({
                 />
 
               </section>
-
             )}
 
+
+          {/* =================================================
+              SEGURIDAD
+          ================================================== */}
 
           {!loading &&
             !error &&
             tab === "seguridad" && (
 
-              <section className="
-                space-y-5
-              ">
+              <section
+                className="
+                  space-y-5
+                "
+              >
 
-                <div className="
-                  erp-card
-                  p-5
-                ">
+                {/* -----------------------------------------
+                    CUENTA
+                ----------------------------------------- */}
 
-                  <h3 className="
-                    text-lg
-                    font-semibold
-                    mb-5
-                  ">
-                    Seguridad interna
-                  </h3>
+                <section className="erp-card p-6">
+
+                  <SectionHeader
+                    title="Seguridad y acceso"
+                    description="Estado de la cuenta, contraseña y operaciones de seguridad."
+                  />
 
 
-                  <div className="
-                    grid
-                    grid-cols-1
-                    md:grid-cols-2
-                    gap-4
-                  ">
+                  <div
+                    className="
+                      grid
+                      grid-cols-1
+                      md:grid-cols-2
+                      gap-5
+                    "
+                  >
 
                     <Campo label="Usuario">
 
@@ -1350,7 +1733,7 @@ export default function ModalEmpleado({
                     <Campo label="Contraseña">
 
                       <Input
-                        value="********"
+                        value="••••••••••••"
                         readOnly
                       />
 
@@ -1359,28 +1742,35 @@ export default function ModalEmpleado({
                   </div>
 
 
-                  <div className="
-                    mt-5
-                    flex
-                    flex-wrap
-                    items-center
-                    gap-3
-                  ">
+                  <div
+                    className="
+                      mt-5
+                      flex
+                      flex-wrap
+                      items-center
+                      gap-3
+                    "
+                  >
 
-                    <span className="
-                      text-sm
-                      text-[var(--erp-text-soft)]
-                    ">
-                      Estado:
+                    <span
+                      className="
+                        text-sm
+                        text-[var(--erp-text-soft)]
+                      "
+                    >
+                      Estado de acceso
                     </span>
+
 
                     <span
                       className={`
+                        inline-flex
+                        items-center
                         px-3
                         py-1.5
                         rounded-lg
                         text-sm
-                        font-medium
+                        font-semibold
                         ${
                           empleado.activo
                             ? "bg-green-50 text-green-700 border border-green-200"
@@ -1396,12 +1786,14 @@ export default function ModalEmpleado({
                   </div>
 
 
-                  <div className="
-                    flex
-                    flex-wrap
-                    gap-3
-                    mt-5
-                  ">
+                  <div
+                    className="
+                      flex
+                      flex-wrap
+                      gap-3
+                      mt-5
+                    "
+                  >
 
                     {empleado.activo ? (
 
@@ -1417,6 +1809,8 @@ export default function ModalEmpleado({
                           bg-red-600
                           hover:bg-red-700
                           text-white
+                          text-sm
+                          font-medium
                           transition
                         "
                       >
@@ -1437,6 +1831,8 @@ export default function ModalEmpleado({
                           bg-green-600
                           hover:bg-green-700
                           text-white
+                          text-sm
+                          font-medium
                           transition
                         "
                       >
@@ -1458,6 +1854,8 @@ export default function ModalEmpleado({
                         bg-orange-500
                         hover:bg-orange-600
                         text-white
+                        text-sm
+                        font-medium
                         transition
                       "
                     >
@@ -1466,280 +1864,348 @@ export default function ModalEmpleado({
 
                   </div>
 
-                </div>
+                </section>
 
 
-                {/* ROL */}
+                {/* -----------------------------------------
+                    ROL
+                ----------------------------------------- */}
 
-                <div className="
-                  erp-card
-                  p-5
-                ">
+                <section className="erp-card p-6">
 
-                  <div className="
-                    flex
-                    flex-col
-                    md:flex-row
-                    md:items-center
-                    md:justify-between
-                    gap-3
-                    mb-4
-                  ">
-
-                    <h4 className="
-                      font-semibold
-                    ">
-                      Rol del empleado
-                    </h4>
-
-                    <span className="
-                      text-sm
-                      text-[var(--erp-text-soft)]
-                    ">
-                      Actual:{" "}
-                      <strong className="
-                        text-[var(--erp-text)]
-                      ">
-                        {empleado?.rol?.nombre ||
-                          "Sin rol"}
-                      </strong>
-                    </span>
-
-                  </div>
-
-
-                  <SelectSJ
-                    value={
-                      empleado?.rol?.id ||
-                      ""
-                    }
-                    onChange={(value) => {
-
-                      const id =
-                        Number(value);
-
-                      const rol =
-                        roles.find(
-                          (item) =>
-                            item.id === id
-                        ) || null;
-
-                      handleEmpleadoChange(
-                        "rol",
-                        rol
-                      );
-
-                      handleEmpleadoChange(
-                        "rol_id",
-                        rol?.id || null
-                      );
-
-                    }}
-                    options={[
-                      {
-                        value: "",
-                        label: "Sin rol",
-                      },
-
-                      ...roles.map(
-                        (rol) => ({
-                          value: rol.id,
-                          label: rol.nombre,
-                        })
-                      ),
-                    ]}
+                  <SectionHeader
+                    title="Rol del empleado"
+                    description="Define el rol de seguridad asignado a esta cuenta."
                   />
 
 
-                  <div className="
-                    flex
-                    gap-3
-                    mt-4
-                  ">
+                  <div
+                    className="
+                      max-w-xl
+                    "
+                  >
 
-                    <button
-                      type="button"
-                      onClick={
-                        guardarRol
-                      }
+                    <Campo label="Rol">
+
+                      <SelectSJ
+                        value={
+                          empleado?.rol_id ||
+                          ""
+                        }
+                        onChange={(value) => {
+
+                          const id =
+                            Number(value);
+
+                          const rol =
+                            roles.find(
+                              (item) =>
+                                item.id === id
+                            ) || null;
+
+                          handleEmpleadoChange(
+                            "rol",
+                            rol
+                          );
+
+                          handleEmpleadoChange(
+                            "rol_id",
+                            rol?.id ||
+                            null
+                          );
+
+                        }}
+                        options={[
+                          {
+                            value: "",
+                            label:
+                              "Sin rol",
+                          },
+                          ...roles.map(
+                            (rol) => ({
+                              value: rol.id,
+                              label:
+                                rol.nombre,
+                            })
+                          ),
+                        ]}
+                      />
+
+                    </Campo>
+
+
+                    <div
                       className="
-                        px-4
-                        py-2.5
-                        rounded-xl
-                        bg-[var(--erp-primary)]
-                        hover:bg-[var(--erp-primary-dark)]
-                        text-white
-                        transition
+                        flex
+                        items-center
+                        gap-3
+                        mt-4
                       "
                     >
-                      Guardar rol
-                    </button>
+
+                      <button
+                        type="button"
+                        onClick={
+                          guardarRol
+                        }
+                        className="
+                          px-4
+                          py-2.5
+                          rounded-xl
+                          bg-[var(--erp-primary)]
+                          hover:bg-[var(--erp-primary-dark)]
+                          text-white
+                          text-sm
+                          font-medium
+                          transition
+                        "
+                      >
+                        Guardar rol
+                      </button>
+
+                      <span
+                        className="
+                          text-sm
+                          text-[var(--erp-text-soft)]
+                        "
+                      >
+                        Actual:{" "}
+                        <strong
+                          className="
+                            text-[var(--erp-text)]
+                          "
+                        >
+                          {empleado?.rol?.nombre ||
+                            "Sin rol"}
+                        </strong>
+                      </span>
+
+                    </div>
 
                   </div>
 
-                </div>
+                </section>
 
 
-                {/* SEGURIDAD */}
+                {/* -----------------------------------------
+                    MÓDULOS Y PERMISOS
+                ----------------------------------------- */}
 
-                <div className="
-                  erp-card
-                  p-5
-                ">
+                <section className="erp-card p-6">
 
-                  <div className="
-                    flex
-                    gap-2
-                    mb-5
-                  ">
+                  <div
+                    className="
+                      flex
+                      flex-col
+                      lg:flex-row
+                      lg:items-center
+                      lg:justify-between
+                      gap-4
+                      mb-5
+                    "
+                  >
 
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setSeguridadTab(
-                          "modulos"
-                        )
-                      }
-                      className={`
-                        px-4
-                        py-2
+                    <div>
+
+                      <h3
+                        className="
+                          text-lg
+                          font-semibold
+                        "
+                      >
+                        Permisos de acceso
+                      </h3>
+
+                      <p
+                        className="
+                          text-sm
+                          text-[var(--erp-text-soft)]
+                          mt-1
+                        "
+                      >
+                        Configura módulos visibles y permisos específicos.
+                      </p>
+
+                    </div>
+
+
+                    <div
+                      className="
+                        flex
+                        gap-1
                         rounded-xl
-                        text-sm
-                        ${
-                          seguridadTab ===
-                          "modulos"
-                            ? "bg-[var(--erp-primary)] text-white"
-                            : "bg-[var(--erp-surface-soft)] text-[var(--erp-text)]"
-                        }
-                      `}
+                        bg-[var(--erp-surface-soft)]
+                        p-1
+                      "
                     >
-                      Módulos visibles
-                    </button>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setSeguridadTab(
+                            "modulos"
+                          )
+                        }
+                        className={`
+                          px-4
+                          py-2
+                          rounded-lg
+                          text-sm
+                          font-medium
+                          transition
+                          ${
+                            seguridadTab ===
+                            "modulos"
+                              ? "bg-[var(--erp-surface)] text-[var(--erp-primary)] shadow-sm"
+                              : "text-[var(--erp-text-soft)] hover:text-[var(--erp-text)]"
+                          }
+                        `}
+                      >
+                        Módulos
+                      </button>
 
 
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setSeguridadTab(
-                          "permisos"
-                        )
-                      }
-                      className={`
-                        px-4
-                        py-2
-                        rounded-xl
-                        text-sm
-                        ${
-                          seguridadTab ===
-                          "permisos"
-                            ? "bg-[var(--erp-primary)] text-white"
-                            : "bg-[var(--erp-surface-soft)] text-[var(--erp-text)]"
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setSeguridadTab(
+                            "permisos"
+                          )
                         }
-                      `}
-                    >
-                      Permisos por módulo
-                    </button>
+                        className={`
+                          px-4
+                          py-2
+                          rounded-lg
+                          text-sm
+                          font-medium
+                          transition
+                          ${
+                            seguridadTab ===
+                            "permisos"
+                              ? "bg-[var(--erp-surface)] text-[var(--erp-primary)] shadow-sm"
+                              : "text-[var(--erp-text-soft)] hover:text-[var(--erp-text)]"
+                          }
+                        `}
+                      >
+                        Permisos
+                      </button>
+
+                    </div>
 
                   </div>
 
+
+                  {/* ---------------------------------------
+                      MÓDULOS
+                  --------------------------------------- */}
 
                   {seguridadTab ===
                     "modulos" && (
 
                     <div>
 
-                      <h4 className="
-                        font-semibold
-                        mb-4
-                      ">
-                        Selecciona los módulos visibles
-                      </h4>
-
-                      <div className="
-                        grid
-                        grid-cols-1
-                        md:grid-cols-2
-                        lg:grid-cols-3
-                        gap-2
-                      ">
+                      <div
+                        className="
+                          grid
+                          grid-cols-1
+                          md:grid-cols-2
+                          xl:grid-cols-3
+                          gap-2
+                        "
+                      >
 
                         {MODULOS_SJ2026.map(
-                          (modulo) => (
+                          (modulo) => {
 
-                            <label
-                              key={modulo}
-                              className="
-                                flex
-                                items-center
-                                gap-2
-                                rounded-lg
-                                px-3
-                                py-2
-                                cursor-pointer
-                                hover:bg-[var(--erp-primary-soft)]
-                              "
-                            >
+                            const activo =
+                              modulos.includes(
+                                modulo
+                              );
 
-                              <input
-                                type="checkbox"
-                                checked={
-                                  modulos.includes(
-                                    modulo
-                                  )
-                                }
-                                onChange={(
-                                  event
-                                ) => {
-
-                                  if (
-                                    event.target
-                                      .checked
-                                  ) {
-
-                                    setModulos(
-                                      (actual) => [
-                                        ...actual,
-                                        modulo,
-                                      ]
-                                    );
-
-                                  } else {
-
-                                    setModulos(
-                                      (actual) =>
-                                        actual.filter(
-                                          (item) =>
-                                            item !==
-                                            modulo
-                                        )
-                                    );
-
+                            return (
+                              <label
+                                key={modulo}
+                                className={`
+                                  flex
+                                  items-center
+                                  gap-3
+                                  rounded-xl
+                                  border
+                                  px-3
+                                  py-3
+                                  cursor-pointer
+                                  transition
+                                  ${
+                                    activo
+                                      ? "border-[var(--erp-primary)] bg-[var(--erp-primary-soft)]"
+                                      : "border-[var(--erp-border)] bg-[var(--erp-surface)] hover:bg-[var(--erp-surface-soft)]"
                                   }
+                                `}
+                              >
 
-                                }}
-                                className="
-                                  accent-[var(--erp-primary)]
-                                "
-                              />
+                                <input
+                                  type="checkbox"
+                                  checked={activo}
+                                  onChange={(event) => {
 
-                              <span>
-                                {modulo}
-                              </span>
+                                    if (
+                                      event.target.checked
+                                    ) {
+                                      setModulos(
+                                        (actual) =>
+                                          actual.includes(
+                                            modulo
+                                          )
+                                            ? actual
+                                            : [
+                                                ...actual,
+                                                modulo,
+                                              ]
+                                      );
+                                    } else {
+                                      setModulos(
+                                        (actual) =>
+                                          actual.filter(
+                                            (item) =>
+                                              item !==
+                                              modulo
+                                          )
+                                      );
+                                    }
 
-                            </label>
+                                  }}
+                                  className="
+                                    h-4
+                                    w-4
+                                    accent-[var(--erp-primary)]
+                                  "
+                                />
 
-                          )
+                                <span
+                                  className="
+                                    text-sm
+                                    font-medium
+                                  "
+                                >
+                                  {modulo}
+                                </span>
+
+                              </label>
+                            );
+                          }
                         )}
 
                       </div>
 
 
-                      <div className="
-                        flex
-                        flex-wrap
-                        gap-3
-                        mt-5
-                      ">
+                      <div
+                        className="
+                          flex
+                          flex-wrap
+                          gap-3
+                          mt-5
+                        "
+                      >
 
                         <button
                           type="button"
@@ -1753,6 +2219,9 @@ export default function ModalEmpleado({
                             bg-[var(--erp-primary)]
                             hover:bg-[var(--erp-primary-dark)]
                             text-white
+                            text-sm
+                            font-medium
+                            transition
                           "
                         >
                           Guardar módulos
@@ -1768,155 +2237,201 @@ export default function ModalEmpleado({
                             px-4
                             py-2.5
                             rounded-xl
-                            bg-white
                             border
                             border-[var(--erp-border)]
+                            bg-[var(--erp-surface)]
                             text-[var(--erp-text)]
+                            text-sm
+                            font-medium
                             hover:bg-[var(--erp-surface-soft)]
+                            transition
                           "
                         >
-                          Limpiar
+                          Limpiar selección
                         </button>
 
                       </div>
 
                     </div>
-
                   )}
 
+
+                  {/* ---------------------------------------
+                      PERMISOS
+                  --------------------------------------- */}
 
                   {seguridadTab ===
                     "permisos" && (
 
                     <div>
 
-                      <h4 className="
-                        font-semibold
-                        mb-4
-                      ">
-                        Permisos por módulo
-                      </h4>
-
-
                       {Object.keys(
                         permisos
                       ).length === 0 ? (
 
-                        <p className="
-                          text-sm
-                          text-[var(--erp-text-soft)]
-                        ">
+                        <div
+                          className="
+                            py-12
+                            text-center
+                            text-sm
+                            text-[var(--erp-text-soft)]
+                          "
+                        >
                           No hay permisos configurados.
-                        </p>
+                        </div>
 
                       ) : (
 
-                        <div className="
-                          space-y-4
-                        ">
+                        <div
+                          className="
+                            grid
+                            grid-cols-1
+                            xl:grid-cols-2
+                            gap-4
+                          "
+                        >
 
                           {Object.keys(
                             permisos
                           ).map(
-                            (modulo) => (
+                            (modulo) => {
 
-                              <div
-                                key={modulo}
-                                className="
-                                  rounded-xl
-                                  border
-                                  border-[var(--erp-border)]
-                                  p-4
-                                "
-                              >
+                              const actual =
+                                permisos[
+                                  modulo
+                                ] || [];
 
-                                <div className="
-                                  font-semibold
-                                  mb-3
-                                ">
-                                  {modulo}
+                              return (
+                                <div
+                                  key={modulo}
+                                  className="
+                                    rounded-xl
+                                    border
+                                    border-[var(--erp-border)]
+                                    bg-[var(--erp-surface)]
+                                    p-4
+                                  "
+                                >
+
+                                  <div
+                                    className="
+                                      flex
+                                      items-center
+                                      justify-between
+                                      gap-3
+                                      mb-4
+                                    "
+                                  >
+
+                                    <span
+                                      className="
+                                        font-semibold
+                                        text-[var(--erp-text)]
+                                      "
+                                    >
+                                      {modulo}
+                                    </span>
+
+                                    <span
+                                      className="
+                                        text-xs
+                                        text-[var(--erp-text-soft)]
+                                      "
+                                    >
+                                      {actual.length} permisos
+                                    </span>
+
+                                  </div>
+
+
+                                  <div
+                                    className="
+                                      grid
+                                      grid-cols-2
+                                      md:grid-cols-4
+                                      gap-2
+                                    "
+                                  >
+
+                                    {PERMISOS_SJ2026.map(
+                                      (permiso) => {
+
+                                        const checked =
+                                          actual.includes(
+                                            permiso
+                                          );
+
+                                        return (
+                                          <label
+                                            key={permiso}
+                                            className={`
+                                              flex
+                                              items-center
+                                              gap-2
+                                              rounded-lg
+                                              border
+                                              px-3
+                                              py-2
+                                              cursor-pointer
+                                              text-sm
+                                              transition
+                                              ${
+                                                checked
+                                                  ? "border-[var(--erp-primary)] bg-[var(--erp-primary-soft)]"
+                                                  : "border-[var(--erp-border)]"
+                                              }
+                                            `}
+                                          >
+
+                                            <input
+                                              type="checkbox"
+                                              checked={checked}
+                                              onChange={(event) => {
+
+                                                const nuevo =
+                                                  event.target.checked
+                                                    ? [
+                                                        ...actual,
+                                                        permiso,
+                                                      ]
+                                                    : actual.filter(
+                                                        (
+                                                          item
+                                                        ) =>
+                                                          item !==
+                                                          permiso
+                                                      );
+
+                                                setPermisos(
+                                                  (
+                                                    anterior
+                                                  ) => ({
+                                                    ...anterior,
+                                                    [modulo]:
+                                                      nuevo,
+                                                  })
+                                                );
+
+                                              }}
+                                              className="
+                                                h-4
+                                                w-4
+                                                accent-[var(--erp-primary)]
+                                              "
+                                            />
+
+                                            {permiso}
+
+                                          </label>
+                                        );
+                                      }
+                                    )}
+
+                                  </div>
+
                                 </div>
-
-
-                                <div className="
-                                  grid
-                                  grid-cols-2
-                                  md:grid-cols-4
-                                  gap-2
-                                ">
-
-                                  {PERMISOS_SJ2026.map(
-                                    (permiso) => {
-
-                                      const actual =
-                                        permisos[
-                                          modulo
-                                        ] || [];
-
-                                      return (
-                                        <label
-                                          key={permiso}
-                                          className="
-                                            flex
-                                            items-center
-                                            gap-2
-                                            text-sm
-                                          "
-                                        >
-
-                                          <input
-                                            type="checkbox"
-                                            checked={actual.includes(
-                                              permiso
-                                            )}
-                                            onChange={(
-                                              event
-                                            ) => {
-
-                                              const nuevo =
-                                                event
-                                                  .target
-                                                  .checked
-                                                  ? [
-                                                      ...actual,
-                                                      permiso,
-                                                    ]
-                                                  : actual.filter(
-                                                      (
-                                                        item
-                                                      ) =>
-                                                        item !==
-                                                        permiso
-                                                    );
-
-                                              setPermisos(
-                                                (
-                                                  anterior
-                                                ) => ({
-                                                  ...anterior,
-                                                  [modulo]:
-                                                    nuevo,
-                                                })
-                                              );
-
-                                            }}
-                                            className="
-                                              accent-[var(--erp-primary)]
-                                            "
-                                          />
-
-                                          {permiso}
-
-                                        </label>
-                                      );
-                                    }
-                                  )}
-
-                                </div>
-
-                              </div>
-
-                            )
+                              );
+                            }
                           )}
 
                         </div>
@@ -1924,9 +2439,7 @@ export default function ModalEmpleado({
                       )}
 
 
-                      <div className="
-                        mt-5
-                      ">
+                      <div className="mt-5">
 
                         <button
                           type="button"
@@ -1940,6 +2453,9 @@ export default function ModalEmpleado({
                             bg-[var(--erp-primary)]
                             hover:bg-[var(--erp-primary-dark)]
                             text-white
+                            text-sm
+                            font-medium
+                            transition
                           "
                         >
                           Guardar permisos
@@ -1948,79 +2464,84 @@ export default function ModalEmpleado({
                       </div>
 
                     </div>
-
                   )}
 
-                </div>
+                </section>
 
               </section>
-
             )}
 
+
+          {/* =================================================
+              AUDITORÍA
+          ================================================== */}
 
           {!loading &&
             !error &&
             tab === "auditoria" && (
 
-              <section className="
-                erp-card
-                p-5
-              ">
+              <section className="erp-card p-6">
 
-                <h3 className="
-                  text-lg
-                  font-semibold
-                  mb-5
-                ">
-                  Auditoría del empleado
-                </h3>
+                <SectionHeader
+                  title="Auditoría del empleado"
+                  description="Histórico de acciones registradas para esta cuenta."
+                />
 
 
                 {auditoria.length === 0 ? (
 
-                  <div className="
-                    py-10
-                    text-center
-                    text-[var(--erp-text-soft)]
-                  ">
+                  <div
+                    className="
+                      py-14
+                      text-center
+                      text-sm
+                      text-[var(--erp-text-soft)]
+                    "
+                  >
                     No hay registros de auditoría.
                   </div>
 
                 ) : (
 
-                  <div className="
-                    overflow-auto
-                    rounded-xl
-                    border
-                    border-[var(--erp-border)]
-                  ">
+                  <div
+                    className="
+                      overflow-x-auto
+                      rounded-xl
+                      border
+                      border-[var(--erp-border)]
+                    "
+                  >
 
-                    <table className="
-                      w-full
-                      text-sm
-                    ">
+                    <table
+                      className="
+                        w-full
+                        text-sm
+                      "
+                    >
 
                       <thead>
 
-                        <tr className="
-                          bg-[var(--erp-primary)]
-                          text-white
-                          text-left
-                        ">
+                        <tr
+                          className="
+                            bg-[var(--erp-primary-soft)]
+                            text-[var(--erp-text)]
+                            text-left
+                          "
+                        >
 
-                          <th className="px-4 py-3">
+                          <th className="px-4 py-3 font-semibold">
                             Fecha
                           </th>
 
-                          <th className="px-4 py-3">
+                          <th className="px-4 py-3 font-semibold">
                             Módulo
                           </th>
 
-                          <th className="px-4 py-3">
+                          <th className="px-4 py-3 font-semibold">
                             Acción
                           </th>
 
-                          <th className="px-4 py-3">
+                          <th className="px-4 py-3 font-semibold">
                             Descripción
                           </th>
 
@@ -2041,15 +2562,19 @@ export default function ModalEmpleado({
                               className="
                                 border-t
                                 border-[var(--erp-border)]
-                                hover:bg-[var(--erp-primary-soft)]
+                                hover:bg-[var(--erp-surface-soft)]
+                                transition
                               "
                             >
 
-                              <td className="
-                                px-4
-                                py-3
-                                whitespace-nowrap
-                              ">
+                              <td
+                                className="
+                                  px-4
+                                  py-3
+                                  whitespace-nowrap
+                                  text-[var(--erp-text-soft)]
+                                "
+                              >
                                 {registro.fecha
                                   ? new Date(
                                       registro.fecha
@@ -2059,34 +2584,57 @@ export default function ModalEmpleado({
                                   : "—"}
                               </td>
 
-                              <td className="
-                                px-4
-                                py-3
-                              ">
-                                {
-                                  registro.modulo ||
-                                  "—"
-                                }
+
+                              <td className="px-4 py-3">
+
+                                <span
+                                  className="
+                                    inline-flex
+                                    px-2.5
+                                    py-1
+                                    rounded-lg
+                                    bg-[var(--erp-surface-soft)]
+                                    text-xs
+                                    font-medium
+                                  "
+                                >
+                                  {registro.modulo ||
+                                    "—"}
+                                </span>
+
                               </td>
 
-                              <td className="
-                                px-4
-                                py-3
-                              ">
-                                {
-                                  registro.accion ||
-                                  "—"
-                                }
+
+                              <td className="px-4 py-3">
+
+                                <span
+                                  className="
+                                    inline-flex
+                                    px-2.5
+                                    py-1
+                                    rounded-lg
+                                    bg-[var(--erp-primary-soft)]
+                                    text-[var(--erp-primary)]
+                                    text-xs
+                                    font-semibold
+                                  "
+                                >
+                                  {registro.accion ||
+                                    "—"}
+                                </span>
+
                               </td>
 
-                              <td className="
-                                px-4
-                                py-3
-                              ">
-                                {
-                                  registro.descripcion ||
-                                  "—"
-                                }
+
+                              <td
+                                className="
+                                  px-4
+                                  py-3
+                                  text-[var(--erp-text)]
+                                "
+                              >
+                                {registro.descripcion ||
+                                  "—"}
                               </td>
 
                             </tr>
@@ -2103,7 +2651,6 @@ export default function ModalEmpleado({
                 )}
 
               </section>
-
             )}
 
         </div>
@@ -2111,26 +2658,33 @@ export default function ModalEmpleado({
       </div>
 
 
-      {/* TOAST */}
+      {/* ===================================================
+          TOAST
+      =================================================== */}
 
       {toast && (
 
-        <div className={`
-          fixed
-          top-5
-          right-5
-          z-[70]
-          px-4
-          py-3
-          rounded-xl
-          shadow-xl
-          border
-          ${
-            toast.tipo === "ok"
-              ? "bg-green-50 border-green-200 text-green-700"
-              : "bg-red-50 border-red-200 text-red-700"
-          }
-        `}>
+        <div
+          className={`
+            fixed
+            top-5
+            right-5
+            z-[100]
+            max-w-sm
+            px-4
+            py-3
+            rounded-xl
+            shadow-xl
+            border
+            text-sm
+            font-medium
+            ${
+              toast.tipo === "ok"
+                ? "bg-green-50 border-green-200 text-green-700"
+                : "bg-red-50 border-red-200 text-red-700"
+            }
+          `}
+        >
           {toast.mensaje}
         </div>
 
@@ -2142,24 +2696,63 @@ export default function ModalEmpleado({
 
 
 /* =========================================================
-   COMPONENTES AUXILIARES
+   SECTION HEADER
+========================================================= */
+
+function SectionHeader({
+  title,
+  description,
+}) {
+  return (
+    <div className="mb-6">
+
+      <h3
+        className="
+          text-lg
+          font-semibold
+          text-[var(--erp-text)]
+        "
+      >
+        {title}
+      </h3>
+
+      {description && (
+        <p
+          className="
+            mt-1
+            text-sm
+            text-[var(--erp-text-soft)]
+          "
+        >
+          {description}
+        </p>
+      )}
+
+    </div>
+  );
+}
+
+
+/* =========================================================
+   CAMPO
 ========================================================= */
 
 function Campo({
   label,
   children,
 }) {
-
   return (
     <div>
 
-      <label className="
-        block
-        text-sm
-        font-medium
-        text-[var(--erp-text)]
-        mb-1.5
-      ">
+      <label
+        className="
+          block
+          text-sm
+          font-medium
+          text-[var(--erp-text)]
+          mb-1.5
+        "
+      >
         {label}
       </label>
 
@@ -2170,17 +2763,20 @@ function Campo({
 }
 
 
+/* =========================================================
+   INPUT
+========================================================= */
+
 function Input({
   value,
   onChange,
   type = "text",
   readOnly = false,
 }) {
-
   return (
     <input
       type={type}
-      value={value || ""}
+      value={value ?? ""}
       readOnly={readOnly}
       onChange={(event) =>
         onChange?.(
@@ -2197,10 +2793,18 @@ function Input({
         px-3
         py-2.5
         outline-none
+        transition
         ${
           readOnly
-            ? "bg-[var(--erp-surface-soft)] cursor-not-allowed"
-            : "focus:border-[var(--erp-primary)]"
+            ? `
+              bg-[var(--erp-surface-soft)]
+              cursor-not-allowed
+            `
+            : `
+              focus:border-[var(--erp-primary)]
+              focus:ring-2
+              focus:ring-[var(--erp-primary)]/10
+            `
         }
       `}
     />
@@ -2208,28 +2812,39 @@ function Input({
 }
 
 
+/* =========================================================
+   BOTÓN GUARDAR
+========================================================= */
+
 function Guardar({
   onClick,
 }) {
-
   return (
-    <div className="
-      flex
-      justify-end
-      mt-6
-    ">
+    <div
+      className="
+        flex
+        justify-end
+        mt-6
+        pt-5
+        border-t
+        border-[var(--erp-border)]
+      "
+    >
 
       <button
         type="button"
         onClick={onClick}
         className="
-          px-4
+          px-5
           py-2.5
           rounded-xl
           bg-[var(--erp-primary)]
           hover:bg-[var(--erp-primary-dark)]
           text-white
+          text-sm
+          font-semibold
           transition
+          shadow-sm
         "
       >
         Guardar cambios

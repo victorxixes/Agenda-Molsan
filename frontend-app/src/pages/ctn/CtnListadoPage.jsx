@@ -1,22 +1,9 @@
-import {
-  useEffect,
-  useState,
-  useCallback,
-  useMemo,
-} from "react";
-
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useCtn } from "../../hooks/useCtn";
 import ModalCtnDetalle from "../../components/ctn/ModalCtnDetalle";
 
 export default function CtnListadoPage() {
-  const {
-    items,
-    total,
-    cargarNotarias,
-    cargarFirmasNotaria,
-    firmas,
-    loading,
-  } = useCtn();
+  const { items, total, cargarNotarias, loading } = useCtn();
 
   const [filtros, setFiltros] = useState({
     provincia: "",
@@ -30,11 +17,35 @@ export default function CtnListadoPage() {
   const [selected, setSelected] = useState(null);
 
   const [pagina, setPagina] = useState(1);
-
   const PAGE_SIZE = 15;
 
   // ============================================================
-  // CARGAR LISTADO
+  // ORDENACIÓN
+  // ============================================================
+
+  const [orden, setOrden] = useState({
+    campo: null,
+    direccion: "asc",
+  });
+
+  const cambiarOrden = useCallback((campo) => {
+    setOrden((prev) => {
+      if (prev.campo === campo) {
+        return {
+          campo,
+          direccion: prev.direccion === "asc" ? "desc" : "asc",
+        };
+      }
+
+      return {
+        campo,
+        direccion: "asc",
+      };
+    });
+  }, []);
+
+  // ============================================================
+  // CARGAR NOTARÍAS
   // ============================================================
 
   useEffect(() => {
@@ -42,25 +53,31 @@ export default function CtnListadoPage() {
   }, [cargarNotarias, filtros, pagina]);
 
   // ============================================================
-  // FILTROS
+  // APLICAR FILTROS
   // ============================================================
 
   const aplicarFiltros = useCallback(() => {
     setPagina(1);
+    setOrden({
+      campo: null,
+      direccion: "asc",
+    });
+
     cargarNotarias(filtros, 1, PAGE_SIZE);
   }, [filtros, cargarNotarias]);
 
-  const limpiarFiltros = useCallback(() => {
-    setFiltros({
-      provincia: "",
-      municipio: "",
-      vc: "",
-      apoderado: "",
-      q: "",
-    });
+  // ============================================================
+  // ABRIR DETALLE
+  // ============================================================
 
-    setPagina(1);
+  const abrirDetalle = useCallback((notaria) => {
+    setSelected(notaria);
+    setModalOpen(true);
   }, []);
+
+  // ============================================================
+  // CLAVES DE FILTROS
+  // ============================================================
 
   const filtrosKeys = useMemo(
     () => Object.keys(filtros),
@@ -68,73 +85,117 @@ export default function CtnListadoPage() {
   );
 
   // ============================================================
-  // DETALLE
+  // ORDENAR RESULTADOS
   // ============================================================
 
-  const abrirDetalle = useCallback(
-    async (notaria) => {
-      setSelected(notaria);
-      setModalOpen(true);
+  const itemsOrdenados = useMemo(() => {
+    if (!Array.isArray(items)) {
+      return [];
+    }
 
-      if (cargarFirmasNotaria && notaria?.id) {
-        try {
-          await cargarFirmasNotaria(notaria.id);
-        } catch (error) {
-          console.error(
-            "Error cargando firmas de la notaría:",
-            error
-          );
-        }
+    if (!orden.campo) {
+      return items;
+    }
+
+    const copia = [...items];
+
+    copia.sort((a, b) => {
+      let valorA = a?.[orden.campo];
+      let valorB = b?.[orden.campo];
+
+      // --------------------------------------------------------
+      // Valores vacíos
+      // --------------------------------------------------------
+
+      if (
+        valorA === null ||
+        valorA === undefined
+      ) {
+        valorA = "";
       }
-    },
-    [cargarFirmasNotaria]
-  );
 
-  const cerrarDetalle = useCallback(() => {
-    setModalOpen(false);
-    setSelected(null);
-  }, []);
+      if (
+        valorB === null ||
+        valorB === undefined
+      ) {
+        valorB = "";
+      }
+
+      // --------------------------------------------------------
+      // Normalización
+      // --------------------------------------------------------
+
+      const textoA = String(valorA)
+        .trim()
+        .toLocaleLowerCase("es");
+
+      const textoB = String(valorB)
+        .trim()
+        .toLocaleLowerCase("es");
+
+      // --------------------------------------------------------
+      // Comparación numérica cuando procede
+      // --------------------------------------------------------
+
+      const numeroA = Number(textoA);
+      const numeroB = Number(textoB);
+
+      const ambosNumericos =
+        textoA !== "" &&
+        textoB !== "" &&
+        !Number.isNaN(numeroA) &&
+        !Number.isNaN(numeroB);
+
+      let resultado;
+
+      if (ambosNumericos) {
+        resultado = numeroA - numeroB;
+      } else {
+        resultado = textoA.localeCompare(
+          textoB,
+          "es",
+          {
+            numeric: true,
+            sensitivity: "base",
+          }
+        );
+      }
+
+      return orden.direccion === "asc"
+        ? resultado
+        : -resultado;
+    });
+
+    return copia;
+  }, [items, orden]);
 
   // ============================================================
-  // PAGINACIÓN
+  // TOTAL PÁGINAS
   // ============================================================
 
-  const totalPaginas = Math.max(
-    1,
-    Math.ceil(total / PAGE_SIZE)
-  );
+  const totalPaginas = Math.ceil(total / PAGE_SIZE);
 
   // ============================================================
-  // EXPORTAR EXCEL
+  // DESCARGAR EXCEL
   // ============================================================
 
   const descargarExcel = useCallback(async () => {
     try {
       const params = new URLSearchParams();
 
-      Object.entries(filtros).forEach(
-        ([key, value]) => {
-          if (
-            value &&
-            String(value).trim() !== ""
-          ) {
-            params.append(
-              key,
-              String(value).trim()
-            );
-          }
+      Object.entries(filtros).forEach(([key, value]) => {
+        if (value && value.trim() !== "") {
+          params.append(key, value);
         }
-      );
+      });
 
       const urlExcel =
-        `${import.meta.env.VITE_API_URL}` +
-        `/ctn/exportar-excel?${params.toString()}`;
+        `${import.meta.env.VITE_API_URL}/ctn/exportar-excel?${params.toString()}`;
 
       const res = await fetch(urlExcel, {
         method: "GET",
         headers: {
-          Authorization:
-            `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
 
@@ -146,12 +207,9 @@ export default function CtnListadoPage() {
 
       const blob = await res.blob();
 
-      const url =
-        window.URL.createObjectURL(blob);
+      const url = window.URL.createObjectURL(blob);
 
-      const a =
-        document.createElement("a");
-
+      const a = document.createElement("a");
       a.href = url;
       a.download = "notarias.xlsx";
 
@@ -169,18 +227,66 @@ export default function CtnListadoPage() {
   }, [filtros]);
 
   // ============================================================
-  // INPUT
+  // COMPONENTE INTERNO DE CABECERA ORDENABLE
   // ============================================================
 
-  const actualizarFiltro = useCallback(
-    (key, value) => {
-      setFiltros((prev) => ({
-        ...prev,
-        [key]: value,
-      }));
-    },
-    []
-  );
+  const CabeceraOrdenable = ({
+    campo,
+    children,
+    className = "",
+  }) => {
+    const activa = orden.campo === campo;
+
+    return (
+      <th
+        className={`
+          px-3
+          py-3
+          text-left
+          font-semibold
+          text-[var(--erp-text)]
+          whitespace-nowrap
+          select-none
+          ${className}
+        `}
+      >
+        <button
+          type="button"
+          onClick={() => cambiarOrden(campo)}
+          className="
+            inline-flex
+            items-center
+            gap-2
+            group
+            font-semibold
+            text-[var(--erp-text)]
+            hover:text-[var(--erp-primary)]
+            transition-colors
+          "
+        >
+          <span>{children}</span>
+
+          <span
+            className={`
+              text-xs
+              transition-opacity
+              ${
+                activa
+                  ? "opacity-100 text-[var(--erp-primary)]"
+                  : "opacity-30 group-hover:opacity-70"
+              }
+            `}
+          >
+            {activa
+              ? orden.direccion === "asc"
+                ? "↑"
+                : "↓"
+              : "↕"}
+          </span>
+        </button>
+      </th>
+    );
+  };
 
   // ============================================================
   // RENDER
@@ -193,427 +299,471 @@ export default function CtnListadoPage() {
           FILTROS
          ====================================================== */}
 
-      <section className="erp-card p-4 sm:p-5 shadow-sm">
+      <div
+        className="
+          erp-card
+          p-4
+          shadow-sm
+        "
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4">
 
-        <div
-          className="
-            flex
-            flex-col
-            lg:flex-row
-            lg:items-center
-            lg:justify-between
-            gap-4
-            mb-5
-          "
-        >
-          <div>
-            <h2 className="text-xl font-semibold text-[var(--erp-text)]">
-              Buscar notarías
-            </h2>
-
-            <p className="text-sm text-[var(--erp-text-soft)] mt-1">
-              Filtra por provincia, municipio, VC,
-              apoderado o texto libre.
-            </p>
-          </div>
-
-          <div className="text-sm text-[var(--erp-text-soft)]">
-            Total:
-            <strong className="ml-1 text-[var(--erp-text)]">
-              {total}
-            </strong>
-          </div>
-        </div>
-
-        <div
-          className="
-            grid
-            grid-cols-1
-            md:grid-cols-2
-            xl:grid-cols-5
-            gap-4
-          "
-        >
           {filtrosKeys.map((key) => (
-            <div key={key}>
-              <label
-                className="
-                  block
-                  text-xs
-                  font-semibold
-                  text-[var(--erp-text-soft)]
-                  mb-1.5
-                "
-              >
-                {key === "q"
-                  ? "Búsqueda"
+            <input
+              key={key}
+              className="
+                w-full
+                bg-[var(--erp-surface-soft)]
+                border
+                border-[var(--erp-border)]
+                rounded-xl
+                px-3
+                py-2
+                text-sm
+                text-[var(--erp-text)]
+                placeholder-[var(--erp-text-soft)]
+                outline-none
+                transition
+                focus:border-[var(--erp-primary)]
+                focus:ring-2
+                focus:ring-[var(--erp-primary-soft)]
+              "
+              placeholder={
+                key === "q"
+                  ? "Buscar nombre, apellidos, código, NIF…"
                   : key.charAt(0).toUpperCase() +
-                    key.slice(1)}
-              </label>
-
-              <input
-                type="text"
-                value={filtros[key]}
-                onChange={(e) =>
-                  actualizarFiltro(
-                    key,
-                    e.target.value
-                  )
-                }
-                placeholder={
-                  key === "q"
-                    ? "Nombre, código, NIF..."
-                    : `Filtrar ${key}`
-                }
-                className="
-                  w-full
-                  bg-white
-                  border
-                  border-[var(--erp-border)]
-                  rounded-xl
-                  px-3
-                  py-2.5
-                  text-sm
-                  text-[var(--erp-text)]
-                  placeholder:text-slate-400
-                  outline-none
-                  transition
-                  focus:border-[var(--erp-primary)]
-                  focus:ring-2
-                  focus:ring-blue-100
-                "
-              />
-            </div>
+                    key.slice(1)
+              }
+              value={filtros[key]}
+              onChange={(e) =>
+                setFiltros((prev) => ({
+                  ...prev,
+                  [key]: e.target.value,
+                }))
+              }
+            />
           ))}
-        </div>
 
-        <div
+        </div>
+      </div>
+
+      {/* ======================================================
+          BOTONES
+         ====================================================== */}
+
+      <div className="flex flex-wrap gap-3">
+
+        <button
+          type="button"
           className="
-            flex
-            flex-wrap
-            gap-3
-            mt-5
-            pt-5
-            border-t
-            border-[var(--erp-border)]
+            px-4
+            py-2
+            rounded-xl
+            bg-[var(--erp-primary)]
+            hover:bg-[var(--erp-primary-dark)]
+            text-white
+            shadow-sm
+            transition
+            active:scale-[0.97]
           "
+          onClick={aplicarFiltros}
         >
-          <button
-            type="button"
-            onClick={aplicarFiltros}
-            disabled={loading}
-            className="
-              px-4
-              py-2.5
-              rounded-xl
-              bg-[var(--erp-primary)]
-              hover:bg-[var(--erp-primary-dark)]
-              text-white
-              font-medium
-              shadow-sm
-              transition
-              disabled:opacity-50
-              disabled:cursor-not-allowed
-            "
-          >
-            Aplicar filtros
-          </button>
+          Aplicar filtros
+        </button>
 
-          <button
-            type="button"
-            onClick={limpiarFiltros}
-            className="
-              px-4
-              py-2.5
-              rounded-xl
-              bg-white
-              border
-              border-[var(--erp-border)]
-              text-[var(--erp-text)]
-              hover:bg-[var(--erp-surface-soft)]
-              font-medium
-              transition
-            "
-          >
-            Limpiar
-          </button>
+        <button
+          type="button"
+          className="
+            px-4
+            py-2
+            rounded-xl
+            bg-[var(--erp-success)]
+            hover:opacity-90
+            text-white
+            shadow-sm
+            transition
+            active:scale-[0.97]
+          "
+          onClick={descargarExcel}
+        >
+          Descargar Excel
+        </button>
 
-          <button
-            type="button"
-            onClick={descargarExcel}
-            disabled={loading}
-            className="
-              px-4
-              py-2.5
-              rounded-xl
-              bg-[var(--erp-success)]
-              hover:brightness-95
-              text-white
-              font-medium
-              shadow-sm
-              transition
-              disabled:opacity-50
-              disabled:cursor-not-allowed
-            "
-          >
-            Descargar Excel
-          </button>
-        </div>
-      </section>
+      </div>
 
       {/* ======================================================
           TABLA
          ====================================================== */}
 
-      <section className="erp-card shadow-sm overflow-hidden">
+      {loading ? (
+        <div className="erp-card p-6">
+          <p className="text-sm text-[var(--erp-text-soft)] animate-pulse">
+            Cargando notarías…
+          </p>
+        </div>
+      ) : (
+        <div
+          className="
+            erp-card
+            overflow-hidden
+            shadow-sm
+          "
+        >
 
-        {loading ? (
-          <div className="p-8 text-center">
-            <p className="text-sm text-[var(--erp-text-soft)] animate-pulse">
-              Cargando notarías…
-            </p>
-          </div>
-        ) : (
-          <>
-            <div className="overflow-x-auto">
+          {/* --------------------------------------------------
+              CABECERA DE TABLA
+             -------------------------------------------------- */}
 
-              <table className="w-full text-sm">
+          <div className="overflow-x-auto">
 
-                <thead>
-                  <tr className="bg-[var(--erp-primary)] text-white">
+            <table className="w-full text-sm">
 
-                    <th className="px-4 py-3 text-left font-semibold whitespace-nowrap">
-                      Código
-                    </th>
+              <thead>
+                <tr
+                  className="
+                    bg-[var(--erp-surface-soft)]
+                    border-b
+                    border-[var(--erp-border)]
+                  "
+                >
 
-                    <th className="px-4 py-3 text-left font-semibold whitespace-nowrap">
-                      Teléfono
-                    </th>
+                  <CabeceraOrdenable campo="codigo">
+                    Código
+                  </CabeceraOrdenable>
 
-                    <th className="px-4 py-3 text-left font-semibold whitespace-nowrap">
-                      Nombre
-                    </th>
+                  <CabeceraOrdenable campo="telefono">
+                    Teléfono
+                  </CabeceraOrdenable>
 
-                    <th className="px-4 py-3 text-left font-semibold whitespace-nowrap">
-                      Apellidos
-                    </th>
+                  <CabeceraOrdenable campo="nombre">
+                    Nombre
+                  </CabeceraOrdenable>
 
-                    <th className="px-4 py-3 text-left font-semibold whitespace-nowrap">
-                      Provincia
-                    </th>
+                  <CabeceraOrdenable campo="apellidos">
+                    Apellidos
+                  </CabeceraOrdenable>
 
-                    <th className="px-4 py-3 text-left font-semibold whitespace-nowrap">
-                      Municipio
-                    </th>
+                  <CabeceraOrdenable campo="provincia">
+                    Provincia
+                  </CabeceraOrdenable>
 
-                    <th className="px-4 py-3 text-left font-semibold whitespace-nowrap">
-                      CP
-                    </th>
+                  <CabeceraOrdenable campo="municipio">
+                    Municipio
+                  </CabeceraOrdenable>
 
-                    <th className="px-4 py-3 text-left font-semibold whitespace-nowrap">
-                      Dirección
-                    </th>
+                  <CabeceraOrdenable campo="cp">
+                    CP
+                  </CabeceraOrdenable>
 
-                    <th className="px-4 py-3 text-right font-semibold whitespace-nowrap">
-                      Acción
-                    </th>
+                  <CabeceraOrdenable campo="direccion">
+                    Dirección
+                  </CabeceraOrdenable>
 
+                  <th
+                    className="
+                      px-3
+                      py-3
+                      text-left
+                      font-semibold
+                      text-[var(--erp-text)]
+                    "
+                  >
+                    Acciones
+                  </th>
+
+                </tr>
+              </thead>
+
+              {/* ------------------------------------------------
+                  CUERPO
+                 ------------------------------------------------ */}
+
+              <tbody>
+
+                {itemsOrdenados.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={9}
+                      className="
+                        px-4
+                        py-10
+                        text-center
+                        text-sm
+                        text-[var(--erp-text-soft)]
+                      "
+                    >
+                      No se han encontrado notarías.
+                    </td>
                   </tr>
-                </thead>
+                ) : (
+                  itemsOrdenados.map((n) => (
+                    <tr
+                      key={n.id}
+                      className="
+                        border-b
+                        border-[var(--erp-border)]
+                        last:border-b-0
+                        bg-[var(--erp-surface)]
+                        hover:bg-[var(--erp-primary-soft)]
+                        transition-colors
+                      "
+                    >
 
-                <tbody>
-                  {items.length === 0 ? (
-                    <tr>
                       <td
-                        colSpan={9}
-                        className="px-4 py-12 text-center"
-                      >
-                        <div className="text-[var(--erp-text-soft)]">
-                          No se han encontrado notarías.
-                        </div>
-
-                        <div className="text-xs mt-1 text-slate-400">
-                          Prueba a modificar los filtros.
-                        </div>
-                      </td>
-                    </tr>
-                  ) : (
-                    items.map((n) => (
-                      <tr
-                        key={n.id}
                         className="
-                          border-b
-                          border-[var(--erp-border)]
-                          hover:bg-[var(--erp-primary-soft)]
-                          transition-colors
+                          px-3
+                          py-3
+                          font-medium
+                          text-[var(--erp-text)]
+                          whitespace-nowrap
                         "
                       >
+                        {n.codigo || "—"}
+                      </td>
 
-                        <td className="px-4 py-3 font-medium text-[var(--erp-text)] whitespace-nowrap">
-                          {n.codigo || "—"}
-                        </td>
+                      <td
+                        className="
+                          px-3
+                          py-3
+                          text-[var(--erp-text-soft)]
+                          whitespace-nowrap
+                        "
+                      >
+                        {n.telefono || "—"}
+                      </td>
 
-                        <td className="px-4 py-3 text-[var(--erp-text-soft)] whitespace-nowrap">
-                          {n.telefono || "—"}
-                        </td>
+                      <td
+                        className="
+                          px-3
+                          py-3
+                          text-[var(--erp-text)]
+                          font-medium
+                          whitespace-nowrap
+                        "
+                      >
+                        {n.nombre || "—"}
+                      </td>
 
-                        <td className="px-4 py-3 text-[var(--erp-text)]">
-                          {n.nombre || "—"}
-                        </td>
+                      <td
+                        className="
+                          px-3
+                          py-3
+                          text-[var(--erp-text-soft)]
+                          whitespace-nowrap
+                        "
+                      >
+                        {n.apellidos || "—"}
+                      </td>
 
-                        <td className="px-4 py-3 text-[var(--erp-text)]">
-                          {n.apellidos || "—"}
-                        </td>
+                      <td
+                        className="
+                          px-3
+                          py-3
+                          text-[var(--erp-text-soft)]
+                          whitespace-nowrap
+                        "
+                      >
+                        {n.provincia || "—"}
+                      </td>
 
-                        <td className="px-4 py-3 text-[var(--erp-text-soft)]">
-                          {n.provincia || "—"}
-                        </td>
+                      <td
+                        className="
+                          px-3
+                          py-3
+                          text-[var(--erp-text-soft)]
+                          whitespace-nowrap
+                        "
+                      >
+                        {n.municipio || "—"}
+                      </td>
 
-                        <td className="px-4 py-3 text-[var(--erp-text-soft)]">
-                          {n.municipio || "—"}
-                        </td>
+                      <td
+                        className="
+                          px-3
+                          py-3
+                          text-[var(--erp-text-soft)]
+                          whitespace-nowrap
+                        "
+                      >
+                        {n.cp || "—"}
+                      </td>
 
-                        <td className="px-4 py-3 text-[var(--erp-text-soft)] whitespace-nowrap">
-                          {n.cp || "—"}
-                        </td>
+                      <td
+                        className="
+                          px-3
+                          py-3
+                          text-[var(--erp-text-soft)]
+                          min-w-[220px]
+                        "
+                      >
+                        {n.direccion || "—"}
+                      </td>
 
-                        <td className="px-4 py-3 text-[var(--erp-text-soft)] min-w-[220px]">
-                          {n.direccion || "—"}
-                        </td>
+                      <td
+                        className="
+                          px-3
+                          py-3
+                          whitespace-nowrap
+                        "
+                      >
+                        <button
+                          type="button"
+                          onClick={() =>
+                            abrirDetalle(n)
+                          }
+                          className="
+                            inline-flex
+                            items-center
+                            px-3
+                            py-1.5
+                            rounded-lg
+                            bg-[var(--erp-primary-soft)]
+                            text-[var(--erp-primary)]
+                            border
+                            border-blue-100
+                            hover:bg-blue-100
+                            transition
+                            font-medium
+                            text-xs
+                          "
+                        >
+                          Ver detalle
+                        </button>
+                      </td>
 
-                        <td className="px-4 py-3 text-right">
-                          <button
-                            type="button"
-                            onClick={() =>
-                              abrirDetalle(n)
-                            }
-                            className="
-                              inline-flex
-                              items-center
-                              px-3
-                              py-1.5
-                              rounded-lg
-                              bg-[var(--erp-primary-soft)]
-                              text-[var(--erp-primary)]
-                              font-medium
-                              hover:bg-blue-100
-                              transition
-                            "
-                          >
-                            Ver detalle
-                          </button>
-                        </td>
+                    </tr>
+                  ))
+                )}
 
-                      </tr>
-                    ))
-                  )}
-                </tbody>
+              </tbody>
 
-              </table>
-            </div>
+            </table>
 
-            {/* ==================================================
-                PAGINACIÓN
-               ================================================== */}
+          </div>
 
-            <div
+          {/* ==================================================
+              PAGINACIÓN
+             ================================================== */}
+
+          <div
+            className="
+              flex
+              flex-col
+              sm:flex-row
+              sm:items-center
+              sm:justify-between
+              gap-3
+              p-4
+              border-t
+              border-[var(--erp-border)]
+              bg-[var(--erp-surface-soft)]
+            "
+          >
+
+            <button
+              type="button"
               className="
-                flex
-                flex-col
-                sm:flex-row
-                sm:items-center
-                sm:justify-between
-                gap-3
-                p-4
-                border-t
+                px-3
+                py-2
+                rounded-xl
+                bg-white
+                border
                 border-[var(--erp-border)]
-                bg-[var(--erp-surface-soft)]
+                text-[var(--erp-text)]
+                hover:bg-[var(--erp-primary-soft)]
+                transition
+                disabled:opacity-40
+                disabled:cursor-not-allowed
+              "
+              disabled={pagina <= 1}
+              onClick={() =>
+                setPagina((p) => p - 1)
+              }
+            >
+              ← Anterior
+            </button>
+
+            <span
+              className="
+                text-sm
+                text-[var(--erp-text-soft)]
+                text-center
               "
             >
+              Página{" "}
+              <strong className="text-[var(--erp-text)]">
+                {pagina}
+              </strong>{" "}
+              de{" "}
+              <strong className="text-[var(--erp-text)]">
+                {totalPaginas || 1}
+              </strong>
+            </span>
 
-              <p className="text-sm text-[var(--erp-text-soft)]">
-                Mostrando{" "}
+            <button
+              type="button"
+              className="
+                px-3
+                py-2
+                rounded-xl
+                bg-white
+                border
+                border-[var(--erp-border)]
+                text-[var(--erp-text)]
+                hover:bg-[var(--erp-primary-soft)]
+                transition
+                disabled:opacity-40
+                disabled:cursor-not-allowed
+              "
+              disabled={
+                pagina >= totalPaginas ||
+                totalPaginas === 0
+              }
+              onClick={() =>
+                setPagina((p) => p + 1)
+              }
+            >
+              Siguiente →
+            </button>
+
+          </div>
+
+          {/* ==================================================
+              INFORMACIÓN
+             ================================================== */}
+
+          <div
+            className="
+              px-4
+              pb-4
+              text-xs
+              text-[var(--erp-text-soft)]
+            "
+          >
+            Mostrando{" "}
+            <strong className="text-[var(--erp-text)]">
+              {itemsOrdenados.length}
+            </strong>{" "}
+            notarías — Total:{" "}
+            <strong className="text-[var(--erp-text)]">
+              {total}
+            </strong>
+
+            {orden.campo && (
+              <>
+                {" "}· Ordenado por{" "}
                 <strong className="text-[var(--erp-text)]">
-                  {items.length}
+                  {orden.campo}
                 </strong>{" "}
-                notarías de{" "}
-                <strong className="text-[var(--erp-text)]">
-                  {total}
-                </strong>
-              </p>
+                {orden.direccion === "asc"
+                  ? "↑"
+                  : "↓"}
+              </>
+            )}
+          </div>
 
-              <div className="flex items-center gap-2">
-
-                <button
-                  type="button"
-                  disabled={pagina <= 1}
-                  onClick={() =>
-                    setPagina((p) => p - 1)
-                  }
-                  className="
-                    px-3
-                    py-2
-                    rounded-xl
-                    bg-white
-                    border
-                    border-[var(--erp-border)]
-                    text-[var(--erp-text)]
-                    hover:bg-slate-50
-                    transition
-                    disabled:opacity-40
-                    disabled:cursor-not-allowed
-                  "
-                >
-                  ← Anterior
-                </button>
-
-                <span
-                  className="
-                    px-3
-                    py-2
-                    text-sm
-                    text-[var(--erp-text-soft)]
-                    whitespace-nowrap
-                  "
-                >
-                  Página{" "}
-                  <strong className="text-[var(--erp-text)]">
-                    {pagina}
-                  </strong>{" "}
-                  de{" "}
-                  <strong className="text-[var(--erp-text)]">
-                    {totalPaginas}
-                  </strong>
-                </span>
-
-                <button
-                  type="button"
-                  disabled={pagina >= totalPaginas}
-                  onClick={() =>
-                    setPagina((p) => p + 1)
-                  }
-                  className="
-                    px-3
-                    py-2
-                    rounded-xl
-                    bg-white
-                    border
-                    border-[var(--erp-border)]
-                    text-[var(--erp-text)]
-                    hover:bg-slate-50
-                    transition
-                    disabled:opacity-40
-                    disabled:cursor-not-allowed
-                  "
-                >
-                  Siguiente →
-                </button>
-
-              </div>
-            </div>
-          </>
-        )}
-      </section>
+        </div>
+      )}
 
       {/* ======================================================
           MODAL
@@ -621,9 +771,8 @@ export default function CtnListadoPage() {
 
       <ModalCtnDetalle
         open={modalOpen}
-        onClose={cerrarDetalle}
+        onClose={() => setModalOpen(false)}
         notaria={selected}
-        firmas={firmas}
       />
 
     </div>

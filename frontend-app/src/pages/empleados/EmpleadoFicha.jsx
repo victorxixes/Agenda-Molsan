@@ -1,203 +1,768 @@
-import { useEffect, useState } from "react";
-import axios from "axios";
-import { API_BASE } from "../../api/config";
-import ModalEmpleado from "../../components/empleados/ModalEmpleado";
+import {
+  useEffect,
+  useState,
+} from "react";
 
-export default function EmpleadoFicha({ empleadoId }) {
-  const [empleado, setEmpleado] = useState(null);
-  const [auditoria, setAuditoria] = useState([]);
-  const [openModal, setOpenModal] = useState(false);
-  const [loading, setLoading] = useState(false);
+import axios from "axios";
+
+import {
+  API_BASE,
+} from "../../api/config";
+
+import ModalEmpleado
+  from "../../components/empleados/ModalEmpleado";
+
+
+export default function EmpleadoFicha({
+  empleadoId,
+}) {
+
+  const [
+    empleado,
+    setEmpleado,
+  ] = useState(null);
+
+  const [
+    auditoria,
+    setAuditoria,
+  ] = useState([]);
+
+  const [
+    openModal,
+    setOpenModal,
+  ] = useState(false);
+
+  const [
+    loading,
+    setLoading,
+  ] = useState(false);
+
+  const [
+    error,
+    setError,
+  ] = useState("");
+
+
+  const cargar = async () => {
+
+    if (!empleadoId) {
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+
+      const res =
+        await axios.get(
+          `${API_BASE}/empleados/${empleadoId}/ficha`
+        );
+
+      setEmpleado(
+        res.data?.empleado ||
+        null
+      );
+
+      setAuditoria(
+        Array.isArray(
+          res.data?.auditoria
+        )
+          ? res.data.auditoria
+          : []
+      );
+
+    } catch (err) {
+
+      console.error(
+        "Error cargando ficha:",
+        err
+      );
+
+      setError(
+        err?.response?.data?.detail ||
+        "No se ha podido cargar la ficha."
+      );
+
+    } finally {
+
+      setLoading(false);
+    }
+  };
+
 
   useEffect(() => {
-    if (!empleadoId) return;
-
-    const cargar = async () => {
-      setLoading(true);
-      try {
-        const res = await axios.get(`${API_BASE}/empleados/${empleadoId}/ficha`);
-        setEmpleado(res.data.empleado || null);
-        setAuditoria(res.data.auditoria || []);
-      } finally {
-        setLoading(false);
-      }
-    };
 
     cargar();
+
   }, [empleadoId]);
 
+
   if (!empleadoId) {
+
     return (
-      <div className="p-6 text-white">
-        No se ha seleccionado ningún empleado.
+      <div className="erp-page">
+
+        <div className="erp-card max-w-[1700px] mx-auto p-8">
+
+          <p className="text-[var(--erp-text-soft)]">
+            No se ha seleccionado ningún empleado.
+          </p>
+
+        </div>
+
       </div>
     );
   }
 
-  if (loading || !empleado) {
+
+  if (loading) {
+
     return (
-      <div className="p-6 text-white animate-pulse">
-        Cargando ficha del empleado…
+      <div className="erp-page">
+
+        <div className="erp-card max-w-[1700px] mx-auto p-8">
+
+          <div className="
+            text-[var(--erp-text-soft)]
+            animate-pulse
+            text-center
+            py-16
+          ">
+            Cargando ficha del empleado…
+          </div>
+
+        </div>
+
       </div>
     );
   }
+
+
+  if (error) {
+
+    return (
+      <div className="erp-page">
+
+        <div className="erp-card max-w-[1700px] mx-auto p-8">
+
+          <div className="
+            rounded-xl
+            border
+            border-red-200
+            bg-red-50
+            text-red-700
+            px-4
+            py-3
+          ">
+            {error}
+          </div>
+
+        </div>
+
+      </div>
+    );
+  }
+
+
+  if (!empleado) {
+    return null;
+  }
+
 
   return (
-    <div className="p-6 text-white space-y-6">
+    <div className="
+      erp-page
+      space-y-5
+    ">
 
-      {/* MODAL */}
-      {openModal && (
-        <ModalEmpleado
-          open={openModal}
-          onClose={() => setOpenModal(false)}
-          empleadoId={empleadoId}
-        />
-      )}
+      {/* ===================================================
+          CABECERA
+      =================================================== */}
 
-      {/* HEADER */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold drop-shadow">
-          Ficha del empleado #{empleado.id}
+      <section className="
+        erp-card
+        max-w-[1700px]
+        mx-auto
+        p-5
+      ">
+
+        <div className="
+          flex
+          flex-col
+          lg:flex-row
+          lg:items-center
+          lg:justify-between
+          gap-5
+        ">
+
+          <div className="
+            flex
+            items-center
+            gap-4
+          ">
+
+            <div className="
+              w-16
+              h-16
+              rounded-2xl
+              overflow-hidden
+              border
+              border-[var(--erp-border)]
+              bg-[var(--erp-surface-soft)]
+              flex
+              items-center
+              justify-center
+              shrink-0
+            ">
+
+              <img
+                src={
+                  empleado.foto
+                    ? `${API_BASE}${empleado.foto}`
+                    : "/no-foto.png"
+                }
+                alt="Foto empleado"
+                className="
+                  w-full
+                  h-full
+                  object-cover
+                "
+              />
+
+            </div>
+
+
+            <div>
+
+              <div className="
+                text-sm
+                text-[var(--erp-text-soft)]
+              ">
+                Ficha de empleado
+              </div>
+
+              <h1 className="
+                text-2xl
+                font-semibold
+                text-[var(--erp-text)]
+              ">
+                {empleado.nombre}{" "}
+                {empleado.apellidos}
+              </h1>
+
+              <div className="
+                flex
+                flex-wrap
+                items-center
+                gap-2
+                mt-1
+              ">
+
+                <span className="
+                  text-sm
+                  text-[var(--erp-text-soft)]
+                ">
+                  ID #{empleado.id}
+                </span>
+
+                <span className="
+                  text-[var(--erp-text-soft)]
+                ">
+                  ·
+                </span>
+
+                <span className="
+                  text-sm
+                  text-[var(--erp-text-soft)]
+                ">
+                  {empleado.usuario || "Sin usuario"}
+                </span>
+
+                <span
+                  className={`
+                    px-2.5
+                    py-1
+                    rounded-lg
+                    text-xs
+                    font-medium
+                    ${
+                      empleado.activo
+                        ? "bg-green-50 text-green-700 border border-green-200"
+                        : "bg-red-50 text-red-700 border border-red-200"
+                    }
+                  `}
+                >
+                  {empleado.activo
+                    ? "Activo"
+                    : "Baja"}
+                </span>
+
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <button
+            type="button"
+            onClick={() =>
+              setOpenModal(true)
+            }
+            className="
+              inline-flex
+              items-center
+              justify-center
+              px-4
+              py-2.5
+              rounded-xl
+              bg-[var(--erp-primary)]
+              hover:bg-[var(--erp-primary-dark)]
+              text-white
+              transition
+            "
+          >
+            Editar ficha
+          </button>
+
+        </div>
+
+      </section>
+
+
+      {/* ===================================================
+          DATOS BÁSICOS
+      =================================================== */}
+
+      <section className="
+        erp-card
+        max-w-[1700px]
+        mx-auto
+        p-5
+      ">
+
+        <h2 className="
+          text-lg
+          font-semibold
+          text-[var(--erp-text)]
+          mb-5
+        ">
+          Datos básicos
         </h2>
 
-        <button
-          className="
-            px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
-            text-white shadow-lg transition
-          "
-          onClick={() => setOpenModal(true)}
-        >
-          Editar ficha
-        </button>
-      </div>
+        <div className="
+          grid
+          grid-cols-1
+          sm:grid-cols-2
+          lg:grid-cols-4
+          gap-4
+        ">
 
-      {/* FOTO + INFO */}
-      <div className="flex gap-6 items-start">
-
-        {/* FOTO */}
-        <div>
-          <img
-            src={
-              empleado.foto_empleado
-                ? `${API_BASE}/empleados/foto/${empleado.id}`
-                : "/no-foto.png"
-            }
-            alt="Foto empleado"
-            className="w-40 h-40 object-cover rounded-xl border border-white/20"
+          <Dato
+            label="Nombre"
+            value={empleado.nombre}
           />
+
+          <Dato
+            label="Apellidos"
+            value={empleado.apellidos}
+          />
+
+          <Dato
+            label="DNI"
+            value={empleado.dni}
+          />
+
+          <Dato
+            label="Teléfono"
+            value={empleado.telefono}
+          />
+
+          <Dato
+            label="Email empresa"
+            value={empleado.email_empresa}
+          />
+
+          <Dato
+            label="Extensión"
+            value={empleado.extension}
+          />
+
+          <Dato
+            label="Usuario"
+            value={empleado.usuario}
+          />
+
         </div>
 
-        {/* INFO BÁSICA */}
-        <div className="space-y-2 text-sm">
-          <p>
-            <span className="text-white/70">Nombre:</span>{" "}
-            <strong>{empleado.nombre} {empleado.apellidos}</strong>
-          </p>
+      </section>
 
-          <p>
-            <span className="text-white/70">Estado:</span>{" "}
-            {empleado.estado === 1 ? (
-              <span className="text-green-400 font-semibold">Activo</span>
-            ) : (
-              <span className="text-red-400 font-semibold">Baja</span>
-            )}
-          </p>
 
-          <p>
-            <span className="text-white/70">Teléfono:</span>{" "}
-            {empleado.telefono || "—"}
-          </p>
+      {/* ===================================================
+          DATOS PERSONALES
+      =================================================== */}
 
-          <p>
-            <span className="text-white/70">Email empresa:</span>{" "}
-            {empleado.email_empresa || "—"}
-          </p>
+      <section className="
+        erp-card
+        max-w-[1700px]
+        mx-auto
+        p-5
+      ">
 
-          <p>
-            <span className="text-white/70">Extensión:</span>{" "}
-            {empleado.extension || "—"}
-          </p>
+        <h2 className="
+          text-lg
+          font-semibold
+          text-[var(--erp-text)]
+          mb-5
+        ">
+          Datos personales
+        </h2>
+
+        <div className="
+          grid
+          grid-cols-1
+          sm:grid-cols-2
+          lg:grid-cols-3
+          gap-4
+        ">
+
+          <Dato
+            label="Dirección"
+            value={empleado.direccion}
+          />
+
+          <Dato
+            label="Código postal"
+            value={empleado.codigo_postal}
+          />
+
+          <Dato
+            label="Población"
+            value={empleado.poblacion}
+          />
+
+          <Dato
+            label="Provincia"
+            value={empleado.provincia}
+          />
+
+          <Dato
+            label="Fecha nacimiento"
+            value={empleado.fecha_nacimiento}
+          />
+
+          <Dato
+            label="Alergias"
+            value={empleado.alergias}
+          />
+
+          <Dato
+            label="Persona de contacto"
+            value={empleado.persona_contacto}
+          />
+
+          <Dato
+            label="Teléfono contacto"
+            value={empleado.telefono_contacto}
+          />
+
         </div>
+
+
+        <div className="mt-5">
+
+          <Dato
+            label="Observaciones"
+            value={empleado.observaciones}
+            multiline
+          />
+
+        </div>
+
+      </section>
+
+
+      {/* ===================================================
+          DATOS LABORALES
+      =================================================== */}
+
+      <section className="
+        erp-card
+        max-w-[1700px]
+        mx-auto
+        p-5
+      ">
+
+        <h2 className="
+          text-lg
+          font-semibold
+          text-[var(--erp-text)]
+          mb-5
+        ">
+          Datos laborales
+        </h2>
+
+        <div className="
+          grid
+          grid-cols-1
+          sm:grid-cols-2
+          lg:grid-cols-3
+          gap-4
+        ">
+
+          <Dato
+            label="Departamento"
+            value={
+              empleado.departamento_nombre
+            }
+          />
+
+          <Dato
+            label="Sección"
+            value={
+              empleado.seccion_nombre
+            }
+          />
+
+          <Dato
+            label="Cargo"
+            value={
+              empleado.cargo_nombre
+            }
+          />
+
+          <Dato
+            label="Fecha alta"
+            value={
+              empleado.fecha_alta
+            }
+          />
+
+          <Dato
+            label="Fecha baja"
+            value={
+              empleado.fecha_baja
+            }
+          />
+
+        </div>
+
+      </section>
+
+
+      {/* ===================================================
+          AUDITORÍA
+      =================================================== */}
+
+      <section className="
+        erp-card
+        max-w-[1700px]
+        mx-auto
+        p-5
+      ">
+
+        <div className="
+          flex
+          items-center
+          justify-between
+          mb-4
+        ">
+
+          <h2 className="
+            text-lg
+            font-semibold
+            text-[var(--erp-text)]
+          ">
+            Auditoría reciente
+          </h2>
+
+          <span className="
+            text-sm
+            text-[var(--erp-text-soft)]
+          ">
+            {auditoria.length} registros
+          </span>
+
+        </div>
+
+
+        {auditoria.length === 0 ? (
+
+          <div className="
+            py-10
+            text-center
+            text-[var(--erp-text-soft)]
+          ">
+            No hay registros de auditoría.
+          </div>
+
+        ) : (
+
+          <div className="
+            overflow-auto
+            rounded-xl
+            border
+            border-[var(--erp-border)]
+          ">
+
+            <table className="
+              w-full
+              text-sm
+              text-[var(--erp-text)]
+            ">
+
+              <thead>
+
+                <tr className="
+                  bg-[var(--erp-primary)]
+                  text-white
+                  text-left
+                ">
+
+                  <th className="px-4 py-3">
+                    Fecha
+                  </th>
+
+                  <th className="px-4 py-3">
+                    Módulo
+                  </th>
+
+                  <th className="px-4 py-3">
+                    Acción
+                  </th>
+
+                  <th className="px-4 py-3">
+                    Descripción
+                  </th>
+
+                </tr>
+
+              </thead>
+
+
+              <tbody>
+
+                {auditoria
+                  .slice(0, 50)
+                  .map((registro) => (
+
+                    <tr
+                      key={registro.id}
+                      className="
+                        border-t
+                        border-[var(--erp-border)]
+                        hover:bg-[var(--erp-primary-soft)]
+                        transition-colors
+                      "
+                    >
+
+                      <td className="
+                        px-4
+                        py-3
+                        whitespace-nowrap
+                      ">
+                        {registro.fecha
+                          ? new Date(
+                              registro.fecha
+                            ).toLocaleString(
+                              "es-ES"
+                            )
+                          : "—"}
+                      </td>
+
+                      <td className="px-4 py-3">
+                        {registro.modulo || "—"}
+                      </td>
+
+                      <td className="px-4 py-3">
+                        {registro.accion || "—"}
+                      </td>
+
+                      <td className="px-4 py-3">
+                        {registro.descripcion || "—"}
+                      </td>
+
+                    </tr>
+
+                  ))}
+
+              </tbody>
+
+            </table>
+
+          </div>
+
+        )}
+
+      </section>
+
+
+      {/* ===================================================
+          MODAL
+      =================================================== */}
+
+      {openModal && (
+
+        <ModalEmpleado
+          open={true}
+          empleadoId={empleadoId}
+          onClose={() => {
+            setOpenModal(false);
+            cargar();
+          }}
+        />
+
+      )}
+
+    </div>
+  );
+}
+
+
+/* =========================================================
+   DATO
+========================================================= */
+
+function Dato({
+  label,
+  value,
+  multiline = false,
+}) {
+
+  return (
+    <div className="
+      rounded-xl
+      border
+      border-[var(--erp-border)]
+      bg-[var(--erp-surface-soft)]
+      px-4
+      py-3
+    ">
+
+      <div className="
+        text-xs
+        font-medium
+        text-[var(--erp-text-soft)]
+        mb-1
+      ">
+        {label}
       </div>
 
-      {/* DATOS PERSONALES */}
-      <section
-        className="
-          bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
-          p-6 shadow-xl space-y-4
-        "
+      <div
+        className={`
+          text-sm
+          text-[var(--erp-text)]
+          ${
+            multiline
+              ? "whitespace-pre-wrap"
+              : ""
+          }
+        `}
       >
-        <h3 className="text-lg font-semibold drop-shadow mb-2">
-          Datos personales
-        </h3>
-
-        <div className="grid grid-cols-3 gap-4 text-sm">
-          <p><span className="text-white/70">DNI:</span> {empleado.dni || "—"}</p>
-          <p><span className="text-white/70">Dirección:</span> {empleado.direccion || "—"}</p>
-          <p><span className="text-white/70">CP:</span> {empleado.codigo_postal || "—"}</p>
-          <p><span className="text-white/70">Población:</span> {empleado.poblacion || "—"}</p>
-          <p><span className="text-white/70">Provincia:</span> {empleado.provincia || "—"}</p>
-          <p><span className="text-white/70">Nacimiento:</span> {empleado.fecha_nacimiento || "—"}</p>
-          <p><span className="text-white/70">Alergias:</span> {empleado.alergias || "—"}</p>
-          <p><span className="text-white/70">Contacto:</span> {empleado.persona_contacto || "—"}</p>
-          <p><span className="text-white/70">Tel. contacto:</span> {empleado.telefono_contacto || "—"}</p>
-        </div>
-
-        <p className="text-white/70 text-sm">
-          <span className="text-white">Observaciones:</span>{" "}
-          {empleado.observaciones || "—"}
-        </p>
-      </section>
-
-      {/* DATOS LABORALES */}
-      <section
-        className="
-          bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
-          p-6 shadow-xl space-y-4
-        "
-      >
-        <h3 className="text-lg font-semibold drop-shadow mb-2">
-          Datos laborales
-        </h3>
-
-        <div className="grid grid-cols-2 gap-4 text-sm">
-          <p><span className="text-white/70">Departamento:</span> {empleado.departamento || "—"}</p>
-          <p><span className="text-white/70">Sección:</span> {empleado.seccion || "—"}</p>
-          <p><span className="text-white/70">Cargo:</span> {empleado.cargo || "—"}</p>
-          <p><span className="text-white/70">Fecha alta:</span> {empleado.fecha_alta || "—"}</p>
-          <p><span className="text-white/70">Fecha baja:</span> {empleado.fecha_baja || "—"}</p>
-        </div>
-      </section>
-
-      {/* AUDITORÍA */}
-      <section
-        className="
-          bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
-          p-6 shadow-xl space-y-4
-        "
-      >
-        <h3 className="text-lg font-semibold drop-shadow mb-2">
-          Auditoría reciente
-        </h3>
-
-        {(!auditoria || auditoria.length === 0) && (
-          <p className="text-white/70 text-sm">
-            No hay registros de auditoría.
-          </p>
-        )}
-
-        {auditoria && auditoria.length > 0 && (
-          <ul className="list-disc ml-5 text-sm text-white/90 space-y-1">
-            {auditoria.slice(0, 10).map((a) => (
-              <li key={a.id}>
-                {new Date(a.fecha).toLocaleString("es-ES")} —{" "}
-                <strong className="text-white">{a.modulo}</strong>{" "}
-                [{a.accion}] — {a.descripcion}
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+        {value ||
+          "—"}
+      </div>
 
     </div>
   );

@@ -16,30 +16,87 @@ router = APIRouter(
     tags=["Expedientes"]
 )
 
-
 # ============================================================
 # COLUMNAS PERMITIDAS PARA ORDENACIÓN
 # ============================================================
 
 COLUMNAS_ORDENABLES = {
+    "id": Expediente.id,
     "id_expediente": Expediente.id_expediente,
+
+    # FECHAS
     "fecha_alta": Expediente.fecha_alta,
-    "actividad_actual": Expediente.actividad_actual,
+    "fecha_firma": Expediente.fecha_firma,
+    "fecha_inscripcion": Expediente.fecha_inscripcion,
+    "fecha_entregado_cliente": Expediente.fecha_entregado_cliente,
+    "fecha_prevista_firma": Expediente.fecha_prevista_firma,
+    "fecha_vencimiento": Expediente.fecha_vencimiento,
+    "fecha_sol_cgn": Expediente.fecha_sol_cgn,
+    "fecha_firma_prev_val": Expediente.fecha_firma_prev_val,
+    "fecha_firma_prev_cli": Expediente.fecha_firma_prev_cli,
+    "fecha_inicio_actividad": Expediente.fecha_inicio_actividad,
+    "fecha_fin_actividad": Expediente.fecha_fin_actividad,
+    "facturacion_fecha": Expediente.facturacion_fecha,
+    "registral_fecha": Expediente.registral_fecha,
+
+    # ESTADOS
     "estado_expediente": Expediente.estado_expediente,
+    "estado_expediente_ancert": Expediente.estado_expediente_ancert,
     "estado_actividad": Expediente.estado_actividad,
+    "facturacion_estado": Expediente.facturacion_estado,
+    "registral_estado": Expediente.registral_estado,
+
+    # ACTIVIDAD
+    "actividad_actual": Expediente.actividad_actual,
+
+    # TITULAR
+    "nombre_titular": Expediente.nombre_titular,
+    "nif_titular": Expediente.nif_titular,
+
+    # NOTARIO
+    "nombre_notario": Expediente.nombre_notario,
+    "nif_notario": Expediente.nif_notario,
+    "notario": Expediente.notario,
+
+    # OFICINA
+    "oficina": Expediente.oficina,
+    "oficina_alta": Expediente.oficina_alta,
+    "dan": Expediente.dan,
+
+    # ECONÓMICOS
     "importe": Expediente.importe,
     "capital": Expediente.capital,
     "saldo_real": Expediente.saldo_real,
     "saldo_disponible": Expediente.saldo_disponible,
-    "nombre_titular": Expediente.nombre_titular,
-    "nif_titular": Expediente.nif_titular,
-    "nombre_notario": Expediente.nombre_notario,
-    "nif_notario": Expediente.nif_notario,
-    "oficina": Expediente.oficina,
+
+    # OPERACIÓN
     "tipo_operacion": Expediente.tipo_operacion,
     "subtipo_operacion": Expediente.subtipo_operacion,
+    "contrato": Expediente.contrato,
+    "num_solicitud_sia": Expediente.num_solicitud_sia,
+    "vinccanc": Expediente.vinccanc,
+    "protocolo": Expediente.protocolo,
+
+    # GTG / BANKIA
     "producto_gtg": Expediente.producto_gtg,
+    "origen_bankia": Expediente.origen_bankia,
+    "dt": Expediente.dt,
+
+    # GESTORÍA
     "gestoria": Expediente.gestoria,
+
+    # CGN
+    "id_expediente_cgn": Expediente.id_expediente_cgn,
+
+    # OTROS
+    "lucy": Expediente.lucy,
+    "indicador_tt": Expediente.indicador_tt,
+
+    # OBSERVACIONES
+    "observaciones": Expediente.observaciones,
+
+    # RELACIONES
+    "cliente_id": Expediente.cliente_id,
 }
 
 

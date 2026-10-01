@@ -69,6 +69,9 @@ Base.metadata.create_all(bind=engine)
 from backend.app.agenda.fix_schema import fix_agenda_schema
 fix_agenda_schema()
 
+from backend.app.expedientes.fix_schema import fix_expedientes_schema
+fix_expedientes_schema()
+
 # ============================================================
 # STATIC FILES
 # ============================================================

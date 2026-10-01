@@ -1,5 +1,6 @@
 /* ============================================================
-   ERP SJ‑2026 — Tablas premium estilo dashboard
+   ERP SJ-2026 — Tablas
+   Tema ERP claro
    ============================================================ */
 
 .table-sj {
@@ -7,39 +8,81 @@
   border-collapse: collapse;
   border-radius: var(--sj-radius);
   overflow: hidden;
-  border: 1px solid var(--sj-gris-azulado);
-  background: var(--sj-blanco);
+  border: 1px solid var(--erp-border);
+  background: var(--erp-surface);
+  color: var(--erp-text);
   animation: fadeInSJ 0.35s ease-out;
   transition: box-shadow 0.25s ease;
 }
 
 .table-sj:hover {
-  box-shadow: 0 8px 24px rgba(31, 58, 95, 0.25);
+  box-shadow: 0 8px 24px rgba(36, 50, 74, 0.10);
 }
 
+
+/* ============================================================
+   CABECERA
+   ============================================================ */
+
 .table-sj thead {
-  background-color: var(--sj-gris-azulado);
-  color: var(--sj-azul);
+  background-color: var(--erp-primary);
+  color: #ffffff;
   font-weight: 600;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.2px;
 }
+
+.table-sj th {
+  color: #ffffff;
+  font-weight: 600;
+  background-color: var(--erp-primary);
+}
+
+
+/* ============================================================
+   CELDAS
+   ============================================================ */
 
 .table-sj th,
 .table-sj td {
   padding: 14px;
-  border-bottom: 1px solid var(--sj-gris-azulado);
+  border-bottom: 1px solid var(--erp-border);
 }
+
+.table-sj td {
+  color: var(--erp-text);
+}
+
+
+/* ============================================================
+   HOVER FILA
+   ============================================================ */
 
 .table-sj tr:hover {
-  background-color: #f0f4fa;
+  background-color: var(--erp-primary-soft);
 }
+
+
+/* ============================================================
+   TABLA A RAYAS
+   ============================================================ */
 
 .table-sj.striped tr:nth-child(even) {
-  background-color: #f7f9fc;
+  background-color: var(--erp-surface-soft);
 }
 
-/* Fade-in corporativo */
+
+/* ============================================================
+   FADE-IN CORPORATIVO
+   ============================================================ */
+
 @keyframes fadeInSJ {
-  0% { opacity: 0; transform: translateY(6px); }
-  100% { opacity: 1; transform: translateY(0); }
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

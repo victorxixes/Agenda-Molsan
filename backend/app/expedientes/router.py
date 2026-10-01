@@ -708,7 +708,19 @@ def listado_expedientes(
 
 
 # ============================================================
-# RESUMEN
+# RESUMEN DE ACTIVIDADES
+#
+# IMPORTANTE:
+# Los contadores se calculan directamente en la base de datos.
+# NO dependen de la página actual del listado.
+#
+# Por ejemplo:
+#
+# página 1 -> 20 expedientes
+# página 2 -> otros 20
+#
+# Las tarjetas muestran el TOTAL de expedientes existentes
+# para cada actividad_actual.
 # ============================================================
 
 @router.get("/resumen")
@@ -716,56 +728,73 @@ def resumen_expedientes(
     db: Session = Depends(get_db),
 ):
     # ========================================================
-    # PENDIENTES
-    #
-    # Se utiliza UPPER para no depender de si la base de datos
-    # contiene "PENDIENTE", "pendiente", "Pendiente", etc.
+    # AGRUPAR POR ACTIVIDAD ACTUAL
     # ========================================================
 
-    pendientes = (
-        db.query(Expediente)
-        .filter(
-            func.upper(
-                Expediente.estado_expediente
-            ) == "PENDIENTE"
+    resultados = (
+        db.query(
+            func.trim(
+                Expediente.actividad_actual
+            ).label("actividad"),
+            func.count(
+                Expediente.id
+            ).label("total"),
         )
-        .count()
+        .group_by(
+            func.trim(
+                Expediente.actividad_actual
+            )
+        )
+        .order_by(
+            func.count(
+                Expediente.id
+            ).desc()
+        )
+        .all()
+    )
+
+    actividades = []
+
+    for actividad, total in resultados:
+
+        # ----------------------------------------------------
+        # NORMALIZAR ACTIVIDAD VACÍA / NULL
+        # ----------------------------------------------------
+
+        if actividad is None or not str(actividad).strip():
+            nombre = "Sin actividad"
+        else:
+            nombre = str(actividad).strip()
+
+        actividades.append(
+            {
+                "actividad": nombre,
+                "total": int(total),
+            }
+        )
+
+    # ========================================================
+    # TOTAL GENERAL
+    # ========================================================
+
+    total_expedientes = (
+        db.query(
+            func.count(
+                Expediente.id
+            )
+        )
+        .scalar()
+        or 0
     )
 
     # ========================================================
-    # EN CURSO
+    # RESPUESTA
     # ========================================================
-
-    en_curso = (
-        db.query(Expediente)
-        .filter(
-            func.upper(
-                Expediente.estado_expediente
-            ) == "EN CURSO"
-        )
-        .count()
-    )
-
-    # ========================================================
-    # FINALIZADOS
-    # ========================================================
-
-    finalizados = (
-        db.query(Expediente)
-        .filter(
-            func.upper(
-                Expediente.estado_expediente
-            ) == "FINALIZADO"
-        )
-        .count()
-    )
 
     return {
-        "pendientes": pendientes,
-        "enCurso": en_curso,
-        "finalizados": finalizados,
+        "total": int(total_expedientes),
+        "actividades": actividades,
     }
-
 
 # ============================================================
 # EXPORTAR EXCEL

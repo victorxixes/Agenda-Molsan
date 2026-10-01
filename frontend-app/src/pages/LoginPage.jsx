@@ -5,13 +5,19 @@ import { useNavigate } from "react-router-dom";
 /**
  * LOGIN — MOLSAN ERP SAAS PREMIUM 2027
  *
- * - Mantiene la autenticación actual con Zustand
+ * Diseño:
+ * - Premium / Glass Luxe
+ * - Fondo claro corporativo
+ * - Coherente con el resto del ERP
+ * - Responsive
+ * - Sin dependencias adicionales
+ *
+ * Lógica:
+ * - Mantiene Zustand
  * - Mantiene iniciarSesion()
  * - Mantiene navegación a /dashboard
- * - Diseño Glass Luxe / Premium
- * - Responsive
- * - Animaciones suaves
- * - Sin dependencias adicionales
+ * - Mantiene validaciones
+ * - Mantiene estado de carga
  */
 
 export default function LoginPage() {
@@ -102,17 +108,18 @@ export default function LoginPage() {
         items-center
         justify-center
         overflow-hidden
+
         px-4
         py-8
 
-        bg-slate-950
+        bg-slate-100
 
         animate-fadeIn
       "
     >
 
       {/* =====================================================
-          FONDO DECORATIVO
+          FONDO PREMIUM
       ===================================================== */}
 
       <div
@@ -120,47 +127,81 @@ export default function LoginPage() {
           absolute
           inset-0
           pointer-events-none
+          overflow-hidden
         "
       >
 
-        <div
-          className="
-            absolute
-            -top-40
-            -left-40
-            w-96
-            h-96
-            rounded-full
-            bg-blue-500/20
-            blur-3xl
-          "
-        />
+        {/* Luz superior izquierda */}
 
         <div
           className="
             absolute
-            -bottom-40
-            -right-40
-            w-96
-            h-96
+            -top-48
+            -left-48
+
+            w-[520px]
+            h-[520px]
+
             rounded-full
-            bg-cyan-400/10
+
+            bg-blue-400/10
+
             blur-3xl
           "
         />
+
+        {/* Luz inferior derecha */}
+
+        <div
+          className="
+            absolute
+            -bottom-48
+            -right-48
+
+            w-[520px]
+            h-[520px]
+
+            rounded-full
+
+            bg-cyan-300/10
+
+            blur-3xl
+          "
+        />
+
+        {/* Luz central */}
 
         <div
           className="
             absolute
             top-1/2
             left-1/2
-            w-[600px]
-            h-[600px]
+
+            w-[700px]
+            h-[700px]
+
             -translate-x-1/2
             -translate-y-1/2
+
             rounded-full
-            bg-indigo-500/5
+
+            bg-white/70
+
             blur-3xl
+          "
+        />
+
+        {/* Capa sutil */}
+
+        <div
+          className="
+            absolute
+            inset-0
+
+            bg-gradient-to-br
+            from-white/70
+            via-transparent
+            to-blue-50/70
           "
         />
 
@@ -168,21 +209,23 @@ export default function LoginPage() {
 
 
       {/* =====================================================
-          CONTENEDOR LOGIN
+          CONTENEDOR
       ===================================================== */}
 
       <div
         className="
           relative
           z-10
+
           w-full
           max-w-md
+
           animate-slideUp
         "
       >
 
         {/* ===================================================
-            TARJETA GLASS
+            TARJETA LOGIN
         =================================================== */}
 
         <div
@@ -190,23 +233,25 @@ export default function LoginPage() {
             relative
             overflow-hidden
 
-            rounded-3xl
+            rounded-[28px]
 
             border
-            border-white/15
+            border-white/80
 
-            bg-white/[0.08]
+            bg-white/75
 
             backdrop-blur-2xl
 
-            shadow-[0_30px_90px_rgba(0,0,0,0.45)]
+            shadow-[0_25px_80px_rgba(15,23,42,0.12)]
 
             p-7
             sm:p-9
           "
         >
 
-          {/* Línea superior decorativa */}
+          {/* =================================================
+              BRILLO SUPERIOR
+          ================================================= */}
 
           <div
             className="
@@ -214,15 +259,15 @@ export default function LoginPage() {
               top-0
               left-0
               right-0
+
               h-px
 
               bg-gradient-to-r
               from-transparent
-              via-white/50
+              via-blue-400/50
               to-transparent
             "
           />
-
 
           {/* =================================================
               CABECERA
@@ -235,12 +280,15 @@ export default function LoginPage() {
             "
           >
 
-            {/* LOGO */}
+            {/* =================================================
+                LOGO
+            ================================================= */}
 
             <div
               className="
                 flex
                 justify-center
+
                 mb-6
               "
             >
@@ -248,16 +296,17 @@ export default function LoginPage() {
               <div
                 className="
                   relative
-                  p-1.5
+
+                  p-2
 
                   rounded-2xl
 
-                  bg-white/10
+                  bg-white
 
                   border
-                  border-white/20
+                  border-slate-200/80
 
-                  shadow-xl
+                  shadow-[0_12px_30px_rgba(15,23,42,0.10)]
                 "
               >
 
@@ -267,13 +316,12 @@ export default function LoginPage() {
                   className="
                     h-20
                     sm:h-24
+
                     w-auto
 
                     rounded-xl
 
                     object-contain
-
-                    shadow-lg
                   "
                 />
 
@@ -282,7 +330,9 @@ export default function LoginPage() {
             </div>
 
 
-            {/* TÍTULO */}
+            {/* =================================================
+                TÍTULO
+            ================================================= */}
 
             <h1
               className="
@@ -293,7 +343,7 @@ export default function LoginPage() {
 
                 tracking-tight
 
-                text-white
+                text-slate-800
               "
             >
               Molsan ERP
@@ -307,7 +357,7 @@ export default function LoginPage() {
                 text-sm
                 sm:text-base
 
-                text-white/55
+                text-slate-500
               "
             >
               Plataforma de gestión empresarial
@@ -328,14 +378,16 @@ export default function LoginPage() {
                 rounded-xl
 
                 border
-                border-red-400/20
+                border-red-200
 
-                bg-red-500/10
+                bg-red-50
 
                 px-4
                 py-3
 
                 text-center
+
+                shadow-sm
 
                 animate-fadeIn
               "
@@ -344,7 +396,10 @@ export default function LoginPage() {
               <p
                 className="
                   text-sm
-                  text-red-200
+
+                  font-medium
+
+                  text-red-600
                 "
               >
                 {error}
@@ -377,9 +432,10 @@ export default function LoginPage() {
                   mb-2
 
                   text-sm
+
                   font-medium
 
-                  text-white/75
+                  text-slate-700
                 "
               >
                 Usuario
@@ -392,17 +448,22 @@ export default function LoginPage() {
                 "
               >
 
+                {/* Icono */}
+
                 <span
                   className="
                     absolute
+
                     left-4
                     top-1/2
+
                     -translate-y-1/2
 
-                    text-white/35
+                    text-slate-400
 
                     pointer-events-none
                   "
+                  aria-hidden="true"
                 >
                   👤
                 </span>
@@ -426,29 +487,31 @@ export default function LoginPage() {
                     rounded-xl
 
                     border
-                    border-white/10
+                    border-slate-200
 
-                    bg-white/[0.07]
+                    bg-white/80
 
                     px-4
                     py-3
                     pl-11
 
-                    text-white
+                    text-slate-800
 
-                    placeholder:text-white/30
+                    placeholder:text-slate-400
 
                     outline-none
 
                     transition-all
                     duration-200
 
-                    focus:border-blue-400/50
+                    shadow-sm
 
-                    focus:bg-white/[0.10]
+                    focus:border-blue-400
 
-                    focus:ring-2
-                    focus:ring-blue-400/10
+                    focus:bg-white
+
+                    focus:ring-4
+                    focus:ring-blue-500/10
 
                     disabled:opacity-50
                     disabled:cursor-not-allowed
@@ -474,9 +537,10 @@ export default function LoginPage() {
                   mb-2
 
                   text-sm
+
                   font-medium
 
-                  text-white/75
+                  text-slate-700
                 "
               >
                 Contraseña
@@ -489,17 +553,22 @@ export default function LoginPage() {
                 "
               >
 
+                {/* Icono */}
+
                 <span
                   className="
                     absolute
+
                     left-4
                     top-1/2
+
                     -translate-y-1/2
 
-                    text-white/35
+                    text-slate-400
 
                     pointer-events-none
                   "
+                  aria-hidden="true"
                 >
                   🔒
                 </span>
@@ -526,30 +595,32 @@ export default function LoginPage() {
                     rounded-xl
 
                     border
-                    border-white/10
+                    border-slate-200
 
-                    bg-white/[0.07]
+                    bg-white/80
 
                     px-4
                     py-3
                     pl-11
                     pr-12
 
-                    text-white
+                    text-slate-800
 
-                    placeholder:text-white/30
+                    placeholder:text-slate-400
 
                     outline-none
 
                     transition-all
                     duration-200
 
-                    focus:border-blue-400/50
+                    shadow-sm
 
-                    focus:bg-white/[0.10]
+                    focus:border-blue-400
 
-                    focus:ring-2
-                    focus:ring-blue-400/10
+                    focus:bg-white
+
+                    focus:ring-4
+                    focus:ring-blue-500/10
 
                     disabled:opacity-50
                     disabled:cursor-not-allowed
@@ -557,7 +628,9 @@ export default function LoginPage() {
                 />
 
 
-                {/* MOSTRAR PASSWORD */}
+                {/* =================================================
+                    MOSTRAR PASSWORD
+                ================================================= */}
 
                 <button
                   type="button"
@@ -576,8 +649,10 @@ export default function LoginPage() {
 
                   className="
                     absolute
+
                     right-3
                     top-1/2
+
                     -translate-y-1/2
 
                     flex
@@ -589,11 +664,11 @@ export default function LoginPage() {
 
                     rounded-lg
 
-                    text-white/45
+                    text-slate-400
 
-                    hover:text-white
+                    hover:text-slate-700
 
-                    hover:bg-white/10
+                    hover:bg-slate-100
 
                     transition-all
 
@@ -628,11 +703,11 @@ export default function LoginPage() {
                 rounded-xl
 
                 border
-                border-blue-300/20
+                border-blue-500/20
 
                 bg-gradient-to-r
                 from-blue-600
-                to-cyan-600
+                to-blue-500
 
                 py-3.5
 
@@ -641,15 +716,15 @@ export default function LoginPage() {
 
                 text-white
 
-                shadow-[0_10px_30px_rgba(37,99,235,0.25)]
+                shadow-[0_10px_25px_rgba(37,99,235,0.20)]
 
                 transition-all
                 duration-200
 
                 hover:from-blue-500
-                hover:to-cyan-500
+                hover:to-blue-400
 
-                hover:shadow-[0_15px_40px_rgba(37,99,235,0.35)]
+                hover:shadow-[0_14px_35px_rgba(37,99,235,0.28)]
 
                 active:scale-[0.98]
 
@@ -707,7 +782,7 @@ export default function LoginPage() {
               pt-5
 
               border-t
-              border-white/10
+              border-slate-200/80
 
               text-center
             "
@@ -716,7 +791,8 @@ export default function LoginPage() {
             <p
               className="
                 text-xs
-                text-white/30
+
+                text-slate-400
               "
             >
               Molsan ERP · Plataforma empresarial
@@ -731,7 +807,7 @@ export default function LoginPage() {
                 uppercase
                 tracking-[0.2em]
 
-                text-white/20
+                text-slate-300
               "
             >
               Premium 2027

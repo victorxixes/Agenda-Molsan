@@ -51,14 +51,33 @@ def login_empleado(
     if empleado is None:
         return None
 
+    # -----------------------------------------------------
+    # COMPROBAR ACTIVO
+    # -----------------------------------------------------
+
     if hasattr(empleado, "activo"):
+
         if empleado.activo is False:
             return None
+
+    # -----------------------------------------------------
+    # COMPROBAR PASSWORD
+    # -----------------------------------------------------
 
     if empleado.password != hash_password(password):
         return None
 
-    token = crear_token(empleado)
+    # -----------------------------------------------------
+    # TOKEN
+    # -----------------------------------------------------
+
+    token = crear_token(
+        empleado
+    )
+
+    # -----------------------------------------------------
+    # SERIALIZAR EMPLEADO
+    # -----------------------------------------------------
 
     empleado_serializado = serializar_empleado(
         empleado
@@ -71,7 +90,7 @@ def login_empleado(
 
 
 # =========================================================
-# OBTENER
+# OBTENER EMPLEADO
 # =========================================================
 
 def obtener_empleado(
@@ -88,6 +107,10 @@ def obtener_empleado(
     )
 
 
+# =========================================================
+# OBTENER EMPLEADO POR USUARIO
+# =========================================================
+
 def obtener_empleado_por_usuario(
     db: Session,
     usuario: str
@@ -103,16 +126,28 @@ def obtener_empleado_por_usuario(
 
 
 # =========================================================
-# CREAR / ASEGURAR ADMIN
+# CREAR / REPARAR ADMIN
 # =========================================================
 
 def crear_admin_por_defecto(
     db: Session
 ):
+    """
+    Crea el usuario admin si no existe.
 
-    # -----------------------------------------------------
+    Si ya existe:
+    - lo activa
+    - le asigna rol admin
+    - le asigna todos los módulos
+    - le asigna todos los permisos
+
+    Esto permite reparar instalaciones antiguas
+    donde el admin ya existía pero tenía módulos vacíos.
+    """
+
+    # =====================================================
     # MÓDULOS COMPLETOS DEL ADMIN
-    # -----------------------------------------------------
+    # =====================================================
 
     modulos_admin = [
         "dashboard",
@@ -129,8 +164,13 @@ def crear_admin_por_defecto(
         "mensajes",
         "realtime",
         "notarios",
-        "documentos"
+        "documentos",
+        "expedientes"
     ]
+
+    # =====================================================
+    # PERMISOS COMPLETOS DEL ADMIN
+    # =====================================================
 
     permisos_admin = {
         "*": [
@@ -141,18 +181,18 @@ def crear_admin_por_defecto(
         ]
     }
 
-    # -----------------------------------------------------
-    # BUSCAR ADMIN EXISTENTE
-    # -----------------------------------------------------
+    # =====================================================
+    # BUSCAR ADMIN
+    # =====================================================
 
     admin = obtener_empleado_por_usuario(
         db,
         "admin"
     )
 
-    # -----------------------------------------------------
-    # SI NO EXISTE -> CREAR
-    # -----------------------------------------------------
+    # =====================================================
+    # CREAR ADMIN SI NO EXISTE
+    # =====================================================
 
     if not admin:
 
@@ -187,28 +227,65 @@ def crear_admin_por_defecto(
 
         db.refresh(admin)
 
+        print(
+            "ADMIN: usuario admin creado correctamente",
+            flush=True
+        )
+
         return admin
 
-    # -----------------------------------------------------
-    # SI YA EXISTE -> ACTUALIZARLO COMO ADMIN
-    # -----------------------------------------------------
+    # =====================================================
+    # REPARAR ADMIN EXISTENTE
+    # =====================================================
 
     admin.activo = True
 
+    # -----------------------------------------------------
+    # ROL
+    # -----------------------------------------------------
+
     admin.rol_id = 0
 
-    admin.modulos_visibles_list = modulos_admin
+    # -----------------------------------------------------
+    # MÓDULOS
+    # -----------------------------------------------------
 
-    admin.permisos_modulo_dict = permisos_admin
+    admin.modulos_visibles_list = list(
+        modulos_admin
+    )
+
+    # -----------------------------------------------------
+    # PERMISOS
+    # -----------------------------------------------------
+
+    admin.permisos_modulo_dict = dict(
+        permisos_admin
+    )
 
     db.commit()
 
     db.refresh(admin)
 
+    print(
+        "ADMIN: usuario admin reparado correctamente",
+        flush=True
+    )
+
+    print(
+        f"ADMIN MÓDULOS: {admin.modulos_visibles_list}",
+        flush=True
+    )
+
+    print(
+        f"ADMIN PERMISOS: {admin.permisos_modulo_dict}",
+        flush=True
+    )
+
     return admin
-    
+
+
 # =========================================================
-# CREAR
+# CREAR EMPLEADO
 # =========================================================
 
 def crear_empleado(
@@ -216,46 +293,67 @@ def crear_empleado(
     data: EmpleadoCreate
 ):
 
+    # -----------------------------------------------------
+    # COMPROBAR USUARIO
+    # -----------------------------------------------------
+
     if obtener_empleado_por_usuario(
         db,
         data.usuario
     ):
+
         raise ValueError(
             "El usuario ya existe"
         )
 
+    # -----------------------------------------------------
+    # CREAR
+    # -----------------------------------------------------
+
     empleado = Empleado(
+
         nombre=data.nombre,
+
         apellidos=data.apellidos,
+
         dni=data.dni,
 
         usuario=data.usuario,
+
         password=hash_password(
             data.password
         ),
 
         telefono=data.telefono,
+
         email_personal=data.email_personal,
+
         email_empresa=data.email_empresa,
+
         extension=data.extension,
 
         activo=True,
 
         modulos_visibles_list=[],
+
         permisos_modulo_dict={}
     )
 
-    db.add(empleado)
+    db.add(
+        empleado
+    )
 
     db.commit()
 
-    db.refresh(empleado)
+    db.refresh(
+        empleado
+    )
 
     return empleado
 
 
 # =========================================================
-# LISTADO
+# LISTADO EMPLEADOS
 # =========================================================
 
 def listar_empleados(
@@ -265,14 +363,19 @@ def listar_empleados(
 ):
 
     query = db.query(
+
         Empleado.id,
 
         Empleado.nombre,
+
         Empleado.apellidos,
+
         Empleado.dni,
 
         Empleado.telefono,
+
         Empleado.email_empresa,
+
         Empleado.extension,
 
         Empleado.usuario,
@@ -282,10 +385,13 @@ def listar_empleados(
         Empleado.foto,
 
         Empleado.departamento_id,
+
         Empleado.seccion_id,
+
         Empleado.cargo_id,
 
         Empleado.fecha_alta,
+
         Empleado.fecha_baja,
 
         Empleado.rol_id,
@@ -302,6 +408,10 @@ def listar_empleados(
             "cargo_nombre"
         )
     )
+
+    # =====================================================
+    # JOINS
+    # =====================================================
 
     query = (
         query
@@ -322,16 +432,18 @@ def listar_empleados(
         )
     )
 
-    # -----------------------------------------------------
+    # =====================================================
     # BUSQUEDA
-    # -----------------------------------------------------
+    # =====================================================
 
     if q:
 
         q_like = f"%{q}%"
 
         query = query.filter(
+
             or_(
+
                 Empleado.nombre.ilike(
                     q_like
                 ),
@@ -350,15 +462,19 @@ def listar_empleados(
             )
         )
 
-    # -----------------------------------------------------
+    # =====================================================
     # ACTIVO
-    # -----------------------------------------------------
+    # =====================================================
 
     if activo is not None:
 
         query = query.filter(
             Empleado.activo == activo
         )
+
+    # =====================================================
+    # RESULTADO
+    # =====================================================
 
     return (
         query
@@ -370,7 +486,7 @@ def listar_empleados(
 
 
 # =========================================================
-# EDITAR
+# EDITAR EMPLEADO
 # =========================================================
 
 def editar_empleado(
@@ -391,22 +507,41 @@ def editar_empleado(
         exclude_unset=True
     )
 
+    # =====================================================
+    # APLICAR CAMBIOS
+    # =====================================================
+
     for campo, valor in datos.items():
+
+        # -------------------------------------------------
+        # PASSWORD
+        # -------------------------------------------------
 
         if campo == "password":
 
             if valor:
+
                 empleado.password = (
-                    hash_password(valor)
+                    hash_password(
+                        valor
+                    )
                 )
 
             continue
+
+        # -------------------------------------------------
+        # ROL
+        # -------------------------------------------------
 
         if campo == "rol_id":
 
             empleado.rol_id = valor
 
             continue
+
+        # -------------------------------------------------
+        # RESTO
+        # -------------------------------------------------
 
         setattr(
             empleado,
@@ -416,13 +551,15 @@ def editar_empleado(
 
     db.commit()
 
-    db.refresh(empleado)
+    db.refresh(
+        empleado
+    )
 
     return empleado
 
 
 # =========================================================
-# ELIMINAR
+# ELIMINAR EMPLEADO
 # =========================================================
 
 def eliminar_empleado(
@@ -438,7 +575,9 @@ def eliminar_empleado(
     if not empleado:
         return False
 
-    db.delete(empleado)
+    db.delete(
+        empleado
+    )
 
     db.commit()
 
@@ -446,7 +585,7 @@ def eliminar_empleado(
 
 
 # =========================================================
-# MÓDULOS
+# ACTUALIZAR MÓDULOS VISIBLES
 # =========================================================
 
 def actualizar_modulos_visibles(
@@ -469,13 +608,15 @@ def actualizar_modulos_visibles(
 
     db.commit()
 
-    db.refresh(empleado)
+    db.refresh(
+        empleado
+    )
 
     return empleado
 
 
 # =========================================================
-# PERMISOS
+# ACTUALIZAR PERMISOS
 # =========================================================
 
 def actualizar_permisos_modulo(
@@ -498,7 +639,9 @@ def actualizar_permisos_modulo(
 
     db.commit()
 
-    db.refresh(empleado)
+    db.refresh(
+        empleado
+    )
 
     return empleado
 
@@ -520,8 +663,10 @@ def reset_password(
     if not empleado:
         return None
 
-    # No devolvemos la contraseña.
-    # Generamos una temporal basada en el ID.
+    # -----------------------------------------------------
+    # PASSWORD TEMPORAL
+    # -----------------------------------------------------
+
     password_temporal = (
         f"SJ{empleado_id}2026"
     )
@@ -536,74 +681,3 @@ def reset_password(
         "status": "ok",
         "password_temporal": password_temporal
     }
-
-
-# =========================================================
-# CREAR ADMIN
-# =========================================================
-
-def crear_admin_por_defecto(
-    db: Session
-):
-
-    if obtener_empleado_por_usuario(
-        db,
-        "admin"
-    ):
-        return
-
-    admin = Empleado(
-
-        nombre="Administrador",
-
-        apellidos="",
-
-        dni="",
-
-        usuario="admin",
-
-        password=hash_password(
-            "admin"
-        ),
-
-        activo=True,
-
-        foto="default-avatar.png",
-
-        rol_id=0,
-
-        modulos_visibles_list=[
-            "dashboard",
-            "agenda",
-            "empleados",
-            "informes",
-            "intranet",
-            "auditoria",
-            "seguridad",
-            "utilidades",
-            "logs",
-            "ctn",
-            "maestros",
-            "mensajes",
-            "realtime",
-            "notarios",
-            "documentos"
-        ],
-
-        permisos_modulo_dict={
-            "*": [
-                "ver",
-                "crear",
-                "editar",
-                "eliminar"
-            ]
-        }
-    )
-
-    db.add(admin)
-
-    db.commit()
-
-    db.refresh(admin)
-
-    return admin

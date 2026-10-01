@@ -1,503 +1,249 @@
-from fastapi import (
-    APIRouter,
-    Depends,
-    HTTPException,
-    UploadFile,
-    File
-)
+from typing import Optional
 
-from sqlalchemy.orm import Session
-
-import shutil
-import os
-
-from backend.app.database import SessionLocal
-
-from backend.app.empleados.schemas import (
-    Empleado,
-    EmpleadoCreate,
-    EmpleadoUpdate,
-    LoginEmpleado
-)
-
-from backend.app.empleados.service import (
-    listar_empleados,
-    crear_empleado,
-    editar_empleado,
-    eliminar_empleado,
-    obtener_empleado,
-    login_empleado,
-    actualizar_modulos_visibles,
-    actualizar_permisos_modulo,
-    reset_password
-)
-
-from backend.app.seguridad.auditoria.service import (
-    obtener_auditoria_empleado
-)
-
-
-router = APIRouter(
-    prefix="/empleados",
-    tags=["Empleados"]
-)
-
-
-# =========================================================
-# DB
-# =========================================================
-
-def get_db():
-
-    db = SessionLocal()
-
-    try:
-        yield db
-
-    finally:
-        db.close()
-
-
-# =========================================================
-# BUSCADOR
-# =========================================================
-
-@router.get(
-    "/search",
-    response_model=list[Empleado]
-)
-def buscar(
-    q: str | None = None,
-    activo: bool | None = None,
-    db: Session = Depends(get_db)
-):
-
-    return listar_empleados(
-        db,
-        q=q,
-        activo=activo
-    )
+from pydantic import BaseModel
 
 
 # =========================================================
 # LOGIN
 # =========================================================
 
-@router.post("/login")
-def login(
-    data: LoginEmpleado,
-    db: Session = Depends(get_db)
-):
-
-    resultado = login_empleado(
-        db,
-        data.usuario,
-        data.password
-    )
-
-    if resultado is None:
-
-        return {
-            "status": "error",
-            "message": "Credenciales incorrectas"
-        }
-
-    return {
-        "status": "ok",
-        **resultado
-    }
+class LoginEmpleado(BaseModel):
+    usuario: str
+    password: str
 
 
 # =========================================================
-# LISTADO
+# ROL
 # =========================================================
 
-@router.get(
-    "/",
-    response_model=list[Empleado]
-)
-def listar(
-    db: Session = Depends(get_db)
-):
+class RolEmpleadoOut(BaseModel):
 
-    return listar_empleados(db)
+    id: Optional[int] = None
 
+    nombre: Optional[str] = None
 
-# =========================================================
-# OBTENER
-# =========================================================
-
-@router.get(
-    "/{empleado_id}",
-    response_model=Empleado
-)
-def obtener(
-    empleado_id: int,
-    db: Session = Depends(get_db)
-):
-
-    empleado = obtener_empleado(
-        db,
-        empleado_id
-    )
-
-    if not empleado:
-
-        raise HTTPException(
-            status_code=404,
-            detail="Empleado no encontrado"
-        )
-
-    return empleado
+    class Config:
+        orm_mode = True
 
 
 # =========================================================
-# FICHA COMPLETA
+# EMPLEADO
 # =========================================================
 
-@router.get(
-    "/{empleado_id}/ficha",
-)
-def ficha(
-    empleado_id: int,
-    db: Session = Depends(get_db)
-):
+class Empleado(BaseModel):
 
-    empleado = obtener_empleado(
-        db,
-        empleado_id
-    )
+    id: int
 
-    if not empleado:
+    # =====================================================
+    # BÁSICOS
+    # =====================================================
 
-        raise HTTPException(
-            status_code=404,
-            detail="Empleado no encontrado"
-        )
+    nombre: Optional[str] = None
 
-    auditoria = obtener_auditoria_empleado(
-        db,
-        empleado.usuario
-    )
+    apellidos: Optional[str] = None
 
-    return {
-        "empleado": empleado,
-        "auditoria": auditoria
-    }
+    dni: Optional[str] = None
 
+    telefono: Optional[str] = None
 
-# =========================================================
-# CREAR
-# =========================================================
+    email_personal: Optional[str] = None
 
-@router.post(
-    "/",
-    response_model=Empleado
-)
-def crear(
-    data: EmpleadoCreate,
-    db: Session = Depends(get_db)
-):
+    email_empresa: Optional[str] = None
 
-    try:
+    extension: Optional[str] = None
 
-        return crear_empleado(
-            db,
-            data
-        )
+    usuario: Optional[str] = None
 
-    except ValueError as e:
+    # =====================================================
+    # PERSONALES
+    # =====================================================
 
-        raise HTTPException(
-            status_code=400,
-            detail=str(e)
-        )
+    direccion: Optional[str] = None
 
+    codigo_postal: Optional[str] = None
 
-# =========================================================
-# EDITAR
-# =========================================================
+    poblacion: Optional[str] = None
 
-@router.put(
-    "/{empleado_id}",
-    response_model=Empleado
-)
-def editar(
-    empleado_id: int,
-    data: EmpleadoUpdate,
-    db: Session = Depends(get_db)
-):
+    provincia: Optional[str] = None
 
-    empleado = editar_empleado(
-        db,
-        empleado_id,
-        data
-    )
+    fecha_nacimiento: Optional[str] = None
 
-    if not empleado:
+    alergias: Optional[str] = None
 
-        raise HTTPException(
-            status_code=404,
-            detail="Empleado no encontrado"
-        )
+    persona_contacto: Optional[str] = None
 
-    return empleado
+    telefono_contacto: Optional[str] = None
 
+    observaciones: Optional[str] = None
 
-# =========================================================
-# ELIMINAR
-# =========================================================
+    foto: Optional[str] = None
 
-@router.delete(
-    "/{empleado_id}"
-)
-def eliminar(
-    empleado_id: int,
-    db: Session = Depends(get_db)
-):
+    # =====================================================
+    # LABORALES
+    # =====================================================
 
-    ok = eliminar_empleado(
-        db,
-        empleado_id
-    )
+    departamento_id: Optional[int] = None
 
-    if not ok:
+    seccion_id: Optional[int] = None
 
-        raise HTTPException(
-            status_code=404,
-            detail="Empleado no encontrado"
-        )
+    cargo_id: Optional[int] = None
 
-    return {
-        "status": "ok",
-        "message": "Empleado eliminado"
-    }
+    fecha_alta: Optional[str] = None
+
+    fecha_baja: Optional[str] = None
+
+    # =====================================================
+    # ESTADO
+    # =====================================================
+
+    activo: Optional[bool] = True
+
+    # =====================================================
+    # SEGURIDAD
+    # =====================================================
+
+    modulos_visibles_list: Optional[list] = None
+
+    permisos_modulo_dict: Optional[dict] = None
+
+    # =====================================================
+    # ROL
+    # =====================================================
+
+    rol_id: Optional[int] = None
+
+    rol: Optional[RolEmpleadoOut] = None
+
+    # =====================================================
+    # NOMBRES MAESTROS
+    # =====================================================
+
+    departamento_nombre: Optional[str] = None
+
+    seccion_nombre: Optional[str] = None
+
+    cargo_nombre: Optional[str] = None
+
+    # =====================================================
+    # CONFIG PYDANTIC
+    # =====================================================
+
+    class Config:
+        orm_mode = True
 
 
 # =========================================================
-# FOTO
+# COMPATIBILIDAD
 # =========================================================
 
-@router.post(
-    "/{empleado_id}/foto"
-)
-def subir_foto(
-    empleado_id: int,
-    archivo: UploadFile = File(...),
-    db: Session = Depends(get_db)
-):
-
-    empleado = obtener_empleado(
-        db,
-        empleado_id
-    )
-
-    if not empleado:
-
-        raise HTTPException(
-            status_code=404,
-            detail="Empleado no encontrado"
-        )
-
-    if not archivo.filename:
-
-        raise HTTPException(
-            status_code=400,
-            detail="Archivo no válido"
-        )
-
-    extension = (
-        archivo.filename
-        .split(".")[-1]
-        .lower()
-    )
-
-    extensiones_permitidas = {
-        "jpg",
-        "jpeg",
-        "png",
-        "webp"
-    }
-
-    if extension not in extensiones_permitidas:
-
-        raise HTTPException(
-            status_code=400,
-            detail="Formato de imagen no permitido"
-        )
-
-    fotos_dir = os.path.join(
-        os.path.dirname(__file__),
-        "static",
-        "fotos",
-        "empleados"
-    )
-
-    os.makedirs(
-        fotos_dir,
-        exist_ok=True
-    )
-
-    nombre_archivo = (
-        f"empleado_{empleado_id}.{extension}"
-    )
-
-    ruta_archivo = os.path.join(
-        fotos_dir,
-        nombre_archivo
-    )
-
-    with open(
-        ruta_archivo,
-        "wb"
-    ) as buffer:
-
-        shutil.copyfileobj(
-            archivo.file,
-            buffer
-        )
-
-    url_publica = (
-        f"/api/fotos/empleados/{nombre_archivo}"
-    )
-
-    empleado.foto = url_publica
-
-    db.commit()
-
-    db.refresh(empleado)
-
-    return {
-        "status": "ok",
-        "foto_url": url_publica
-    }
+EmpleadoBase = Empleado
 
 
 # =========================================================
-# FOTO DIRECTA
+# CREATE
 # =========================================================
 
-@router.get(
-    "/{empleado_id}/foto"
-)
-def obtener_foto(
-    empleado_id: int,
-    db: Session = Depends(get_db)
-):
+class EmpleadoCreate(BaseModel):
 
-    empleado = obtener_empleado(
-        db,
-        empleado_id
-    )
+    nombre: str
 
-    if not empleado:
+    apellidos: Optional[str] = None
 
-        raise HTTPException(
-            status_code=404,
-            detail="Empleado no encontrado"
-        )
+    dni: str
 
-    return {
-        "foto": empleado.foto
-    }
+    usuario: str
+
+    password: str
+
+    telefono: Optional[str] = None
+
+    email_personal: Optional[str] = None
+
+    email_empresa: Optional[str] = None
+
+    extension: Optional[str] = None
 
 
 # =========================================================
-# MÓDULOS VISIBLES
+# UPDATE
 # =========================================================
 
-@router.put(
-    "/{empleado_id}/modulos",
-    response_model=Empleado
-)
-def actualizar_modulos(
-    empleado_id: int,
-    data: dict,
-    db: Session = Depends(get_db)
-):
+class EmpleadoUpdate(BaseModel):
 
-    if "modulos_visibles_list" not in data:
+    # =====================================================
+    # BÁSICOS
+    # =====================================================
 
-        raise HTTPException(
-            status_code=400,
-            detail="Falta modulos_visibles_list"
-        )
+    nombre: Optional[str] = None
 
-    empleado = actualizar_modulos_visibles(
-        db,
-        empleado_id,
-        data["modulos_visibles_list"]
-    )
+    apellidos: Optional[str] = None
 
-    if not empleado:
+    dni: Optional[str] = None
 
-        raise HTTPException(
-            status_code=404,
-            detail="Empleado no encontrado"
-        )
+    telefono: Optional[str] = None
 
-    return empleado
+    email_personal: Optional[str] = None
 
+    email_empresa: Optional[str] = None
 
-# =========================================================
-# PERMISOS
-# =========================================================
+    extension: Optional[str] = None
 
-@router.put(
-    "/{empleado_id}/permisos",
-    response_model=Empleado
-)
-def actualizar_permisos(
-    empleado_id: int,
-    data: dict,
-    db: Session = Depends(get_db)
-):
+    usuario: Optional[str] = None
 
-    if "permisos_modulo_dict" not in data:
+    password: Optional[str] = None
 
-        raise HTTPException(
-            status_code=400,
-            detail="Falta permisos_modulo_dict"
-        )
+    # =====================================================
+    # PERSONALES
+    # =====================================================
 
-    empleado = actualizar_permisos_modulo(
-        db,
-        empleado_id,
-        data["permisos_modulo_dict"]
-    )
+    direccion: Optional[str] = None
 
-    if not empleado:
+    codigo_postal: Optional[str] = None
 
-        raise HTTPException(
-            status_code=404,
-            detail="Empleado no encontrado"
-        )
+    poblacion: Optional[str] = None
 
-    return empleado
+    provincia: Optional[str] = None
 
+    fecha_nacimiento: Optional[str] = None
 
-# =========================================================
-# RESET PASSWORD
-# =========================================================
+    alergias: Optional[str] = None
 
-@router.post(
-    "/{empleado_id}/reset-password"
-)
-def reset_password_empleado(
-    empleado_id: int,
-    db: Session = Depends(get_db)
-):
+    persona_contacto: Optional[str] = None
 
-    resultado = reset_password(
-        db,
-        empleado_id
-    )
+    telefono_contacto: Optional[str] = None
 
-    if not resultado:
+    observaciones: Optional[str] = None
 
-        raise HTTPException(
-            status_code=404,
-            detail="Empleado no encontrado"
-        )
+    # =====================================================
+    # LABORALES
+    # =====================================================
 
-    return resultado
+    departamento_id: Optional[int] = None
+
+    seccion_id: Optional[int] = None
+
+    cargo_id: Optional[int] = None
+
+    fecha_alta: Optional[str] = None
+
+    fecha_baja: Optional[str] = None
+
+    # =====================================================
+    # ESTADO
+    # =====================================================
+
+    activo: Optional[bool] = None
+
+    # =====================================================
+    # SEGURIDAD
+    # =====================================================
+
+    modulos_visibles_list: Optional[list] = None
+
+    permisos_modulo_dict: Optional[dict] = None
+
+    # =====================================================
+    # ROL
+    # =====================================================
+
+    rol_id: Optional[int] = None

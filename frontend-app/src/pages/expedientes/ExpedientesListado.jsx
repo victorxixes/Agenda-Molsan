@@ -479,43 +479,6 @@ function formatearValor(valor, tipo) {
 
 
 // ============================================================
-// NORMALIZAR ACTIVIDADES
-// ============================================================
-
-function normalizarActividades(datos) {
-
-  if (
-    !datos ||
-    typeof datos !== "object" ||
-    Array.isArray(datos)
-  ) {
-    return [];
-  }
-
-  return Object.entries(datos)
-    .map(([nombre, cantidad]) => ({
-      nombre:
-        nombre === null ||
-        nombre === undefined ||
-        String(nombre).trim() === ""
-          ? "Sin actividad"
-          : String(nombre),
-
-      cantidad:
-        Number(cantidad) || 0,
-    }))
-    .filter(
-      (actividad) =>
-        actividad.cantidad > 0
-    )
-    .sort(
-      (a, b) =>
-        b.cantidad - a.cantidad
-    );
-}
-
-
-// ============================================================
 // COMPONENTE PRINCIPAL
 // ============================================================
 
@@ -593,6 +556,9 @@ export default function ExpedientesListado() {
   const [totalPaginas, setTotalPaginas] =
     useState(1);
 
+  const [totalExpedientes, setTotalExpedientes] =
+    useState(0);
+
   const porPagina = 20;
 
 
@@ -605,7 +571,7 @@ export default function ExpedientesListado() {
 
 
   // ==========================================================
-  // COLUMNAS VISIBLES
+  // COLUMNAS
   // ==========================================================
 
   const [columnasVisibles, setColumnasVisibles] =
@@ -618,10 +584,18 @@ export default function ExpedientesListado() {
 
   // ==========================================================
   // ACTIVIDADES
+  //
+  // IMPORTANTE:
+  // Estos datos vienen del backend mediante GROUP BY.
+  // Por tanto representan el TOTAL de la base de datos,
+  // no solamente los 20 registros de la página actual.
   // ==========================================================
 
   const [actividades, setActividades] =
     useState([]);
+
+  const [loadingActividades, setLoadingActividades] =
+    useState(true);
 
 
   // ==========================================================
@@ -696,12 +670,17 @@ export default function ExpedientesListado() {
           return;
         }
 
-        const items =
+        setExpedientes(
           Array.isArray(res?.items)
             ? res.items
-            : [];
+            : []
+        );
 
-        setExpedientes(items);
+        setTotalExpedientes(
+          Number(
+            res?.total || 0
+          )
+        );
 
         setTotalPaginas(
           Math.max(
@@ -711,67 +690,6 @@ export default function ExpedientesListado() {
             )
           )
         );
-
-        /*
-         * FALLBACK:
-         *
-         * Si todavía no tenemos actividades
-         * calculadas por el backend, calculamos
-         * las actividades de los expedientes
-         * actualmente cargados.
-         *
-         * Cuando el backend devuelva:
-         *
-         * {
-         *   actividades: {
-         *     "Tramitación inscripción": 125,
-         *     "Firma": 43
-         *   }
-         * }
-         *
-         * este valor será sustituido por los
-         * totales reales.
-         */
-
-        if (
-          res?.actividades &&
-          typeof res.actividades === "object"
-        ) {
-
-          setActividades(
-            normalizarActividades(
-              res.actividades
-            )
-          );
-
-        } else {
-
-          const contador = {};
-
-          items.forEach(
-            (expediente) => {
-
-              const actividad =
-                expediente?.actividad_actual;
-
-              const nombre =
-                actividad === null ||
-                actividad === undefined ||
-                String(actividad).trim() === ""
-                  ? "Sin actividad"
-                  : String(actividad).trim();
-
-              contador[nombre] =
-                (contador[nombre] || 0) + 1;
-            }
-          );
-
-          setActividades(
-            normalizarActividades(
-              contador
-            )
-          );
-        }
 
       } catch (err) {
 
@@ -788,6 +706,8 @@ export default function ExpedientesListado() {
           );
 
           setExpedientes([]);
+
+          setTotalExpedientes(0);
         }
 
       } finally {
@@ -812,14 +732,16 @@ export default function ExpedientesListado() {
 
 
   // ==========================================================
-  // CARGAR RESUMEN DE ACTIVIDADES
+  // CARGAR ACTIVIDADES
   // ==========================================================
 
   useEffect(() => {
 
     let activo = true;
 
-    async function cargarResumen() {
+    async function cargarActividades() {
+
+      setLoadingActividades(true);
 
       try {
 
@@ -830,43 +752,35 @@ export default function ExpedientesListado() {
           return;
         }
 
-        /*
-         * Si el endpoint de resumen ya devuelve
-         * actividades, utilizamos esos datos.
-         *
-         * Ejemplo:
-         *
-         * {
-         *   actividades: {
-         *     "Tramitación inscripción": 125,
-         *     "Firma": 43,
-         *     "Pendiente documentación": 18
-         *   }
-         * }
-         */
+        const lista =
+          Array.isArray(
+            res?.actividades
+          )
+            ? res.actividades
+            : [];
 
-        if (
-          res?.actividades &&
-          typeof res.actividades === "object"
-        ) {
-
-          setActividades(
-            normalizarActividades(
-              res.actividades
-            )
-          );
-        }
+        setActividades(lista);
 
       } catch (err) {
 
         console.error(
-          "Error cargando resumen de actividades:",
+          "Error cargando actividades:",
           err
         );
+
+        if (activo) {
+          setActividades([]);
+        }
+
+      } finally {
+
+        if (activo) {
+          setLoadingActividades(false);
+        }
       }
     }
 
-    cargarResumen();
+    cargarActividades();
 
     return () => {
       activo = false;
@@ -1010,7 +924,6 @@ export default function ExpedientesListado() {
 
               return {
                 ...orden,
-
                 direccion:
                   orden.direccion === "asc"
                     ? "desc"
@@ -1025,7 +938,6 @@ export default function ExpedientesListado() {
       setOrdenMultiple(
         (actual) => [
           ...actual,
-
           {
             columna,
             direccion: "asc",
@@ -1071,7 +983,7 @@ export default function ExpedientesListado() {
 
 
   // ==========================================================
-  // EXPORTAR EXCEL
+  // EXPORTAR
   // ==========================================================
 
   const exportarExcel = async () => {
@@ -1195,9 +1107,9 @@ export default function ExpedientesListado() {
       "
     >
 
-      {/* ================================================== */}
-      {/* CABECERA */}
-      {/* ================================================== */}
+      {/* ====================================================
+          CABECERA
+          ==================================================== */}
 
       <div
         className="
@@ -1250,9 +1162,9 @@ export default function ExpedientesListado() {
       </div>
 
 
-      {/* ================================================== */}
-      {/* ERROR */}
-      {/* ================================================== */}
+      {/* ====================================================
+          ERROR
+          ==================================================== */}
 
       {error && (
 
@@ -1272,9 +1184,9 @@ export default function ExpedientesListado() {
       )}
 
 
-      {/* ================================================== */}
-      {/* ACTIVIDADES DE EXPEDIENTES */}
-      {/* ================================================== */}
+      {/* ====================================================
+          ACTIVIDADES DE EXPEDIENTES
+          ==================================================== */}
 
       <section
         className="
@@ -1291,8 +1203,11 @@ export default function ExpedientesListado() {
         <div
           className="
             flex
-            items-center
-            justify-between
+            flex-col
+            sm:flex-row
+            sm:items-center
+            sm:justify-between
+            gap-2
             mb-4
           "
         >
@@ -1308,69 +1223,58 @@ export default function ExpedientesListado() {
               Actividades de expedientes
             </h2>
 
-            <p
-              className="
-                text-sm
-                text-white/50
-                mt-1
-              "
-            >
-              Número de expedientes por actividad actual
+            <p className="text-white/50 text-sm mt-1">
+              Total de expedientes por actividad actual
             </p>
 
+          </div>
+
+          <div
+            className="
+              text-sm
+              text-white/50
+            "
+          >
+            Total:
+            {" "}
+            <span
+              className="
+                text-white
+                font-semibold
+              "
+            >
+              {new Intl.NumberFormat(
+                "es-ES"
+              ).format(totalExpedientes)}
+            </span>
           </div>
 
         </div>
 
 
-        {loading && actividades.length === 0 ? (
+        {loadingActividades ? (
 
           <div
             className="
-              grid
-              grid-cols-1
-              sm:grid-cols-2
-              lg:grid-cols-3
-              xl:grid-cols-4
-              gap-4
+              py-8
+              text-center
+              text-white/50
+              animate-pulse
             "
           >
-
-            {[1, 2, 3].map(
-              (item) => (
-
-                <div
-                  key={item}
-                  className="
-                    bg-white/5
-                    p-4
-                    rounded-xl
-                    border
-                    border-white/10
-                    animate-pulse
-                    h-[92px]
-                  "
-                />
-
-              )
-            )}
-
+            Cargando actividades…
           </div>
 
         ) : actividades.length === 0 ? (
 
           <div
             className="
-              bg-white/5
-              p-6
-              rounded-xl
-              border
-              border-white/10
+              py-8
               text-center
               text-white/50
             "
           >
-            No hay actividades para mostrar.
+            No hay actividades disponibles.
           </div>
 
         ) : (
@@ -1382,18 +1286,74 @@ export default function ExpedientesListado() {
               sm:grid-cols-2
               lg:grid-cols-3
               xl:grid-cols-4
-              gap-4
+              2xl:grid-cols-5
+              gap-3
             "
           >
 
             {actividades.map(
-              (actividad) => (
+              (actividad, indice) => (
 
-                <ActividadCard
-                  key={actividad.nombre}
-                  nombre={actividad.nombre}
-                  cantidad={actividad.cantidad}
-                />
+                <div
+                  key={`${actividad.actividad}-${indice}`}
+                  className="
+                    bg-white/5
+                    border
+                    border-white/10
+                    rounded-xl
+                    px-4
+                    py-4
+                    min-h-[100px]
+                    flex
+                    flex-col
+                    justify-between
+                    transition
+                    hover:bg-white/10
+                    hover:border-white/20
+                  "
+                >
+
+                  <p
+                    className="
+                      text-white/60
+                      text-sm
+                      leading-snug
+                    "
+                    title={
+                      actividad.actividad
+                    }
+                  >
+                    {actividad.actividad}
+                  </p>
+
+                  <p
+                    className="
+                      text-white
+                      font-bold
+                      text-2xl
+                      mt-3
+                    "
+                  >
+                    {new Intl.NumberFormat(
+                      "es-ES"
+                    ).format(
+                      Number(
+                        actividad.total || 0
+                      )
+                    )}
+                  </p>
+
+                  <p
+                    className="
+                      text-white/40
+                      text-xs
+                      mt-1
+                    "
+                  >
+                    expedientes
+                  </p>
+
+                </div>
 
               )
             )}
@@ -1405,9 +1365,9 @@ export default function ExpedientesListado() {
       </section>
 
 
-      {/* ================================================== */}
-      {/* FILTROS */}
-      {/* ================================================== */}
+      {/* ====================================================
+          FILTROS
+          ==================================================== */}
 
       <section
         className="
@@ -1570,9 +1530,9 @@ export default function ExpedientesListado() {
       </section>
 
 
-      {/* ================================================== */}
-      {/* COLUMNAS */}
-      {/* ================================================== */}
+      {/* ====================================================
+          COLUMNAS
+          ==================================================== */}
 
       <section
         className="
@@ -1677,9 +1637,9 @@ export default function ExpedientesListado() {
       </section>
 
 
-      {/* ================================================== */}
-      {/* TABLA */}
-      {/* ================================================== */}
+      {/* ====================================================
+          TABLA
+          ==================================================== */}
 
       <section
         className="
@@ -1689,8 +1649,7 @@ export default function ExpedientesListado() {
           border-white/10
           rounded-2xl
           shadow-xl
-          overflow-hidden
-          p-2
+          p-4
         "
       >
 
@@ -1723,8 +1682,11 @@ export default function ExpedientesListado() {
 
           <div
             className="
+              w-full
               overflow-auto
               rounded-xl
+              border
+              border-white/10
             "
           >
 
@@ -1734,8 +1696,6 @@ export default function ExpedientesListado() {
                 w-full
                 text-sm
                 text-white/80
-                border-separate
-                border-spacing-0
               "
             >
 
@@ -1744,6 +1704,7 @@ export default function ExpedientesListado() {
                 <tr
                   className="
                     text-left
+                    bg-black/30
                   "
                 >
 
@@ -1753,19 +1714,16 @@ export default function ExpedientesListado() {
                       <th
                         key={columna.key}
                         className="
-                          px-3
+                          px-4
                           py-3
                           cursor-pointer
                           select-none
                           whitespace-nowrap
-                          hover:bg-[#607bc1]
+                          hover:bg-white/10
                           sticky
                           top-0
-                          bg-[#526db5]
-                          z-20
-                          border-b
-                          border-white/20
-                          font-semibold
+                          bg-[#172554]
+                          z-10
                         "
                         onClick={(event) =>
                           ordenar(
@@ -1794,7 +1752,7 @@ export default function ExpedientesListado() {
 
                           <span
                             className="
-                              text-white/50
+                              text-white/40
                               text-xs
                             "
                           >
@@ -1812,16 +1770,13 @@ export default function ExpedientesListado() {
 
                   <th
                     className="
-                      px-3
+                      px-4
                       py-3
                       whitespace-nowrap
                       sticky
                       top-0
-                      bg-[#526db5]
-                      z-20
-                      border-b
-                      border-white/20
-                      font-semibold
+                      bg-[#172554]
+                      z-10
                     "
                   >
                     Acciones
@@ -1845,8 +1800,7 @@ export default function ExpedientesListado() {
                       className="
                         border-t
                         border-white/10
-                        hover:bg-white/10
-                        transition
+                        hover:bg-white/5
                       "
                     >
 
@@ -1856,14 +1810,12 @@ export default function ExpedientesListado() {
                           <td
                             key={columna.key}
                             className="
-                              px-3
-                              py-2
+                              px-4
+                              py-3
                               whitespace-nowrap
                               max-w-[400px]
                               overflow-hidden
                               text-ellipsis
-                              border-b
-                              border-white/10
                             "
                             title={
                               expediente[
@@ -1886,11 +1838,9 @@ export default function ExpedientesListado() {
 
                       <td
                         className="
-                          px-3
-                          py-2
+                          px-4
+                          py-3
                           whitespace-nowrap
-                          border-b
-                          border-white/10
                         "
                       >
 
@@ -1927,9 +1877,9 @@ export default function ExpedientesListado() {
       </section>
 
 
-      {/* ================================================== */}
-      {/* PAGINACIÓN */}
-      {/* ================================================== */}
+      {/* ====================================================
+          PAGINACIÓN
+          ==================================================== */}
 
       <div
         className="
@@ -1976,6 +1926,13 @@ export default function ExpedientesListado() {
 
         <span className="text-white/70">
           Página {pagina} de {totalPaginas}
+          {" · "}
+          {new Intl.NumberFormat(
+            "es-ES"
+          ).format(
+            totalExpedientes
+          )}{" "}
+          expedientes
         </span>
 
 
@@ -2017,62 +1974,7 @@ export default function ExpedientesListado() {
 
 
 // ============================================================
-// TARJETA DE ACTIVIDAD
-// ============================================================
-
-function ActividadCard({
-  nombre,
-  cantidad,
-}) {
-
-  return (
-
-    <div
-      className="
-        bg-white/5
-        p-4
-        rounded-xl
-        border
-        border-white/10
-        hover:bg-white/10
-        hover:border-white/20
-        transition
-        min-h-[92px]
-        flex
-        flex-col
-        justify-between
-      "
-    >
-
-      <p
-        className="
-          text-white/60
-          text-sm
-          leading-5
-          break-words
-        "
-      >
-        {nombre}
-      </p>
-
-      <p
-        className="
-          text-white
-          font-semibold
-          text-2xl
-          mt-2
-        "
-      >
-        {cantidad}
-      </p>
-
-    </div>
-  );
-}
-
-
-// ============================================================
-// INPUT FILTRO
+// INPUT DE FILTRO
 // ============================================================
 
 function FiltroInput({
@@ -2115,8 +2017,6 @@ function FiltroInput({
           text-white
           outline-none
           focus:border-blue-400
-          focus:ring-1
-          focus:ring-blue-400/40
         "
       />
 

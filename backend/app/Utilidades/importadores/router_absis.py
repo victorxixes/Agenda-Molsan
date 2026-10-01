@@ -1,40 +1,53 @@
-from fastapi import APIRouter, UploadFile, File, Query, Depends
-from sqlalchemy.orm import Session
 from datetime import date, datetime
+from typing import Optional
+
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
+from sqlalchemy.orm import Session
 
 from backend.app.database import get_db
 from backend.app.Utilidades.importadores.expedientes_importer import (
-    importar_excel_expedientes
+    importar_excel_expedientes,
 )
 
+
+# ============================================================
+# ROUTER
+# ============================================================
 
 router = APIRouter(
     prefix="/utilidades/importador-absis",
-    tags=["Importador ABSIS"]
+    tags=["Importador ABSIS"],
 )
 
+
+# ============================================================
+# IMPORTAR EXPEDIENTES ABSIS
+# ============================================================
 
 @router.post("/expedientes")
 async def importar_expedientes_absis(
     fichero: UploadFile = File(...),
-    fecha: str | None = Query(
+
+    fecha: Optional[str] = Query(
         None,
         description=(
             "Fecha a importar en formato YYYY-MM-DD. "
             "Si no se indica, se utiliza la fecha actual."
-        )
+        ),
     ),
-    db: Session = Depends(get_db)
+
+    db: Session = Depends(get_db),
 ):
     """
-    Importa expedientes del Excel matriz ABSIS.
+    Importa expedientes desde el Excel matriz ABSIS.
 
-    El Excel puede contener un histórico grande, pero el
-    importador solamente procesa las filas cuya FECHAALTA
-    coincide con la fecha seleccionada.
+    El Excel puede contener un histórico muy grande.
+
+    El importador solamente procesa las filas cuya
+    FECHAALTA coincide con la fecha indicada.
 
     Si no se indica fecha:
-        se utiliza date.today().
+        se utiliza la fecha actual.
 
     Si se indica fecha:
         debe tener formato YYYY-MM-DD.
@@ -45,142 +58,224 @@ async def importar_expedientes_absis(
     print("============================================", flush=True)
 
     # ========================================================
-    # 1) VALIDAR FICHERO
+    # 1) COMPROBAR FICHERO
     # ========================================================
 
-    if not fichero:
-        return {
-            "error": "No se ha recibido ningún fichero."
-        }
+    if fichero is None:
+        raise HTTPException(
+            status_code=400,
+            detail="No se ha recibido ningún fichero.",
+        )
 
     print(
         f"FICHERO: {fichero.filename}",
-        flush=True
+        flush=True,
     )
 
     print(
         f"CONTENT TYPE: {fichero.content_type}",
-        flush=True
+        flush=True,
     )
 
     # ========================================================
-    # 2) LEER CONTENIDO DEL ARCHIVO
+    # 2) VALIDAR NOMBRE DEL FICHERO
+    # ========================================================
+
+    if not fichero.filename:
+        raise HTTPException(
+            status_code=400,
+            detail="El fichero no tiene nombre.",
+        )
+
+    nombre_fichero = fichero.filename.lower()
+
+    if not (
+        nombre_fichero.endswith(".xlsx")
+        or nombre_fichero.endswith(".xlsm")
+        or nombre_fichero.endswith(".xls")
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "El fichero debe ser un Excel "
+                "(.xlsx, .xlsm o .xls)."
+            ),
+        )
+
+    # ========================================================
+    # 3) LEER FICHERO
     # ========================================================
 
     print(
         "API: leyendo fichero...",
-        flush=True
+        flush=True,
     )
 
     try:
+
         contenido = await fichero.read()
 
     except Exception as e:
+
         print(
             f"ERROR LEYENDO FICHERO: {e}",
-            flush=True
+            flush=True,
         )
 
-        return {
-            "error": "No se pudo leer el fichero.",
-            "detalle": str(e)
-        }
+        raise HTTPException(
+            status_code=400,
+            detail="No se pudo leer el fichero.",
+        )
+
+    if not contenido:
+
+        raise HTTPException(
+            status_code=400,
+            detail="El fichero está vacío.",
+        )
 
     print(
         f"FICHERO LEÍDO: {len(contenido)} bytes",
-        flush=True
+        flush=True,
     )
 
     # ========================================================
-    # 3) DETERMINAR FECHA OBJETIVO
+    # 4) DETERMINAR FECHA OBJETIVO
     # ========================================================
 
     if fecha:
+
         try:
+
             fecha_objetivo = datetime.strptime(
-                fecha,
-                "%Y-%m-%d"
+                fecha.strip(),
+                "%Y-%m-%d",
             ).date()
 
         except ValueError:
-            return {
-                "error": (
+
+            raise HTTPException(
+                status_code=400,
+                detail=(
                     "Formato de fecha inválido. "
                     "Usa YYYY-MM-DD."
-                )
-            }
+                ),
+            )
 
     else:
+
         fecha_objetivo = date.today()
 
     print(
         f"FECHA OBJETIVO: {fecha_objetivo}",
-        flush=True
+        flush=True,
     )
 
     # ========================================================
-    # 4) EJECUTAR IMPORTADOR
+    # 5) EJECUTAR IMPORTADOR
     # ========================================================
 
     print(
-        "API: iniciando importador...",
-        flush=True
+        "API: iniciando importador ABSIS...",
+        flush=True,
     )
 
     try:
+
         resultado = importar_excel_expedientes(
             db=db,
             contenido_excel=contenido,
-            fecha_objetivo=fecha_objetivo
+            fecha_objetivo=fecha_objetivo,
         )
 
     except ValueError as e:
+
         print(
             f"ERROR DE VALIDACIÓN EN IMPORTADOR: {e}",
-            flush=True
+            flush=True,
         )
 
         db.rollback()
 
-        return {
-            "error": str(e)
-        }
+        raise HTTPException(
+            status_code=400,
+            detail=str(e),
+        )
+
+    except HTTPException:
+
+        db.rollback()
+        raise
 
     except Exception as e:
+
         print(
             f"ERROR IMPORTANDO ABSIS: {e}",
-            flush=True
+            flush=True,
         )
 
         db.rollback()
 
-        return {
-            "error": "Error durante la importación ABSIS.",
-            "detalle": str(e)
-        }
+        raise HTTPException(
+            status_code=500,
+            detail=(
+                "Error durante la importación ABSIS."
+            ),
+        )
 
     # ========================================================
-    # 5) RESPUESTA
+    # 6) RESULTADO
     # ========================================================
 
     print(
         "API: importación finalizada.",
-        flush=True
+        flush=True,
+    )
+
+    print(
+        "============================================",
+        flush=True,
+    )
+
+    print(
+        "API IMPORTADOR ABSIS - FIN",
+        flush=True,
+    )
+
+    print(
+        "============================================",
+        flush=True,
     )
 
     return {
         "mensaje": "Importación ABSIS completada",
-        "fecha_importada": resultado["fecha_importada"],
-        "expedientes_creados": resultado["creados"],
-        "expedientes_actualizados": resultado["actualizados"],
-        "total_filtrados": resultado["total_filtrados"],
+
+        "fecha_importada": resultado.get(
+            "fecha_importada"
+        ),
+
+        "expedientes_creados": resultado.get(
+            "creados",
+            0,
+        ),
+
+        "expedientes_actualizados": resultado.get(
+            "actualizados",
+            0,
+        ),
+
+        "total_filtrados": resultado.get(
+            "total_filtrados",
+            0,
+        ),
+
         "total_procesados": resultado.get(
             "total_procesados",
-            0
+            0,
         ),
+
         "errores": resultado.get(
             "errores",
-            0
-        )
+            0,
+        ),
     }
-

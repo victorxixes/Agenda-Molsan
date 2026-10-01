@@ -4,6 +4,21 @@ import {
   useCallback,
 } from "react";
 
+/**
+ * ModalCtnDetalle
+ *
+ * Ficha completa de una notaría.
+ *
+ * Incluye:
+ * - Datos principales
+ * - Ubicación
+ * - Google Maps
+ * - Resumen de firmas
+ * - Cierre con ESC
+ * - Cierre haciendo click fuera
+ * - Diseño ERP claro y profesional
+ * - Responsive
+ */
 
 export default function ModalCtnDetalle({
   open,
@@ -11,49 +26,44 @@ export default function ModalCtnDetalle({
   notaria,
   firmas,
 }) {
-
   // ============================================================
-  // ESC
+  // CERRAR CON ESC
   // ============================================================
 
   useEffect(() => {
     if (!open) return;
 
-    const handler = (e) => {
-      if (e.key === "Escape") {
+    const handler = (event) => {
+      if (event.key === "Escape") {
         onClose();
       }
     };
 
-    window.addEventListener(
-      "keydown",
-      handler
-    );
+    window.addEventListener("keydown", handler);
 
     return () => {
-      window.removeEventListener(
-        "keydown",
-        handler
-      );
+      window.removeEventListener("keydown", handler);
     };
   }, [open, onClose]);
 
-
   // ============================================================
-  // DIRECCIÓN MAPA
+  // DIRECCIÓN COMPLETA
   // ============================================================
 
   const direccionTexto = useMemo(() => {
     return [
       notaria?.direccion,
+      notaria?.cp,
       notaria?.municipio,
       notaria?.provincia,
-      notaria?.cp,
     ]
       .filter(Boolean)
       .join(", ");
   }, [notaria]);
 
+  // ============================================================
+  // GOOGLE MAPS
+  // ============================================================
 
   const mapaUrl = useMemo(() => {
     if (!direccionTexto) {
@@ -63,24 +73,51 @@ export default function ModalCtnDetalle({
     return (
       "https://www.google.com/maps" +
       "?q=" +
-      encodeURIComponent(
-        direccionTexto
-      ) +
+      encodeURIComponent(direccionTexto) +
       "&output=embed"
     );
   }, [direccionTexto]);
-
 
   // ============================================================
   // CLICK INTERNO
   // ============================================================
 
-  const stopPropagation =
-    useCallback(
-      (e) => e.stopPropagation(),
-      []
-    );
+  const stopPropagation = useCallback((event) => {
+    event.stopPropagation();
+  }, []);
 
+  // ============================================================
+  // NORMALIZAR VC
+  // ============================================================
+
+  const esVideoconferencia = useMemo(() => {
+    const valor = String(notaria?.vc || "")
+      .trim()
+      .toUpperCase();
+
+    return (
+      valor === "SI" ||
+      valor === "SÍ" ||
+      valor === "VC" ||
+      valor === "VIDEOCONFERENCIA" ||
+      valor === "TRUE" ||
+      valor === "1"
+    );
+  }, [notaria?.vc]);
+
+  // ============================================================
+  // NOMBRE COMPLETO
+  // ============================================================
+
+  const nombreCompleto = useMemo(() => {
+    return [
+      notaria?.nombre,
+      notaria?.apellidos,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .trim() || "Notaría";
+  }, [notaria]);
 
   // ============================================================
   // NO MOSTRAR
@@ -89,20 +126,6 @@ export default function ModalCtnDetalle({
   if (!open || !notaria) {
     return null;
   }
-
-
-  // ============================================================
-  // NOMBRE
-  // ============================================================
-
-  const nombreCompleto =
-    [
-      notaria.nombre,
-      notaria.apellidos,
-    ]
-      .filter(Boolean)
-      .join(" ") || "Notaría";
-
 
   // ============================================================
   // RENDER
@@ -119,69 +142,87 @@ export default function ModalCtnDetalle({
         justify-center
         bg-slate-900/40
         backdrop-blur-sm
-        p-4
+        p-3
         sm:p-6
       "
       onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="ctn-modal-title"
     >
-
       <div
         className="
           w-full
           max-w-4xl
-          max-h-[90vh]
-          overflow-y-auto
+          max-h-[92vh]
+          overflow-hidden
           bg-white
           border
           border-[var(--erp-border)]
           rounded-2xl
           shadow-2xl
           animate-fade-in
+          flex
+          flex-col
         "
         onClick={stopPropagation}
       >
-
         {/* ==================================================
             CABECERA
            ================================================== */}
 
         <div
           className="
-            sticky
-            top-0
-            z-10
+            shrink-0
             bg-white
             border-b
             border-[var(--erp-border)]
-            px-6
-            py-5
+            px-5
+            py-4
+            sm:px-6
+            sm:py-5
             flex
             items-start
             justify-between
             gap-4
           "
         >
-
-          <div>
-
-            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--erp-primary)]">
+          <div className="min-w-0">
+            <p
+              className="
+                text-xs
+                font-semibold
+                uppercase
+                tracking-wide
+                text-[var(--erp-primary)]
+              "
+            >
               CTN · Notaría
             </p>
 
-            <h2 className="mt-1 text-2xl font-bold text-[var(--erp-text)]">
+            <h2
+              id="ctn-modal-title"
+              className="
+                mt-1
+                text-xl
+                sm:text-2xl
+                font-bold
+                text-[var(--erp-text)]
+                truncate
+              "
+            >
               {nombreCompleto}
             </h2>
 
             <p className="text-sm text-[var(--erp-text-soft)] mt-1">
               Ficha #{notaria.id}
             </p>
-
           </div>
 
           <button
             type="button"
             onClick={onClose}
-            aria-label="Cerrar"
+            aria-label="Cerrar ficha de notaría"
             className="
               shrink-0
               w-9
@@ -190,31 +231,36 @@ export default function ModalCtnDetalle({
               bg-slate-50
               border
               border-[var(--erp-border)]
-              text-[var(--erp-text-soft)]
+              text-slate-500
               hover:bg-slate-100
-              hover:text-[var(--erp-text)]
-              transition
+              hover:text-slate-800
+              hover:border-slate-300
+              transition-all
+              duration-200
             "
           >
             ✕
           </button>
-
         </div>
-
 
         {/* ==================================================
             CONTENIDO
            ================================================== */}
 
-        <div className="p-6 space-y-6">
-
-
+        <div
+          className="
+            flex-1
+            overflow-y-auto
+            p-4
+            sm:p-6
+            space-y-6
+          "
+        >
           {/* ==================================================
-              DATOS
+              DATOS PRINCIPALES
              ================================================== */}
 
           <section>
-
             <div className="mb-4">
               <h3 className="text-lg font-semibold text-[var(--erp-text)]">
                 Datos principales
@@ -225,7 +271,6 @@ export default function ModalCtnDetalle({
               </p>
             </div>
 
-
             <div
               className="
                 grid
@@ -235,7 +280,6 @@ export default function ModalCtnDetalle({
                 gap-4
               "
             >
-
               <Dato
                 label="Código"
                 value={notaria.codigo}
@@ -274,45 +318,33 @@ export default function ModalCtnDetalle({
 
               <Dato
                 label="Videoconferencia"
-                value={
-                  notaria.vc
-                    ? "Sí"
-                    : "No"
-                }
+                value={esVideoconferencia ? "Sí" : "No"}
               />
 
               <Dato
                 label="Apoderado"
-                value={
-                  notaria.apoderado
-                }
+                value={notaria.apoderado}
               />
 
               <Dato
                 label="Observación"
-                value={
-                  notaria.observacion
-                }
+                value={notaria.observacion}
                 className="sm:col-span-2 lg:col-span-3"
               />
-
             </div>
-
           </section>
-
 
           {/* ==================================================
               MAPA
              ================================================== */}
 
           <section>
-
             <div className="mb-4">
               <h3 className="text-lg font-semibold text-[var(--erp-text)]">
                 Ubicación
               </h3>
 
-              <p className="text-sm text-[var(--erp-text-soft)] mt-1">
+              <p className="text-sm text-[var(--erp-text-soft)] mt-1 break-words">
                 {direccionTexto || "Dirección no disponible"}
               </p>
             </div>
@@ -332,9 +364,7 @@ export default function ModalCtnDetalle({
                   title={`Ubicación de ${nombreCompleto}`}
                   width="100%"
                   height="300"
-                  style={{
-                    border: 0,
-                  }}
+                  style={{ border: 0 }}
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
                 />
@@ -345,6 +375,8 @@ export default function ModalCtnDetalle({
                     flex
                     items-center
                     justify-center
+                    px-6
+                    text-center
                     text-sm
                     text-[var(--erp-text-soft)]
                   "
@@ -354,9 +386,7 @@ export default function ModalCtnDetalle({
                 </div>
               )}
             </div>
-
           </section>
-
 
           {/* ==================================================
               FIRMAS
@@ -364,17 +394,15 @@ export default function ModalCtnDetalle({
 
           {firmas && (
             <section>
-
               <div className="mb-4">
                 <h3 className="text-lg font-semibold text-[var(--erp-text)]">
                   Actividad de firmas
                 </h3>
 
                 <p className="text-sm text-[var(--erp-text-soft)] mt-1">
-                  Resumen de actividad asociada.
+                  Resumen de actividad asociada a la notaría.
                 </p>
               </div>
-
 
               <div
                 className="
@@ -384,38 +412,27 @@ export default function ModalCtnDetalle({
                   gap-4
                 "
               >
-
                 <ResumenFirma
                   label="Total firmas"
-                  value={
-                    firmas.total_firmas
-                  }
+                  value={firmas.total_firmas}
                   color="blue"
                 />
 
                 <ResumenFirma
                   label="Videoconferencia"
-                  value={
-                    firmas.total_vc
-                  }
+                  value={firmas.total_vc}
                   color="green"
                 />
 
                 <ResumenFirma
                   label="Presencial"
-                  value={
-                    firmas.total_presencial
-                  }
+                  value={firmas.total_presencial}
                   color="purple"
                 />
-
               </div>
-
             </section>
           )}
-
         </div>
-
 
         {/* ==================================================
             FOOTER
@@ -423,16 +440,17 @@ export default function ModalCtnDetalle({
 
         <div
           className="
+            shrink-0
             border-t
             border-[var(--erp-border)]
             bg-[var(--erp-surface-soft)]
-            px-6
+            px-5
             py-4
+            sm:px-6
             flex
             justify-end
           "
         >
-
           <button
             type="button"
             onClick={onClose}
@@ -445,14 +463,15 @@ export default function ModalCtnDetalle({
               text-white
               font-medium
               shadow-sm
-              transition
+              hover:shadow-md
+              transition-all
+              duration-200
+              active:scale-[0.98]
             "
           >
             Cerrar
           </button>
-
         </div>
-
       </div>
     </div>
   );
@@ -476,14 +495,33 @@ function Dato({
         border
         border-[var(--erp-border)]
         p-4
+        transition-colors
+        duration-200
+        hover:bg-slate-50
         ${className}
       `}
     >
-      <p className="text-xs font-semibold uppercase tracking-wide text-[var(--erp-text-soft)]">
+      <p
+        className="
+          text-xs
+          font-semibold
+          uppercase
+          tracking-wide
+          text-[var(--erp-text-soft)]
+        "
+      >
         {label}
       </p>
 
-      <p className="mt-1 text-sm font-medium text-[var(--erp-text)] break-words">
+      <p
+        className="
+          mt-1
+          text-sm
+          font-medium
+          text-[var(--erp-text)]
+          break-words
+        "
+      >
         {value || "—"}
       </p>
     </div>
@@ -520,9 +558,7 @@ function ResumenFirma({
     },
   };
 
-  const estilo =
-    estilos[color] ||
-    estilos.blue;
+  const estilo = estilos[color] || estilos.blue;
 
   return (
     <div
@@ -532,6 +568,10 @@ function ResumenFirma({
         border
         rounded-2xl
         p-5
+        transition-all
+        duration-200
+        hover:-translate-y-0.5
+        hover:shadow-sm
       `}
     >
       <p className="text-sm text-[var(--erp-text-soft)]">

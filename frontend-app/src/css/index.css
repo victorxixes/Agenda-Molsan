@@ -12,6 +12,7 @@
 @import "./tabs.css";
 @import "./modals.css";
 @import "./animations.css";
+@import "./erp-theme.css";
 
 /* Tailwind */
 @tailwind base;

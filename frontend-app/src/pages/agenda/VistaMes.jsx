@@ -1,161 +1,317 @@
 import { useMemo, useCallback } from "react";
 import { useAgendaStore } from "../../store/agendaStore";
 
-/**
- * VistaMes — SJ‑2026 Premium
- * - Calendario laboral (Lun–Vie)
- * - Glass‑UI
- * - Animaciones suaves
- * - Render optimizado
- */
-
 const DIAS_SEMANA = ["Lun", "Mar", "Mié", "Jue", "Vie"];
 
 const colorPorTipo = (tipo) => {
   switch (tipo) {
     case "Firma notarial":
-      return "bg-blue-500/20 border-blue-400 text-blue-200";
+      return {
+        box: "bg-[var(--erp-primary-soft)] border-[var(--erp-primary)]/30",
+        text: "text-[var(--erp-primary)]",
+        accent: "bg-[var(--erp-primary)]",
+      };
+
     case "Reunión":
-      return "bg-green-500/20 border-green-400 text-green-200";
+      return {
+        box: "bg-emerald-50 border-emerald-200",
+        text: "text-emerald-700",
+        accent: "bg-emerald-500",
+      };
+
     default:
-      return "bg-white/10 border-white/20 text-white";
+      return {
+        box: "bg-[var(--erp-surface-soft)] border-[var(--erp-border)]",
+        text: "text-[var(--erp-text)]",
+        accent: "bg-slate-400",
+      };
   }
 };
 
 function generarMatriz(fechaBase) {
   const f = new Date(fechaBase);
+
   if (isNaN(f.getTime())) return [[]];
 
   const year = f.getFullYear();
   const month = f.getMonth();
+
   const firstDay = new Date(year, month, 1);
 
-  const start = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1;
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const start =
+    firstDay.getDay() === 0
+      ? 6
+      : firstDay.getDay() - 1;
+
+  const daysInMonth =
+    new Date(year, month + 1, 0).getDate();
 
   const cells = [];
-  for (let i = 0; i < start; i++) cells.push(null);
-  for (let d = 1; d <= daysInMonth; d++) cells.push(new Date(year, month, d));
+
+  for (let i = 0; i < start; i++) {
+    cells.push(null);
+  }
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    cells.push(new Date(year, month, d));
+  }
 
   const weeks = [];
+
   for (let i = 0; i < cells.length; i += 7) {
     const semanaCompleta = cells.slice(i, i + 7);
-    weeks.push(semanaCompleta.slice(0, 5)); // Solo L–V
+
+    weeks.push(semanaCompleta.slice(0, 5));
   }
 
   return weeks;
 }
 
-export default function VistaMes({ year, month, citas, onDiaClick, onCitaClick }) {
-  const resaltadaId = useAgendaStore((s) => s.resaltadaId);
+export default function VistaMes({
+  year,
+  month,
+  citas,
+  onDiaClick,
+  onCitaClick,
+}) {
+  const resaltadaId = useAgendaStore(
+    (s) => s.resaltadaId
+  );
 
   const fechaBase = useMemo(
-    () => `${year}-${String(month).padStart(2, "0")}-01`,
+    () =>
+      `${year}-${String(month).padStart(2, "0")}-01`,
     [year, month]
   );
 
-  const matrix = useMemo(() => generarMatriz(fechaBase), [fechaBase]);
+  const matrix = useMemo(
+    () => generarMatriz(fechaBase),
+    [fechaBase]
+  );
 
-  const citasSeguras = useMemo(() => (Array.isArray(citas) ? citas : []), [citas]);
+  const citasSeguras = useMemo(
+    () => (Array.isArray(citas) ? citas : []),
+    [citas]
+  );
 
   const obtenerCitasDia = useCallback(
     (fechaStr) =>
-      citasSeguras.filter((c) => (c.fecha || "").slice(0, 10) === fechaStr),
+      citasSeguras.filter(
+        (c) =>
+          (c.fecha || "").slice(0, 10) === fechaStr
+      ),
     [citasSeguras]
   );
 
-  return (
-    <div className="text-xs text-white animate-fade-in">
+  const hoyStr = new Date().toLocaleDateString("sv-SE");
 
-      {/* Cabecera días */}
-      <div className="grid grid-cols-5 mb-3">
+  return (
+    <div className="text-xs text-[var(--erp-text)] animate-fade-in">
+
+      {/* CABECERA DÍAS */}
+
+      <div
+        className="
+          grid grid-cols-5
+          mb-2
+          rounded-xl
+          overflow-hidden
+          border border-[var(--erp-border)]
+          bg-[var(--erp-surface-soft)]
+        "
+      >
         {DIAS_SEMANA.map((d) => (
           <div
             key={d}
-            className="text-center font-semibold text-white/80 tracking-wide"
+            className="
+              py-3
+              text-center
+              font-semibold
+              text-[var(--erp-text-soft)]
+              uppercase
+              tracking-wide
+              border-r last:border-r-0
+              border-[var(--erp-border)]
+            "
           >
             {d}
           </div>
         ))}
       </div>
 
-      {/* Calendario */}
+      {/* CALENDARIO */}
+
       <div className="grid grid-cols-5 gap-2">
+
         {matrix.map((week, wi) =>
           week.map((day, di) => {
+
             if (!day) {
               return (
                 <div
                   key={`${wi}-${di}`}
                   className="
-                    h-28 rounded-xl bg-white/5 border border-white/10 
-                    backdrop-blur-xl shadow-inner
+                    min-h-32
+                    rounded-xl
+                    bg-slate-50/70
+                    border border-[var(--erp-border)]
                   "
                 />
               );
             }
 
-            const fechaStr = day.toLocaleDateString("sv-SE");
-            const citasDia = obtenerCitasDia(fechaStr);
+            const fechaStr =
+              day.toLocaleDateString("sv-SE");
+
+            const citasDia =
+              obtenerCitasDia(fechaStr);
+
+            const esHoy =
+              fechaStr === hoyStr;
 
             return (
               <div
                 key={`${wi}-${di}`}
-                className="
-                  h-28 rounded-xl bg-white/5 border border-white/10 
-                  backdrop-blur-xl shadow-lg p-2 flex flex-col cursor-pointer
-                  hover:bg-white/10 transition-all duration-300
-                "
-                onClick={() => onDiaClick(fechaStr)}
+                className={`
+                  min-h-32
+                  rounded-xl
+                  border
+                  p-2
+                  flex flex-col
+                  cursor-pointer
+                  transition-all duration-200
+                  ${
+                    esHoy
+                      ? "border-[var(--erp-primary)] bg-[var(--erp-primary-soft)]/40 shadow-sm"
+                      : "border-[var(--erp-border)] bg-[var(--erp-surface)] hover:bg-[var(--erp-surface-soft)] hover:shadow-sm"
+                  }
+                `}
+                onClick={() =>
+                  onDiaClick(fechaStr)
+                }
               >
-                {/* Número del día */}
-                <div className="text-right text-[12px] font-semibold text-white/90">
-                  {day.getDate()}
+
+                {/* DÍA */}
+
+                <div className="flex items-center justify-between mb-1">
+
+                  <span
+                    className={`
+                      text-[11px]
+                      font-semibold
+                      ${
+                        esHoy
+                          ? "text-[var(--erp-primary)]"
+                          : "text-[var(--erp-text-soft)]"
+                      }
+                    `}
+                  >
+                    {esHoy ? "HOY" : ""}
+                  </span>
+
+                  <div
+                    className={`
+                      w-7 h-7
+                      flex items-center justify-center
+                      rounded-full
+                      text-xs
+                      font-semibold
+                      ${
+                        esHoy
+                          ? "bg-[var(--erp-primary)] text-white"
+                          : "text-[var(--erp-text)]"
+                      }
+                    `}
+                  >
+                    {day.getDate()}
+                  </div>
+
                 </div>
 
-                {/* Citas */}
-                <div className="mt-1 space-y-1 overflow-y-auto max-h-20 pr-1 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
-                  {citasDia.map((c) => (
-                    <div
-                      key={c.id}
-                      className={`
-                        text-[11px] px-2 py-1 rounded-lg border truncate
-                        ${colorPorTipo(c.tipo_cita)}
-                        backdrop-blur-md shadow-md
-                        transition-all duration-300
-                        ${
-                          resaltadaId === c.id
-                            ? "ring-2 ring-yellow-400 bg-yellow-500/20 scale-[1.03]"
-                            : "hover:scale-[1.02]"
-                        }
-                      `}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onCitaClick(c);
-                      }}
-                    >
-                      <div className="font-semibold truncate">
-                        {c.tipo_cita} — {c.hora_inicio} → {c.hora_fin}
-                      </div>
+                {/* CITAS */}
 
-                      <div className="truncate text-white/80">
-                        Notario: {c.notario_nombre || "—"}
-                      </div>
+                <div
+                  className="
+                    mt-1
+                    space-y-1
+                    overflow-y-auto
+                    max-h-24
+                    pr-1
+                  "
+                >
+                  {citasDia.map((c) => {
 
-                      <div className="truncate text-white/80">
-                        Firma: {c.tipo_firma}
-                      </div>
+                    const colores =
+                      colorPorTipo(c.tipo_cita);
 
-                      <div className="truncate text-white/80">
-                        Apoderado: {c.apoderado_nombre || "—"}
+                    const resaltada =
+                      resaltadaId === c.id;
+
+                    return (
+                      <div
+                        key={c.id}
+                        className={`
+                          relative
+                          text-[11px]
+                          px-2
+                          py-1.5
+                          rounded-lg
+                          border
+                          truncate
+                          ${colores.box}
+                          ${colores.text}
+                          shadow-sm
+                          transition-all duration-200
+                          ${
+                            resaltada
+                              ? "ring-2 ring-amber-400 bg-amber-50"
+                              : "hover:shadow-md hover:-translate-y-[1px]"
+                          }
+                        `}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onCitaClick(c);
+                        }}
+                      >
+
+                        <span
+                          className={`
+                            absolute
+                            left-0
+                            top-0
+                            bottom-0
+                            w-1
+                            rounded-l-lg
+                            ${colores.accent}
+                          `}
+                        />
+
+                        <div className="font-semibold truncate pl-1">
+                          {c.tipo_cita} — {c.hora_inicio} →{" "}
+                          {c.hora_fin}
+                        </div>
+
+                        <div className="truncate text-[var(--erp-text-soft)] pl-1">
+                          Notario: {c.notario_nombre || "—"}
+                        </div>
+
+                        <div className="truncate text-[var(--erp-text-soft)] pl-1">
+                          Firma: {c.tipo_firma}
+                        </div>
+
+                        <div className="truncate text-[var(--erp-text-soft)] pl-1">
+                          Apoderado: {c.apoderado_nombre || "—"}
+                        </div>
+
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             );
           })
         )}
+
       </div>
     </div>
   );

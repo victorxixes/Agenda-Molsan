@@ -7,540 +7,289 @@ import {
   editarEmpleado,
   eliminarEmpleado,
   listarApoderados,
-  actualizarModulosVisibles,
-  actualizarPermisosModulo,
-  obtenerFichaCompleta,
 } from "../api/empleados";
 
-/* =========================================================
-   UTILIDADES
-========================================================= */
 
-const safe = (v) => {
-  if (v === null || v === undefined) return "-";
+const safe = (valor) => {
 
-  if (typeof v === "object") {
+  if (
+    valor === null ||
+    valor === undefined
+  ) {
+    return "-";
+  }
+
+  if (
+    typeof valor === "object"
+  ) {
+
     try {
-      return JSON.stringify(v);
+      return JSON.stringify(valor);
     } catch {
       return "-";
     }
   }
 
-  return String(v);
+  return String(valor);
 };
 
 
-/* =========================================================
-   EMPLEADO PARA LISTADOS
-   No convertir objetos de seguridad aquí.
-========================================================= */
+const safeEmpleado = (empleado) => {
 
-const safeEmpleado = (e) => ({
-  id: Number(e.id),
-
-  nombre: safe(e.nombre),
-  apellidos: safe(e.apellidos),
-
-  telefono: safe(e.telefono),
-  email_empresa: safe(e.email_empresa),
-
-  activo: Boolean(e.activo),
-
-  departamento_nombre: safe(e.departamento_nombre),
-  seccion_nombre: safe(e.seccion_nombre),
-  cargo_nombre: safe(e.cargo_nombre),
-
-  foto: safe(e.foto),
-  usuario: safe(e.usuario),
-});
-
-
-/* =========================================================
-   FICHA COMPLETA
-========================================================= */
-
-const safeFicha = (data) => {
-  if (!data) return null;
-
-  const empleado = data.empleado || {};
+  if (!empleado) {
+    return null;
+  }
 
   return {
-    empleado: {
-      ...empleado,
+    ...empleado,
 
-      id: Number(empleado.id),
+    id: Number(
+      empleado.id
+    ),
 
-      nombre: empleado.nombre ?? "",
-      apellidos: empleado.apellidos ?? "",
-      dni: empleado.dni ?? "",
+    nombre: safe(
+      empleado.nombre
+    ),
 
-      telefono: empleado.telefono ?? "",
-      email_personal: empleado.email_personal ?? "",
-      email_empresa: empleado.email_empresa ?? "",
-      extension: empleado.extension ?? "",
+    apellidos: safe(
+      empleado.apellidos
+    ),
 
-      usuario: empleado.usuario ?? "",
+    telefono: safe(
+      empleado.telefono
+    ),
 
-      direccion: empleado.direccion ?? "",
-      codigo_postal: empleado.codigo_postal ?? "",
-      poblacion: empleado.poblacion ?? "",
-      provincia: empleado.provincia ?? "",
+    email_empresa: safe(
+      empleado.email_empresa
+    ),
 
-      fecha_nacimiento: empleado.fecha_nacimiento ?? "",
+    extension: safe(
+      empleado.extension
+    ),
 
-      alergias: empleado.alergias ?? "",
-      persona_contacto: empleado.persona_contacto ?? "",
-      telefono_contacto: empleado.telefono_contacto ?? "",
+    activo: Boolean(
+      empleado.activo
+    ),
 
-      observaciones: empleado.observaciones ?? "",
+    departamento_nombre:
+      safe(
+        empleado.departamento_nombre
+      ),
 
-      foto: empleado.foto ?? "",
+    seccion_nombre:
+      safe(
+        empleado.seccion_nombre
+      ),
 
-      departamento_id: empleado.departamento_id ?? null,
-      seccion_id: empleado.seccion_id ?? null,
-      cargo_id: empleado.cargo_id ?? null,
+    cargo_nombre:
+      safe(
+        empleado.cargo_nombre
+      ),
 
-      fecha_alta: empleado.fecha_alta ?? "",
-      fecha_baja: empleado.fecha_baja ?? "",
+    foto: safe(
+      empleado.foto
+    ),
 
-      activo: Boolean(empleado.activo),
-    },
-
-    /*
-     * El rol es INFORMATIVO.
-     *
-     * No genera permisos.
-     * No modifica módulos.
-     */
-    rol: data.empleado?.rol || data.rol || null,
-
-    departamento: data.departamento || null,
-    seccion: data.seccion || null,
-    cargo: data.cargo || null,
-
-    /*
-     * Los permisos pertenecen directamente al empleado.
-     */
-    modulos_visibles: Array.isArray(data.modulos_visibles)
-      ? data.modulos_visibles
-      : [],
-
-    permisos_modulo:
-      data.permisos_modulo &&
-      typeof data.permisos_modulo === "object"
-        ? data.permisos_modulo
-        : {},
-
-    auditoria: Array.isArray(data.auditoria)
-      ? data.auditoria
-      : [],
+    usuario: safe(
+      empleado.usuario
+    ),
   };
 };
 
 
-/* =========================================================
-   STORE
-========================================================= */
+export const useEmpleadosStore = create(
+  (set, get) => ({
 
-export const useEmpleadosStore = create((set, get) => ({
-  /* -------------------------------------------------------
-     ESTADO
-  ------------------------------------------------------- */
+    empleados: [],
 
-  empleados: [],
-  apoderados: [],
+    apoderados: [],
 
-  empleadoActual: null,
+    cargando: false,
 
-  cargando: false,
-  error: null,
+    error: null,
 
 
-  /* =======================================================
-     LISTAR EMPLEADOS
-  ======================================================= */
+    // =====================================================
+    // EMPLEADOS
+    // =====================================================
 
-  cargarEmpleados: async () => {
-    try {
-      set({
-        cargando: true,
-        error: null,
-      });
+    cargarEmpleados: async () => {
 
-      const res = await listarEmpleados();
+      try {
 
-      const lista = Array.isArray(res.data)
-        ? res.data.map(safeEmpleado)
-        : [];
+        set({
+          cargando: true,
+          error: null,
+        });
 
-      set({
-        empleados: lista,
-        cargando: false,
-      });
+        const res =
+          await listarEmpleados();
 
-      return lista;
+        const lista =
+          Array.isArray(res.data)
+            ? res.data.map(
+                safeEmpleado
+              )
+            : [];
 
-    } catch (err) {
+        set({
+          empleados: lista,
+          cargando: false,
+        });
 
-      console.error(
-        "Error cargando empleados:",
-        err
-      );
+      } catch (err) {
 
-      set({
-        cargando: false,
-        error: err.message || "Error cargando empleados",
-      });
+        console.error(
+          "Error cargando empleados:",
+          err
+        );
 
-      return [];
-    }
-  },
-
-
-  /* =======================================================
-     BUSCAR EMPLEADOS
-  ======================================================= */
-
-  buscar: async (params = {}) => {
-    try {
-      set({
-        cargando: true,
-        error: null,
-      });
-
-      /*
-       * Importamos dinámicamente para no cambiar
-       * el comportamiento del resto del módulo.
-       */
-      const { buscarEmpleados } = await import(
-        "../api/empleados"
-      );
-
-      const res = await buscarEmpleados(params);
-
-      const lista = Array.isArray(res.data)
-        ? res.data.map(safeEmpleado)
-        : [];
-
-      set({
-        empleados: lista,
-        cargando: false,
-      });
-
-      return lista;
-
-    } catch (err) {
-
-      console.error(
-        "Error buscando empleados:",
-        err
-      );
-
-      set({
-        cargando: false,
-        error: err.message || "Error buscando empleados",
-      });
-
-      return [];
-    }
-  },
+        set({
+          cargando: false,
+          error:
+            err?.response?.data?.detail ||
+            err?.message ||
+            "Error cargando empleados",
+        });
+      }
+    },
 
 
-  /* =======================================================
-     CARGAR APODERADOS
-  ======================================================= */
+    // =====================================================
+    // APODERADOS
+    // =====================================================
 
-  cargarApoderados: async () => {
-    try {
-      set({
-        cargando: true,
-        error: null,
-      });
+    cargarApoderados: async () => {
 
-      const res = await listarApoderados();
+      try {
 
-      const lista = Array.isArray(res.data)
-        ? res.data.map(safeEmpleado)
-        : [];
+        set({
+          cargando: true,
+          error: null,
+        });
 
-      set({
-        apoderados: lista,
-        cargando: false,
-      });
+        const res =
+          await listarApoderados();
 
-      return lista;
+        const lista =
+          Array.isArray(res.data)
+            ? res.data.map(
+                safeEmpleado
+              )
+            : [];
 
-    } catch (err) {
+        set({
+          apoderados: lista,
+          cargando: false,
+        });
 
-      console.error(
-        "Error cargando apoderados:",
-        err
-      );
+      } catch (err) {
 
-      set({
-        cargando: false,
-        error: err.message || "Error cargando apoderados",
-      });
+        console.error(
+          "Error cargando apoderados:",
+          err
+        );
 
-      return [];
-    }
-  },
+        set({
+          cargando: false,
+          error:
+            err?.response?.data?.detail ||
+            err?.message ||
+            "Error cargando apoderados",
+        });
+      }
+    },
 
 
-  /* =======================================================
-     OBTENER EMPLEADO
-  ======================================================= */
+    // =====================================================
+    // OBTENER
+    // =====================================================
 
-  obtener: async (id) => {
-    try {
+    obtener: async (id) => {
 
-      const res = await obtenerEmpleado(id);
+      try {
+
+        const res =
+          await obtenerEmpleado(id);
+
+        return res.data
+          ? safeEmpleado(
+              res.data
+            )
+          : null;
+
+      } catch (err) {
+
+        console.error(
+          "Error obteniendo empleado:",
+          err
+        );
+
+        return null;
+      }
+    },
+
+
+    // =====================================================
+    // CREAR
+    // =====================================================
+
+    crear: async (payload) => {
+
+      const res =
+        await crearEmpleado(
+          payload
+        );
+
+      await get()
+        .cargarEmpleados();
 
       return res.data
-        ? safeEmpleado(res.data)
+        ? safeEmpleado(
+            res.data
+          )
         : null;
-
-    } catch (err) {
-
-      console.error(
-        "Error obteniendo empleado:",
-        err
-      );
-
-      return null;
-    }
-  },
+    },
 
 
-  /* =======================================================
-     OBTENER FICHA COMPLETA
-  ======================================================= */
+    // =====================================================
+    // EDITAR
+    // =====================================================
 
-  obtenerFicha: async (id) => {
-    try {
-
-      set({
-        cargando: true,
-        error: null,
-      });
-
-      const res = await obtenerFichaCompleta(id);
-
-      const ficha = safeFicha(res.data);
-
-      set({
-        empleadoActual: ficha,
-        cargando: false,
-      });
-
-      return ficha;
-
-    } catch (err) {
-
-      console.error(
-        "Error obteniendo ficha completa:",
-        err
-      );
-
-      set({
-        empleadoActual: null,
-        cargando: false,
-        error:
-          err.message ||
-          "Error obteniendo ficha del empleado",
-      });
-
-      return null;
-    }
-  },
-
-
-  /* =======================================================
-     CREAR
-  ======================================================= */
-
-  crear: async (payload) => {
-
-    const res = await crearEmpleado(payload);
-
-    await get().cargarEmpleados();
-
-    return res.data
-      ? safeEmpleado(res.data)
-      : null;
-  },
-
-
-  /* =======================================================
-     EDITAR
-  ======================================================= */
-
-  editar: async (id, payload) => {
-
-    const res = await editarEmpleado(
+    editar: async (
       id,
       payload
-    );
-
-    await get().cargarEmpleados();
-
-    /*
-     * Si estamos editando la ficha actualmente abierta,
-     * la volvemos a cargar.
-     */
-    if (
-      get().empleadoActual?.empleado?.id === Number(id)
-    ) {
-      await get().obtenerFicha(id);
-    }
-
-    return res.data
-      ? safeEmpleado(res.data)
-      : null;
-  },
-
-
-  /* =======================================================
-     ELIMINAR
-  ======================================================= */
-
-  eliminar: async (id) => {
-
-    await eliminarEmpleado(id);
-
-    await get().cargarEmpleados();
-
-    if (
-      get().empleadoActual?.empleado?.id === Number(id)
-    ) {
-      set({
-        empleadoActual: null,
-      });
-    }
-  },
-
-
-  /* =======================================================
-     ACTUALIZAR MÓDULOS VISIBLES
-  ======================================================= */
-
-  actualizarModulos: async (
-    id,
-    modulos_visibles_list
-  ) => {
-
-    try {
+    ) => {
 
       const res =
-        await actualizarModulosVisibles(
+        await editarEmpleado(
           id,
-          modulos_visibles_list
+          payload
         );
 
-      /*
-       * Actualizamos ficha si está abierta.
-       */
-      if (
-        get().empleadoActual?.empleado?.id === Number(id)
-      ) {
-        await get().obtenerFicha(id);
-      }
+      await get()
+        .cargarEmpleados();
 
-      /*
-       * Actualizamos también el listado.
-       */
-      await get().cargarEmpleados();
+      return res.data
+        ? safeEmpleado(
+            res.data
+          )
+        : null;
+    },
 
-      return res.data || null;
 
-    } catch (err) {
+    // =====================================================
+    // ELIMINAR
+    // =====================================================
 
-      console.error(
-        "Error actualizando módulos:",
-        err
+    eliminar: async (id) => {
+
+      await eliminarEmpleado(
+        id
       );
 
-      set({
-        error:
-          err.message ||
-          "Error actualizando módulos",
-      });
-
-      throw err;
-    }
-  },
-
-
-  /* =======================================================
-     ACTUALIZAR PERMISOS
-  ======================================================= */
-
-  actualizarPermisos: async (
-    id,
-    permisos_modulo_dict
-  ) => {
-
-    try {
-
-      const res =
-        await actualizarPermisosModulo(
-          id,
-          permisos_modulo_dict
-        );
-
-      /*
-       * Actualizar ficha inmediatamente.
-       */
-      if (
-        get().empleadoActual?.empleado?.id === Number(id)
-      ) {
-        await get().obtenerFicha(id);
-      }
-
-      /*
-       * Actualizar listado.
-       */
-      await get().cargarEmpleados();
-
-      return res.data || null;
-
-    } catch (err) {
-
-      console.error(
-        "Error actualizando permisos:",
-        err
-      );
-
-      set({
-        error:
-          err.message ||
-          "Error actualizando permisos",
-      });
-
-      throw err;
-    }
-  },
-
-
-  /* =======================================================
-     LIMPIAR EMPLEADO ACTUAL
-  ======================================================= */
-
-  limpiarEmpleadoActual: () => {
-    set({
-      empleadoActual: null,
-    });
-  },
-
-
-  /* =======================================================
-     LIMPIAR ERROR
-  ======================================================= */
-
-  limpiarError: () => {
-    set({
-      error: null,
-    });
-  },
-}));
+      await get()
+        .cargarEmpleados();
+    },
+  })
+);

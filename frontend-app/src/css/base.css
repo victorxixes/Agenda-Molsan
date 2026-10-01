@@ -1,5 +1,5 @@
 /* ============================================================
-   ERP SJ‑2026 — Base global premium
+   ERP SJ-2026 — Base global premium
    ============================================================ */
 
 * {
@@ -8,67 +8,102 @@
   box-sizing: border-box;
 }
 
-/* Suavizado de fuentes */
+
+/* ============================================================
+   SUAVIZADO Y CONFIGURACIÓN GLOBAL
+   ============================================================ */
+
 html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   scroll-behavior: smooth;
 }
 
-/* Estilo global del body */
+
+/* ============================================================
+   ESTILO GLOBAL DEL BODY
+   ============================================================ */
+
 body {
-  background-color: var(--sj-blanco);
-  color: var(--sj-azul);
+  background-color: var(--erp-bg);
+  color: var(--erp-text);
   font-family: var(--sj-font);
   line-height: 1.6;
 }
 
-/* Selección de texto corporativa */
+
+/* ============================================================
+   SELECCIÓN DE TEXTO CORPORATIVA
+   ============================================================ */
+
 ::selection {
-  background: var(--sj-azul);
-  color: white;
+  background: var(--erp-primary);
+  color: #ffffff;
 }
 
-/* Scroll corporativo SJ‑2026 */
+
+/* ============================================================
+   SCROLL CORPORATIVO SJ-2026
+   ============================================================ */
+
 ::-webkit-scrollbar {
   width: 8px;
 }
+
 ::-webkit-scrollbar-thumb {
   background: var(--sj-gris-azulado);
   border-radius: 4px;
 }
+
 ::-webkit-scrollbar-track {
   background: #eef1f5;
 }
 
-/* Enlaces */
+
+/* ============================================================
+   ENLACES
+   ============================================================ */
+
 a {
-  color: var(--sj-azul);
+  color: var(--erp-primary);
   text-decoration: none;
   transition: color 0.25s ease;
 }
+
 a:hover {
-  color: var(--sj-azul-claro);
+  color: var(--erp-primary-dark);
 }
 
-/* Botones base */
+
+/* ============================================================
+   BOTONES BASE
+   ============================================================ */
+
 button {
   font-family: inherit;
   cursor: pointer;
   transition: transform 0.2s ease;
 }
+
 button:active {
   transform: scale(0.97);
 }
 
-/* Inputs base */
+
+/* ============================================================
+   INPUTS BASE
+   ============================================================ */
+
 input,
 textarea,
 select {
   font-family: inherit;
-  color: var(--sj-azul);
-  transition: box-shadow 0.25s ease, transform 0.25s ease;
+  color: var(--erp-text);
+  transition:
+    box-shadow 0.25s ease,
+    transform 0.25s ease;
 }
+
 input:hover,
 textarea:hover,
 select:hover {
@@ -76,13 +111,21 @@ select:hover {
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
 }
 
-/* Tablas base */
+
+/* ============================================================
+   TABLAS BASE
+   ============================================================ */
+
 table {
   width: 100%;
   border-collapse: collapse;
 }
 
-/* Código y pre */
+
+/* ============================================================
+   CÓDIGO Y PRE
+   ============================================================ */
+
 code,
 pre {
   font-family: "Fira Code", monospace;
@@ -91,9 +134,22 @@ pre {
   border-radius: 6px;
 }
 
-/* HR corporativo */
+
+/* ============================================================
+   HR CORPORATIVO
+   ============================================================ */
+
 hr {
   border: none;
   border-top: 1px solid var(--sj-gris-azulado);
   margin: 20px 0;
+}
+
+
+/* ============================================================
+   ROOT
+   ============================================================ */
+
+#root {
+  min-height: 100vh;
 }

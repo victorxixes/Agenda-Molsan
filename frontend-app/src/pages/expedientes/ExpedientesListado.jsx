@@ -485,13 +485,6 @@ const COLUMNAS = [
 // ============================================================
 // COLUMNAS VISIBLES POR DEFECTO
 // ============================================================
-//
-// Estas son las columnas que se muestran al entrar al módulo.
-// El resto continúa disponible desde "Columnas visibles".
-//
-// Si posteriormente quieres cambiar la selección inicial,
-// solo hay que modificar esta lista.
-//
 
 const COLUMNAS_POR_DEFECTO = [
   "id_expediente",
@@ -507,6 +500,28 @@ const COLUMNAS_POR_DEFECTO = [
   "estado_actividad",
   "nombre_gestoria",
   "tiene_defectos_abiertos",
+];
+
+
+// ============================================================
+// ACTIVIDADES CONOCIDAS DE ABSIS
+//
+// NO se utilizan para calcular los totales.
+//
+// Los totales SIEMPRE vienen del backend agrupados por
+// actividad_actual.
+//
+// Esta lista sirve solamente como referencia para mantener
+// un orden coherente cuando estas actividades existen.
+// ============================================================
+
+const ACTIVIDADES_ABSIS = [
+  "Alta/Validación",
+  "Documentación previa",
+  "Facturación y cierre",
+  "Liquidación impuestos",
+  "Sede Notarial",
+  "Tramitación inscripción",
 ];
 
 
@@ -572,6 +587,20 @@ function formatearValor(valor, tipo) {
 
 
   return String(valor);
+}
+
+
+// ============================================================
+// FORMATEAR NÚMERO
+// ============================================================
+
+function formatearNumero(valor) {
+
+  return new Intl.NumberFormat(
+    "es-ES"
+  ).format(
+    Number(valor || 0)
+  );
 }
 
 
@@ -693,6 +722,9 @@ export default function ExpedientesListado() {
   const [actividades, setActividades] =
     useState([]);
 
+  const [totalActividades, setTotalActividades] =
+    useState(0);
+
   const [loadingActividades, setLoadingActividades] =
     useState(true);
 
@@ -774,10 +806,6 @@ export default function ExpedientesListado() {
         }
 
 
-        // ----------------------------------------------------
-        // EXPEDIENTES
-        // ----------------------------------------------------
-
         setExpedientes(
           Array.isArray(res?.items)
             ? res.items
@@ -785,9 +813,11 @@ export default function ExpedientesListado() {
         );
 
 
-        // ----------------------------------------------------
+        // ======================================================
         // TOTAL REAL
-        // ----------------------------------------------------
+        //
+        // NO es el número de filas de la página.
+        // ======================================================
 
         setTotalExpedientes(
           Number(
@@ -795,10 +825,6 @@ export default function ExpedientesListado() {
           )
         );
 
-
-        // ----------------------------------------------------
-        // PÁGINAS
-        // ----------------------------------------------------
 
         setTotalPaginas(
           Math.max(
@@ -826,6 +852,8 @@ export default function ExpedientesListado() {
           setExpedientes([]);
 
           setTotalExpedientes(0);
+
+          setTotalPaginas(1);
         }
 
       } finally {
@@ -836,7 +864,9 @@ export default function ExpedientesListado() {
       }
     }
 
+
     cargar();
+
 
     return () => {
       activo = false;
@@ -850,7 +880,19 @@ export default function ExpedientesListado() {
 
 
   // ==========================================================
-  // CARGAR ACTIVIDADES
+  // CARGAR RESUMEN DE ACTIVIDADES
+  //
+  // IMPORTANTE:
+  //
+  // Este endpoint es independiente de la paginación.
+  //
+  // NO utilizamos "expedientes" para calcular las tarjetas.
+  //
+  // El backend hace:
+  //
+  // GROUP BY actividad_actual
+  //
+  // y devuelve el TOTAL REAL.
   // ==========================================================
 
   useEffect(() => {
@@ -873,18 +915,20 @@ export default function ExpedientesListado() {
         }
 
 
-        // ----------------------------------------------------
-        // FORMATO PRINCIPAL ESPERADO
-        //
-        // {
-        //   actividades: [
-        //     {
-        //       actividad: "...",
-        //       total: 123
-        //     }
-        //   ]
-        // }
-        // ----------------------------------------------------
+        // ======================================================
+        // TOTAL GENERAL DEL RESUMEN
+        // ======================================================
+
+        setTotalActividades(
+          Number(
+            res?.total || 0
+          )
+        );
+
+
+        // ======================================================
+        // ACTIVIDADES
+        // ======================================================
 
         if (
           Array.isArray(
@@ -910,16 +954,71 @@ export default function ExpedientesListado() {
                       item?.count ??
                       0
                     ),
+
                 })
               )
               .filter(
                 (item) =>
                   item.total >= 0
-              )
-              .sort(
-                (a, b) =>
-                  b.total - a.total
               );
+
+
+          // ====================================================
+          // ORDENAR
+          //
+          // Primero las actividades conocidas de ABSIS.
+          // Después cualquier actividad adicional.
+          //
+          // Dentro de cada grupo:
+          // mayor número primero.
+          // ====================================================
+
+          actividadesNormalizadas.sort(
+            (a, b) => {
+
+              const indiceA =
+                ACTIVIDADES_ABSIS.findIndex(
+                  (nombre) =>
+                    nombre.toLowerCase() ===
+                    a.actividad.toLowerCase()
+                );
+
+              const indiceB =
+                ACTIVIDADES_ABSIS.findIndex(
+                  (nombre) =>
+                    nombre.toLowerCase() ===
+                    b.actividad.toLowerCase()
+                );
+
+
+              if (
+                indiceA !== -1 &&
+                indiceB !== -1
+              ) {
+                return indiceA - indiceB;
+              }
+
+
+              if (
+                indiceA !== -1
+              ) {
+                return -1;
+              }
+
+
+              if (
+                indiceB !== -1
+              ) {
+                return 1;
+              }
+
+
+              return (
+                b.total -
+                a.total
+              );
+            }
+          );
 
 
           setActividades(
@@ -930,19 +1029,9 @@ export default function ExpedientesListado() {
         }
 
 
-        // ----------------------------------------------------
+        // ======================================================
         // FORMATO ALTERNATIVO
-        //
-        // Por si el backend devuelve directamente
-        // un diccionario:
-        //
-        // {
-        //   actividades: {
-        //      "Actividad A": 20,
-        //      "Actividad B": 10
-        //   }
-        // }
-        // ----------------------------------------------------
+        // ======================================================
 
         if (
           res?.actividades &&
@@ -960,12 +1049,11 @@ export default function ExpedientesListado() {
                   actividad,
 
                   total:
-                    Number(total || 0),
+                    Number(
+                      total || 0
+                    ),
+
                 })
-              )
-              .sort(
-                (a, b) =>
-                  b.total - a.total
               );
 
 
@@ -977,14 +1065,10 @@ export default function ExpedientesListado() {
         }
 
 
-        // ----------------------------------------------------
-        // SI EL BACKEND TODAVÍA DEVUELVE EL RESUMEN ANTIGUO
-        // ----------------------------------------------------
-
         setActividades([]);
 
         setErrorActividades(
-          "El backend todavía no está devolviendo el resumen por actividad."
+          "El backend no está devolviendo el resumen por actividad."
         );
 
       } catch (err) {
@@ -997,6 +1081,8 @@ export default function ExpedientesListado() {
         if (activo) {
 
           setActividades([]);
+
+          setTotalActividades(0);
 
           setErrorActividades(
             err?.response?.data?.detail ||
@@ -1012,7 +1098,9 @@ export default function ExpedientesListado() {
       }
     }
 
+
     cargarActividades();
+
 
     return () => {
       activo = false;
@@ -1056,6 +1144,7 @@ export default function ExpedientesListado() {
 
 
     setPagina(1);
+
     setError("");
   };
 
@@ -1090,6 +1179,7 @@ export default function ExpedientesListado() {
 
 
     setPagina(1);
+
     setError("");
   };
 
@@ -1121,12 +1211,14 @@ export default function ExpedientesListado() {
         setOrdenMultiple([
 
           {
+
             columna,
 
             direccion:
               actual.direccion === "asc"
                 ? "desc"
                 : "asc",
+
           },
 
         ]);
@@ -1136,8 +1228,11 @@ export default function ExpedientesListado() {
         setOrdenMultiple([
 
           {
+
             columna,
+
             direccion: "asc",
+
           },
 
         ]);
@@ -1168,7 +1263,9 @@ export default function ExpedientesListado() {
           actual.map(
             (orden, index) => {
 
-              if (index !== indice) {
+              if (
+                index !== indice
+              ) {
                 return orden;
               }
 
@@ -1180,6 +1277,7 @@ export default function ExpedientesListado() {
                   orden.direccion === "asc"
                     ? "desc"
                     : "asc",
+
               };
             }
           )
@@ -1193,8 +1291,11 @@ export default function ExpedientesListado() {
           ...actual,
 
           {
+
             columna,
+
             direccion: "asc",
+
           },
 
         ]
@@ -1237,6 +1338,7 @@ export default function ExpedientesListado() {
     if (
       ordenMultiple.length > 1
     ) {
+
       return `${flecha}${indice + 1}`;
     }
 
@@ -1341,7 +1443,7 @@ export default function ExpedientesListado() {
 
 
   // ==========================================================
-  // ACTIVAR TODAS
+  // MOSTRAR TODAS
   // ==========================================================
 
   const mostrarTodasColumnas = () => {
@@ -1356,7 +1458,7 @@ export default function ExpedientesListado() {
 
 
   // ==========================================================
-  // RESTAURAR COLUMNAS POR DEFECTO
+  // RESTAURAR POR DEFECTO
   // ==========================================================
 
   const restaurarColumnas = () => {
@@ -1549,17 +1651,17 @@ export default function ExpedientesListado() {
             "
           >
             Total general:{" "}
+
             <strong
               className="
                 text-[var(--erp-text)]
               "
             >
-              {new Intl.NumberFormat(
-                "es-ES"
-              ).format(
-                totalExpedientes
+              {formatearNumero(
+                totalActividades
               )}
             </strong>
+
           </div>
 
         </div>
@@ -1572,12 +1674,18 @@ export default function ExpedientesListado() {
               grid
               grid-cols-1
               sm:grid-cols-2
-              lg:grid-cols-4
+              lg:grid-cols-3
+              xl:grid-cols-4
               gap-3
             "
           >
 
-            {[1, 2, 3, 4].map(
+            {[
+              1,
+              2,
+              3,
+              4,
+            ].map(
               (item) => (
 
                 <div
@@ -1672,6 +1780,7 @@ export default function ExpedientesListado() {
                     {actividad.actividad}
                   </p>
 
+
                   <p
                     className="
                       text-2xl
@@ -1680,12 +1789,11 @@ export default function ExpedientesListado() {
                       mt-2
                     "
                   >
-                    {new Intl.NumberFormat(
-                      "es-ES"
-                    ).format(
+                    {formatearNumero(
                       actividad.total
                     )}
                   </p>
+
 
                   <p
                     className="
@@ -1882,7 +1990,7 @@ export default function ExpedientesListado() {
 
 
       {/* ======================================================
-          COLUMNAS
+          COLUMNAS VISIBLES
       ====================================================== */}
 
       <section
@@ -2342,9 +2450,7 @@ export default function ExpedientesListado() {
               text-[var(--erp-text)]
             "
           >
-            {new Intl.NumberFormat(
-              "es-ES"
-            ).format(
+            {formatearNumero(
               totalExpedientes
             )}
           </strong>
@@ -2425,6 +2531,7 @@ export default function ExpedientesListado() {
             text-[var(--erp-text-soft)]
           "
         >
+
           Página{" "}
 
           <strong
@@ -2444,6 +2551,7 @@ export default function ExpedientesListado() {
           >
             {totalPaginas}
           </strong>
+
         </span>
 
 
@@ -2511,6 +2619,7 @@ function FiltroInput({
       >
         {label}
       </label>
+
 
       <input
         type={type}

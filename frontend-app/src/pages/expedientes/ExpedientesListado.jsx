@@ -9,14 +9,14 @@ import {
 
 
 // ============================================================
-// COLUMNAS DEL EXCEL / EXPEDIENTE
+// COLUMNAS
 // ============================================================
 
 const COLUMNAS = [
 
-  // ==========================================================
+  // ----------------------------------------------------------
   // IDENTIFICACIÓN
-  // ==========================================================
+  // ----------------------------------------------------------
 
   {
     key: "id_expediente",
@@ -30,79 +30,16 @@ const COLUMNAS = [
     tipo: "numero",
   },
 
-  // ==========================================================
-  // FECHAS
-  // ==========================================================
-
   {
-    key: "fecha_alta",
-    label: "Fecha Alta",
-    tipo: "fecha",
+    key: "cliente_id",
+    label: "ID Cliente",
+    tipo: "numero",
   },
 
-  {
-    key: "fecha_firma",
-    label: "Fecha Firma",
-    tipo: "fecha",
-  },
 
-  {
-    key: "fecha_inscripcion",
-    label: "Fecha Inscripción",
-    tipo: "fecha",
-  },
-
-  {
-    key: "fecha_entregado_cliente",
-    label: "Fecha Entregado Cliente",
-    tipo: "fecha",
-  },
-
-  {
-    key: "fecha_prevista_firma",
-    label: "Fecha Prevista Firma",
-    tipo: "fecha",
-  },
-
-  {
-    key: "fecha_vencimiento",
-    label: "Fecha Vencimiento",
-    tipo: "fecha",
-  },
-
-  {
-    key: "fecha_sol_cgn",
-    label: "Fecha Solicitud CGN",
-    tipo: "fecha",
-  },
-
-  {
-    key: "fecha_firma_prev_val",
-    label: "Fecha Firma Prev. Validación",
-    tipo: "fecha",
-  },
-
-  {
-    key: "fecha_firma_prev_cli",
-    label: "Fecha Firma Prev. Cliente",
-    tipo: "fecha",
-  },
-
-  {
-    key: "fecha_inicio_actividad",
-    label: "Inicio Actividad",
-    tipo: "fecha",
-  },
-
-  {
-    key: "fecha_fin_actividad",
-    label: "Fin Actividad",
-    tipo: "fecha",
-  },
-
-  // ==========================================================
+  // ----------------------------------------------------------
   // ESTADOS
-  // ==========================================================
+  // ----------------------------------------------------------
 
   {
     key: "estado_expediente",
@@ -134,9 +71,99 @@ const COLUMNAS = [
     tipo: "texto",
   },
 
-  // ==========================================================
+
+  // ----------------------------------------------------------
+  // FECHAS
+  // ----------------------------------------------------------
+
+  {
+    key: "fecha_alta",
+    label: "Fecha alta",
+    tipo: "fecha",
+  },
+
+  {
+    key: "fecha_firma",
+    label: "Fecha firma",
+    tipo: "fecha",
+  },
+
+  {
+    key: "fecha_inscripcion",
+    label: "Fecha inscripción",
+    tipo: "fecha",
+  },
+
+  {
+    key: "fecha_entregado_cliente",
+    label: "Fecha entregado cliente",
+    tipo: "fecha",
+  },
+
+  {
+    key: "fecha_prevista_firma",
+    label: "Fecha prevista firma",
+    tipo: "fecha",
+  },
+
+  {
+    key: "fecha_vencimiento",
+    label: "Fecha vencimiento",
+    tipo: "fecha",
+  },
+
+  {
+    key: "fecha_sol_cgn",
+    label: "Fecha solicitud CGN",
+    tipo: "fecha",
+  },
+
+  {
+    key: "fecha_firma_prev_val",
+    label: "Firma prev. validación",
+    tipo: "fecha",
+  },
+
+  {
+    key: "fecha_firma_prev_cli",
+    label: "Firma prev. cliente",
+    tipo: "fecha",
+  },
+
+  {
+    key: "fecha_inicio_actividad",
+    label: "Inicio actividad",
+    tipo: "fecha",
+  },
+
+  {
+    key: "fecha_fin_actividad",
+    label: "Fin actividad",
+    tipo: "fecha",
+  },
+
+  {
+    key: "fcierre_defecto",
+    label: "Cierre defecto",
+    tipo: "fecha",
+  },
+
+  {
+    key: "facturacion_fecha",
+    label: "Fecha facturación",
+    tipo: "fecha",
+  },
+
+  {
+    key: "registral_fecha",
+    label: "Fecha registral",
+    tipo: "fecha",
+  },
+
+
+  // ----------------------------------------------------------
   // ACTIVIDAD
-  // ==========================================================
+  // ----------------------------------------------------------
 
   {
     key: "actividad_actual",
@@ -144,9 +171,10 @@ const COLUMNAS = [
     tipo: "texto",
   },
 
-  // ==========================================================
+
+  // ----------------------------------------------------------
   // TITULAR
-  // ==========================================================
+  // ----------------------------------------------------------
 
   {
     key: "nombre_titular",
@@ -160,9 +188,33 @@ const COLUMNAS = [
     tipo: "texto",
   },
 
-  // ==========================================================
+
+  // ----------------------------------------------------------
+  // SOLICITANTE
+  // ----------------------------------------------------------
+
+  {
+    key: "nombre_solicitante",
+    label: "Nombre solicitante",
+    tipo: "texto",
+  },
+
+  {
+    key: "nif_solicitante",
+    label: "NIF solicitante",
+    tipo: "texto",
+  },
+
+  {
+    key: "apoderado",
+    label: "Apoderado",
+    tipo: "texto",
+  },
+
+
+  // ----------------------------------------------------------
   // NOTARIO
-  // ==========================================================
+  // ----------------------------------------------------------
 
   {
     key: "nombre_notario",
@@ -182,19 +234,14 @@ const COLUMNAS = [
     tipo: "texto",
   },
 
-  // ==========================================================
+
+  // ----------------------------------------------------------
   // OFICINA
-  // ==========================================================
+  // ----------------------------------------------------------
 
   {
     key: "oficina",
     label: "Oficina",
-    tipo: "texto",
-  },
-
-  {
-    key: "oficina_alta",
-    label: "Oficina Alta",
     tipo: "texto",
   },
 
@@ -204,19 +251,26 @@ const COLUMNAS = [
     tipo: "texto",
   },
 
-  // ==========================================================
-  // ECONÓMICOS
-  // ==========================================================
-
   {
-    key: "importe",
-    label: "Importe",
-    tipo: "numero",
+    key: "oficina_alta",
+    label: "Oficina alta",
+    tipo: "texto",
   },
+
+
+  // ----------------------------------------------------------
+  // ECONÓMICOS
+  // ----------------------------------------------------------
 
   {
     key: "capital",
     label: "Capital",
+    tipo: "numero",
+  },
+
+  {
+    key: "importe",
+    label: "Importe",
     tipo: "numero",
   },
 
@@ -232,9 +286,39 @@ const COLUMNAS = [
     tipo: "numero",
   },
 
-  // ==========================================================
+
+  // ----------------------------------------------------------
+  // PROVISIÓN
+  // ----------------------------------------------------------
+
+  {
+    key: "id_provision",
+    label: "ID provisión",
+    tipo: "texto",
+  },
+
+  {
+    key: "tipo_provision",
+    label: "Tipo provisión",
+    tipo: "texto",
+  },
+
+
+  // ----------------------------------------------------------
   // OPERACIÓN
-  // ==========================================================
+  // ----------------------------------------------------------
+
+  {
+    key: "contrato",
+    label: "Contrato",
+    tipo: "texto",
+  },
+
+  {
+    key: "num_solicitud_sia",
+    label: "Nº solicitud SIA",
+    tipo: "texto",
+  },
 
   {
     key: "tipo_operacion",
@@ -245,18 +329,6 @@ const COLUMNAS = [
   {
     key: "subtipo_operacion",
     label: "Subtipo operación",
-    tipo: "texto",
-  },
-
-  {
-    key: "contrato",
-    label: "Contrato",
-    tipo: "texto",
-  },
-
-  {
-    key: "num_solicitud_sia",
-    label: "Nº Solicitud SIA",
     tipo: "texto",
   },
 
@@ -272,19 +344,20 @@ const COLUMNAS = [
     tipo: "texto",
   },
 
-  // ==========================================================
-  // GTG / BANKIA
-  // ==========================================================
 
-  {
-    key: "producto_gtg",
-    label: "Producto GTG",
-    tipo: "texto",
-  },
+  // ----------------------------------------------------------
+  // GTG / BANKIA
+  // ----------------------------------------------------------
 
   {
     key: "origen_bankia",
     label: "Origen Bankia",
+    tipo: "texto",
+  },
+
+  {
+    key: "producto_gtg",
+    label: "Producto GTG",
     tipo: "texto",
   },
 
@@ -294,9 +367,22 @@ const COLUMNAS = [
     tipo: "texto",
   },
 
-  // ==========================================================
+
+  // ----------------------------------------------------------
   // GESTORÍA
-  // ==========================================================
+  // ----------------------------------------------------------
+
+  {
+    key: "id_gestoria_tramite",
+    label: "ID gestoría trámite",
+    tipo: "texto",
+  },
+
+  {
+    key: "nombre_gestoria",
+    label: "Nombre gestoría",
+    tipo: "texto",
+  },
 
   {
     key: "gestoria",
@@ -304,19 +390,72 @@ const COLUMNAS = [
     tipo: "texto",
   },
 
-  // ==========================================================
-  // CGN
-  // ==========================================================
+
+  // ----------------------------------------------------------
+  // FINCA
+  // ----------------------------------------------------------
 
   {
-    key: "id_expediente_cgn",
-    label: "ID Expediente CGN",
+    key: "finca",
+    label: "Finca",
     tipo: "texto",
   },
 
-  // ==========================================================
+
+  // ----------------------------------------------------------
+  // DEFECTOS
+  // ----------------------------------------------------------
+
+  {
+    key: "tiene_defectos_abiertos",
+    label: "Defectos abiertos",
+    tipo: "texto",
+  },
+
+  {
+    key: "tipo_error",
+    label: "Tipo error",
+    tipo: "texto",
+  },
+
+  {
+    key: "descripcion_error",
+    label: "Descripción error",
+    tipo: "texto",
+  },
+
+  {
+    key: "falta_defecto",
+    label: "Falta / defecto",
+    tipo: "texto",
+  },
+
+
+  // ----------------------------------------------------------
+  // CGN
+  // ----------------------------------------------------------
+
+  {
+    key: "id_expediente_cgn",
+    label: "ID expediente CGN",
+    tipo: "texto",
+  },
+
+
+  // ----------------------------------------------------------
+  // ACTA
+  // ----------------------------------------------------------
+
+  {
+    key: "tipo_acta",
+    label: "Tipo acta",
+    tipo: "texto",
+  },
+
+
+  // ----------------------------------------------------------
   // OTROS
-  // ==========================================================
+  // ----------------------------------------------------------
 
   {
     key: "lucy",
@@ -330,9 +469,10 @@ const COLUMNAS = [
     tipo: "texto",
   },
 
-  // ==========================================================
+
+  // ----------------------------------------------------------
   // OBSERVACIONES
-  // ==========================================================
+  // ----------------------------------------------------------
 
   {
     key: "observaciones",
@@ -340,69 +480,48 @@ const COLUMNAS = [
     tipo: "texto",
   },
 
-  // ==========================================================
-  // FACTURACIÓN
-  // ==========================================================
-
-  {
-    key: "facturacion_fecha",
-    label: "Fecha facturación",
-    tipo: "fecha",
-  },
-
-  // ==========================================================
-  // REGISTRAL
-  // ==========================================================
-
-  {
-    key: "registral_fecha",
-    label: "Fecha registral",
-    tipo: "fecha",
-  },
-
-  // ==========================================================
-  // RELACIONES
-  // ==========================================================
-
-  {
-    key: "cliente_id",
-    label: "ID Cliente",
-    tipo: "numero",
-  },
 ];
 
 
 // ============================================================
-// FORMATEAR VALOR
+// FORMATEAR
 // ============================================================
 
 function formatearValor(valor, tipo) {
-
-  if (valor === null || valor === undefined || valor === "") {
+  if (
+    valor === null ||
+    valor === undefined ||
+    valor === ""
+  ) {
     return "—";
   }
 
   if (tipo === "fecha") {
+    const texto = String(valor);
 
-    if (typeof valor === "string" && valor.includes("-")) {
-      return valor;
+    if (/^\d{4}-\d{2}-\d{2}$/.test(texto)) {
+      const [year, month, day] =
+        texto.split("-");
+
+      return `${day}/${month}/${year}`;
     }
 
-    return String(valor);
+    return texto;
   }
 
   if (tipo === "numero") {
+    const numero = Number(valor);
 
-    if (typeof valor === "number") {
-      return new Intl.NumberFormat("es-ES", {
-        maximumFractionDigits: 2,
-      }).format(valor);
+    if (Number.isNaN(numero)) {
+      return String(valor);
     }
 
-    return valor;
+    return new Intl.NumberFormat("es-ES", {
+      maximumFractionDigits: 2,
+    }).format(numero);
   }
 
-  return valor;
+  return String(valor);
 }
 
 
@@ -412,209 +531,300 @@ function formatearValor(valor, tipo) {
 
 export default function ExpedientesListado() {
 
-  const [expedientes, setExpedientes] = useState([]);
+  const [expedientes, setExpedientes] =
+    useState([]);
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] =
+    useState(true);
 
-  const [error, setError] = useState("");
+  const [error, setError] =
+    useState("");
 
-  const [mostrarFiltros, setMostrarFiltros] = useState(false);
+  const [mostrarFiltros, setMostrarFiltros] =
+    useState(false);
 
-  const [mostrarColumnas, setMostrarColumnas] = useState(false);
+  const [mostrarColumnas, setMostrarColumnas] =
+    useState(false);
 
 
   // ==========================================================
   // FILTROS
   // ==========================================================
 
-  const [filtroNif, setFiltroNif] = useState("");
+  const [filtroNif, setFiltroNif] =
+    useState("");
 
-  const [filtroActividad, setFiltroActividad] = useState("");
+  const [filtroActividad, setFiltroActividad] =
+    useState("");
 
-  const [filtroFechaInicio, setFiltroFechaInicio] = useState("");
+  const [filtroFechaInicio, setFiltroFechaInicio] =
+    useState("");
 
-  const [filtroFechaFin, setFiltroFechaFin] = useState("");
+  const [filtroFechaFin, setFiltroFechaFin] =
+    useState("");
 
-  const [filtroNotario, setFiltroNotario] = useState("");
+  const [filtroNotario, setFiltroNotario] =
+    useState("");
 
-  const [filtroOficina, setFiltroOficina] = useState("");
+  const [filtroOficina, setFiltroOficina] =
+    useState("");
 
-  const [filtroImporteMin, setFiltroImporteMin] = useState("");
+  const [filtroImporteMin, setFiltroImporteMin] =
+    useState("");
 
-  const [filtroImporteMax, setFiltroImporteMax] = useState("");
-
-
-  // ==========================================================
-  // ORDEN
-  // ==========================================================
-
-  const [ordenMultiple, setOrdenMultiple] = useState([]);
+  const [filtroImporteMax, setFiltroImporteMax] =
+    useState("");
 
 
   // ==========================================================
   // PAGINACIÓN
   // ==========================================================
 
-  const [pagina, setPagina] = useState(1);
+  const [pagina, setPagina] =
+    useState(1);
 
-  const [totalPaginas, setTotalPaginas] = useState(1);
+  const [totalPaginas, setTotalPaginas] =
+    useState(1);
 
   const porPagina = 20;
 
 
   // ==========================================================
-  // COLUMNAS VISIBLES
+  // ORDEN
   // ==========================================================
 
-  const [columnasVisibles, setColumnasVisibles] = useState(
-    COLUMNAS.map((c) => c.key)
-  );
+  const [ordenMultiple, setOrdenMultiple] =
+    useState([]);
+
+
+  // ==========================================================
+  // COLUMNAS
+  // ==========================================================
+
+  const [columnasVisibles, setColumnasVisibles] =
+    useState(
+      COLUMNAS.map((columna) => columna.key)
+    );
 
 
   // ==========================================================
   // RESUMEN
   // ==========================================================
 
-  const [resumen, setResumen] = useState({
-    pendientes: 0,
-    enCurso: 0,
-    finalizados: 0,
-  });
+  const [resumen, setResumen] =
+    useState({
+      pendientes: 0,
+      enCurso: 0,
+      finalizados: 0,
+    });
 
 
   // ==========================================================
-  // CARGAR EXPEDIENTES
-  // ==========================================================
-
-  const cargar = async () => {
-
-    setLoading(true);
-    setError("");
-
-    try {
-
-      const res = await obtenerListadoExpedientes({
-
-        pagina,
-
-        porPagina,
-
-        nif: filtroNif || undefined,
-
-        actividad: filtroActividad || undefined,
-
-        fechaInicio: filtroFechaInicio || undefined,
-
-        fechaFin: filtroFechaFin || undefined,
-
-        notario: filtroNotario || undefined,
-
-        oficina: filtroOficina || undefined,
-
-        importeMin: filtroImporteMin || undefined,
-
-        importeMax: filtroImporteMax || undefined,
-
-        ordenMultiple:
-          ordenMultiple.length
-            ? JSON.stringify(ordenMultiple)
-            : undefined,
-      });
-
-
-      setExpedientes(res.items || []);
-
-      setTotalPaginas(res.total_paginas || 1);
-
-    } catch (err) {
-
-      console.error(
-        "Error cargando expedientes:",
-        err
-      );
-
-      setError(
-        "No se han podido cargar los expedientes."
-      );
-
-    } finally {
-
-      setLoading(false);
-
-    }
-  };
-
-
-  // ==========================================================
-  // CARGAR RESUMEN
-  // ==========================================================
-
-  const cargarResumen = async () => {
-
-    try {
-
-      const res =
-        await obtenerResumenExpedientes();
-
-      setResumen(
-        res || {
-          pendientes: 0,
-          enCurso: 0,
-          finalizados: 0,
-        }
-      );
-
-    } catch (err) {
-
-      console.error(
-        "Error cargando resumen:",
-        err
-      );
-
-    }
-  };
-
-
-  // ==========================================================
-  // EFECTO
+  // CARGAR LISTADO
   // ==========================================================
 
   useEffect(() => {
+
+    let activo = true;
+
+    async function cargar() {
+
+      setLoading(true);
+      setError("");
+
+      try {
+
+        const res =
+          await obtenerListadoExpedientes({
+
+            pagina,
+
+            porPagina,
+
+            nif:
+              filtroNif || undefined,
+
+            actividad:
+              filtroActividad || undefined,
+
+            fechaInicio:
+              filtroFechaInicio || undefined,
+
+            fechaFin:
+              filtroFechaFin || undefined,
+
+            notario:
+              filtroNotario || undefined,
+
+            oficina:
+              filtroOficina || undefined,
+
+            importeMin:
+              filtroImporteMin !== ""
+                ? Number(filtroImporteMin)
+                : undefined,
+
+            importeMax:
+              filtroImporteMax !== ""
+                ? Number(filtroImporteMax)
+                : undefined,
+
+            ordenMultiple:
+              ordenMultiple.length > 0
+                ? JSON.stringify(
+                    ordenMultiple
+                  )
+                : undefined,
+          });
+
+
+        if (!activo) {
+          return;
+        }
+
+        setExpedientes(
+          Array.isArray(res?.items)
+            ? res.items
+            : []
+        );
+
+        setTotalPaginas(
+          Math.max(
+            1,
+            Number(
+              res?.total_paginas || 1
+            )
+          )
+        );
+
+      } catch (err) {
+
+        console.error(
+          "Error cargando expedientes:",
+          err
+        );
+
+        if (activo) {
+          setError(
+            err?.response?.data?.detail ||
+              "No se han podido cargar los expedientes."
+          );
+
+          setExpedientes([]);
+        }
+
+      } finally {
+
+        if (activo) {
+          setLoading(false);
+        }
+
+      }
+    }
 
     cargar();
 
-  }, [pagina, ordenMultiple]);
+    return () => {
+      activo = false;
+    };
 
+  }, [
+    pagina,
+    ordenMultiple,
+    filtroNif,
+    filtroActividad,
+    filtroFechaInicio,
+    filtroFechaFin,
+    filtroNotario,
+    filtroOficina,
+    filtroImporteMin,
+    filtroImporteMax,
+  ]);
+
+
+  // ==========================================================
+  // RESUMEN
+  // ==========================================================
 
   useEffect(() => {
 
+    let activo = true;
+
+    async function cargarResumen() {
+
+      try {
+
+        const res =
+          await obtenerResumenExpedientes();
+
+        if (activo) {
+          setResumen({
+            pendientes:
+              Number(res?.pendientes || 0),
+
+            enCurso:
+              Number(res?.enCurso || 0),
+
+            finalizados:
+              Number(res?.finalizados || 0),
+          });
+        }
+
+      } catch (err) {
+
+        console.error(
+          "Error cargando resumen:",
+          err
+        );
+
+      }
+    }
+
     cargarResumen();
+
+    return () => {
+      activo = false;
+    };
 
   }, []);
 
 
   // ==========================================================
-  // FILTROS
+  // APLICAR FILTROS
   // ==========================================================
 
   const aplicarFiltros = () => {
-
     setPagina(1);
-
-    cargar();
-
   };
 
 
   // ==========================================================
-  // ORDENACIÓN
+  // LIMPIAR FILTROS
   // ==========================================================
 
-  const ordenar = (columna, shiftKey) => {
+  const limpiarFiltros = () => {
 
-    // --------------------------------------------------------
-    // ORDEN NORMAL
-    // --------------------------------------------------------
+    setFiltroNif("");
+    setFiltroActividad("");
+    setFiltroFechaInicio("");
+    setFiltroFechaFin("");
+    setFiltroNotario("");
+    setFiltroOficina("");
+    setFiltroImporteMin("");
+    setFiltroImporteMax("");
+
+    setPagina(1);
+  };
+
+
+  // ==========================================================
+  // ORDENAR
+  // ==========================================================
+
+  const ordenar = (
+    columna,
+    shiftKey
+  ) => {
 
     if (!shiftKey) {
 
@@ -649,47 +859,45 @@ export default function ExpedientesListado() {
 
       }
 
+      setPagina(1);
+
       return;
     }
 
 
-    // --------------------------------------------------------
-    // ORDEN MÚLTIPLE
-    // Shift + clic
-    // --------------------------------------------------------
-
     const existe =
       ordenMultiple.find(
-        (o) =>
-          o.columna === columna
+        (orden) =>
+          orden.columna === columna
       );
 
 
     if (existe) {
 
       setOrdenMultiple(
+        ordenMultiple.map((orden) => {
 
-        ordenMultiple.map((o) =>
+          if (
+            orden.columna !== columna
+          ) {
+            return orden;
+          }
 
-          o.columna === columna
+          return {
+            ...orden,
 
-            ? {
-                ...o,
+            direccion:
+              orden.direccion === "asc"
+                ? "desc"
+                : "asc",
+          };
 
-                direccion:
-                  o.direccion === "asc"
-                    ? "desc"
-                    : "asc",
-              }
-
-            : o
-        )
+        })
       );
 
     } else {
 
       setOrdenMultiple([
-
         ...ordenMultiple,
 
         {
@@ -697,11 +905,11 @@ export default function ExpedientesListado() {
 
           direccion: "asc",
         },
-
       ]);
 
     }
 
+    setPagina(1);
   };
 
 
@@ -713,8 +921,8 @@ export default function ExpedientesListado() {
 
     const indice =
       ordenMultiple.findIndex(
-        (x) =>
-          x.columna === columna
+        (orden) =>
+          orden.columna === columna
       );
 
     if (indice === -1) {
@@ -730,9 +938,7 @@ export default function ExpedientesListado() {
         : "↓";
 
     if (ordenMultiple.length > 1) {
-
       return `${flecha}${indice + 1}`;
-
     }
 
     return flecha;
@@ -740,7 +946,7 @@ export default function ExpedientesListado() {
 
 
   // ==========================================================
-  // EXPORTAR EXCEL
+  // EXPORTAR
   // ==========================================================
 
   const exportarExcel = async () => {
@@ -768,11 +974,14 @@ export default function ExpedientesListado() {
           filtroOficina || undefined,
 
         importeMin:
-          filtroImporteMin || undefined,
+          filtroImporteMin !== ""
+            ? Number(filtroImporteMin)
+            : undefined,
 
         importeMax:
-          filtroImporteMax || undefined,
-
+          filtroImporteMax !== ""
+            ? Number(filtroImporteMax)
+            : undefined,
       });
 
     } catch (err) {
@@ -782,8 +991,51 @@ export default function ExpedientesListado() {
         err
       );
 
+      setError(
+        "No se ha podido exportar el Excel."
+      );
     }
   };
+
+
+  // ==========================================================
+  // TOGGLE COLUMNA
+  // ==========================================================
+
+  const toggleColumna = (key) => {
+
+    setColumnasVisibles(
+      (actuales) => {
+
+        if (actuales.includes(key)) {
+
+          return actuales.filter(
+            (item) => item !== key
+          );
+
+        }
+
+        return [
+          ...actuales,
+          key,
+        ];
+
+      }
+    );
+  };
+
+
+  // ==========================================================
+  // COLUMNAS ACTIVAS
+  // ==========================================================
+
+  const columnasActivas =
+    COLUMNAS.filter(
+      (columna) =>
+        columnasVisibles.includes(
+          columna.key
+        )
+    );
 
 
   // ==========================================================
@@ -792,172 +1044,165 @@ export default function ExpedientesListado() {
 
   return (
 
-    <div className="p-6 text-white space-y-6 animate-fade-in">
+    <div
+      className="
+        p-6
+        text-white
+        space-y-6
+        animate-fade-in
+      "
+    >
+
+      {/* ====================================================
+          CABECERA
+      ==================================================== */}
+
+      <div
+        className="
+          flex
+          flex-col
+          md:flex-row
+          md:items-center
+          md:justify-between
+          gap-4
+        "
+      >
+
+        <div>
+
+          <h1
+            className="
+              text-3xl
+              font-bold
+              drop-shadow
+            "
+          >
+            Expedientes
+          </h1>
+
+          <p className="text-white/50 mt-1">
+            Gestión y consulta de expedientes
+          </p>
+
+        </div>
+
+        <button
+          onClick={exportarExcel}
+          className="
+            px-4
+            py-2
+            rounded-xl
+            bg-green-600
+            hover:bg-green-700
+            text-white
+            shadow-lg
+            transition
+          "
+        >
+          Exportar Excel
+        </button>
+
+      </div>
 
 
-      {/* ======================================================
-          TÍTULO
-      ====================================================== */}
-
-      <h1 className="text-3xl font-bold drop-shadow">
-        Expedientes
-      </h1>
-
-
-      {/* ======================================================
+      {/* ====================================================
           ERROR
-      ====================================================== */}
+      ==================================================== */}
 
       {error && (
 
-        <div className="
-          bg-red-500/20
-          border
-          border-red-400/30
-          rounded-xl
-          p-4
-          text-red-200
-        ">
-
+        <div
+          className="
+            bg-red-500/20
+            border
+            border-red-400/30
+            rounded-xl
+            p-4
+            text-red-200
+          "
+        >
           {error}
-
         </div>
 
       )}
 
 
-      {/* ======================================================
+      {/* ====================================================
           RESUMEN
-      ====================================================== */}
+      ==================================================== */}
 
-      <section className="
-        bg-white/10
-        backdrop-blur-xl
-        border
-        border-white/10
-        rounded-2xl
-        p-4
-        shadow-xl
-      ">
+      <section
+        className="
+          bg-white/10
+          backdrop-blur-xl
+          border
+          border-white/10
+          rounded-2xl
+          p-4
+          shadow-xl
+        "
+      >
 
-        <h2 className="
-          text-xl
-          font-semibold
-          mb-4
-        ">
-
+        <h2
+          className="
+            text-xl
+            font-semibold
+            mb-4
+          "
+        >
           Estado de expedientes
-
         </h2>
 
+        <div
+          className="
+            grid
+            grid-cols-1
+            sm:grid-cols-3
+            gap-4
+          "
+        >
 
-        <div className="
-          grid
-          grid-cols-3
-          gap-4
-          text-sm
-          text-white/80
-        ">
+          <ResumenCard
+            titulo="Pendientes"
+            valor={resumen.pendientes}
+          />
 
+          <ResumenCard
+            titulo="En curso"
+            valor={resumen.enCurso}
+          />
 
-          <div className="
-            bg-white/5
-            p-3
-            rounded-xl
-            border
-            border-white/10
-          ">
-
-            <p className="text-white/60">
-              Pendientes
-            </p>
-
-            <p className="
-              text-white
-              font-semibold
-              text-lg
-            ">
-
-              {resumen.pendientes}
-
-            </p>
-
-          </div>
-
-
-          <div className="
-            bg-white/5
-            p-3
-            rounded-xl
-            border
-            border-white/10
-          ">
-
-            <p className="text-white/60">
-              En curso
-            </p>
-
-            <p className="
-              text-white
-              font-semibold
-              text-lg
-            ">
-
-              {resumen.enCurso}
-
-            </p>
-
-          </div>
-
-
-          <div className="
-            bg-white/5
-            p-3
-            rounded-xl
-            border
-            border-white/10
-          ">
-
-            <p className="text-white/60">
-              Finalizados
-            </p>
-
-            <p className="
-              text-white
-              font-semibold
-              text-lg
-            ">
-
-              {resumen.finalizados}
-
-            </p>
-
-          </div>
+          <ResumenCard
+            titulo="Finalizados"
+            valor={resumen.finalizados}
+          />
 
         </div>
 
       </section>
 
 
-      {/* ======================================================
+      {/* ====================================================
           FILTROS
-      ====================================================== */}
+      ==================================================== */}
 
-      <section className="
-        bg-white/10
-        backdrop-blur-xl
-        border
-        border-white/10
-        rounded-2xl
-        p-4
-        shadow-xl
-      ">
-
+      <section
+        className="
+          bg-white/10
+          backdrop-blur-xl
+          border
+          border-white/10
+          rounded-2xl
+          p-4
+          shadow-xl
+        "
+      >
 
         <button
+          type="button"
           onClick={() =>
             setMostrarFiltros(
-              !mostrarFiltros
+              (actual) => !actual
             )
           }
           className="
@@ -990,357 +1235,108 @@ export default function ExpedientesListado() {
 
         {mostrarFiltros && (
 
-          <div className="mt-4">
-
-            <div className="
+          <div
+            className="
+              mt-4
               grid
-              grid-cols-3
+              grid-cols-1
+              md:grid-cols-2
+              lg:grid-cols-3
               gap-4
-            ">
-
-
-              {/* NIF */}
-
-              <div>
-
-                <label className="
-                  text-sm
-                  text-white/70
-                ">
-
-                  NIF titular
-
-                </label>
-
-                <input
-                  type="text"
-                  value={filtroNif}
-                  onChange={(e) =>
-                    setFiltroNif(
-                      e.target.value
-                    )
-                  }
-                  className="
-                    w-full
-                    mt-1
-                    px-3
-                    py-2
-                    rounded-xl
-                    bg-white/10
-                    border
-                    border-white/20
-                    text-white
-                  "
-                />
-
-              </div>
-
-
-              {/* ACTIVIDAD */}
-
-              <div>
-
-                <label className="
-                  text-sm
-                  text-white/70
-                ">
-
-                  Actividad actual
-
-                </label>
-
-                <input
-                  type="text"
-                  value={filtroActividad}
-                  onChange={(e) =>
-                    setFiltroActividad(
-                      e.target.value
-                    )
-                  }
-                  className="
-                    w-full
-                    mt-1
-                    px-3
-                    py-2
-                    rounded-xl
-                    bg-white/10
-                    border
-                    border-white/20
-                    text-white
-                  "
-                />
-
-              </div>
-
-
-              {/* FECHA INICIO */}
-
-              <div>
-
-                <label className="
-                  text-sm
-                  text-white/70
-                ">
-
-                  Fecha inicio
-
-                </label>
-
-                <input
-                  type="date"
-                  value={filtroFechaInicio}
-                  onChange={(e) =>
-                    setFiltroFechaInicio(
-                      e.target.value
-                    )
-                  }
-                  className="
-                    w-full
-                    mt-1
-                    px-3
-                    py-2
-                    rounded-xl
-                    bg-white/10
-                    border
-                    border-white/20
-                    text-white
-                  "
-                />
-
-              </div>
-
-
-              {/* FECHA FIN */}
-
-              <div>
-
-                <label className="
-                  text-sm
-                  text-white/70
-                ">
-
-                  Fecha fin
-
-                </label>
-
-                <input
-                  type="date"
-                  value={filtroFechaFin}
-                  onChange={(e) =>
-                    setFiltroFechaFin(
-                      e.target.value
-                    )
-                  }
-                  className="
-                    w-full
-                    mt-1
-                    px-3
-                    py-2
-                    rounded-xl
-                    bg-white/10
-                    border
-                    border-white/20
-                    text-white
-                  "
-                />
-
-              </div>
-
-
-              {/* NOTARIO */}
-
-              <div>
-
-                <label className="
-                  text-sm
-                  text-white/70
-                ">
-
-                  NIF notario
-
-                </label>
-
-                <input
-                  type="text"
-                  value={filtroNotario}
-                  onChange={(e) =>
-                    setFiltroNotario(
-                      e.target.value
-                    )
-                  }
-                  className="
-                    w-full
-                    mt-1
-                    px-3
-                    py-2
-                    rounded-xl
-                    bg-white/10
-                    border
-                    border-white/20
-                    text-white
-                  "
-                />
-
-              </div>
-
-
-              {/* OFICINA */}
-
-              <div>
-
-                <label className="
-                  text-sm
-                  text-white/70
-                ">
-
-                  Oficina
-
-                </label>
-
-                <input
-                  type="text"
-                  value={filtroOficina}
-                  onChange={(e) =>
-                    setFiltroOficina(
-                      e.target.value
-                    )
-                  }
-                  className="
-                    w-full
-                    mt-1
-                    px-3
-                    py-2
-                    rounded-xl
-                    bg-white/10
-                    border
-                    border-white/20
-                    text-white
-                  "
-                />
-
-              </div>
-
-
-              {/* IMPORTE MIN */}
-
-              <div>
-
-                <label className="
-                  text-sm
-                  text-white/70
-                ">
-
-                  Importe mínimo
-
-                </label>
-
-                <input
-                  type="number"
-                  value={filtroImporteMin}
-                  onChange={(e) =>
-                    setFiltroImporteMin(
-                      e.target.value
-                    )
-                  }
-                  className="
-                    w-full
-                    mt-1
-                    px-3
-                    py-2
-                    rounded-xl
-                    bg-white/10
-                    border
-                    border-white/20
-                    text-white
-                  "
-                />
-
-              </div>
-
-
-              {/* IMPORTE MAX */}
-
-              <div>
-
-                <label className="
-                  text-sm
-                  text-white/70
-                ">
-
-                  Importe máximo
-
-                </label>
-
-                <input
-                  type="number"
-                  value={filtroImporteMax}
-                  onChange={(e) =>
-                    setFiltroImporteMax(
-                      e.target.value
-                    )
-                  }
-                  className="
-                    w-full
-                    mt-1
-                    px-3
-                    py-2
-                    rounded-xl
-                    bg-white/10
-                    border
-                    border-white/20
-                    text-white
-                  "
-                />
-
-              </div>
-
-
-              {/* BOTONES */}
-
-              <div className="
+            "
+          >
+
+            <FiltroInput
+              label="NIF titular"
+              value={filtroNif}
+              onChange={setFiltroNif}
+            />
+
+            <FiltroInput
+              label="Actividad actual"
+              value={filtroActividad}
+              onChange={setFiltroActividad}
+            />
+
+            <FiltroInput
+              label="NIF / nombre notario"
+              value={filtroNotario}
+              onChange={setFiltroNotario}
+            />
+
+            <FiltroInput
+              label="Oficina"
+              value={filtroOficina}
+              onChange={setFiltroOficina}
+            />
+
+            <FiltroInput
+              label="Fecha inicio"
+              type="date"
+              value={filtroFechaInicio}
+              onChange={setFiltroFechaInicio}
+            />
+
+            <FiltroInput
+              label="Fecha fin"
+              type="date"
+              value={filtroFechaFin}
+              onChange={setFiltroFechaFin}
+            />
+
+            <FiltroInput
+              label="Importe mínimo"
+              type="number"
+              value={filtroImporteMin}
+              onChange={setFiltroImporteMin}
+            />
+
+            <FiltroInput
+              label="Importe máximo"
+              type="number"
+              value={filtroImporteMax}
+              onChange={setFiltroImporteMax}
+            />
+
+            <div
+              className="
                 flex
                 items-end
                 gap-3
-              ">
+              "
+            >
 
-                <button
-                  onClick={aplicarFiltros}
-                  className="
-                    px-4
-                    py-2
-                    rounded-xl
-                    bg-blue-600
-                    hover:bg-blue-700
-                    text-white
-                    shadow-lg
-                    transition
-                  "
-                >
+              <button
+                type="button"
+                onClick={aplicarFiltros}
+                className="
+                  px-4
+                  py-2
+                  rounded-xl
+                  bg-blue-600
+                  hover:bg-blue-700
+                  transition
+                "
+              >
+                Aplicar filtros
+              </button>
 
-                  Aplicar filtros
-
-                </button>
-
-
-                <button
-                  onClick={exportarExcel}
-                  className="
-                    px-4
-                    py-2
-                    rounded-xl
-                    bg-green-600
-                    hover:bg-green-700
-                    text-white
-                    shadow-lg
-                    transition
-                  "
-                >
-
-                  Exportar Excel
-
-                </button>
-
-              </div>
+              <button
+                type="button"
+                onClick={limpiarFiltros}
+                className="
+                  px-4
+                  py-2
+                  rounded-xl
+                  bg-white/10
+                  border
+                  border-white/20
+                  hover:bg-white/20
+                  transition
+                "
+              >
+                Limpiar
+              </button>
 
             </div>
 
@@ -1351,25 +1347,27 @@ export default function ExpedientesListado() {
       </section>
 
 
-      {/* ======================================================
+      {/* ====================================================
           COLUMNAS
-      ====================================================== */}
+      ==================================================== */}
 
-      <section className="
-        bg-white/10
-        backdrop-blur-xl
-        border
-        border-white/10
-        rounded-2xl
-        p-4
-        shadow-xl
-      ">
-
+      <section
+        className="
+          bg-white/10
+          backdrop-blur-xl
+          border
+          border-white/10
+          rounded-2xl
+          p-4
+          shadow-xl
+        "
+      >
 
         <button
+          type="button"
           onClick={() =>
             setMostrarColumnas(
-              !mostrarColumnas
+              (actual) => !actual
             )
           }
           className="
@@ -1402,17 +1400,19 @@ export default function ExpedientesListado() {
 
         {mostrarColumnas && (
 
-          <div className="mt-4">
-
-            <div className="
+          <div
+            className="
+              mt-4
               grid
-              grid-cols-3
+              grid-cols-2
               md:grid-cols-4
-              lg:grid-cols-5
+              lg:grid-cols-6
               gap-2
-            ">
+            "
+          >
 
-              {COLUMNAS.map((columna) => (
+            {COLUMNAS.map(
+              (columna) => (
 
                 <label
                   key={columna.key}
@@ -1431,39 +1431,21 @@ export default function ExpedientesListado() {
                     checked={columnasVisibles.includes(
                       columna.key
                     )}
-                    onChange={(e) => {
-
-                      if (
-                        e.target.checked
-                      ) {
-
-                        setColumnasVisibles([
-                          ...columnasVisibles,
-                          columna.key,
-                        ]);
-
-                      } else {
-
-                        setColumnasVisibles(
-                          columnasVisibles.filter(
-                            (x) =>
-                              x !==
-                              columna.key
-                          )
-                        );
-
-                      }
-
-                    }}
+                    onChange={() =>
+                      toggleColumna(
+                        columna.key
+                      )
+                    }
                   />
 
-                  {columna.label}
+                  <span>
+                    {columna.label}
+                  </span>
 
                 </label>
 
-              ))}
-
-            </div>
+              )
+            )}
 
           </div>
 
@@ -1472,257 +1454,256 @@ export default function ExpedientesListado() {
       </section>
 
 
-      {/* ======================================================
+      {/* ====================================================
           TABLA
-      ====================================================== */}
+      ==================================================== */}
 
-      <section className="
-        bg-white/10
-        backdrop-blur-xl
-        border
-        border-white/10
-        rounded-2xl
-        p-4
-        shadow-xl
-        overflow-auto
-      ">
-
+      <section
+        className="
+          bg-white/10
+          backdrop-blur-xl
+          border
+          border-white/10
+          rounded-2xl
+          shadow-xl
+          overflow-hidden
+        "
+      >
 
         {loading ? (
 
-          <div className="
-            text-white/70
-            animate-pulse
-            py-8
-            text-center
-          ">
-
+          <div
+            className="
+              text-white/70
+              animate-pulse
+              py-12
+              text-center
+            "
+          >
             Cargando expedientes…
-
           </div>
 
         ) : expedientes.length === 0 ? (
 
-          <div className="
-            text-white/60
-            py-8
-            text-center
-          ">
-
+          <div
+            className="
+              text-white/60
+              py-12
+              text-center
+            "
+          >
             No hay expedientes para mostrar.
-
           </div>
 
         ) : (
 
-          <table className="
-            min-w-max
-            w-full
-            text-sm
-            text-white/80
-          ">
+          <div className="overflow-auto">
 
+            <table
+              className="
+                min-w-max
+                w-full
+                text-sm
+                text-white/80
+              "
+            >
 
-            {/* =================================================
-                CABECERA
-            ================================================= */}
+              <thead>
 
-            <thead>
+                <tr
+                  className="
+                    text-left
+                    bg-white/5
+                  "
+                >
 
-              <tr className="
-                text-left
-                bg-white/5
-                sticky
-                top-0
-                z-10
-              ">
+                  {columnasActivas.map(
+                    (columna) => (
 
-
-                {COLUMNAS
-
-                  .filter((c) =>
-                    columnasVisibles.includes(
-                      c.key
-                    )
-                  )
-
-                  .map((c) => (
-
-                    <th
-                      key={c.key}
-                      className="
-                        px-3
-                        py-3
-                        cursor-pointer
-                        select-none
-                        whitespace-nowrap
-                        hover:bg-white/10
-                      "
-                      onClick={(e) =>
-                        ordenar(
-                          c.key,
-                          e.shiftKey
-                        )
-                      }
-                      title="
-                        Clic para ordenar.
-                        Shift + clic para
-                        añadir orden.
-                      "
-                    >
-
-                      <div className="
-                        flex
-                        items-center
-                        gap-2
-                      ">
-
-                        <span>
-                          {c.label}
-                        </span>
-
-                        <span className="
-                          text-white/40
-                          text-xs
-                        ">
-
-                          {iconoOrden(
-                            c.key
-                          )}
-
-                        </span>
-
-                      </div>
-
-                    </th>
-
-                  ))}
-
-
-                <th className="
-                  px-3
-                  py-3
-                  whitespace-nowrap
-                ">
-
-                  Acciones
-
-                </th>
-
-              </tr>
-
-            </thead>
-
-
-            {/* =================================================
-                CUERPO
-            ================================================= */}
-
-            <tbody>
-
-              {expedientes.map(
-                (exp) => (
-
-                  <tr
-                    key={
-                      exp.id_expediente ||
-                      exp.id
-                    }
-                    className="
-                      border-t
-                      border-white/10
-                      hover:bg-white/5
-                    "
-                  >
-
-
-                    {COLUMNAS
-
-                      .filter((c) =>
-                        columnasVisibles.includes(
-                          c.key
-                        )
-                      )
-
-                      .map((c) => (
-
-                        <td
-                          key={c.key}
-                          className="
-                            px-3
-                            py-2
-                            whitespace-nowrap
-                          "
-                        >
-
-                          {formatearValor(
-                            exp[c.key],
-                            c.tipo
-                          )}
-
-                        </td>
-
-                      ))}
-
-
-                    <td className="
-                      px-3
-                      py-2
-                      whitespace-nowrap
-                    ">
-
-                      <Link
-                        to={`/expedientes/${
-                          exp.id_expediente
-                        }`}
+                      <th
+                        key={columna.key}
                         className="
-                          text-blue-400
-                          hover:text-blue-300
-                          underline
+                          px-3
+                          py-3
+                          cursor-pointer
+                          select-none
+                          whitespace-nowrap
+                          hover:bg-white/10
+                          sticky
+                          top-0
+                        "
+                        onClick={(event) =>
+                          ordenar(
+                            columna.key,
+                            event.shiftKey
+                          )
+                        }
+                        title="
+                          Clic para ordenar.
+                          Shift + clic para añadir
+                          ordenación múltiple.
                         "
                       >
 
-                        Ver ficha
+                        <div
+                          className="
+                            flex
+                            items-center
+                            gap-2
+                          "
+                        >
 
-                      </Link>
+                          <span>
+                            {columna.label}
+                          </span>
 
-                    </td>
+                          <span
+                            className="
+                              text-white/40
+                              text-xs
+                            "
+                          >
+                            {iconoOrden(
+                              columna.key
+                            )}
+                          </span>
 
-                  </tr>
+                        </div>
 
-                )
-              )}
+                      </th>
 
-            </tbody>
+                    )
+                  )}
 
-          </table>
+                  <th
+                    className="
+                      px-3
+                      py-3
+                      whitespace-nowrap
+                      sticky
+                      top-0
+                      bg-white/5
+                    "
+                  >
+                    Acciones
+                  </th>
+
+                </tr>
+
+              </thead>
+
+
+              <tbody>
+
+                {expedientes.map(
+                  (expediente) => (
+
+                    <tr
+                      key={
+                        expediente.id_expediente ||
+                        expediente.id
+                      }
+                      className="
+                        border-t
+                        border-white/10
+                        hover:bg-white/5
+                      "
+                    >
+
+                      {columnasActivas.map(
+                        (columna) => (
+
+                          <td
+                            key={columna.key}
+                            className="
+                              px-3
+                              py-2
+                              whitespace-nowrap
+                              max-w-[400px]
+                              overflow-hidden
+                              text-ellipsis
+                            "
+                            title={
+                              expediente[
+                                columna.key
+                              ] ?? ""
+                            }
+                          >
+                            {formatearValor(
+                              expediente[
+                                columna.key
+                              ],
+                              columna.tipo
+                            )}
+                          </td>
+
+                        )
+                      )}
+
+                      <td
+                        className="
+                          px-3
+                          py-2
+                          whitespace-nowrap
+                        "
+                      >
+
+                        <Link
+                          to={`/expedientes/${encodeURIComponent(
+                            expediente.id_expediente
+                          )}`}
+                          className="
+                            text-blue-400
+                            hover:text-blue-300
+                            underline
+                          "
+                        >
+                          Ver ficha
+                        </Link>
+
+                      </td>
+
+                    </tr>
+
+                  )
+                )}
+
+              </tbody>
+
+            </table>
+
+          </div>
 
         )}
 
       </section>
 
 
-      {/* ======================================================
+      {/* ====================================================
           PAGINACIÓN
-      ====================================================== */}
+      ==================================================== */}
 
-      <div className="
-        flex
-        items-center
-        justify-center
-        gap-4
-      ">
-
+      <div
+        className="
+          flex
+          flex-col
+          sm:flex-row
+          items-center
+          justify-center
+          gap-4
+        "
+      >
 
         <button
-          disabled={pagina <= 1}
+          disabled={pagina <= 1 || loading}
           onClick={() =>
             setPagina(
-              pagina - 1
+              (actual) =>
+                Math.max(1, actual - 1)
             )
           }
           className="
-            px-3
+            px-4
             py-2
             rounded-xl
             bg-white/10
@@ -1731,34 +1712,34 @@ export default function ExpedientesListado() {
             hover:bg-white/20
             transition
             disabled:opacity-40
+            disabled:cursor-not-allowed
           "
         >
-
           Anterior
-
         </button>
 
 
-        <span className="
-          text-white/70
-        ">
-
+        <span className="text-white/70">
           Página {pagina} de {totalPaginas}
-
         </span>
 
 
         <button
           disabled={
-            pagina >= totalPaginas
+            pagina >= totalPaginas ||
+            loading
           }
           onClick={() =>
             setPagina(
-              pagina + 1
+              (actual) =>
+                Math.min(
+                  totalPaginas,
+                  actual + 1
+                )
             )
           }
           className="
-            px-3
+            px-4
             py-2
             rounded-xl
             bg-white/10
@@ -1767,19 +1748,99 @@ export default function ExpedientesListado() {
             hover:bg-white/20
             transition
             disabled:opacity-40
+            disabled:cursor-not-allowed
           "
         >
-
           Siguiente
-
         </button>
-
 
       </div>
 
+    </div>
+  );
+}
+
+
+// ============================================================
+// COMPONENTES AUXILIARES
+// ============================================================
+
+function ResumenCard({
+  titulo,
+  valor,
+}) {
+  return (
+    <div
+      className="
+        bg-white/5
+        p-4
+        rounded-xl
+        border
+        border-white/10
+      "
+    >
+
+      <p className="text-white/60 text-sm">
+        {titulo}
+      </p>
+
+      <p
+        className="
+          text-white
+          font-semibold
+          text-2xl
+          mt-1
+        "
+      >
+        {valor}
+      </p>
 
     </div>
-
   );
+}
 
+
+function FiltroInput({
+  label,
+  value,
+  onChange,
+  type = "text",
+}) {
+  return (
+    <div>
+
+      <label
+        className="
+          text-sm
+          text-white/70
+        "
+      >
+        {label}
+      </label>
+
+      <input
+        type={type}
+        value={value}
+        onChange={(event) =>
+          onChange(
+            event.target.value
+          )
+        }
+        className="
+          w-full
+          mt-1
+          px-3
+          py-2
+          rounded-xl
+          bg-white/10
+          border
+          border-white/20
+          text-white
+          outline-none
+          focus:border-blue-400
+        "
+      />
+
+    </div>
+  );
 }

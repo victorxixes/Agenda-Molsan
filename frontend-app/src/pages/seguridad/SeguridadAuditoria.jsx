@@ -1,22 +1,46 @@
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useMemo } from "react";
+import { Link } from "react-router-dom";
+
 import { useSeguridad } from "../../hooks/useSeguridad";
+
+import SeguridadRoles from "./SeguridadRoles";
+import SeguridadPermisos from "./SeguridadPermisos";
+import SeguridadModulos from "./SeguridadModulos";
 
 /**
  * ============================================================
- * AUDITORÍA DEL SISTEMA — MOLSAN ERP SAAS PREMIUM 2027
+ * SEGURIDAD — MOLSAN ERP SAAS PREMIUM 2027
+ * CENTRO DE CONTROL DE SEGURIDAD
  * ============================================================
  *
- * - Búsqueda
- * - Filtro por fecha
- * - Ordenación
- * - Paginación
- * - Exportación Excel
- * - Protección frente a datos corruptos
- * - Diseño ERP Premium
+ * Centro principal de seguridad del ERP.
+ *
+ * - Monitor general
+ * - Estado del sistema
+ * - Indicadores de seguridad
+ * - Actividad reciente
+ * - Alertas
+ * - Roles
+ * - Permisos
+ * - Módulos
+ * - Auditoría
+ * - Logs técnicos
+ *
+ * Todo el módulo utiliza el mismo lenguaje visual ERP Premium.
  * ============================================================
  */
 
-const Icono = ({ name, className = "w-5 h-5" }) => (
+
+/**
+ * ============================================================
+ * ICONO
+ * ============================================================
+ */
+
+const Icono = ({
+  name,
+  className = "w-5 h-5",
+}) => (
   <svg
     className={`${className} flex-shrink-0`}
     aria-hidden="true"
@@ -28,122 +52,923 @@ const Icono = ({ name, className = "w-5 h-5" }) => (
 
 /**
  * ============================================================
- * ICONOS DE ACCIÓN
+ * UTILIDADES
  * ============================================================
  */
 
-const ICONOS_ACCION = {
-  login: "lock",
-  login_error: "shield",
-  acceso: "folder",
-  update: "edit",
-  delete: "trash",
-  permiso: "shield",
-  modulo: "folder",
-  default: "clipboard",
-};
+function arraySeguro(valor) {
+  return Array.isArray(valor)
+    ? valor
+    : [];
+}
+
+
+function textoSeguro(valor) {
+  if (
+    valor === null ||
+    typeof valor === "undefined"
+  ) {
+    return "";
+  }
+
+  return String(valor);
+}
 
 
 /**
  * ============================================================
- * ETIQUETA DE ACCIÓN
+ * INDICADOR
  * ============================================================
  */
 
-function AccionBadge({ accion }) {
-  const icon =
-    ICONOS_ACCION[accion] ||
-    ICONOS_ACCION.default;
+function IndicadorSeguridad({
+  icon,
+  titulo,
+  valor,
+  descripcion,
+  accent = "primary",
+}) {
+
+  const accentClasses = {
+    primary: {
+      iconBg:
+        "bg-[var(--erp-primary-soft)]",
+      iconColor:
+        "text-[var(--erp-primary)]",
+    },
+
+    success: {
+      iconBg:
+        "bg-emerald-50",
+      iconColor:
+        "text-emerald-600",
+    },
+
+    warning: {
+      iconBg:
+        "bg-amber-50",
+      iconColor:
+        "text-amber-600",
+    },
+
+    danger: {
+      iconBg:
+        "bg-red-50",
+      iconColor:
+        "text-red-600",
+    },
+  };
+
+  const styles =
+    accentClasses[accent] ||
+    accentClasses.primary;
 
   return (
-    <span
+    <div
       className="
-        inline-flex
-        items-center
-        gap-2
-        px-2.5
-        py-1
-        rounded-lg
-        bg-[var(--erp-primary-soft)]
-        text-[var(--erp-primary)]
+        bg-[var(--erp-surface)]
         border
         border-[var(--erp-border)]
-        text-xs
-        font-medium
-        whitespace-nowrap
+        rounded-2xl
+        shadow-sm
+        p-5
+        transition-all
+        duration-200
+        hover:-translate-y-0.5
+        hover:shadow-md
       "
     >
-      <Icono
-        name={icon}
-        className="w-3.5 h-3.5"
-      />
 
-      {accion}
-    </span>
+      <div
+        className="
+          flex
+          items-start
+          justify-between
+          gap-4
+        "
+      >
+
+        <div className="min-w-0">
+
+          <p
+            className="
+              text-xs
+              uppercase
+              tracking-wide
+              font-medium
+              text-[var(--erp-text-soft)]
+            "
+          >
+            {titulo}
+          </p>
+
+          <p
+            className="
+              text-2xl
+              font-bold
+              text-[var(--erp-text)]
+              mt-1
+            "
+          >
+            {valor}
+          </p>
+
+          {descripcion && (
+            <p
+              className="
+                text-xs
+                text-[var(--erp-text-soft)]
+                mt-1
+                leading-5
+              "
+            >
+              {descripcion}
+            </p>
+          )}
+
+        </div>
+
+
+        <div
+          className={`
+            w-10
+            h-10
+            rounded-xl
+            ${styles.iconBg}
+            ${styles.iconColor}
+            flex
+            items-center
+            justify-center
+            flex-shrink-0
+          `}
+        >
+          <Icono
+            name={icon}
+            className="w-5 h-5"
+          />
+        </div>
+
+      </div>
+
+    </div>
   );
 }
 
 
 /**
  * ============================================================
- * CABECERA ORDENABLE
+ * ACCESO RÁPIDO
  * ============================================================
  */
 
-function CabeceraOrden({
-  campo,
+function TarjetaAcceso({
+  to,
+  icon,
   titulo,
-  orden,
-  onOrdenar,
+  descripcion,
+  accent = "primary",
 }) {
-  const activa = orden.campo === campo;
+
+  const accentClasses = {
+    primary: {
+      iconBg:
+        "bg-[var(--erp-primary-soft)]",
+      iconColor:
+        "text-[var(--erp-primary)]",
+    },
+
+    warning: {
+      iconBg:
+        "bg-amber-50",
+      iconColor:
+        "text-amber-600",
+    },
+
+    success: {
+      iconBg:
+        "bg-emerald-50",
+      iconColor:
+        "text-emerald-600",
+    },
+  };
+
+  const styles =
+    accentClasses[accent] ||
+    accentClasses.primary;
 
   return (
-    <th
-      scope="col"
+    <Link
+      to={to}
       className="
-        px-4
-        py-3
-        text-left
-        text-xs
-        font-semibold
-        uppercase
-        tracking-wide
-        text-[var(--erp-text-soft)]
-        whitespace-nowrap
+        group
+        flex
+        items-center
+        gap-4
+        p-5
+        rounded-2xl
+        bg-[var(--erp-surface)]
+        border
+        border-[var(--erp-border)]
+        shadow-sm
+        transition-all
+        duration-200
+        hover:-translate-y-0.5
+        hover:shadow-md
+        hover:border-[var(--erp-primary)]
       "
     >
-      <button
-        type="button"
-        onClick={() => onOrdenar(campo)}
-        className="
-          inline-flex
+
+      <div
+        className={`
+          w-11
+          h-11
+          rounded-xl
+          ${styles.iconBg}
+          ${styles.iconColor}
+          flex
           items-center
-          gap-2
-          hover:text-[var(--erp-primary)]
+          justify-center
           transition
+          group-hover:scale-105
+        `}
+      >
+        <Icono
+          name={icon}
+          className="w-5 h-5"
+        />
+      </div>
+
+
+      <div className="min-w-0 flex-1">
+
+        <div
+          className="
+            flex
+            items-center
+            justify-between
+            gap-3
+          "
+        >
+
+          <h2
+            className="
+              text-base
+              font-semibold
+              text-[var(--erp-text)]
+            "
+          >
+            {titulo}
+          </h2>
+
+          <span
+            className="
+              text-[var(--erp-text-soft)]
+              transition
+              group-hover:text-[var(--erp-primary)]
+              group-hover:translate-x-0.5
+            "
+          >
+            →
+          </span>
+
+        </div>
+
+        <p
+          className="
+            mt-1
+            text-sm
+            leading-5
+            text-[var(--erp-text-soft)]
+          "
+        >
+          {descripcion}
+        </p>
+
+      </div>
+
+    </Link>
+  );
+}
+
+
+/**
+ * ============================================================
+ * PANEL
+ * ============================================================
+ */
+
+function PanelSeguridad({
+  icon,
+  titulo,
+  descripcion,
+  children,
+  className = "",
+}) {
+
+  return (
+    <section
+      className={`
+        bg-[var(--erp-surface)]
+        border
+        border-[var(--erp-border)]
+        rounded-2xl
+        shadow-sm
+        overflow-hidden
+        ${className}
+      `}
+    >
+
+      {/* CABECERA */}
+
+      <div
+        className="
+          px-5
+          py-4
+          border-b
+          border-[var(--erp-border)]
+          flex
+          items-center
+          gap-3
         "
       >
-        {titulo}
 
-        <span
-          className={`
-            text-[10px]
-            ${
-              activa
-                ? "text-[var(--erp-primary)]"
-                : "text-[var(--erp-text-soft)] opacity-50"
-            }
-          `}
+        <div
+          className="
+            w-9
+            h-9
+            rounded-xl
+            bg-[var(--erp-primary-soft)]
+            text-[var(--erp-primary)]
+            flex
+            items-center
+            justify-center
+            flex-shrink-0
+          "
         >
-          {activa
-            ? orden.asc
-              ? "▲"
-              : "▼"
-            : "↕"}
-        </span>
-      </button>
-    </th>
+          <Icono
+            name={icon}
+            className="w-4 h-4"
+          />
+        </div>
+
+
+        <div className="min-w-0">
+
+          <h3
+            className="
+              text-base
+              font-semibold
+              text-[var(--erp-text)]
+            "
+          >
+            {titulo}
+          </h3>
+
+          {descripcion && (
+            <p
+              className="
+                text-xs
+                mt-0.5
+                text-[var(--erp-text-soft)]
+              "
+            >
+              {descripcion}
+            </p>
+          )}
+
+        </div>
+
+      </div>
+
+
+      {/* CONTENIDO */}
+
+      <div className="p-5">
+        {children}
+      </div>
+
+    </section>
+  );
+}
+
+
+/**
+ * ============================================================
+ * ACTIVIDAD RECIENTE
+ * ============================================================
+ */
+
+function ActividadReciente({
+  auditoria,
+}) {
+
+  const registros =
+    useMemo(() => {
+
+      return arraySeguro(auditoria)
+        .filter((item) => item)
+        .slice(0, 6);
+
+    }, [auditoria]);
+
+
+  return (
+    <section
+      className="
+        bg-[var(--erp-surface)]
+        border
+        border-[var(--erp-border)]
+        rounded-2xl
+        shadow-sm
+        overflow-hidden
+      "
+    >
+
+      <div
+        className="
+          px-5
+          py-4
+          border-b
+          border-[var(--erp-border)]
+        "
+      >
+
+        <h2
+          className="
+            text-base
+            font-semibold
+            text-[var(--erp-text)]
+          "
+        >
+          Actividad reciente
+        </h2>
+
+        <p
+          className="
+            text-xs
+            text-[var(--erp-text-soft)]
+            mt-0.5
+          "
+        >
+          Últimas operaciones registradas
+        </p>
+
+      </div>
+
+
+      <div className="divide-y divide-[var(--erp-border)]">
+
+        {registros.length === 0 ? (
+
+          <div
+            className="
+              px-5
+              py-10
+              text-center
+            "
+          >
+
+            <div
+              className="
+                w-10
+                h-10
+                rounded-xl
+                bg-[var(--erp-primary-soft)]
+                text-[var(--erp-primary)]
+                flex
+                items-center
+                justify-center
+                mx-auto
+                mb-3
+              "
+            >
+              <Icono
+                name="clipboard"
+                className="w-5 h-5"
+              />
+            </div>
+
+            <p
+              className="
+                text-sm
+                font-medium
+                text-[var(--erp-text)]
+              "
+            >
+              Sin actividad registrada
+            </p>
+
+            <p
+              className="
+                text-xs
+                text-[var(--erp-text-soft)]
+                mt-1
+              "
+            >
+              No hay operaciones disponibles para mostrar.
+            </p>
+
+          </div>
+
+        ) : (
+
+          registros.map((item, index) => (
+
+            <div
+              key={
+                item.id ??
+                `actividad-${index}`
+              }
+              className="
+                px-5
+                py-3.5
+                flex
+                items-start
+                gap-3
+                hover:bg-[var(--erp-primary-soft)]
+                transition
+              "
+            >
+
+              <div
+                className="
+                  w-8
+                  h-8
+                  rounded-lg
+                  bg-[var(--erp-primary-soft)]
+                  text-[var(--erp-primary)]
+                  flex
+                  items-center
+                  justify-center
+                  flex-shrink-0
+                "
+              >
+                <Icono
+                  name="clipboard"
+                  className="w-4 h-4"
+                />
+              </div>
+
+
+              <div className="min-w-0 flex-1">
+
+                <div
+                  className="
+                    flex
+                    flex-wrap
+                    items-center
+                    gap-x-2
+                    gap-y-1
+                  "
+                >
+
+                  <span
+                    className="
+                      text-sm
+                      font-medium
+                      text-[var(--erp-text)]
+                    "
+                  >
+                    {textoSeguro(item.usuario) ||
+                      "Sistema"}
+                  </span>
+
+                  <span
+                    className="
+                      text-xs
+                      text-[var(--erp-text-soft)]
+                    "
+                  >
+                    ·
+                  </span>
+
+                  <span
+                    className="
+                      text-xs
+                      text-[var(--erp-primary)]
+                    "
+                  >
+                    {textoSeguro(item.accion) ||
+                      "Actividad"}
+                  </span>
+
+                </div>
+
+
+                <p
+                  className="
+                    text-sm
+                    text-[var(--erp-text-soft)]
+                    mt-0.5
+                    truncate
+                  "
+                  title={
+                    textoSeguro(
+                      item.descripcion
+                    )
+                  }
+                >
+                  {textoSeguro(
+                    item.descripcion
+                  ) ||
+                    "Sin descripción"}
+                </p>
+
+
+                <div
+                  className="
+                    flex
+                    flex-wrap
+                    gap-2
+                    mt-1
+                    text-[11px]
+                    text-[var(--erp-text-soft)]
+                  "
+                >
+
+                  <span>
+                    {textoSeguro(
+                      item.modulo
+                    ) || "Sistema"}
+                  </span>
+
+                  <span>·</span>
+
+                  <span>
+                    {textoSeguro(
+                      item.fecha
+                    ) || "-"}
+                  </span>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          ))
+
+        )}
+
+      </div>
+
+    </section>
+  );
+}
+
+
+/**
+ * ============================================================
+ * ESTADO / ALERTAS
+ * ============================================================
+ */
+
+function PanelEstado({
+  auditoria,
+  logs,
+}) {
+
+  const auditoriaSegura =
+    arraySeguro(auditoria);
+
+  const logsSeguros =
+    arraySeguro(logs);
+
+
+  const intentosFallidos =
+    auditoriaSegura.filter(
+      (item) =>
+        textoSeguro(
+          item?.accion
+        ).toLowerCase() ===
+        "login_error"
+    ).length;
+
+
+  const erroresTecnicos =
+    logsSeguros.filter(
+      (item) =>
+        textoSeguro(
+          item?.evento
+        ).toLowerCase() ===
+        "error"
+    ).length;
+
+
+  const advertencias =
+    logsSeguros.filter(
+      (item) =>
+        textoSeguro(
+          item?.evento
+        ).toLowerCase() ===
+        "warning"
+    ).length;
+
+
+  const incidencias =
+    erroresTecnicos +
+    advertencias;
+
+
+  const estado =
+    incidencias === 0 &&
+    intentosFallidos === 0
+      ? "Sistema protegido"
+      : "Revisión recomendada";
+
+
+  const estadoClasses =
+    incidencias === 0 &&
+    intentosFallidos === 0
+      ? {
+          badge:
+            "bg-emerald-50 border-emerald-100 text-emerald-700",
+          dot:
+            "bg-emerald-500",
+        }
+      : {
+          badge:
+            "bg-amber-50 border-amber-100 text-amber-700",
+          dot:
+            "bg-amber-500",
+        };
+
+
+  return (
+    <section
+      className="
+        bg-[var(--erp-surface)]
+        border
+        border-[var(--erp-border)]
+        rounded-2xl
+        shadow-sm
+        overflow-hidden
+      "
+    >
+
+      <div
+        className="
+          px-5
+          py-4
+          border-b
+          border-[var(--erp-border)]
+        "
+      >
+
+        <div
+          className="
+            flex
+            items-center
+            justify-between
+            gap-3
+          "
+        >
+
+          <div>
+
+            <h2
+              className="
+                text-base
+                font-semibold
+                text-[var(--erp-text)]
+              "
+            >
+              Estado de seguridad
+            </h2>
+
+            <p
+              className="
+                text-xs
+                text-[var(--erp-text-soft)]
+                mt-0.5
+              "
+            >
+              Supervisión de actividad y eventos
+            </p>
+
+          </div>
+
+
+          <span
+            className={`
+              inline-flex
+              items-center
+              gap-2
+              px-3
+              py-1.5
+              rounded-lg
+              border
+              text-xs
+              font-medium
+              ${estadoClasses.badge}
+            `}
+          >
+
+            <span
+              className={`
+                w-1.5
+                h-1.5
+                rounded-full
+                ${estadoClasses.dot}
+              `}
+            />
+
+            {estado}
+
+          </span>
+
+        </div>
+
+      </div>
+
+
+      <div
+        className="
+          p-5
+          grid
+          grid-cols-1
+          sm:grid-cols-3
+          gap-4
+        "
+      >
+
+        <div>
+
+          <p
+            className="
+              text-xs
+              text-[var(--erp-text-soft)]
+            "
+          >
+            Intentos fallidos
+          </p>
+
+          <p
+            className="
+              text-xl
+              font-bold
+              text-[var(--erp-text)]
+              mt-1
+            "
+          >
+            {intentosFallidos}
+          </p>
+
+        </div>
+
+
+        <div>
+
+          <p
+            className="
+              text-xs
+              text-[var(--erp-text-soft)]
+            "
+          >
+            Errores técnicos
+          </p>
+
+          <p
+            className="
+              text-xl
+              font-bold
+              text-[var(--erp-text)]
+              mt-1
+            "
+          >
+            {erroresTecnicos}
+          </p>
+
+        </div>
+
+
+        <div>
+
+          <p
+            className="
+              text-xs
+              text-[var(--erp-text-soft)]
+            "
+          >
+            Advertencias
+          </p>
+
+          <p
+            className="
+              text-xl
+              font-bold
+              text-[var(--erp-text)]
+              mt-1
+            "
+          >
+            {advertencias}
+          </p>
+
+        </div>
+
+      </div>
+
+    </section>
   );
 }
 
@@ -154,49 +979,17 @@ function CabeceraOrden({
  * ============================================================
  */
 
-export default function SeguridadAuditoria() {
+export default function Seguridad() {
 
   const {
+    roles = [],
+    permisos = [],
+    empleados = [],
     auditoria = [],
+    logs = [],
     cargarTodo,
+    loading,
   } = useSeguridad();
-
-
-  const [pagina, setPagina] = useState(0);
-
-  const pageSize = 20;
-
-  const [busqueda, setBusqueda] =
-    useState("");
-
-  const [filtroFecha, setFiltroFecha] =
-    useState("");
-
-  const [orden, setOrden] = useState({
-    campo: "fecha",
-    asc: false,
-  });
-
-
-  /**
-   * ==========================================================
-   * ORDENACIÓN
-   * ==========================================================
-   */
-
-  const ordenar = useCallback((campo) => {
-
-    setOrden((prev) => ({
-      campo,
-      asc:
-        prev.campo === campo
-          ? !prev.asc
-          : true,
-    }));
-
-    setPagina(0);
-
-  }, []);
 
 
   /**
@@ -206,246 +999,137 @@ export default function SeguridadAuditoria() {
    */
 
   useEffect(() => {
+
     cargarTodo();
+
   }, [cargarTodo]);
 
 
   /**
    * ==========================================================
-   * BLINDAJE DE DATOS
+   * DATOS SEGUROS
    * ==========================================================
    */
 
-  const auditoriaSegura = useMemo(() => {
-
-    if (!Array.isArray(auditoria)) {
-      return [];
-    }
-
-    return auditoria.filter((a) => {
-
-      return (
-        a &&
-        typeof a === "object" &&
-        typeof a.id !== "undefined" &&
-        typeof a.fecha === "string" &&
-        typeof a.usuario === "string" &&
-        typeof a.modulo === "string" &&
-        typeof a.accion === "string" &&
-        typeof a.descripcion === "string"
-      );
-
-    });
-
-  }, [auditoria]);
-
-
-  /**
-   * ==========================================================
-   * FILTRADO
-   * ==========================================================
-   */
-
-  const auditoriaFiltrada = useMemo(() => {
-
-    const texto =
-      busqueda
-        .toLowerCase()
-        .trim();
-
-    return auditoriaSegura.filter((a) => {
-
-      const coincideBusqueda =
-        a.usuario
-          .toLowerCase()
-          .includes(texto) ||
-
-        a.modulo
-          .toLowerCase()
-          .includes(texto) ||
-
-        a.accion
-          .toLowerCase()
-          .includes(texto) ||
-
-        a.descripcion
-          .toLowerCase()
-          .includes(texto) ||
-
-        a.fecha
-          .toLowerCase()
-          .includes(texto);
-
-      const coincideFecha =
-        filtroFecha
-          ? a.fecha.startsWith(filtroFecha)
-          : true;
-
-      return (
-        coincideBusqueda &&
-        coincideFecha
-      );
-
-    });
-
-  }, [
-    auditoriaSegura,
-    busqueda,
-    filtroFecha,
-  ]);
-
-
-  /**
-   * ==========================================================
-   * ORDENACIÓN DE RESULTADOS
-   * ==========================================================
-   */
-
-  const auditoriaOrdenada = useMemo(() => {
-
-    const {
-      campo,
-      asc,
-    } = orden;
-
-    const dir = asc ? 1 : -1;
-
-    return [...auditoriaFiltrada].sort(
-      (a, b) => {
-
-        const va = a[campo];
-        const vb = b[campo];
-
-        if (va < vb) {
-          return -1 * dir;
-        }
-
-        if (va > vb) {
-          return 1 * dir;
-        }
-
-        return 0;
-
-      }
+  const rolesSeguros =
+    useMemo(
+      () => arraySeguro(roles),
+      [roles]
     );
 
-  }, [
-    auditoriaFiltrada,
-    orden,
-  ]);
 
-
-  /**
-   * ==========================================================
-   * PAGINACIÓN
-   * ==========================================================
-   */
-
-  const auditoriaPaginada = useMemo(() => {
-
-    return auditoriaOrdenada.slice(
-      pagina * pageSize,
-      pagina * pageSize + pageSize
+  const permisosSeguros =
+    useMemo(
+      () => arraySeguro(permisos),
+      [permisos]
     );
 
-  }, [
-    auditoriaOrdenada,
-    pagina,
-  ]);
+
+  const empleadosSeguros =
+    useMemo(
+      () => arraySeguro(empleados),
+      [empleados]
+    );
 
 
-  const totalPaginas =
-    Math.max(
-      1,
-      Math.ceil(
-        auditoriaOrdenada.length /
-          pageSize
-      )
+  const auditoriaSegura =
+    useMemo(
+      () => arraySeguro(auditoria),
+      [auditoria]
+    );
+
+
+  const logsSeguros =
+    useMemo(
+      () => arraySeguro(logs),
+      [logs]
     );
 
 
   /**
    * ==========================================================
-   * EXPORTACIÓN EXCEL
+   * INDICADORES
    * ==========================================================
    */
 
-  const descargarExcel = useCallback(() => {
-
-    const encabezados = [
-      "ID",
-      "Usuario",
-      "Módulo",
-      "Acción",
-      "Descripción",
-      "Fecha",
-    ];
-
-    const filas =
-      auditoriaOrdenada.map((a) => [
-        a.id,
-        a.usuario,
-        a.modulo,
-        a.accion,
-        a.descripcion,
-        a.fecha,
-      ]);
-
-    const contenido = [
-      encabezados,
-      ...filas,
-    ]
-      .map((fila) =>
-        fila.join("\t")
-      )
-      .join("\n");
-
-    const blob = new Blob(
-      [contenido],
-      {
-        type:
-          "application/vnd.ms-excel",
-      }
+  const usuariosActivos =
+    useMemo(
+      () =>
+        empleadosSeguros.filter(
+          (empleado) =>
+            empleado &&
+            (
+              empleado.activo === true ||
+              empleado.activo === 1
+            )
+        ).length,
+      [empleadosSeguros]
     );
 
-    const url =
-      URL.createObjectURL(blob);
 
-    const a =
-      document.createElement("a");
-
-    a.href = url;
-
-    a.download =
-      "auditoria_sistema.xls";
-
-    a.click();
-
-    URL.revokeObjectURL(url);
-
-  }, [auditoriaOrdenada]);
+  const erroresSeguros =
+    useMemo(
+      () =>
+        logsSeguros.filter(
+          (item) =>
+            textoSeguro(
+              item?.evento
+            ).toLowerCase() ===
+            "error"
+        ).length,
+      [logsSeguros]
+    );
 
 
   /**
    * ==========================================================
-   * LIMPIAR FILTROS
+   * LOADING
    * ==========================================================
    */
 
-  const limpiarFiltros = useCallback(() => {
+  if (loading) {
 
-    setBusqueda("");
-    setFiltroFecha("");
-    setPagina(0);
+    return (
+      <div
+        className="
+          min-h-[400px]
+          flex
+          items-center
+          justify-center
+        "
+      >
 
-  }, []);
+        <div
+          className="
+            flex
+            flex-col
+            items-center
+            gap-3
+            text-[var(--erp-text-soft)]
+          "
+        >
 
+          <div
+            className="
+              w-8
+              h-8
+              rounded-full
+              border-2
+              border-[var(--erp-border)]
+              border-t-[var(--erp-primary)]
+              animate-spin
+            "
+          />
 
-  const hayFiltros =
-    Boolean(
-      busqueda ||
-      filtroFecha
+          <span className="text-sm">
+            Cargando seguridad…
+          </span>
+
+        </div>
+
+      </div>
     );
+  }
 
 
   /**
@@ -463,7 +1147,7 @@ export default function SeguridadAuditoria() {
     >
 
       {/* ======================================================
-          CABECERA
+          CABECERA PRINCIPAL
           ====================================================== */}
 
       <section
@@ -485,7 +1169,474 @@ export default function SeguridadAuditoria() {
             lg:flex-row
             lg:items-center
             lg:justify-between
+            gap-5
+          "
+        >
+
+          <div
+            className="
+              flex
+              items-center
+              gap-4
+              min-w-0
+            "
+          >
+
+            <div
+              className="
+                w-12
+                h-12
+                rounded-2xl
+                bg-[var(--erp-primary-soft)]
+                text-[var(--erp-primary)]
+                flex
+                items-center
+                justify-center
+                flex-shrink-0
+              "
+            >
+              <Icono
+                name="shield"
+                className="w-6 h-6"
+              />
+            </div>
+
+
+            <div className="min-w-0">
+
+              <div
+                className="
+                  flex
+                  flex-wrap
+                  items-center
+                  gap-2
+                "
+              >
+
+                <h1
+                  className="
+                    text-2xl
+                    font-bold
+                    text-[var(--erp-text)]
+                  "
+                >
+                  Centro de seguridad
+                </h1>
+
+                <span
+                  className="
+                    inline-flex
+                    items-center
+                    gap-1.5
+                    px-2.5
+                    py-1
+                    rounded-lg
+                    bg-emerald-50
+                    border
+                    border-emerald-100
+                    text-emerald-700
+                    text-[11px]
+                    font-medium
+                  "
+                >
+
+                  <span
+                    className="
+                      w-1.5
+                      h-1.5
+                      rounded-full
+                      bg-emerald-500
+                    "
+                  />
+
+                  Monitor activo
+
+                </span>
+
+              </div>
+
+
+              <p
+                className="
+                  text-sm
+                  text-[var(--erp-text-soft)]
+                  mt-1
+                "
+              >
+                Centro de control y supervisión de seguridad de Molsan ERP
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <div
+            className="
+              flex
+              items-center
+              gap-2
+              px-3
+              py-2
+              rounded-xl
+              bg-[var(--erp-bg)]
+              border
+              border-[var(--erp-border)]
+              text-xs
+              text-[var(--erp-text-soft)]
+              w-fit
+            "
+          >
+
+            <Icono
+              name="shield"
+              className="w-4 h-4 text-[var(--erp-primary)]"
+            />
+
+            Control centralizado
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      {/* ======================================================
+          INDICADORES
+          ====================================================== */}
+
+      <section>
+
+        <div className="mb-3">
+
+          <h2
+            className="
+              text-lg
+              font-semibold
+              text-[var(--erp-text)]
+            "
+          >
+            Resumen de seguridad
+          </h2>
+
+          <p
+            className="
+              text-sm
+              text-[var(--erp-text-soft)]
+              mt-0.5
+            "
+          >
+            Estado actual de usuarios, configuración y actividad
+          </p>
+
+        </div>
+
+
+        <div
+          className="
+            grid
+            grid-cols-1
+            sm:grid-cols-2
+            xl:grid-cols-5
             gap-4
+          "
+        >
+
+          <IndicadorSeguridad
+            icon="user-group"
+            titulo="Usuarios"
+            valor={
+              empleadosSeguros.length
+            }
+            descripcion="Usuarios disponibles"
+          />
+
+
+          <IndicadorSeguridad
+            icon="user-group"
+            titulo="Activos"
+            valor={usuariosActivos}
+            descripcion="Usuarios activos"
+            accent="success"
+          />
+
+
+          <IndicadorSeguridad
+            icon="shield"
+            titulo="Roles"
+            valor={
+              rolesSeguros.length
+            }
+            descripcion="Roles configurados"
+          />
+
+
+          <IndicadorSeguridad
+            icon="shield"
+            titulo="Permisos"
+            valor={
+              permisosSeguros.length
+            }
+            descripcion="Permisos registrados"
+          />
+
+
+          <IndicadorSeguridad
+            icon="clipboard"
+            titulo="Auditoría"
+            valor={
+              auditoriaSegura.length
+            }
+            descripcion="Registros disponibles"
+            accent={
+              auditoriaSegura.length
+                ? "primary"
+                : "success"
+            }
+          />
+
+        </div>
+
+      </section>
+
+
+      {/* ======================================================
+          MONITOR
+          ====================================================== */}
+
+      <section>
+
+        <div className="mb-3">
+
+          <h2
+            className="
+              text-lg
+              font-semibold
+              text-[var(--erp-text)]
+            "
+          >
+            Monitor de seguridad
+          </h2>
+
+          <p
+            className="
+              text-sm
+              text-[var(--erp-text-soft)]
+              mt-0.5
+            "
+          >
+            Supervisión de actividad e incidencias del sistema
+          </p>
+
+        </div>
+
+
+        <div
+          className="
+            grid
+            grid-cols-1
+            xl:grid-cols-2
+            gap-5
+          "
+        >
+
+          <ActividadReciente
+            auditoria={
+              auditoriaSegura
+            }
+          />
+
+
+          <PanelEstado
+            auditoria={
+              auditoriaSegura
+            }
+            logs={
+              logsSeguros
+            }
+          />
+
+        </div>
+
+      </section>
+
+
+      {/* ======================================================
+          ACCESOS DE CONTROL
+          ====================================================== */}
+
+      <section>
+
+        <div className="mb-3">
+
+          <h2
+            className="
+              text-lg
+              font-semibold
+              text-[var(--erp-text)]
+            "
+          >
+            Control y supervisión
+          </h2>
+
+          <p
+            className="
+              text-sm
+              text-[var(--erp-text-soft)]
+              mt-0.5
+            "
+          >
+            Acceso directo a los registros y controles de seguridad
+          </p>
+
+        </div>
+
+
+        <div
+          className="
+            grid
+            grid-cols-1
+            md:grid-cols-2
+            gap-4
+          "
+        >
+
+          <TarjetaAcceso
+            to="/seguridad/auditoria"
+            icon="clipboard"
+            titulo="Auditoría"
+            descripcion="Consulta las acciones registradas y la actividad de los usuarios."
+            accent="primary"
+          />
+
+
+          <TarjetaAcceso
+            to="/seguridad/logs"
+            icon="clipboard"
+            titulo="Logs técnicos"
+            descripcion="Revisa eventos técnicos, errores, incidencias y registros del sistema."
+            accent="warning"
+          />
+
+        </div>
+
+      </section>
+
+
+      {/* ======================================================
+          CONFIGURACIÓN
+          ====================================================== */}
+
+      <section>
+
+        <div className="mb-3">
+
+          <h2
+            className="
+              text-lg
+              font-semibold
+              text-[var(--erp-text)]
+            "
+          >
+            Configuración de acceso
+          </h2>
+
+          <p
+            className="
+              text-sm
+              text-[var(--erp-text-soft)]
+              mt-0.5
+            "
+          >
+            Gestiona quién puede acceder y qué puede visualizar dentro del ERP
+          </p>
+
+        </div>
+
+
+        <div
+          className="
+            grid
+            grid-cols-1
+            xl:grid-cols-2
+            gap-5
+          "
+        >
+
+          {/* ==================================================
+              ROLES
+              ================================================== */}
+
+          <PanelSeguridad
+            icon="user-group"
+            titulo="Roles del sistema"
+            descripcion="Perfiles y niveles de acceso"
+          >
+
+            <SeguridadRoles />
+
+          </PanelSeguridad>
+
+
+          {/* ==================================================
+              PERMISOS
+              ================================================== */}
+
+          <PanelSeguridad
+            icon="shield"
+            titulo="Permisos globales"
+            descripcion="Autorizaciones disponibles"
+          >
+
+            <SeguridadPermisos />
+
+          </PanelSeguridad>
+
+
+          {/* ==================================================
+              MÓDULOS
+              ================================================== */}
+
+          <PanelSeguridad
+            icon="folder"
+            titulo="Módulos visibles"
+            descripcion="Control de acceso a las diferentes áreas del ERP"
+            className="xl:col-span-2"
+          >
+
+            <SeguridadModulos />
+
+          </PanelSeguridad>
+
+        </div>
+
+      </section>
+
+
+      {/* ======================================================
+          PIE INFORMATIVO
+          ====================================================== */}
+
+      <section
+        className="
+          bg-[var(--erp-bg)]
+          border
+          border-[var(--erp-border)]
+          rounded-2xl
+          px-5
+          py-4
+        "
+      >
+
+        <div
+          className="
+            flex
+            flex-col
+            sm:flex-row
+            sm:items-center
+            sm:justify-between
+            gap-3
           "
         >
 
@@ -499,9 +1650,9 @@ export default function SeguridadAuditoria() {
 
             <div
               className="
-                w-11
-                h-11
-                rounded-xl
+                w-8
+                h-8
+                rounded-lg
                 bg-[var(--erp-primary-soft)]
                 text-[var(--erp-primary)]
                 flex
@@ -511,881 +1662,51 @@ export default function SeguridadAuditoria() {
               "
             >
               <Icono
-                name="clipboard"
-                className="w-5 h-5"
+                name="shield"
+                className="w-4 h-4"
               />
             </div>
 
-            <div>
 
-              <h1
-                className="
-                  text-2xl
-                  font-bold
-                  text-[var(--erp-text)]
-                "
-              >
-                Auditoría del sistema
-              </h1>
+            <div>
 
               <p
                 className="
                   text-sm
+                  font-medium
+                  text-[var(--erp-text)]
+                "
+              >
+                Seguridad centralizada
+              </p>
+
+              <p
+                className="
+                  text-xs
                   text-[var(--erp-text-soft)]
                   mt-0.5
                 "
               >
-                Registro de actividad y operaciones del ERP
+                Roles, permisos, módulos, auditoría y registros técnicos desde un único centro.
               </p>
 
             </div>
 
           </div>
 
-
-          {/* EXPORTAR */}
-
-          <button
-            type="button"
-            onClick={descargarExcel}
-            className="
-              inline-flex
-              items-center
-              justify-center
-              gap-2
-              px-4
-              py-2.5
-              rounded-xl
-              bg-[var(--erp-primary)]
-              text-white
-              text-sm
-              font-medium
-              shadow-sm
-              hover:opacity-90
-              transition
-              active:scale-[0.98]
-              w-fit
-            "
-          >
-
-            <Icono
-              name="download"
-              className="w-4 h-4"
-            />
-
-            Descargar Excel
-
-          </button>
-
-        </div>
-
-      </section>
-
-
-      {/* ======================================================
-          RESUMEN
-          ====================================================== */}
-
-      <div
-        className="
-          grid
-          grid-cols-1
-          sm:grid-cols-3
-          gap-4
-        "
-      >
-
-        {/* TOTAL */}
-
-        <div
-          className="
-            bg-[var(--erp-surface)]
-            border
-            border-[var(--erp-border)]
-            rounded-2xl
-            shadow-sm
-            p-5
-          "
-        >
 
           <div
             className="
-              flex
-              items-center
-              justify-between
-            "
-          >
-
-            <div>
-
-              <p
-                className="
-                  text-xs
-                  uppercase
-                  tracking-wide
-                  text-[var(--erp-text-soft)]
-                "
-              >
-                Registros
-              </p>
-
-              <p
-                className="
-                  text-2xl
-                  font-bold
-                  text-[var(--erp-text)]
-                  mt-1
-                "
-              >
-                {auditoriaOrdenada.length}
-              </p>
-
-            </div>
-
-            <div
-              className="
-                w-10
-                h-10
-                rounded-xl
-                bg-[var(--erp-primary-soft)]
-                text-[var(--erp-primary)]
-                flex
-                items-center
-                justify-center
-              "
-            >
-              <Icono
-                name="clipboard"
-                className="w-5 h-5"
-              />
-            </div>
-
-          </div>
-
-        </div>
-
-
-        {/* PÁGINA */}
-
-        <div
-          className="
-            bg-[var(--erp-surface)]
-            border
-            border-[var(--erp-border)]
-            rounded-2xl
-            shadow-sm
-            p-5
-          "
-        >
-
-          <p
-            className="
               text-xs
-              uppercase
-              tracking-wide
               text-[var(--erp-text-soft)]
             "
           >
-            Página
-          </p>
-
-          <p
-            className="
-              text-2xl
-              font-bold
-              text-[var(--erp-text)]
-              mt-1
-            "
-          >
-            {pagina + 1}
-            <span
-              className="
-                text-sm
-                font-medium
-                text-[var(--erp-text-soft)]
-                ml-1
-              "
-            >
-              / {totalPaginas}
-            </span>
-          </p>
-
-        </div>
-
-
-        {/* ESTADO */}
-
-        <div
-          className="
-            bg-[var(--erp-surface)]
-            border
-            border-[var(--erp-border)]
-            rounded-2xl
-            shadow-sm
-            p-5
-          "
-        >
-
-          <div
-            className="
-              flex
-              items-center
-              justify-between
-            "
-          >
-
-            <div>
-
-              <p
-                className="
-                  text-xs
-                  uppercase
-                  tracking-wide
-                  text-[var(--erp-text-soft)]
-                "
-              >
-                Estado
-              </p>
-
-              <p
-                className="
-                  text-base
-                  font-semibold
-                  text-emerald-600
-                  mt-1
-                "
-              >
-                Auditoría activa
-              </p>
-
-            </div>
-
-            <span
-              className="
-                w-3
-                h-3
-                rounded-full
-                bg-emerald-500
-              "
-            />
-
+            Molsan ERP · Seguridad
           </div>
-
-        </div>
-
-      </div>
-
-
-      {/* ======================================================
-          FILTROS
-          ====================================================== */}
-
-      <section
-        className="
-          bg-[var(--erp-surface)]
-          border
-          border-[var(--erp-border)]
-          rounded-2xl
-          shadow-sm
-          p-5
-        "
-      >
-
-        <div
-          className="
-            flex
-            flex-col
-            lg:flex-row
-            lg:items-end
-            gap-4
-          "
-        >
-
-          {/* BUSCADOR */}
-
-          <div className="flex-1">
-
-            <label
-              className="
-                block
-                text-xs
-                font-medium
-                text-[var(--erp-text-soft)]
-                mb-1.5
-              "
-            >
-              Buscar
-            </label>
-
-            <div className="relative">
-
-              <Icono
-                name="search"
-                className="
-                  absolute
-                  left-3
-                  top-1/2
-                  -translate-y-1/2
-                  w-4
-                  h-4
-                  text-[var(--erp-text-soft)]
-                "
-              />
-
-              <input
-                type="text"
-                placeholder="Usuario, módulo, acción o descripción..."
-                className="
-                  w-full
-                  h-11
-                  pl-10
-                  pr-4
-                  rounded-xl
-                  border
-                  border-[var(--erp-border)]
-                  bg-[var(--erp-bg)]
-                  text-[var(--erp-text)]
-                  placeholder:text-[var(--erp-text-soft)]
-                  focus:outline-none
-                  focus:ring-2
-                  focus:ring-[var(--erp-primary)]
-                  focus:border-[var(--erp-primary)]
-                  transition
-                "
-                value={busqueda}
-                onChange={(e) => {
-                  setBusqueda(
-                    e.target.value
-                  );
-                  setPagina(0);
-                }}
-              />
-
-            </div>
-
-          </div>
-
-
-          {/* FECHA */}
-
-          <div className="w-full lg:w-56">
-
-            <label
-              className="
-                block
-                text-xs
-                font-medium
-                text-[var(--erp-text-soft)]
-                mb-1.5
-              "
-            >
-              Fecha
-            </label>
-
-            <input
-              type="date"
-              className="
-                w-full
-                h-11
-                px-3
-                rounded-xl
-                border
-                border-[var(--erp-border)]
-                bg-[var(--erp-bg)]
-                text-[var(--erp-text)]
-                focus:outline-none
-                focus:ring-2
-                focus:ring-[var(--erp-primary)]
-                focus:border-[var(--erp-primary)]
-                transition
-              "
-              value={filtroFecha}
-              onChange={(e) => {
-                setFiltroFecha(
-                  e.target.value
-                );
-                setPagina(0);
-              }}
-            />
-
-          </div>
-
-
-          {/* LIMPIAR */}
-
-          <button
-            type="button"
-            disabled={!hayFiltros}
-            onClick={limpiarFiltros}
-            className="
-              h-11
-              px-4
-              rounded-xl
-              border
-              border-[var(--erp-border)]
-              bg-[var(--erp-bg)]
-              text-[var(--erp-text)]
-              text-sm
-              font-medium
-              hover:bg-[var(--erp-primary-soft)]
-              hover:text-[var(--erp-primary)]
-              transition
-              disabled:opacity-40
-              disabled:cursor-not-allowed
-            "
-          >
-            Limpiar
-          </button>
 
         </div>
 
       </section>
-
-
-      {/* ======================================================
-          TABLA
-          ====================================================== */}
-
-      <section
-        className="
-          bg-[var(--erp-surface)]
-          border
-          border-[var(--erp-border)]
-          rounded-2xl
-          shadow-sm
-          overflow-hidden
-        "
-      >
-
-        {/* CABECERA TABLA */}
-
-        <div
-          className="
-            px-5
-            py-4
-            border-b
-            border-[var(--erp-border)]
-            flex
-            items-center
-            justify-between
-            gap-3
-          "
-        >
-
-          <div>
-
-            <h2
-              className="
-                text-base
-                font-semibold
-                text-[var(--erp-text)]
-              "
-            >
-              Registros de auditoría
-            </h2>
-
-            <p
-              className="
-                text-xs
-                text-[var(--erp-text-soft)]
-                mt-0.5
-              "
-            >
-              {auditoriaOrdenada.length} registros encontrados
-            </p>
-
-          </div>
-
-          <span
-            className="
-              hidden
-              sm:inline-flex
-              items-center
-              gap-2
-              px-3
-              py-1.5
-              rounded-lg
-              bg-[var(--erp-primary-soft)]
-              text-[var(--erp-primary)]
-              text-xs
-              font-medium
-            "
-          >
-            <span
-              className="
-                w-1.5
-                h-1.5
-                rounded-full
-                bg-current
-              "
-            />
-
-            Sistema activo
-
-          </span>
-
-        </div>
-
-
-        {/* CONTENIDO RESPONSIVE */}
-
-        <div className="overflow-x-auto">
-
-          <table
-            className="
-              w-full
-              min-w-[900px]
-              text-sm
-            "
-          >
-
-            <thead
-              className="
-                bg-[var(--erp-bg)]
-                border-b
-                border-[var(--erp-border)]
-              "
-            >
-
-              <tr>
-
-                <CabeceraOrden
-                  campo="fecha"
-                  titulo="Fecha"
-                  orden={orden}
-                  onOrdenar={ordenar}
-                />
-
-                <CabeceraOrden
-                  campo="usuario"
-                  titulo="Usuario"
-                  orden={orden}
-                  onOrdenar={ordenar}
-                />
-
-                <CabeceraOrden
-                  campo="modulo"
-                  titulo="Módulo"
-                  orden={orden}
-                  onOrdenar={ordenar}
-                />
-
-                <CabeceraOrden
-                  campo="accion"
-                  titulo="Acción"
-                  orden={orden}
-                  onOrdenar={ordenar}
-                />
-
-                <th
-                  scope="col"
-                  className="
-                    px-4
-                    py-3
-                    text-left
-                    text-xs
-                    font-semibold
-                    uppercase
-                    tracking-wide
-                    text-[var(--erp-text-soft)]
-                  "
-                >
-                  Descripción
-                </th>
-
-              </tr>
-
-            </thead>
-
-
-            <tbody>
-
-              {auditoriaPaginada.map(
-                (a) => (
-                  <tr
-                    key={String(a.id)}
-                    className="
-                      border-b
-                      border-[var(--erp-border)]
-                      last:border-b-0
-                      hover:bg-[var(--erp-primary-soft)]
-                      transition
-                    "
-                  >
-
-                    <td
-                      className="
-                        px-4
-                        py-3.5
-                        text-[var(--erp-text-soft)]
-                        whitespace-nowrap
-                      "
-                    >
-                      {a.fecha}
-                    </td>
-
-
-                    <td
-                      className="
-                        px-4
-                        py-3.5
-                        font-medium
-                        text-[var(--erp-text)]
-                        whitespace-nowrap
-                      "
-                    >
-                      {a.usuario}
-                    </td>
-
-
-                    <td
-                      className="
-                        px-4
-                        py-3.5
-                        text-[var(--erp-text)]
-                      "
-                    >
-                      {a.modulo}
-                    </td>
-
-
-                    <td
-                      className="
-                        px-4
-                        py-3.5
-                      "
-                    >
-                      <AccionBadge
-                        accion={a.accion}
-                      />
-                    </td>
-
-
-                    <td
-                      className="
-                        px-4
-                        py-3.5
-                        text-[var(--erp-text-soft)]
-                        max-w-[500px]
-                      "
-                    >
-                      <div
-                        className="
-                          truncate
-                        "
-                        title={a.descripcion}
-                      >
-                        {a.descripcion}
-                      </div>
-                    </td>
-
-                  </tr>
-                )
-              )}
-
-            </tbody>
-
-          </table>
-
-        </div>
-
-
-        {/* ESTADO VACÍO */}
-
-        {auditoriaPaginada.length === 0 && (
-          <div
-            className="
-              py-14
-              px-6
-              text-center
-            "
-          >
-
-            <div
-              className="
-                w-12
-                h-12
-                rounded-xl
-                bg-[var(--erp-primary-soft)]
-                text-[var(--erp-primary)]
-                flex
-                items-center
-                justify-center
-                mx-auto
-                mb-3
-              "
-            >
-              <Icono
-                name="search"
-                className="w-5 h-5"
-              />
-            </div>
-
-            <h3
-              className="
-                text-sm
-                font-semibold
-                text-[var(--erp-text)]
-              "
-            >
-              No se encontraron registros
-            </h3>
-
-            <p
-              className="
-                text-sm
-                text-[var(--erp-text-soft)]
-                mt-1
-              "
-            >
-              Prueba a modificar los filtros de búsqueda.
-            </p>
-
-          </div>
-        )}
-
-      </section>
-
-
-      {/* ======================================================
-          PAGINACIÓN
-          ====================================================== */}
-
-      <div
-        className="
-          flex
-          flex-col
-          sm:flex-row
-          sm:items-center
-          sm:justify-between
-          gap-3
-        "
-      >
-
-        <p
-          className="
-            text-sm
-            text-[var(--erp-text-soft)]
-          "
-        >
-          Mostrando{" "}
-          <span
-            className="
-              font-medium
-              text-[var(--erp-text)]
-            "
-          >
-            {auditoriaPaginada.length}
-          </span>{" "}
-          de{" "}
-          <span
-            className="
-              font-medium
-              text-[var(--erp-text)]
-            "
-          >
-            {auditoriaOrdenada.length}
-          </span>{" "}
-          registros
-        </p>
-
-
-        <div
-          className="
-            flex
-            items-center
-            gap-2
-          "
-        >
-
-          <button
-            type="button"
-            disabled={pagina === 0}
-            onClick={() =>
-              setPagina(
-                (p) => Math.max(p - 1, 0)
-              )
-            }
-            className="
-              inline-flex
-              items-center
-              gap-2
-              px-3
-              py-2
-              rounded-xl
-              border
-              border-[var(--erp-border)]
-              bg-[var(--erp-surface)]
-              text-[var(--erp-text)]
-              text-sm
-              font-medium
-              hover:bg-[var(--erp-primary-soft)]
-              hover:text-[var(--erp-primary)]
-              transition
-              disabled:opacity-40
-              disabled:cursor-not-allowed
-            "
-          >
-            ←
-            <span className="hidden sm:inline">
-              Anterior
-            </span>
-          </button>
-
-
-          <span
-            className="
-              min-w-[90px]
-              text-center
-              text-sm
-              font-medium
-              text-[var(--erp-text)]
-            "
-          >
-            Página {pagina + 1}
-          </span>
-
-
-          <button
-            type="button"
-            disabled={
-              (pagina + 1) * pageSize >=
-              auditoriaOrdenada.length
-            }
-            onClick={() =>
-              setPagina(
-                (p) => p + 1
-              )
-            }
-            className="
-              inline-flex
-              items-center
-              gap-2
-              px-3
-              py-2
-              rounded-xl
-              border
-              border-[var(--erp-border)]
-              bg-[var(--erp-surface)]
-              text-[var(--erp-text)]
-              text-sm
-              font-medium
-              hover:bg-[var(--erp-primary-soft)]
-              hover:text-[var(--erp-primary)]
-              transition
-              disabled:opacity-40
-              disabled:cursor-not-allowed
-            "
-          >
-            <span className="hidden sm:inline">
-              Siguiente
-            </span>
-            →
-          </button>
-
-        </div>
-
-      </div>
 
     </div>
   );

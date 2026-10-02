@@ -1,11 +1,15 @@
-import { useEffect, useMemo } from "react";
-import { Link } from "react-router-dom";
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 import { useSeguridad } from "../../hooks/useSeguridad";
 
 import SeguridadRoles from "./SeguridadRoles";
 import SeguridadPermisos from "./SeguridadPermisos";
 import SeguridadModulos from "./SeguridadModulos";
+import SeguridadFicha from "./SeguridadFicha";
 
 
 /**
@@ -14,17 +18,28 @@ import SeguridadModulos from "./SeguridadModulos";
  * CENTRO DE CONTROL DE SEGURIDAD
  * ============================================================
  *
+ * ARQUITECTURA
+ *
+ * Seguridad.jsx
+ *      │
+ *      ├── cargarTodo()
+ *      │
+ *      ├── selección de empleado
+ *      │
+ *      ├── SeguridadFicha
+ *      │
+ *      ├── SeguridadRoles
+ *      │
+ *      ├── SeguridadPermisos
+ *      │
+ *      └── SeguridadModulos
+ *
  * IMPORTANTE:
  *
- * La carga global de datos se realiza ÚNICAMENTE aquí.
- *
- * Los módulos hijos:
- *
- * - SeguridadRoles
- * - SeguridadPermisos
- * - SeguridadModulos
- *
- * no deben ejecutar cargarTodo().
+ * - Este componente es el único que ejecuta cargarTodo().
+ * - Los hijos NO deben ejecutar cargarTodo().
+ * - SeguridadFicha carga la ficha del empleado seleccionado.
+ * - La ficha se conserva en el store mediante useSeguridad().
  *
  * ============================================================
  */
@@ -56,7 +71,9 @@ const Icono = ({
  */
 
 function arraySeguro(valor) {
-  return Array.isArray(valor) ? valor : [];
+  return Array.isArray(valor)
+    ? valor
+    : [];
 }
 
 
@@ -87,30 +104,45 @@ function IndicadorSeguridad({
 }) {
 
   const accentClasses = {
+
     primary: {
-      iconBg: "bg-[var(--erp-primary-soft)]",
-      iconColor: "text-[var(--erp-primary)]",
+      iconBg:
+        "bg-[var(--erp-primary-soft)]",
+
+      iconColor:
+        "text-[var(--erp-primary)]",
     },
 
     success: {
-      iconBg: "bg-emerald-50",
-      iconColor: "text-emerald-600",
+      iconBg:
+        "bg-emerald-50",
+
+      iconColor:
+        "text-emerald-600",
     },
 
     warning: {
-      iconBg: "bg-amber-50",
-      iconColor: "text-amber-600",
+      iconBg:
+        "bg-amber-50",
+
+      iconColor:
+        "text-amber-600",
     },
 
     danger: {
-      iconBg: "bg-red-50",
-      iconColor: "text-red-600",
+      iconBg:
+        "bg-red-50",
+
+      iconColor:
+        "text-red-600",
     },
+
   };
 
   const styles =
     accentClasses[accent] ||
     accentClasses.primary;
+
 
   return (
     <div
@@ -196,10 +228,12 @@ function IndicadorSeguridad({
             group-hover:scale-105
           `}
         >
+
           <Icono
             name={icon}
             className="w-5 h-5"
           />
+
         </div>
 
       </div>
@@ -224,34 +258,49 @@ function TarjetaAcceso({
 }) {
 
   const accentClasses = {
+
     primary: {
-      iconBg: "bg-[var(--erp-primary-soft)]",
-      iconColor: "text-[var(--erp-primary)]",
+      iconBg:
+        "bg-[var(--erp-primary-soft)]",
+
+      iconColor:
+        "text-[var(--erp-primary)]",
     },
 
     warning: {
-      iconBg: "bg-amber-50",
-      iconColor: "text-amber-600",
+      iconBg:
+        "bg-amber-50",
+
+      iconColor:
+        "text-amber-600",
     },
 
     success: {
-      iconBg: "bg-emerald-50",
-      iconColor: "text-emerald-600",
+      iconBg:
+        "bg-emerald-50",
+
+      iconColor:
+        "text-emerald-600",
     },
 
     danger: {
-      iconBg: "bg-red-50",
-      iconColor: "text-red-600",
+      iconBg:
+        "bg-red-50",
+
+      iconColor:
+        "text-red-600",
     },
+
   };
 
   const styles =
     accentClasses[accent] ||
     accentClasses.primary;
 
+
   return (
-    <Link
-      to={to}
+    <a
+      href={to}
       className="
         group
         flex
@@ -287,10 +336,12 @@ function TarjetaAcceso({
           group-hover:scale-105
         `}
       >
+
         <Icono
           name={icon}
           className="w-5 h-5"
         />
+
       </div>
 
 
@@ -329,6 +380,7 @@ function TarjetaAcceso({
 
         </div>
 
+
         <p
           className="
             mt-1
@@ -342,7 +394,7 @@ function TarjetaAcceso({
 
       </div>
 
-    </Link>
+    </a>
   );
 }
 
@@ -364,6 +416,7 @@ function ActividadReciente({
         .slice(0, 6),
     [auditoria]
   );
+
 
   return (
     <section
@@ -435,11 +488,14 @@ function ActividadReciente({
                 mb-3
               "
             >
+
               <Icono
                 name="clipboard"
                 className="w-5 h-5"
               />
+
             </div>
+
 
             <p
               className="
@@ -450,6 +506,7 @@ function ActividadReciente({
             >
               Sin actividad registrada
             </p>
+
 
             <p
               className="
@@ -487,6 +544,7 @@ function ActividadReciente({
               textoSeguro(item?.fecha) ||
               "-";
 
+
             return (
               <div
                 key={
@@ -517,10 +575,12 @@ function ActividadReciente({
                     flex-shrink-0
                   "
                 >
+
                   <Icono
                     name="clipboard"
                     className="w-4 h-4"
                   />
+
                 </div>
 
 
@@ -595,7 +655,9 @@ function ActividadReciente({
                       {modulo}
                     </span>
 
-                    <span>·</span>
+                    <span>
+                      ·
+                    </span>
 
                     <span>
                       {fecha}
@@ -607,6 +669,7 @@ function ActividadReciente({
 
               </div>
             );
+
           })
 
         )}
@@ -888,12 +951,28 @@ export default function Seguridad() {
 
   /**
    * ==========================================================
+   * EMPLEADO SELECCIONADO
+   * ==========================================================
+   *
+   * SeguridadFicha necesita un empleado concreto.
+   *
+   * No hacemos una petición adicional aquí.
+   * Solamente seleccionamos el empleado que ya viene
+   * dentro de empleados después de cargarTodo().
+   *
+   * ==========================================================
+   */
+
+  const [empleadoSeleccionadoId, setEmpleadoSeleccionadoId] =
+    useState(null);
+
+
+  /**
+   * ==========================================================
    * CARGA GLOBAL
    * ==========================================================
    *
-   * SOLO SEGURIDAD PADRE CARGA.
-   *
-   * Los hijos NO llaman cargarTodo().
+   * SOLO ESTE COMPONENTE CARGA TODO.
    *
    * ==========================================================
    */
@@ -939,6 +1018,76 @@ export default function Seguridad() {
     () => arraySeguro(logs),
     [logs]
   );
+
+
+  /**
+   * ==========================================================
+   * NORMALIZAR EMPLEADO SELECCIONADO
+   * ==========================================================
+   */
+
+  useEffect(() => {
+
+    if (!empleadosSeguros.length) {
+
+      setEmpleadoSeleccionadoId(null);
+
+      return;
+    }
+
+
+    const existe =
+      empleadosSeguros.some(
+        (empleado) =>
+          String(empleado?.id) ===
+          String(empleadoSeleccionadoId)
+      );
+
+
+    if (!existe) {
+
+      const primerEmpleado =
+        empleadosSeguros[0];
+
+      if (
+        primerEmpleado &&
+        primerEmpleado.id !== null &&
+        typeof primerEmpleado.id !== "undefined"
+      ) {
+
+        setEmpleadoSeleccionadoId(
+          primerEmpleado.id
+        );
+
+      }
+
+    }
+
+  }, [
+    empleadosSeguros,
+    empleadoSeleccionadoId,
+  ]);
+
+
+  /**
+   * ==========================================================
+   * EMPLEADO SELECCIONADO
+   * ==========================================================
+   */
+
+  const empleadoSeleccionado =
+    useMemo(
+      () =>
+        empleadosSeguros.find(
+          (empleado) =>
+            String(empleado?.id) ===
+            String(empleadoSeleccionadoId)
+        ) || null,
+      [
+        empleadosSeguros,
+        empleadoSeleccionadoId,
+      ]
+    );
 
 
   /**
@@ -1075,10 +1224,12 @@ export default function Seguridad() {
                 flex-shrink-0
               "
             >
+
               <Icono
                 name="shield"
                 className="w-6 h-6"
               />
+
             </div>
 
 
@@ -1103,6 +1254,7 @@ export default function Seguridad() {
                 >
                   Centro de seguridad
                 </h1>
+
 
                 <span
                   className="
@@ -1330,6 +1482,273 @@ export default function Seguridad() {
 
 
       {/* ======================================================
+          EMPLEADO / FICHA
+      ====================================================== */}
+
+      <section>
+
+        <div className="mb-3">
+
+          <h2
+            className="
+              text-lg
+              font-semibold
+              text-[var(--erp-text)]
+            "
+          >
+            Gestión individual de seguridad
+          </h2>
+
+          <p
+            className="
+              text-sm
+              text-[var(--erp-text-soft)]
+              mt-0.5
+            "
+          >
+            Selecciona un empleado para consultar y gestionar su configuración de seguridad.
+          </p>
+
+        </div>
+
+
+        <div
+          className="
+            bg-[var(--erp-surface)]
+            border
+            border-[var(--erp-border)]
+            rounded-2xl
+            shadow-sm
+            p-5
+          "
+        >
+
+          <div
+            className="
+              flex
+              flex-col
+              gap-2
+              sm:flex-row
+              sm:items-center
+              sm:justify-between
+            "
+          >
+
+            <div>
+
+              <label
+                htmlFor="seguridad-empleado"
+                className="
+                  block
+                  text-xs
+                  font-semibold
+                  uppercase
+                  tracking-[0.08em]
+                  text-[var(--erp-text-soft)]
+                "
+              >
+                Empleado
+              </label>
+
+              <p
+                className="
+                  text-xs
+                  text-[var(--erp-text-soft)]
+                  mt-1
+                "
+              >
+                La ficha se actualizará al cambiar de empleado.
+              </p>
+
+            </div>
+
+
+            <select
+              id="seguridad-empleado"
+              value={
+                empleadoSeleccionadoId ?? ""
+              }
+              onChange={(event) => {
+
+                const valor =
+                  event.target.value;
+
+                setEmpleadoSeleccionadoId(
+                  valor === ""
+                    ? null
+                    : Number(valor)
+                );
+
+              }}
+              className="
+                w-full
+                sm:w-[320px]
+                rounded-xl
+                border
+                border-[var(--erp-border)]
+                bg-[var(--erp-surface)]
+                px-3
+                py-2.5
+                text-sm
+                text-[var(--erp-text)]
+                outline-none
+                transition
+                focus:border-[var(--erp-primary)]
+                focus:ring-2
+                focus:ring-[var(--erp-primary-soft)]
+              "
+            >
+
+              <option value="">
+                Selecciona un empleado
+              </option>
+
+              {empleadosSeguros.map(
+                (empleado) => {
+
+                  const nombre =
+                    [
+                      empleado?.nombre,
+                      empleado?.apellidos,
+                    ]
+                      .filter(Boolean)
+                      .join(" ")
+                      .trim();
+
+                  const usuario =
+                    textoSeguro(
+                      empleado?.usuario
+                    );
+
+                  return (
+                    <option
+                      key={empleado.id}
+                      value={empleado.id}
+                    >
+                      {nombre ||
+                        usuario ||
+                        `Empleado ${empleado.id}`}
+                      {usuario &&
+                      nombre
+                        ? ` · ${usuario}`
+                        : ""}
+                    </option>
+                  );
+
+                }
+              )}
+
+            </select>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      {empleadoSeleccionadoId && (
+        <section>
+
+          <div
+            className="
+              bg-[var(--erp-surface)]
+              border
+              border-[var(--erp-border)]
+              rounded-2xl
+              shadow-sm
+              overflow-hidden
+            "
+          >
+
+            <div
+              className="
+                px-5
+                py-4
+                border-b
+                border-[var(--erp-border)]
+                flex
+                items-center
+                gap-3
+              "
+            >
+
+              <div
+                className="
+                  w-9
+                  h-9
+                  rounded-xl
+                  bg-[var(--erp-primary-soft)]
+                  text-[var(--erp-primary)]
+                  flex
+                  items-center
+                  justify-center
+                  flex-shrink-0
+                "
+              >
+
+                <Icono
+                  name="user-group"
+                  className="w-4 h-4"
+                />
+
+              </div>
+
+
+              <div className="min-w-0">
+
+                <h3
+                  className="
+                    text-base
+                    font-semibold
+                    text-[var(--erp-text)]
+                  "
+                >
+                  Ficha de seguridad
+                </h3>
+
+                <p
+                  className="
+                    text-xs
+                    mt-0.5
+                    text-[var(--erp-text-soft)]
+                  "
+                >
+                  {empleadoSeleccionado
+                    ? [
+                        empleadoSeleccionado.nombre,
+                        empleadoSeleccionado.apellidos,
+                      ]
+                        .filter(Boolean)
+                        .join(" ")
+                        .trim() ||
+                      empleadoSeleccionado.usuario ||
+                      `Empleado ${empleadoSeleccionado.id}`
+                    : "Empleado seleccionado"}
+                </p>
+
+              </div>
+
+            </div>
+
+
+            <div className="p-5">
+
+              <SeguridadFicha
+                empleadoId={
+                  empleadoSeleccionadoId
+                }
+              />
+
+            </div>
+
+          </div>
+
+        </section>
+      )}
+
+
+      {/* ======================================================
           CONTROL Y SUPERVISIÓN
       ====================================================== */}
 
@@ -1428,9 +1847,7 @@ export default function Seguridad() {
           "
         >
 
-          {/* ==================================================
-              ROLES
-          ================================================== */}
+          {/* ROLES */}
 
           <div
             className="
@@ -1468,10 +1885,12 @@ export default function Seguridad() {
                   flex-shrink-0
                 "
               >
+
                 <Icono
                   name="user-group"
                   className="w-4 h-4"
                 />
+
               </div>
 
 
@@ -1503,15 +1922,15 @@ export default function Seguridad() {
 
 
             <div className="p-5">
+
               <SeguridadRoles />
+
             </div>
 
           </div>
 
 
-          {/* ==================================================
-              PERMISOS
-          ================================================== */}
+          {/* PERMISOS */}
 
           <div
             className="
@@ -1549,10 +1968,12 @@ export default function Seguridad() {
                   flex-shrink-0
                 "
               >
+
                 <Icono
                   name="shield"
                   className="w-4 h-4"
                 />
+
               </div>
 
 
@@ -1584,15 +2005,15 @@ export default function Seguridad() {
 
 
             <div className="p-5">
+
               <SeguridadPermisos />
+
             </div>
 
           </div>
 
 
-          {/* ==================================================
-              MÓDULOS
-          ================================================== */}
+          {/* MÓDULOS */}
 
           <div
             className="
@@ -1630,10 +2051,12 @@ export default function Seguridad() {
                   flex-shrink-0
                 "
               >
+
                 <Icono
                   name="folder"
                   className="w-4 h-4"
                 />
+
               </div>
 
 
@@ -1665,7 +2088,9 @@ export default function Seguridad() {
 
 
             <div className="p-5">
+
               <SeguridadModulos />
+
             </div>
 
           </div>
@@ -1722,10 +2147,12 @@ export default function Seguridad() {
                 flex-shrink-0
               "
             >
+
               <Icono
                 name="shield"
                 className="w-4 h-4"
               />
+
             </div>
 
 

@@ -1,295 +1,198 @@
 import { useEffect } from "react";
-
 import { useSeguridad } from "../../hooks/useSeguridad";
 import TablaLogs from "../../components/logs/TablaLogs";
 
-
-/* =========================================================
-   SEGURIDAD — LOGS
-   MOLSAN ERP SAAS PREMIUM 2027
-========================================================= */
-
 export default function SeguridadLogs() {
-
-  const {
-    logs = [],
-    cargarTodo,
-  } = useSeguridad();
-
-
-  /* =======================================================
-     CARGAR LOGS
-  ======================================================= */
+  const { logs = [], cargarTodo } = useSeguridad();
 
   useEffect(() => {
-
     cargarTodo();
-
   }, [cargarTodo]);
 
-
-  /* =======================================================
-     COLUMNAS
-  ======================================================= */
-
   const columnas = [
-
     {
       campo: "fecha",
       titulo: "Fecha",
       esFecha: true,
     },
-
     {
       campo: "evento",
       titulo: "Evento",
       esEvento: true,
     },
-
     {
       campo: "detalle",
       titulo: "Detalle",
     },
-
     {
       campo: "ip",
       titulo: "IP",
     },
-
   ];
 
-
-  /* =======================================================
-     ICONOS EVENTOS
-  ======================================================= */
-
   const iconosEvento = {
-
     login: "🔐",
-
     login_error: "⚠️",
-
     acceso: "📥",
-
     update: "✏️",
-
     delete: "🗑️",
-
     default: "📄",
-
   };
 
-
-  /* =======================================================
-     RENDER
-  ======================================================= */
-
   return (
-
     <div
       className="
-        erp-page
+        w-full
         space-y-6
+        text-white
         animate-fade-in
       "
     >
-
-      {/* ===================================================
+      {/* =====================================================
           CABECERA
-      =================================================== */}
+      ===================================================== */}
 
-      <section
+      <div
         className="
-          erp-card
-          p-6
+          relative
+          overflow-hidden
+          rounded-3xl
+          border border-white/15
+          bg-white/[0.06]
+          backdrop-blur-2xl
+          shadow-[0_20px_70px_rgba(0,0,0,0.28)]
+          px-6
+          py-6
         "
       >
+        {/* Brillo decorativo */}
 
         <div
           className="
-            flex
-            flex-col
-            lg:flex-row
-            lg:items-center
-            lg:justify-between
-            gap-5
+            pointer-events-none
+            absolute
+            -right-20
+            -top-24
+            h-64
+            w-64
+            rounded-full
+            bg-blue-500/10
+            blur-3xl
           "
-        >
+        />
 
+        <div
+          className="
+            pointer-events-none
+            absolute
+            -bottom-24
+            left-1/3
+            h-48
+            w-48
+            rounded-full
+            bg-purple-500/10
+            blur-3xl
+          "
+        />
+
+        <div className="relative flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-
-            <div
-              className="
-                flex
-                items-center
-                gap-3
-                mb-2
-              "
-            >
-
+            <div className="flex items-center gap-3">
               <div
                 className="
-                  w-11
-                  h-11
-                  rounded-xl
                   flex
+                  h-12
+                  w-12
                   items-center
                   justify-center
-                  bg-[var(--erp-primary-soft)]
-                  text-xl
-                  border
-                  border-[var(--erp-border)]
+                  rounded-2xl
+                  border border-white/15
+                  bg-white/10
+                  text-2xl
+                  shadow-lg
                 "
               >
                 🛡️
               </div>
 
               <div>
-
-                <div
-                  className="
-                    text-xs
-                    uppercase
-                    tracking-[0.16em]
-                    font-semibold
-                    text-[var(--erp-primary)]
-                  "
-                >
-                  Seguridad
-                </div>
-
                 <h1
                   className="
                     text-2xl
-                    font-semibold
-                    text-[var(--erp-text)]
-                    mt-0.5
+                    font-bold
+                    tracking-tight
+                    text-white
+                    md:text-3xl
                   "
                 >
                   Logs de seguridad
                 </h1>
 
+                <p className="mt-1 text-sm text-white/55">
+                  Auditoría y trazabilidad de actividad sensible del sistema.
+                </p>
               </div>
-
             </div>
-
-
-            <p
-              className="
-                text-sm
-                text-[var(--erp-text-soft)]
-                max-w-3xl
-              "
-            >
-              Registro de accesos, autenticaciones y
-              actividad sensible realizada en el sistema.
-            </p>
-
           </div>
-
-
-          {/* INDICADOR */}
 
           <div
             className="
               inline-flex
+              w-fit
               items-center
-              gap-3
-              rounded-xl
-              border
-              border-[var(--erp-border)]
-              bg-[var(--erp-surface-soft)]
+              gap-2
+              rounded-full
+              border border-emerald-400/20
+              bg-emerald-400/10
               px-4
-              py-3
-              shrink-0
+              py-2
+              text-xs
+              font-semibold
+              text-emerald-300
             "
           >
-
             <span
               className="
-                w-2.5
-                h-2.5
+                h-2
+                w-2
                 rounded-full
-                bg-emerald-500
-                shadow-sm
+                bg-emerald-400
+                shadow-[0_0_10px_rgba(52,211,153,0.8)]
               "
             />
 
-            <div>
-
-              <div
-                className="
-                  text-xs
-                  font-semibold
-                  text-[var(--erp-text)]
-                "
-              >
-                Auditoría activa
-              </div>
-
-              <div
-                className="
-                  text-[11px]
-                  text-[var(--erp-text-soft)]
-                  mt-0.5
-                "
-              >
-                SJ-2026
-              </div>
-
-            </div>
-
+            SISTEMA DE AUDITORÍA
           </div>
-
         </div>
+      </div>
 
-      </section>
-
-
-      {/* ===================================================
+      {/* =====================================================
           TABLA
-      =================================================== */}
+      ===================================================== */}
 
-      <section
+      <div
         className="
-          erp-card
-          p-5
+          overflow-hidden
+          rounded-3xl
+          border border-white/15
+          bg-white/[0.045]
+          backdrop-blur-2xl
+          shadow-[0_20px_70px_rgba(0,0,0,0.24)]
         "
       >
-
         <TablaLogs
-          datos={
-            Array.isArray(logs)
-              ? logs
-              : []
-          }
-
+          datos={logs || []}
           columnas={columnas}
-
           pageSize={20}
-
           titulo="Auditoría de seguridad"
-
-          descripcion="
-            Intentos de login, errores de autenticación
-            y actividad sensible del sistema.
-          "
-
+          descripcion="Intentos de login, errores de autenticación y actividad sensible del sistema."
           enableSearch={true}
-
           enableDateFilter={true}
-
           enableExport={true}
-
           exportFilename="logs_seguridad"
-
           iconosEvento={iconosEvento}
-
         />
-
-      </section>
-
+      </div>
     </div>
-
   );
 }

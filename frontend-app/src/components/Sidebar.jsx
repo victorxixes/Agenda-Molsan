@@ -3,6 +3,7 @@ import { useMemo } from "react";
 import { puedeVerModulo } from "../utils/permisos";
 import { useAuthStore } from "../store/authStore";
 import { useMensajesStore } from "../store/mensajesStore";
+import { useNotificacionesStore } from "../store/notificacionesStore";
 
 /**
  * ============================================================
@@ -13,9 +14,81 @@ import { useMensajesStore } from "../store/mensajesStore";
 const NavIcon = ({ name }) => (
   <svg
     className="w-4 h-4 flex-shrink-0"
+    viewBox="0 0 24 24"
+    fill="none"
     aria-hidden="true"
   >
     <use href={`/icons/icons.svg#${name}`} />
+  </svg>
+);
+
+
+/**
+ * ============================================================
+ * ICONO PERFIL
+ * ============================================================
+ */
+
+const ProfileIcon = () => (
+  <svg
+    className="w-[18px] h-[18px]"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    <circle cx="12" cy="8" r="4" />
+    <path d="M5 21c0-3.9 3.1-7 7-7s7 3.1 7 7" />
+  </svg>
+);
+
+
+/**
+ * ============================================================
+ * ICONO SALIR
+ * ============================================================
+ */
+
+const LogoutIcon = () => (
+  <svg
+    className="w-[18px] h-[18px]"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+    <path d="M16 17l5-5-5-5" />
+    <path d="M21 12H9" />
+  </svg>
+);
+
+
+/**
+ * ============================================================
+ * ICONO NOTIFICACIONES
+ * ============================================================
+ */
+
+const BellIcon = () => (
+  <svg
+    className="w-[18px] h-[18px]"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
+    <path d="M10 21h4" />
   </svg>
 );
 
@@ -36,13 +109,20 @@ const TopNavItem = ({
     to={to}
     className={({ isActive }) =>
       `
-      flex items-center gap-2
-      px-4 py-2.5
+      flex
+      items-center
+      gap-2
+      px-3
+      py-2
       rounded-xl
       whitespace-nowrap
-      text-sm font-medium
-      transition-all duration-200
+      text-sm
+      font-medium
+      transition-all
+      duration-200
       border
+      flex-shrink-0
+
       ${
         isActive
           ? `
@@ -70,16 +150,16 @@ const TopNavItem = ({
     {badge > 0 && (
       <span
         className="
-          min-w-[20px]
-          h-5
-          px-1.5
+          min-w-[19px]
+          h-[19px]
+          px-1
           flex
           items-center
           justify-center
           rounded-full
           bg-red-500
           text-white
-          text-[11px]
+          text-[10px]
           font-bold
         "
       >
@@ -103,7 +183,7 @@ const NavSeparator = () => (
       w-px
       bg-[var(--erp-border)]
       flex-shrink-0
-      mx-1
+      mx-0.5
     "
   />
 );
@@ -111,19 +191,24 @@ const NavSeparator = () => (
 
 /**
  * ============================================================
- * NAVEGACIÓN SUPERIOR
+ * SIDEBAR
  *
- * Se mantiene el nombre Sidebar.jsx para no tener que modificar
- * imports existentes del Layout.
+ * Aunque el nombre del fichero sigue siendo Sidebar.jsx,
+ * visualmente funciona como navegación superior.
  * ============================================================
  */
 
 export default function Sidebar() {
+
   const empleado = useAuthStore((s) => s.empleado);
   const logout = useAuthStore((s) => s.logout);
 
   const mensajesNoLeidos = useMensajesStore(
     (s) => s.noLeidosTotal || 0
+  );
+
+  const unreadCount = useNotificacionesStore(
+    (s) => s.unreadCount || 0
   );
 
   const safeUser = useMemo(
@@ -136,8 +221,9 @@ export default function Sidebar() {
     [empleado]
   );
 
+
   return (
-    <div
+    <header
       className="
         w-full
         bg-[var(--erp-surface)]
@@ -147,32 +233,37 @@ export default function Sidebar() {
       "
     >
 
-      {/* ======================================================
-          FILA PRINCIPAL
-          ====================================================== */}
-
       <div
         className="
           max-w-[1800px]
           mx-auto
           px-4
           lg:px-6
-          py-3
+          py-2
           flex
           items-center
-          justify-between
           gap-4
+          min-w-0
         "
       >
 
-        {/* MARCA */}
+        {/* ====================================================
+            MARCA
+            ==================================================== */}
 
-        <div className="flex items-center gap-3 flex-shrink-0">
+        <div
+          className="
+            flex
+            items-center
+            gap-3
+            flex-shrink-0
+          "
+        >
 
           <div
             className="
-              w-10
-              h-10
+              w-9
+              h-9
               rounded-xl
               bg-[var(--erp-primary)]
               text-white
@@ -182,15 +273,20 @@ export default function Sidebar() {
               shadow-sm
             "
           >
-            <svg className="w-5 h-5">
+            <svg
+              className="w-5 h-5"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
               <use href="/icons/icons.svg#folder" />
             </svg>
           </div>
 
-          <div className="hidden sm:block">
+          <div className="hidden lg:block">
+
             <div
               className="
-                text-base
+                text-sm
                 font-bold
                 text-[var(--erp-text)]
                 leading-tight
@@ -201,43 +297,171 @@ export default function Sidebar() {
 
             <div
               className="
-                text-xs
+                text-[11px]
                 text-[var(--erp-text-soft)]
+                leading-tight
               "
             >
               Gestión empresarial
             </div>
+
           </div>
 
         </div>
 
 
         {/* ====================================================
+            NAVEGACIÓN
+            ==================================================== */}
+
+        <nav
+          className="
+            flex
+            items-center
+            gap-1.5
+            flex-1
+            min-w-0
+            overflow-x-auto
+            scrollbar-thin
+            pb-0.5
+          "
+        >
+
+          {/* GENERAL */}
+
+          {puedeVerModulo("expedientes") && (
+            <TopNavItem
+              to="/expedientes"
+              label="Expedientes"
+              icon="folder"
+            />
+          )}
+
+          <TopNavItem
+            to="/dashboard"
+            label="Dashboard"
+            icon="home"
+          />
+
+          {puedeVerModulo("agenda") && (
+            <TopNavItem
+              to="/agenda"
+              label="Agenda"
+              icon="calendar"
+            />
+          )}
+
+
+          {/* SEPARADOR */}
+
+          {(puedeVerModulo("empleados") ||
+            puedeVerModulo("ctn") ||
+            puedeVerModulo("intranet") ||
+            puedeVerModulo("mensajes")) && (
+            <NavSeparator />
+          )}
+
+
+          {/* GESTIÓN */}
+
+          {puedeVerModulo("empleados") && (
+            <TopNavItem
+              to="/empleados"
+              label="Empleados"
+              icon="user-group"
+            />
+          )}
+
+          {puedeVerModulo("ctn") && (
+            <TopNavItem
+              to="/ctn"
+              label="CTN — Notarios"
+              icon="globe"
+            />
+          )}
+
+          {puedeVerModulo("intranet") && (
+            <TopNavItem
+              to="/intranet"
+              label="Intranet"
+              icon="globe"
+            />
+          )}
+
+          {puedeVerModulo("mensajes") && (
+            <TopNavItem
+              to="/mensajes"
+              label="Mensajes"
+              icon="chat"
+              badge={mensajesNoLeidos}
+            />
+          )}
+
+
+          {/* SEPARADOR */}
+
+          {(puedeVerModulo("logs") ||
+            puedeVerModulo("seguridad") ||
+            puedeVerModulo("utilidades")) && (
+            <NavSeparator />
+          )}
+
+
+          {/* SISTEMA */}
+
+          {puedeVerModulo("logs") && (
+            <TopNavItem
+              to="/logs"
+              label="Logs"
+              icon="clipboard"
+            />
+          )}
+
+          {puedeVerModulo("seguridad") && (
+            <TopNavItem
+              to="/seguridad"
+              label="Seguridad"
+              icon="shield"
+            />
+          )}
+
+          {puedeVerModulo("utilidades") && (
+            <TopNavItem
+              to="/herramientas/utilidades"
+              label="Utilidades"
+              icon="cog"
+            />
+          )}
+
+        </nav>
+
+
+        {/* ====================================================
             ACCIONES DERECHA
+            PERFIL + NOTIFICACIONES + SALIR
             ==================================================== */}
 
         <div
           className="
             flex
             items-center
-            gap-2
+            gap-1.5
             flex-shrink-0
+            pl-2
+            border-l
+            border-[var(--erp-border)]
           "
         >
 
-          {/* MI PERFIL */}
+          {/* NOTIFICACIONES */}
 
           <button
             type="button"
-            onClick={() =>
-              useAuthStore
-                .getState()
-                .setPerfilModal(safeUser.id)
-            }
-            title="Mi perfil"
+            title="Notificaciones"
             className="
-              w-10
-              h-10
+              relative
+              w-9
+              h-9
               rounded-xl
               border
               border-[var(--erp-border)]
@@ -248,12 +472,71 @@ export default function Sidebar() {
               justify-center
               hover:bg-[var(--erp-primary-soft)]
               hover:text-[var(--erp-primary)]
+              hover:border-[var(--erp-primary)]
               transition
+              active:scale-[0.96]
             "
           >
-            <svg className="w-5 h-5">
-              <use href="/icons/icons.svg#user" />
-            </svg>
+
+            <BellIcon />
+
+            {unreadCount > 0 && (
+              <span
+                className="
+                  absolute
+                  -top-1
+                  -right-1
+                  min-w-[17px]
+                  h-[17px]
+                  px-1
+                  rounded-full
+                  bg-red-500
+                  text-white
+                  text-[9px]
+                  font-bold
+                  flex
+                  items-center
+                  justify-center
+                  border-2
+                  border-[var(--erp-surface)]
+                "
+              >
+                {unreadCount}
+              </span>
+            )}
+
+          </button>
+
+
+          {/* PERFIL */}
+
+          <button
+            type="button"
+            onClick={() =>
+              useAuthStore
+                .getState()
+                .setPerfilModal(safeUser.id)
+            }
+            title="Mi perfil"
+            className="
+              w-9
+              h-9
+              rounded-xl
+              border
+              border-[var(--erp-border)]
+              bg-white
+              text-[var(--erp-text)]
+              flex
+              items-center
+              justify-center
+              hover:bg-[var(--erp-primary-soft)]
+              hover:text-[var(--erp-primary)]
+              hover:border-[var(--erp-primary)]
+              transition
+              active:scale-[0.96]
+            "
+          >
+            <ProfileIcon />
           </button>
 
 
@@ -264,8 +547,8 @@ export default function Sidebar() {
             onClick={logout}
             title="Cerrar sesión"
             className="
-              w-10
-              h-10
+              w-9
+              h-9
               rounded-xl
               border
               border-[var(--erp-border)]
@@ -277,169 +560,16 @@ export default function Sidebar() {
               hover:bg-red-50
               hover:border-red-200
               transition
+              active:scale-[0.96]
             "
           >
-            <svg className="w-5 h-5">
-              <use href="/icons/icons.svg#logout" />
-            </svg>
+            <LogoutIcon />
           </button>
 
         </div>
 
       </div>
 
-
-      {/* ======================================================
-          NAVEGACIÓN
-          ====================================================== */}
-
-      <div
-        className="
-          border-t
-          border-[var(--erp-border)]
-          bg-[var(--erp-surface-soft)]
-        "
-      >
-
-        <div
-          className="
-            max-w-[1800px]
-            mx-auto
-            px-4
-            lg:px-6
-            py-2.5
-          "
-        >
-
-          <nav
-            className="
-              flex
-              items-center
-              gap-2
-              overflow-x-auto
-              scrollbar-thin
-              pb-0.5
-            "
-          >
-
-            {/* ==================================================
-                GENERAL
-                ================================================== */}
-
-            {puedeVerModulo("expedientes") && (
-              <TopNavItem
-                to="/expedientes"
-                label="Expedientes"
-                icon="folder"
-              />
-            )}
-
-            <TopNavItem
-              to="/dashboard"
-              label="Dashboard"
-              icon="home"
-            />
-
-            {puedeVerModulo("agenda") && (
-              <TopNavItem
-                to="/agenda"
-                label="Agenda"
-                icon="calendar"
-              />
-            )}
-
-
-            {/* SEPARADOR */}
-
-            {(puedeVerModulo("empleados") ||
-              puedeVerModulo("ctn") ||
-              puedeVerModulo("intranet") ||
-              puedeVerModulo("mensajes")) && (
-              <NavSeparator />
-            )}
-
-
-            {/* ==================================================
-                GESTIÓN
-                ================================================== */}
-
-            {puedeVerModulo("empleados") && (
-              <TopNavItem
-                to="/empleados"
-                label="Empleados"
-                icon="user-group"
-              />
-            )}
-
-            {puedeVerModulo("ctn") && (
-              <TopNavItem
-                to="/ctn"
-                label="CTN — Notarios"
-                icon="globe"
-              />
-            )}
-
-            {puedeVerModulo("intranet") && (
-              <TopNavItem
-                to="/intranet"
-                label="Intranet"
-                icon="globe"
-              />
-            )}
-
-            {puedeVerModulo("mensajes") && (
-              <TopNavItem
-                to="/mensajes"
-                label="Mensajes"
-                icon="chat"
-                badge={mensajesNoLeidos}
-              />
-            )}
-
-
-            {/* SEPARADOR */}
-
-            {(puedeVerModulo("logs") ||
-              puedeVerModulo("seguridad") ||
-              puedeVerModulo("utilidades")) && (
-              <NavSeparator />
-            )}
-
-
-            {/* ==================================================
-                SISTEMA
-                ================================================== */}
-
-            {puedeVerModulo("logs") && (
-              <TopNavItem
-                to="/logs"
-                label="Logs"
-                icon="clipboard"
-              />
-            )}
-
-            {puedeVerModulo("seguridad") && (
-              <TopNavItem
-                to="/seguridad"
-                label="Seguridad"
-                icon="shield"
-              />
-            )}
-
-            {puedeVerModulo("utilidades") && (
-              <TopNavItem
-                to="/herramientas/utilidades"
-                label="Utilidades"
-                icon="cog"
-              />
-            )}
-
-          </nav>
-
-        </div>
-
-      </div>
-
-    </div>
+    </header>
   );
 }

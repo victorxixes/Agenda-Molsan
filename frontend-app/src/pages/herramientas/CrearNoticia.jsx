@@ -2,13 +2,7 @@ import { useState, useCallback, useMemo } from "react";
 import { useUtilidades } from "../../hooks/useUtilidades";
 
 /**
- * CREAR NOTICIA — MOLSAN ERP SAAS PREMIUM 2027
- *
- * - Glass Luxe
- * - Diseño corporativo claro
- * - Responsive
- * - Mantiene toda la lógica existente
- * - Feedback visual
+ * CREAR NOTICIA — MOLSAN ERP PREMIUM 2027
  */
 
 export default function CrearNoticia() {
@@ -17,6 +11,7 @@ export default function CrearNoticia() {
   const [titulo, setTitulo] = useState("");
   const [descripcion, setDescripcion] = useState("");
   const [ok, setOk] = useState(false);
+  const [enviando, setEnviando] = useState(false);
 
   const puedeEnviar = useMemo(() => {
     return (
@@ -26,11 +21,12 @@ export default function CrearNoticia() {
   }, [titulo, descripcion]);
 
   const enviar = useCallback(async () => {
-    if (!puedeEnviar) return;
-
-    setOk(false);
+    if (!puedeEnviar || enviando) return;
 
     try {
+      setEnviando(true);
+      setOk(false);
+
       await crearNoticia(
         titulo.trim(),
         descripcion.trim()
@@ -39,43 +35,59 @@ export default function CrearNoticia() {
       setOk(true);
       setTitulo("");
       setDescripcion("");
+
     } catch (error) {
-      console.error(
-        "ERROR CREANDO NOTICIA:",
-        error
-      );
+      console.error("Error creando noticia:", error);
+    } finally {
+      setEnviando(false);
     }
   }, [
     crearNoticia,
     titulo,
     descripcion,
     puedeEnviar,
+    enviando,
   ]);
 
   return (
-    <div className="min-h-full p-4 sm:p-6 lg:p-8 animate-fadeIn">
+    <div className="min-h-full p-4 sm:p-6 lg:p-8 space-y-6 animate-fadeIn">
 
       {/* =====================================================
           CABECERA
       ===================================================== */}
 
-      <div className="mb-6">
+      <div
+        className="
+          relative overflow-hidden
+          rounded-[24px]
+          border border-slate-200/80
+          bg-white/80
+          backdrop-blur-xl
+          shadow-[0_18px_50px_rgba(15,23,42,0.08)]
+          p-6 sm:p-7
+        "
+      >
 
-        <div className="flex items-center gap-3">
+        <div
+          className="
+            absolute inset-x-0 top-0 h-px
+            bg-gradient-to-r
+            from-transparent
+            via-purple-400/60
+            to-transparent
+          "
+        />
+
+        <div className="flex items-center gap-4">
 
           <div
             className="
-              flex
-              items-center
-              justify-center
-              w-11
-              h-11
+              flex h-12 w-12
+              items-center justify-center
               rounded-2xl
-              bg-blue-50
-              border
-              border-blue-100
-              shadow-sm
-              text-xl
+              bg-purple-50
+              border border-purple-100
+              text-2xl
             "
           >
             📰
@@ -83,20 +95,12 @@ export default function CrearNoticia() {
 
           <div>
 
-            <h1
-              className="
-                text-2xl
-                sm:text-3xl
-                font-bold
-                tracking-tight
-                text-slate-800
-              "
-            >
+            <h1 className="text-2xl sm:text-3xl font-bold text-slate-800">
               Crear noticia
             </h1>
 
             <p className="mt-1 text-sm text-slate-500">
-              Publica una nueva comunicación para la intranet.
+              Publica información para todos los usuarios de la intranet.
             </p>
 
           </div>
@@ -107,285 +111,173 @@ export default function CrearNoticia() {
 
 
       {/* =====================================================
-          CONTENEDOR PRINCIPAL
+          FORMULARIO
       ===================================================== */}
 
-      <div className="max-w-4xl">
+      <div
+        className="
+          max-w-3xl
+          relative overflow-hidden
+          rounded-[24px]
+          border border-slate-200/80
+          bg-white/85
+          backdrop-blur-xl
+          shadow-[0_18px_50px_rgba(15,23,42,0.08)]
+          p-6 sm:p-7
+        "
+      >
 
-        <div
-          className="
-            relative
-            overflow-hidden
-            rounded-[24px]
-            border
-            border-slate-200/80
-            bg-white/80
-            backdrop-blur-xl
-            shadow-[0_18px_50px_rgba(15,23,42,0.08)]
-          "
-        >
+        <div className="space-y-5">
 
-          {/* Brillo superior */}
+          {/* TÍTULO */}
 
-          <div
-            className="
-              absolute
-              top-0
-              left-0
-              right-0
-              h-px
-              bg-gradient-to-r
-              from-transparent
-              via-blue-400/50
-              to-transparent
-            "
-          />
+          <div>
 
+            <label className="block mb-2 text-sm font-medium text-slate-700">
+              Título
+            </label>
 
-          {/* =================================================
-              CABECERA TARJETA
-          ================================================= */}
-
-          <div
-            className="
-              px-5
-              py-5
-              sm:px-7
-              border-b
-              border-slate-200/70
-            "
-          >
-
-            <h2 className="text-lg font-semibold text-slate-800">
-              Nueva publicación
-            </h2>
-
-            <p className="mt-1 text-sm text-slate-500">
-              Completa los datos de la noticia.
-            </p>
+            <input
+              type="text"
+              placeholder="Título de la noticia"
+              value={titulo}
+              onChange={(e) => {
+                setTitulo(e.target.value);
+                setOk(false);
+              }}
+              disabled={enviando}
+              className="
+                w-full
+                rounded-xl
+                border border-slate-200
+                bg-slate-50/80
+                px-4 py-3
+                text-slate-800
+                placeholder:text-slate-400
+                outline-none
+                transition-all
+                focus:border-purple-400
+                focus:bg-white
+                focus:ring-4
+                focus:ring-purple-500/10
+                disabled:opacity-50
+              "
+            />
 
           </div>
 
 
-          {/* =================================================
-              FORMULARIO
-          ================================================= */}
+          {/* DESCRIPCIÓN */}
 
-          <div className="p-5 sm:p-7 space-y-6">
+          <div>
 
-            {/* TÍTULO */}
+            <label className="block mb-2 text-sm font-medium text-slate-700">
+              Descripción
+            </label>
 
-            <div>
-
-              <label
-                htmlFor="noticia-titulo"
-                className="
-                  block
-                  mb-2
-                  text-sm
-                  font-semibold
-                  text-slate-700
-                "
-              >
-                Título
-              </label>
-
-              <input
-                id="noticia-titulo"
-                type="text"
-                value={titulo}
-                onChange={(e) => {
-                  setTitulo(e.target.value);
-                  setOk(false);
-                }}
-                placeholder="Escribe el título de la noticia"
-                className="
-                  w-full
-                  rounded-xl
-                  border
-                  border-slate-200
-                  bg-slate-50/70
-                  px-4
-                  py-3
-                  text-slate-800
-                  placeholder:text-slate-400
-                  outline-none
-                  transition-all
-                  duration-200
-                  shadow-sm
-                  focus:border-blue-400
-                  focus:bg-white
-                  focus:ring-4
-                  focus:ring-blue-500/10
-                "
-              />
-
-            </div>
-
-
-            {/* DESCRIPCIÓN */}
-
-            <div>
-
-              <label
-                htmlFor="noticia-descripcion"
-                className="
-                  block
-                  mb-2
-                  text-sm
-                  font-semibold
-                  text-slate-700
-                "
-              >
-                Descripción
-              </label>
-
-              <textarea
-                id="noticia-descripcion"
-                value={descripcion}
-                onChange={(e) => {
-                  setDescripcion(e.target.value);
-                  setOk(false);
-                }}
-                rows={7}
-                placeholder="Escribe el contenido de la noticia..."
-                className="
-                  w-full
-                  resize-y
-                  rounded-xl
-                  border
-                  border-slate-200
-                  bg-slate-50/70
-                  px-4
-                  py-3
-                  text-slate-800
-                  placeholder:text-slate-400
-                  outline-none
-                  transition-all
-                  duration-200
-                  shadow-sm
-                  focus:border-blue-400
-                  focus:bg-white
-                  focus:ring-4
-                  focus:ring-blue-500/10
-                "
-              />
-
-            </div>
-
-
-            {/* ACCIONES */}
-
-            <div
+            <textarea
+              rows={7}
+              placeholder="Escribe el contenido de la noticia..."
+              value={descripcion}
+              onChange={(e) => {
+                setDescripcion(e.target.value);
+                setOk(false);
+              }}
+              disabled={enviando}
               className="
-                flex
-                flex-col
-                sm:flex-row
-                sm:items-center
-                sm:justify-between
-                gap-4
-                pt-2
+                w-full
+                resize-y
+                rounded-xl
+                border border-slate-200
+                bg-slate-50/80
+                px-4 py-3
+                text-slate-800
+                placeholder:text-slate-400
+                outline-none
+                transition-all
+                focus:border-purple-400
+                focus:bg-white
+                focus:ring-4
+                focus:ring-purple-500/10
+                disabled:opacity-50
+              "
+            />
+
+          </div>
+
+
+          {/* BOTÓN */}
+
+          <div className="flex justify-end">
+
+            <button
+              onClick={enviar}
+              disabled={!puedeEnviar || enviando}
+              className="
+                inline-flex
+                items-center
+                justify-center
+                gap-2
+                rounded-xl
+                px-6 py-3
+                text-sm font-semibold
+                text-white
+                bg-gradient-to-r
+                from-purple-600
+                to-purple-500
+                shadow-[0_10px_25px_rgba(147,51,234,0.20)]
+                transition-all duration-200
+                hover:from-purple-500
+                hover:to-purple-400
+                hover:shadow-[0_14px_30px_rgba(147,51,234,0.25)]
+                active:scale-[0.98]
+                disabled:opacity-40
+                disabled:cursor-not-allowed
               "
             >
 
-              <p className="text-xs text-slate-400">
-                La noticia quedará disponible para los usuarios de la intranet.
-              </p>
-
-              <button
-                type="button"
-                onClick={enviar}
-                disabled={!puedeEnviar}
-                className="
-                  inline-flex
-                  items-center
-                  justify-center
-                  gap-2
-                  min-w-[170px]
-                  rounded-xl
-                  px-5
-                  py-3
-                  text-sm
-                  font-semibold
-                  text-white
-                  bg-gradient-to-r
-                  from-blue-600
-                  to-blue-500
-                  shadow-[0_10px_25px_rgba(37,99,235,0.18)]
-                  transition-all
-                  duration-200
-                  hover:from-blue-500
-                  hover:to-blue-400
-                  hover:shadow-[0_14px_30px_rgba(37,99,235,0.24)]
-                  active:scale-[0.98]
-                  disabled:cursor-not-allowed
-                  disabled:opacity-40
-                  disabled:shadow-none
-                "
-              >
-                <span aria-hidden="true">
-                  📰
-                </span>
-
-                Crear noticia
-              </button>
-
-            </div>
-
-
-            {/* =================================================
-                CONFIRMACIÓN
-            ================================================= */}
-
-            {ok && (
-              <div
-                className="
-                  flex
-                  items-center
-                  gap-3
-                  rounded-xl
-                  border
-                  border-emerald-200
-                  bg-emerald-50
-                  px-4
-                  py-3
-                  text-emerald-700
-                  shadow-sm
-                  animate-fadeIn
-                "
-              >
-
+              {enviando && (
                 <span
                   className="
-                    flex
-                    items-center
-                    justify-center
-                    w-8
-                    h-8
+                    h-4 w-4
                     rounded-full
-                    bg-emerald-100
-                    text-emerald-600
+                    border-2
+                    border-white/30
+                    border-t-white
+                    animate-spin
                   "
-                >
-                  ✓
-                </span>
+                />
+              )}
 
-                <div>
+              {enviando
+                ? "Publicando..."
+                : "Crear noticia"}
 
-                  <p className="text-sm font-semibold">
-                    Noticia creada correctamente.
-                  </p>
-
-                  <p className="text-xs text-emerald-600/80 mt-0.5">
-                    La publicación ya está disponible en la intranet.
-                  </p>
-
-                </div>
-
-              </div>
-            )}
+            </button>
 
           </div>
+
+
+          {/* OK */}
+
+          {ok && (
+            <div
+              className="
+                flex items-center gap-3
+                rounded-xl
+                border border-emerald-200
+                bg-emerald-50
+                px-4 py-3
+                text-sm
+                font-medium
+                text-emerald-700
+                animate-fadeIn
+              "
+            >
+              <span>✓</span>
+              <span>Noticia creada correctamente.</span>
+            </div>
+          )}
 
         </div>
 

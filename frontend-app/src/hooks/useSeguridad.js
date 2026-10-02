@@ -1,142 +1,355 @@
+import { useMemo } from "react";
 import { useSeguridadStore } from "../store/seguridadStore";
 
 /**
- * Hook premium SJ‑2026 — versión blindada
- * Limpieza total de datos para evitar React error #31
+ * Hook Seguridad — Molsan ERP
+ *
+ * Versión estabilizada:
+ *
+ * - No devuelve un objeto nuevo innecesariamente.
+ * - Las colecciones normalizadas utilizan useMemo.
+ * - Las acciones del Zustand se obtienen directamente del store.
+ * - Evita renders innecesarios derivados de filtros/arrays nuevos.
  */
 
 export const useSeguridad = () => {
-  const store = useSeguridadStore();
 
-  // -----------------------------
+  // ============================================================
+  // DATOS DEL STORE
+  // ============================================================
+
+  const rolesStore =
+    useSeguridadStore(
+      (state) => state.roles
+    );
+
+  const permisosStore =
+    useSeguridadStore(
+      (state) => state.permisos
+    );
+
+  const empleadosStore =
+    useSeguridadStore(
+      (state) => state.empleados
+    );
+
+  const auditoriaStore =
+    useSeguridadStore(
+      (state) => state.auditoria
+    );
+
+  const logsStore =
+    useSeguridadStore(
+      (state) => state.logs
+    );
+
+  const fichaStore =
+    useSeguridadStore(
+      (state) => state.ficha
+    );
+
+  const loading =
+    useSeguridadStore(
+      (state) => state.loading
+    );
+
+
+  // ============================================================
+  // ACCIONES
+  // ============================================================
+
+  const cargarTodo =
+    useSeguridadStore(
+      (state) => state.cargarTodo
+    );
+
+  const cargarFicha =
+    useSeguridadStore(
+      (state) => state.cargarFicha
+    );
+
+  const asignarRol =
+    useSeguridadStore(
+      (state) => state.asignarRol
+    );
+
+  const asignarPermisos =
+    useSeguridadStore(
+      (state) => state.asignarPermisos
+    );
+
+  const asignarModulos =
+    useSeguridadStore(
+      (state) => state.asignarModulos
+    );
+
+  const resetPassword =
+    useSeguridadStore(
+      (state) => state.resetPassword
+    );
+
+  const bloquear =
+    useSeguridadStore(
+      (state) => state.bloquear
+    );
+
+  const desbloquear =
+    useSeguridadStore(
+      (state) => state.desbloquear
+    );
+
+
+  // ============================================================
   // LIMPIEZA DE ROLES
-  // -----------------------------
-  const roles = Array.isArray(store.roles)
-    ? store.roles.filter(
-        (r) =>
-          r &&
-          typeof r === "object" &&
-          typeof r.id !== "undefined" &&
-          typeof r.nombre === "string"
-      )
-    : [];
+  // ============================================================
 
-  // -----------------------------
+  const roles = useMemo(() => {
+
+    if (!Array.isArray(rolesStore)) {
+      return [];
+    }
+
+    return rolesStore.filter(
+      (rol) =>
+        rol &&
+        typeof rol === "object" &&
+        typeof rol.id !== "undefined" &&
+        typeof rol.nombre === "string"
+    );
+
+  }, [rolesStore]);
+
+
+  // ============================================================
   // LIMPIEZA DE PERMISOS
-  // -----------------------------
-  const permisos = Array.isArray(store.permisos)
-    ? store.permisos.filter(
-        (p) =>
-          p &&
-          typeof p === "object" &&
-          typeof p.modulo === "string" &&
-          typeof p.permiso === "string"
-      )
-    : [];
+  // ============================================================
 
-  // -----------------------------
+  const permisos = useMemo(() => {
+
+    if (!Array.isArray(permisosStore)) {
+      return [];
+    }
+
+    return permisosStore.filter(
+      (permiso) =>
+        permiso &&
+        typeof permiso === "object" &&
+        typeof permiso.modulo === "string" &&
+        typeof permiso.permiso === "string"
+    );
+
+  }, [permisosStore]);
+
+
+  // ============================================================
   // LIMPIEZA DE EMPLEADOS
-  // -----------------------------
-  const empleados = Array.isArray(store.empleados)
-    ? store.empleados.filter(
-        (e) =>
-          e &&
-          typeof e === "object" &&
-          typeof e.id === "number" &&
-          typeof e.nombre === "string"
-      )
-    : [];
+  // ============================================================
 
-  // -----------------------------
+  const empleados = useMemo(() => {
+
+    if (!Array.isArray(empleadosStore)) {
+      return [];
+    }
+
+    return empleadosStore.filter(
+      (empleado) =>
+        empleado &&
+        typeof empleado === "object" &&
+        typeof empleado.id === "number" &&
+        typeof empleado.nombre === "string"
+    );
+
+  }, [empleadosStore]);
+
+
+  // ============================================================
   // LIMPIEZA DE AUDITORÍA
-  // -----------------------------
-  const auditoria = Array.isArray(store.auditoria)
-    ? store.auditoria.filter(
-        (a) =>
-          a &&
-          typeof a === "object" &&
-          typeof a.id !== "undefined" &&
-          typeof a.fecha === "string" &&
-          typeof a.accion === "string" &&
-          typeof a.descripcion === "string" &&
-          typeof a.usuario === "string"
-      )
-    : [];
+  // ============================================================
 
-  // -----------------------------
+  const auditoria = useMemo(() => {
+
+    if (!Array.isArray(auditoriaStore)) {
+      return [];
+    }
+
+    return auditoriaStore.filter(
+      (registro) =>
+        registro &&
+        typeof registro === "object" &&
+        typeof registro.id !== "undefined" &&
+        typeof registro.fecha === "string" &&
+        typeof registro.accion === "string" &&
+        typeof registro.descripcion === "string" &&
+        typeof registro.usuario === "string"
+    );
+
+  }, [auditoriaStore]);
+
+
+  // ============================================================
   // LIMPIEZA DE LOGS
-  // -----------------------------
-  const logs = Array.isArray(store.logs)
-    ? store.logs.filter(
-        (l) =>
-          l &&
-          typeof l === "object" &&
-          typeof l.id !== "undefined" &&
-          typeof l.fecha === "string" &&
-          typeof l.evento === "string" &&
-          typeof l.detalle === "string"
-      )
-    : [];
+  // ============================================================
 
-  // -----------------------------
-  // LIMPIEZA DE FICHA COMPLETA
-  // -----------------------------
-  const ficha =
-    store.ficha &&
-    typeof store.ficha === "object" &&
-    typeof store.ficha.empleado === "object"
-      ? {
-          ...store.ficha,
+  const logs = useMemo(() => {
 
-          empleado: {
-            ...store.ficha.empleado,
-            id: Number(store.ficha.empleado.id),
-            nombre: store.ficha.empleado.nombre || "",
-            usuario: store.ficha.empleado.usuario || "",
-            apellidos: store.ficha.empleado.apellidos || "",
-            dni: store.ficha.empleado.dni || "",
-            email_empresa: store.ficha.empleado.email_empresa || "",
-            activo: Boolean(store.ficha.empleado.activo),
-            rol_nombre: store.ficha.empleado.rol_nombre || "",
-            foto:
-              typeof store.ficha.empleado.foto === "string"
-                ? store.ficha.empleado.foto
-                : null,
-            modulos_visibles_list: Array.isArray(
-              store.ficha.empleado.modulos_visibles_list
+    if (!Array.isArray(logsStore)) {
+      return [];
+    }
+
+    return logsStore.filter(
+      (log) =>
+        log &&
+        typeof log === "object" &&
+        typeof log.id !== "undefined" &&
+        typeof log.fecha === "string" &&
+        typeof log.evento === "string" &&
+        typeof log.detalle === "string"
+    );
+
+  }, [logsStore]);
+
+
+  // ============================================================
+  // LIMPIEZA DE FICHA
+  // ============================================================
+
+  const ficha = useMemo(() => {
+
+    if (
+      !fichaStore ||
+      typeof fichaStore !== "object" ||
+      !fichaStore.empleado ||
+      typeof fichaStore.empleado !== "object"
+    ) {
+      return null;
+    }
+
+    const empleado =
+      fichaStore.empleado;
+
+
+    const permisosModulo =
+      fichaStore.permisos_modulo_dict;
+
+
+    return {
+
+      ...fichaStore,
+
+      empleado: {
+
+        ...empleado,
+
+        id: Number(
+          empleado.id
+        ),
+
+        nombre:
+          empleado.nombre || "",
+
+        usuario:
+          empleado.usuario || "",
+
+        apellidos:
+          empleado.apellidos || "",
+
+        dni:
+          empleado.dni || "",
+
+        email_empresa:
+          empleado.email_empresa || "",
+
+        activo:
+          Boolean(
+            empleado.activo
+          ),
+
+        rol_nombre:
+          empleado.rol_nombre || "",
+
+        foto:
+          typeof empleado.foto === "string"
+            ? empleado.foto
+            : null,
+
+        modulos_visibles_list:
+          Array.isArray(
+            empleado.modulos_visibles_list
+          )
+            ? empleado.modulos_visibles_list.filter(
+                (modulo) =>
+                  typeof modulo === "string"
+              )
+            : [],
+      },
+
+      permisos_modulo_dict:
+        permisosModulo &&
+        typeof permisosModulo === "object" &&
+        !Array.isArray(permisosModulo)
+
+          ? Object.fromEntries(
+
+              Object.entries(
+                permisosModulo
+              ).map(
+                ([modulo, lista]) => [
+
+                  modulo,
+
+                  Array.isArray(lista)
+                    ? lista.filter(
+                        (permiso) =>
+                          typeof permiso === "string"
+                      )
+                    : [],
+
+                ]
+              )
+
             )
-              ? store.ficha.empleado.modulos_visibles_list.filter(
-                  (m) => typeof m === "string"
-                )
-              : [],
-          },
 
-          permisos_modulo_dict:
-            typeof store.ficha.permisos_modulo_dict === "object"
-              ? Object.fromEntries(
-                  Object.entries(store.ficha.permisos_modulo_dict).map(
-                    ([modulo, lista]) => [
-                      modulo,
-                      Array.isArray(lista)
-                        ? lista.filter((p) => typeof p === "string")
-                        : [],
-                    ]
-                  )
-                )
-              : {},
-        }
-      : null;
+          : {},
+    };
 
-  // -----------------------------
-  // DEVOLVER STORE LIMPIO
-  // -----------------------------
+  }, [fichaStore]);
+
+
+  // ============================================================
+  // DEVOLVER API DEL HOOK
+  // ============================================================
+
   return {
-    ...store,
+
     roles,
+
     permisos,
+
     empleados,
+
     auditoria,
+
     logs,
+
     ficha,
+
+    loading,
+
+    cargarTodo,
+
+    cargarFicha,
+
+    asignarRol,
+
+    asignarPermisos,
+
+    asignarModulos,
+
+    resetPassword,
+
+    bloquear,
+
+    desbloquear,
+
   };
 };

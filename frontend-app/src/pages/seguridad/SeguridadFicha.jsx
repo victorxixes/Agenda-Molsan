@@ -108,40 +108,74 @@ export default function SeguridadFicha({ empleadoId }) {
     typeof empleado.nombre === "string";
 
   // ============================================================
+  // ROL
+  // ============================================================
+
+  const nombreRol = useMemo(() => {
+    if (!empleadoValido) {
+      return "-";
+    }
+
+    if (
+      empleado.rol &&
+      typeof empleado.rol === "object" &&
+      typeof empleado.rol.nombre === "string"
+    ) {
+      return empleado.rol.nombre;
+    }
+
+    return "-";
+  }, [empleadoValido, empleado]);
+
+  // ============================================================
   // MÓDULOS VISIBLES
+  //
+  // EL BACKEND DEVUELVE:
+  //
+  // "modulos_visibles": [...]
+  //
+  // NO:
+  //
+  // empleado.modulos_visibles_list
   // ============================================================
 
   const modulosVisibles = useMemo(() => {
-    if (!empleadoValido) {
+    if (!fichaSegura) {
       return [];
     }
 
-    return Array.isArray(
-      empleado.modulos_visibles_list
-    )
-      ? empleado.modulos_visibles_list.filter(
-          (m) => typeof m === "string"
-        )
-      : [];
-  }, [
-    empleadoValido,
-    empleado,
-  ]);
+    if (!Array.isArray(fichaSegura.modulos_visibles)) {
+      return [];
+    }
+
+    return fichaSegura.modulos_visibles.filter(
+      (modulo) => typeof modulo === "string"
+    );
+  }, [fichaSegura]);
 
   // ============================================================
   // PERMISOS DEL EMPLEADO
+  //
+  // EL BACKEND DEVUELVE:
+  //
+  // "permisos_modulo": {...}
+  //
+  // NO:
+  //
+  // ficha.permisos_modulo_dict
   // ============================================================
 
   const permisosEmpleado = useMemo(() => {
     if (
       !fichaSegura ||
-      typeof fichaSegura.permisos_modulo_dict !==
-        "object"
+      !fichaSegura.permisos_modulo ||
+      typeof fichaSegura.permisos_modulo !== "object" ||
+      Array.isArray(fichaSegura.permisos_modulo)
     ) {
       return {};
     }
 
-    return fichaSegura.permisos_modulo_dict;
+    return fichaSegura.permisos_modulo;
   }, [fichaSegura]);
 
   // ============================================================
@@ -178,11 +212,51 @@ export default function SeguridadFicha({ empleadoId }) {
   }, [permisos]);
 
   // ============================================================
+  // MÓDULOS DISPONIBLES
+  //
+  // Combinamos:
+  //
+  // 1. Los módulos existentes en permisosGlobales.
+  // 2. Los módulos que ya tiene asignados el empleado.
+  //
+  // Así nunca desaparece un módulo asignado aunque todavía
+  // no exista en la tabla permisos.
+  // ============================================================
+
+  const modulosDisponibles = useMemo(() => {
+    const conjunto = new Set();
+
+    Object.keys(permisosGlobales || {}).forEach(
+      (modulo) => {
+        if (typeof modulo === "string") {
+          conjunto.add(modulo);
+        }
+      }
+    );
+
+    modulosVisibles.forEach((modulo) => {
+      if (typeof modulo === "string") {
+        conjunto.add(modulo);
+      }
+    });
+
+    return Array.from(conjunto).sort(
+      (a, b) =>
+        a.localeCompare(b, "es", {
+          sensitivity: "base",
+        })
+    );
+  }, [
+    permisosGlobales,
+    modulosVisibles,
+  ]);
+
+  // ============================================================
   // CAMBIAR PERMISO
   // ============================================================
 
   const cambiarPermiso = useCallback(
-    (modulo, permiso) => {
+    async (modulo, permiso) => {
       if (
         !empleadoValido ||
         typeof modulo !== "string" ||
@@ -210,16 +284,26 @@ export default function SeguridadFicha({ empleadoId }) {
         ];
       }
 
-      asignarPermisos(
-        empleado.id,
-        nuevo
-      );
+      try {
+        await asignarPermisos(
+          empleado.id,
+          nuevo
+        );
+
+        await cargarFicha(empleado.id);
+      } catch (error) {
+        console.error(
+          "Error asignando permiso:",
+          error
+        );
+      }
     },
     [
       empleadoValido,
       empleado,
       permisosEmpleado,
       asignarPermisos,
+      cargarFicha,
     ]
   );
 
@@ -228,7 +312,7 @@ export default function SeguridadFicha({ empleadoId }) {
   // ============================================================
 
   const cambiarModulo = useCallback(
-    (modulo) => {
+    async (modulo) => {
       if (
         !empleadoValido ||
         typeof modulo !== "string"
@@ -249,16 +333,26 @@ export default function SeguridadFicha({ empleadoId }) {
         ];
       }
 
-      asignarModulos(
-        empleado.id,
-        nuevo
-      );
+      try {
+        await asignarModulos(
+          empleado.id,
+          nuevo
+        );
+
+        await cargarFicha(empleado.id);
+      } catch (error) {
+        console.error(
+          "Error asignando módulo:",
+          error
+        );
+      }
     },
     [
       empleadoValido,
       empleado,
       modulosVisibles,
       asignarModulos,
+      cargarFicha,
     ]
   );
 
@@ -377,6 +471,10 @@ export default function SeguridadFicha({ empleadoId }) {
     auditoriaFiltrada,
     ordenAud,
   ]);
+
+  // ============================================================
+  // PAGINAR AUDITORÍA
+  // ============================================================
 
   const auditoriaPaginada = useMemo(() => {
     const inicio =
@@ -503,6 +601,10 @@ export default function SeguridadFicha({ empleadoId }) {
     logsFiltrados,
     ordenLog,
   ]);
+
+  // ============================================================
+  // PAGINAR LOGS
+  // ============================================================
 
   const logsPaginados = useMemo(() => {
     const inicio =
@@ -705,7 +807,7 @@ export default function SeguridadFicha({ empleadoId }) {
   // ============================================================
 
   const ejecutarResetPassword =
-    useCallback(() => {
+    useCallback(async () => {
       const password =
         nuevaPassword.trim();
 
@@ -716,12 +818,19 @@ export default function SeguridadFicha({ empleadoId }) {
         return;
       }
 
-      resetPassword(
-        empleado.id,
-        password
-      );
+      try {
+        await resetPassword(
+          empleado.id,
+          password
+        );
 
-      setNuevaPassword("");
+        setNuevaPassword("");
+      } catch (error) {
+        console.error(
+          "Error reseteando contraseña:",
+          error
+        );
+      }
     }, [
       empleadoValido,
       empleado,
@@ -734,7 +843,7 @@ export default function SeguridadFicha({ empleadoId }) {
   // ============================================================
 
   const ejecutarAsignarRol =
-    useCallback(() => {
+    useCallback(async () => {
       const rolNum =
         Number(nuevoRol);
 
@@ -745,17 +854,27 @@ export default function SeguridadFicha({ empleadoId }) {
         return;
       }
 
-      asignarRol(
-        empleado.id,
-        rolNum
-      );
+      try {
+        await asignarRol(
+          empleado.id,
+          rolNum
+        );
 
-      setNuevoRol("");
+        setNuevoRol("");
+
+        await cargarFicha(empleado.id);
+      } catch (error) {
+        console.error(
+          "Error asignando rol:",
+          error
+        );
+      }
     }, [
       empleadoValido,
       empleado,
       nuevoRol,
       asignarRol,
+      cargarFicha,
     ]);
 
   // ============================================================
@@ -884,7 +1003,7 @@ export default function SeguridadFicha({ empleadoId }) {
 
             <div>
               <strong>Rol:</strong>{" "}
-              {empleado.rol_nombre || "-"}
+              {nombreRol}
             </div>
           </div>
         </div>
@@ -946,6 +1065,7 @@ export default function SeguridadFicha({ empleadoId }) {
           </label>
 
           <div className="flex flex-col md:flex-row gap-3">
+
             <input
               type="password"
               className="
@@ -985,6 +1105,7 @@ export default function SeguridadFicha({ empleadoId }) {
             >
               🔑 Resetear contraseña
             </button>
+
           </div>
         </div>
 
@@ -996,6 +1117,7 @@ export default function SeguridadFicha({ empleadoId }) {
           </label>
 
           <div className="flex flex-col md:flex-row gap-3">
+
             <input
               type="number"
               className="
@@ -1034,6 +1156,7 @@ export default function SeguridadFicha({ empleadoId }) {
             >
               👤 Asignar rol
             </button>
+
           </div>
         </div>
       </div>
@@ -1049,6 +1172,7 @@ export default function SeguridadFicha({ empleadoId }) {
           shadow-xl p-6
         "
       >
+
         <button
           className="
             text-xl font-semibold
@@ -1063,6 +1187,7 @@ export default function SeguridadFicha({ empleadoId }) {
             )
           }
         >
+
           <span className="mr-2">
             {showModulos ? "▼" : "▶"}
           </span>
@@ -1072,6 +1197,7 @@ export default function SeguridadFicha({ empleadoId }) {
           <span className="text-white/50 text-sm ml-2">
             ({modulosVisibles.length})
           </span>
+
         </button>
 
         {showModulos && (
@@ -1079,54 +1205,55 @@ export default function SeguridadFicha({ empleadoId }) {
 
             <ul className="space-y-3">
 
-              {Object.keys(
-                permisosGlobales || {}
-              ).map((modulo) => {
+              {modulosDisponibles.map(
+                (modulo) => {
 
-                const visible =
-                  modulosVisibles.includes(
-                    modulo
-                  );
+                  const visible =
+                    modulosVisibles.includes(
+                      modulo
+                    );
 
-                return (
-                  <li
-                    key={modulo}
-                    className="
-                      flex items-center
-                      justify-between
-                      bg-white/5
-                      border border-white/10
-                      rounded-xl
-                      px-4 py-3
-                      hover:bg-white/10
-                      transition
-                    "
-                  >
-                    <span className="font-medium">
-                      {modulo}
-                    </span>
-
-                    <input
-                      type="checkbox"
-                      checked={visible}
-                      onChange={() =>
-                        cambiarModulo(
-                          modulo
-                        )
-                      }
+                  return (
+                    <li
+                      key={modulo}
                       className="
-                        h-5 w-5
-                        accent-blue-500
-                        cursor-pointer
+                        flex items-center
+                        justify-between
+                        bg-white/5
+                        border border-white/10
+                        rounded-xl
+                        px-4 py-3
+                        hover:bg-white/10
+                        transition
                       "
-                    />
-                  </li>
-                );
-              })}
+                    >
 
-              {Object.keys(
-                permisosGlobales || {}
-              ).length === 0 && (
+                      <span className="font-medium">
+                        {modulo}
+                      </span>
+
+                      <input
+                        type="checkbox"
+                        checked={visible}
+                        onChange={() =>
+                          cambiarModulo(
+                            modulo
+                          )
+                        }
+                        className="
+                          h-5 w-5
+                          accent-blue-500
+                          cursor-pointer
+                        "
+                      />
+
+                    </li>
+                  );
+                }
+              )}
+
+              {modulosDisponibles.length ===
+                0 && (
                 <li className="text-white/50 text-sm">
                   No hay módulos disponibles.
                 </li>
@@ -1136,6 +1263,7 @@ export default function SeguridadFicha({ empleadoId }) {
 
           </div>
         )}
+
       </div>
 
       {/* ======================================================
@@ -1149,6 +1277,7 @@ export default function SeguridadFicha({ empleadoId }) {
           shadow-xl p-6
         "
       >
+
         <button
           className="
             text-xl font-semibold
@@ -1163,11 +1292,13 @@ export default function SeguridadFicha({ empleadoId }) {
             )
           }
         >
+
           <span className="mr-2">
             {showPermisos ? "▼" : "▶"}
           </span>
 
           Permisos por módulo
+
         </button>
 
         {showPermisos && (
@@ -1205,6 +1336,7 @@ export default function SeguridadFicha({ empleadoId }) {
                         mt-3
                       "
                     >
+
                       {listaPerms.map(
                         (perm) => {
 
@@ -1239,6 +1371,7 @@ export default function SeguridadFicha({ empleadoId }) {
                                 cursor-pointer
                               "
                             >
+
                               <input
                                 type="checkbox"
                                 checked={checked}
@@ -1258,10 +1391,12 @@ export default function SeguridadFicha({ empleadoId }) {
                               <span>
                                 {perm}
                               </span>
+
                             </label>
                           );
                         }
                       )}
+
                     </div>
 
                   </li>
@@ -1279,6 +1414,7 @@ export default function SeguridadFicha({ empleadoId }) {
 
           </ul>
         )}
+
       </div>
 
       {/* ======================================================
@@ -1292,6 +1428,7 @@ export default function SeguridadFicha({ empleadoId }) {
           shadow-xl p-6 space-y-4
         "
       >
+
         <button
           className="
             text-xl font-semibold
@@ -1306,6 +1443,7 @@ export default function SeguridadFicha({ empleadoId }) {
             )
           }
         >
+
           <span className="mr-2">
             {showAuditoria ? "▼" : "▶"}
           </span>
@@ -1315,6 +1453,7 @@ export default function SeguridadFicha({ empleadoId }) {
           <span className="text-white/50 text-sm ml-2">
             ({auditoriaOrdenada.length})
           </span>
+
         </button>
 
         {showAuditoria && (
@@ -1392,10 +1531,16 @@ export default function SeguridadFicha({ empleadoId }) {
               <table className="w-full text-sm text-white">
 
                 <thead className="bg-white/10 border-b border-white/20">
+
                   <tr>
 
                     <th
-                      className="p-3 text-left cursor-pointer hover:text-blue-300 transition"
+                      className="
+                        p-3 text-left
+                        cursor-pointer
+                        hover:text-blue-300
+                        transition
+                      "
                       onClick={() =>
                         ordenarAud("fecha")
                       }
@@ -1410,7 +1555,12 @@ export default function SeguridadFicha({ empleadoId }) {
                     </th>
 
                     <th
-                      className="p-3 text-left cursor-pointer hover:text-blue-300 transition"
+                      className="
+                        p-3 text-left
+                        cursor-pointer
+                        hover:text-blue-300
+                        transition
+                      "
                       onClick={() =>
                         ordenarAud("modulo")
                       }
@@ -1425,7 +1575,12 @@ export default function SeguridadFicha({ empleadoId }) {
                     </th>
 
                     <th
-                      className="p-3 text-left cursor-pointer hover:text-blue-300 transition"
+                      className="
+                        p-3 text-left
+                        cursor-pointer
+                        hover:text-blue-300
+                        transition
+                      "
                       onClick={() =>
                         ordenarAud("accion")
                       }
@@ -1444,6 +1599,7 @@ export default function SeguridadFicha({ empleadoId }) {
                     </th>
 
                   </tr>
+
                 </thead>
 
                 <tbody>
@@ -1475,11 +1631,14 @@ export default function SeguridadFicha({ empleadoId }) {
                           </td>
 
                           <td className="p-3">
+
                             {iconosAccion[
                               a.accion
                             ] ||
                               iconosAccion.default}{" "}
+
                             {a.accion || "-"}
+
                           </td>
 
                           <td className="p-3">
@@ -1495,6 +1654,7 @@ export default function SeguridadFicha({ empleadoId }) {
                   {auditoriaPaginada.length ===
                     0 && (
                     <tr>
+
                       <td
                         colSpan={4}
                         className="
@@ -1506,6 +1666,7 @@ export default function SeguridadFicha({ empleadoId }) {
                         No hay registros de
                         auditoría.
                       </td>
+
                     </tr>
                   )}
 
@@ -1576,6 +1737,7 @@ export default function SeguridadFicha({ empleadoId }) {
 
           </div>
         )}
+
       </div>
 
       {/* ======================================================
@@ -1589,6 +1751,7 @@ export default function SeguridadFicha({ empleadoId }) {
           shadow-xl p-6 space-y-4
         "
       >
+
         <button
           className="
             text-xl font-semibold
@@ -1603,6 +1766,7 @@ export default function SeguridadFicha({ empleadoId }) {
             )
           }
         >
+
           <span className="mr-2">
             {showLogs ? "▼" : "▶"}
           </span>
@@ -1612,6 +1776,7 @@ export default function SeguridadFicha({ empleadoId }) {
           <span className="text-white/50 text-sm ml-2">
             ({logsOrdenados.length})
           </span>
+
         </button>
 
         {showLogs && (
@@ -1689,6 +1854,7 @@ export default function SeguridadFicha({ empleadoId }) {
               <table className="w-full text-sm text-white">
 
                 <thead className="bg-white/10 border-b border-white/20">
+
                   <tr>
 
                     <th
@@ -1742,6 +1908,7 @@ export default function SeguridadFicha({ empleadoId }) {
                     </th>
 
                   </tr>
+
                 </thead>
 
                 <tbody>
@@ -1769,11 +1936,14 @@ export default function SeguridadFicha({ empleadoId }) {
                           </td>
 
                           <td className="p-3">
+
                             {iconosEvento[
                               l.evento
                             ] ||
                               iconosEvento.default}{" "}
+
                             {l.evento || "-"}
+
                           </td>
 
                           <td className="p-3">
@@ -1792,6 +1962,7 @@ export default function SeguridadFicha({ empleadoId }) {
                   {logsPaginados.length ===
                     0 && (
                     <tr>
+
                       <td
                         colSpan={4}
                         className="
@@ -1803,6 +1974,7 @@ export default function SeguridadFicha({ empleadoId }) {
                         No hay registros de
                         logs.
                       </td>
+
                     </tr>
                   )}
 
@@ -1873,6 +2045,7 @@ export default function SeguridadFicha({ empleadoId }) {
 
           </div>
         )}
+
       </div>
 
     </div>

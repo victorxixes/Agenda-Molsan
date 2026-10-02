@@ -140,6 +140,11 @@ def crear_rol(
 
     nombre = datos.nombre.strip()
 
+    print(
+        f"[ROLES] Intentando crear rol: {nombre!r}",
+        flush=True,
+    )
+
     if not nombre:
 
         raise HTTPException(
@@ -148,7 +153,7 @@ def crear_rol(
         )
 
     # --------------------------------------------------------
-    # COMPROBAR DUPLICADO
+    # COMPROBAR SI EL NOMBRE YA EXISTE
     # --------------------------------------------------------
 
     rol_existente = (
@@ -160,6 +165,13 @@ def crear_rol(
     )
 
     if rol_existente:
+
+        print(
+            f"[ROLES] DUPLICADO REAL: "
+            f"nombre={nombre!r} "
+            f"id={rol_existente.id}",
+            flush=True,
+        )
 
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -181,19 +193,86 @@ def crear_rol(
 
         db.commit()
 
-    except IntegrityError:
+    except IntegrityError as exc:
 
         db.rollback()
 
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Ya existe un rol con ese nombre.",
+        # ----------------------------------------------------
+        # MOSTRAR EL ERROR REAL DE POSTGRESQL
+        # ----------------------------------------------------
+
+        print(
+            "====================================================",
+            flush=True,
         )
+
+        print(
+            "[ROLES] ERROR DE INTEGRIDAD AL CREAR ROL",
+            flush=True,
+        )
+
+        print(
+            f"[ROLES] NOMBRE: {nombre!r}",
+            flush=True,
+        )
+
+        print(
+            f"[ROLES] ERROR: {exc}",
+            flush=True,
+        )
+
+        print(
+            f"[ROLES] ERROR ORIG: {exc.orig}",
+            flush=True,
+        )
+
+        print(
+            "====================================================",
+            flush=True,
+        )
+
+        # ----------------------------------------------------
+        # SOLO DEVOLVEMOS DUPLICADO SI REALMENTE ES EL NOMBRE
+        # ----------------------------------------------------
+
+        error_texto = str(exc.orig).lower()
+
+        if (
+            "roles_nombre_key" in error_texto
+            or "unique constraint" in error_texto
+            and "nombre" in error_texto
+        ):
+
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Ya existe un rol con ese nombre.",
+            )
+
+        # ----------------------------------------------------
+        # OTRO ERROR DE INTEGRIDAD
+        # ----------------------------------------------------
+
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=(
+                "Error de integridad al crear el rol. "
+                "Revisa los logs del servidor."
+            ),
+        )
+
+    # --------------------------------------------------------
+    # REFRESCAR
+    # --------------------------------------------------------
 
     db.refresh(rol)
 
-    return rol
+    print(
+        f"[ROLES] Rol creado correctamente: "
+        f"id={rol.id}, nombre={rol.nombre!r}",
+        flush=True,
+    )
 
+    return rol
 
 # ============================================================
 # EDITAR ROL

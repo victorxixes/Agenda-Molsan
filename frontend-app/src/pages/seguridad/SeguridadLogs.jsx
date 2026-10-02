@@ -1,14 +1,13 @@
 import { useEffect } from "react";
 
 import { useSeguridad } from "../../hooks/useSeguridad";
-
 import TablaLogs from "../../components/logs/TablaLogs";
 
 
-/* ============================================================
+/* =========================================================
    SEGURIDAD — LOGS
    MOLSAN ERP SAAS PREMIUM 2027
-============================================================ */
+========================================================= */
 
 export default function SeguridadLogs() {
 
@@ -18,9 +17,9 @@ export default function SeguridadLogs() {
   } = useSeguridad();
 
 
-  /* ==========================================================
+  /* =======================================================
      CARGAR LOGS
-  ========================================================== */
+  ======================================================= */
 
   useEffect(() => {
 
@@ -29,9 +28,9 @@ export default function SeguridadLogs() {
   }, [cargarTodo]);
 
 
-  /* ==========================================================
+  /* =======================================================
      COLUMNAS
-  ========================================================== */
+  ======================================================= */
 
   const columnas = [
 
@@ -60,9 +59,9 @@ export default function SeguridadLogs() {
   ];
 
 
-  /* ==========================================================
-     ICONOS DE EVENTOS
-  ========================================================== */
+  /* =======================================================
+     ICONOS EVENTOS
+  ======================================================= */
 
   const iconosEvento = {
 
@@ -81,9 +80,9 @@ export default function SeguridadLogs() {
   };
 
 
-  /* ==========================================================
+  /* =======================================================
      RENDER
-  ========================================================== */
+  ======================================================= */
 
   return (
 
@@ -95,9 +94,9 @@ export default function SeguridadLogs() {
       "
     >
 
-      {/* ======================================================
+      {/* ===================================================
           CABECERA
-      ====================================================== */}
+      =================================================== */}
 
       <section
         className="
@@ -117,10 +116,6 @@ export default function SeguridadLogs() {
           "
         >
 
-          {/* --------------------------------------------------
-             TÍTULO
-          -------------------------------------------------- */}
-
           <div>
 
             <div
@@ -136,14 +131,14 @@ export default function SeguridadLogs() {
                 className="
                   w-11
                   h-11
-                  rounded-2xl
+                  rounded-xl
                   flex
                   items-center
                   justify-center
                   bg-[var(--erp-primary-soft)]
+                  text-xl
                   border
                   border-[var(--erp-border)]
-                  text-xl
                 "
               >
                 🛡️
@@ -166,7 +161,6 @@ export default function SeguridadLogs() {
                 <h1
                   className="
                     text-2xl
-                    lg:text-3xl
                     font-semibold
                     text-[var(--erp-text)]
                     mt-0.5
@@ -185,56 +179,64 @@ export default function SeguridadLogs() {
                 text-sm
                 text-[var(--erp-text-soft)]
                 max-w-3xl
-                leading-relaxed
               "
             >
-              Registro de actividad de seguridad del sistema,
-              incluyendo accesos, intentos de autenticación,
-              modificaciones y operaciones sensibles.
+              Registro de accesos, autenticaciones y
+              actividad sensible realizada en el sistema.
             </p>
 
           </div>
 
 
-          {/* --------------------------------------------------
-             INDICADOR
-          -------------------------------------------------- */}
+          {/* INDICADOR */}
 
           <div
             className="
-              shrink-0
-              rounded-2xl
+              inline-flex
+              items-center
+              gap-3
+              rounded-xl
               border
               border-[var(--erp-border)]
               bg-[var(--erp-surface-soft)]
-              px-5
+              px-4
               py-3
+              shrink-0
             "
           >
 
-            <div
+            <span
               className="
-                text-[11px]
-                uppercase
-                tracking-wide
-                font-semibold
-                text-[var(--erp-text-soft)]
-                mb-1
+                w-2.5
+                h-2.5
+                rounded-full
+                bg-emerald-500
+                shadow-sm
               "
-            >
-              Registros
-            </div>
+            />
 
-            <div
-              className="
-                text-xl
-                font-semibold
-                text-[var(--erp-text)]
-              "
-            >
-              {Array.isArray(logs)
-                ? logs.length
-                : 0}
+            <div>
+
+              <div
+                className="
+                  text-xs
+                  font-semibold
+                  text-[var(--erp-text)]
+                "
+              >
+                Auditoría activa
+              </div>
+
+              <div
+                className="
+                  text-[11px]
+                  text-[var(--erp-text-soft)]
+                  mt-0.5
+                "
+              >
+                SJ-2026
+              </div>
+
             </div>
 
           </div>
@@ -244,14 +246,14 @@ export default function SeguridadLogs() {
       </section>
 
 
-      {/* ======================================================
-          TABLA DE LOGS
-      ====================================================== */}
+      {/* ===================================================
+          TABLA
+      =================================================== */}
 
       <section
         className="
           erp-card
-          overflow-hidden
+          p-5
         "
       >
 
@@ -282,6 +284,7 @@ export default function SeguridadLogs() {
           exportFilename="logs_seguridad"
 
           iconosEvento={iconosEvento}
+
         />
 
       </section>

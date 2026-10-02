@@ -1,6 +1,12 @@
 // frontend-app/src/pages/seguridad/SeguridadFicha.jsx
 
-import { useEffect, useState, useMemo, useCallback } from "react";
+import {
+  useEffect,
+  useState,
+  useMemo,
+  useCallback,
+} from "react";
+
 import { useSeguridad } from "../../hooks/useSeguridad";
 
 export default function SeguridadFicha({ empleadoId }) {
@@ -19,7 +25,7 @@ export default function SeguridadFicha({ empleadoId }) {
   } = useSeguridad();
 
   // ============================================================
-  // ESTADOS PRINCIPALES
+  // ESTADOS
   // ============================================================
 
   const [nuevaPassword, setNuevaPassword] = useState("");
@@ -71,7 +77,7 @@ export default function SeguridadFicha({ empleadoId }) {
   }, [empleadoId, cargarFicha]);
 
   // ============================================================
-  // BLINDAJE FICHA
+  // FICHA SEGURA
   // ============================================================
 
   const fichaSegura = useMemo(() => {
@@ -90,55 +96,53 @@ export default function SeguridadFicha({ empleadoId }) {
   }, [ficha]);
 
   // ============================================================
-  // CARGANDO
+  // EMPLEADO SEGURO
   // ============================================================
 
-  if (!fichaSegura) {
-    return (
-      <div className="p-6 text-white/70 animate-pulse">
-        Cargando ficha…
-      </div>
-    );
-  }
+  const empleado = fichaSegura?.empleado || null;
 
-  const empleado = fichaSegura.empleado;
-
-  // ============================================================
-  // BLINDAJE EMPLEADO
-  // ============================================================
-
-  if (
-    typeof empleado.id !== "number" ||
-    typeof empleado.nombre !== "string"
-  ) {
-    return (
-      <div className="p-6 text-white/70 animate-pulse">
-        Datos de empleado no válidos…
-      </div>
-    );
-  }
+  const empleadoValido =
+    empleado &&
+    typeof empleado === "object" &&
+    typeof empleado.id === "number" &&
+    typeof empleado.nombre === "string";
 
   // ============================================================
   // MÓDULOS VISIBLES
   // ============================================================
 
-  const modulosVisibles = Array.isArray(
-    empleado.modulos_visibles_list
-  )
-    ? empleado.modulos_visibles_list.filter(
-        (m) => typeof m === "string"
-      )
-    : [];
+  const modulosVisibles = useMemo(() => {
+    if (!empleadoValido) {
+      return [];
+    }
+
+    return Array.isArray(
+      empleado.modulos_visibles_list
+    )
+      ? empleado.modulos_visibles_list.filter(
+          (m) => typeof m === "string"
+        )
+      : [];
+  }, [
+    empleadoValido,
+    empleado,
+  ]);
 
   // ============================================================
   // PERMISOS DEL EMPLEADO
   // ============================================================
 
-  const permisosEmpleado =
-    fichaSegura.permisos_modulo_dict &&
-    typeof fichaSegura.permisos_modulo_dict === "object"
-      ? fichaSegura.permisos_modulo_dict
-      : {};
+  const permisosEmpleado = useMemo(() => {
+    if (
+      !fichaSegura ||
+      typeof fichaSegura.permisos_modulo_dict !==
+        "object"
+    ) {
+      return {};
+    }
+
+    return fichaSegura.permisos_modulo_dict;
+  }, [fichaSegura]);
 
   // ============================================================
   // PERMISOS GLOBALES
@@ -165,7 +169,9 @@ export default function SeguridadFicha({ empleadoId }) {
         acc[p.modulo] = [];
       }
 
-      acc[p.modulo].push(p.permiso);
+      if (!acc[p.modulo].includes(p.permiso)) {
+        acc[p.modulo].push(p.permiso);
+      }
 
       return acc;
     }, {});
@@ -178,6 +184,7 @@ export default function SeguridadFicha({ empleadoId }) {
   const cambiarPermiso = useCallback(
     (modulo, permiso) => {
       if (
+        !empleadoValido ||
         typeof modulo !== "string" ||
         typeof permiso !== "string"
       ) {
@@ -209,9 +216,10 @@ export default function SeguridadFicha({ empleadoId }) {
       );
     },
     [
+      empleadoValido,
+      empleado,
       permisosEmpleado,
       asignarPermisos,
-      empleado.id,
     ]
   );
 
@@ -221,7 +229,10 @@ export default function SeguridadFicha({ empleadoId }) {
 
   const cambiarModulo = useCallback(
     (modulo) => {
-      if (typeof modulo !== "string") {
+      if (
+        !empleadoValido ||
+        typeof modulo !== "string"
+      ) {
         return;
       }
 
@@ -244,9 +255,10 @@ export default function SeguridadFicha({ empleadoId }) {
       );
     },
     [
+      empleadoValido,
+      empleado,
       modulosVisibles,
       asignarModulos,
-      empleado.id,
     ]
   );
 
@@ -266,7 +278,6 @@ export default function SeguridadFicha({ empleadoId }) {
 
       return (
         typeof a.fecha === "string" &&
-        typeof a.modulo === "string" &&
         typeof a.accion === "string" &&
         typeof a.descripcion === "string"
       );
@@ -285,11 +296,21 @@ export default function SeguridadFicha({ empleadoId }) {
     return auditoriaSegura.filter((a) => {
       const coincideBusqueda =
         !texto ||
-        a.usuario?.toLowerCase?.().includes(texto) ||
-        a.modulo.toLowerCase().includes(texto) ||
-        a.accion.toLowerCase().includes(texto) ||
-        a.descripcion.toLowerCase().includes(texto) ||
-        a.fecha.toLowerCase().includes(texto);
+        String(a.usuario || "")
+          .toLowerCase()
+          .includes(texto) ||
+        String(a.modulo || "")
+          .toLowerCase()
+          .includes(texto) ||
+        a.accion
+          .toLowerCase()
+          .includes(texto) ||
+        a.descripcion
+          .toLowerCase()
+          .includes(texto) ||
+        a.fecha
+          .toLowerCase()
+          .includes(texto);
 
       const coincideFecha = filtroFechaAud
         ? a.fecha.startsWith(filtroFechaAud)
@@ -310,15 +331,18 @@ export default function SeguridadFicha({ empleadoId }) {
   // ORDENAR AUDITORÍA
   // ============================================================
 
-  const ordenarAud = useCallback((campo) => {
-    setOrdenAud((prev) => ({
-      campo,
-      asc:
-        prev.campo === campo
-          ? !prev.asc
-          : true,
-    }));
-  }, []);
+  const ordenarAud = useCallback(
+    (campo) => {
+      setOrdenAud((prev) => ({
+        campo,
+        asc:
+          prev.campo === campo
+            ? !prev.asc
+            : true,
+      }));
+    },
+    []
+  );
 
   const auditoriaOrdenada = useMemo(() => {
     const {
@@ -401,12 +425,18 @@ export default function SeguridadFicha({ empleadoId }) {
     return logsSeguros.filter((l) => {
       const coincideBusqueda =
         !texto ||
-        l.evento.toLowerCase().includes(texto) ||
-        l.detalle.toLowerCase().includes(texto) ||
+        l.evento
+          .toLowerCase()
+          .includes(texto) ||
+        l.detalle
+          .toLowerCase()
+          .includes(texto) ||
         String(l.ip || "")
           .toLowerCase()
           .includes(texto) ||
-        l.fecha.toLowerCase().includes(texto);
+        l.fecha
+          .toLowerCase()
+          .includes(texto);
 
       const coincideFecha = filtroFechaLog
         ? l.fecha.startsWith(filtroFechaLog)
@@ -427,15 +457,18 @@ export default function SeguridadFicha({ empleadoId }) {
   // ORDENAR LOGS
   // ============================================================
 
-  const ordenarLog = useCallback((campo) => {
-    setOrdenLog((prev) => ({
-      campo,
-      asc:
-        prev.campo === campo
-          ? !prev.asc
-          : true,
-    }));
-  }, []);
+  const ordenarLog = useCallback(
+    (campo) => {
+      setOrdenLog((prev) => ({
+        campo,
+        asc:
+          prev.campo === campo
+            ? !prev.asc
+            : true,
+      }));
+    },
+    []
+  );
 
   const logsOrdenados = useMemo(() => {
     const {
@@ -529,189 +562,225 @@ export default function SeguridadFicha({ empleadoId }) {
   // DESCARGAR AUDITORÍA
   // ============================================================
 
-  const descargarExcelAuditoria = useCallback(() => {
-    const encabezados = [
-      "ID",
-      "Usuario",
-      "Módulo",
-      "Acción",
-      "Descripción",
-      "Fecha",
-    ];
+  const descargarExcelAuditoria =
+    useCallback(() => {
+      const encabezados = [
+        "ID",
+        "Usuario",
+        "Módulo",
+        "Acción",
+        "Descripción",
+        "Fecha",
+      ];
 
-    const filas =
-      auditoriaOrdenada.map((a) => [
-        a.id ?? "",
-        a.usuario ?? "",
-        a.modulo ?? "",
-        a.accion ?? "",
-        a.descripcion ?? "",
-        a.fecha ?? "",
-      ]);
+      const filas =
+        auditoriaOrdenada.map((a) => [
+          a.id ?? "",
+          a.usuario ?? "",
+          a.modulo ?? "",
+          a.accion ?? "",
+          a.descripcion ?? "",
+          a.fecha ?? "",
+        ]);
 
-    const contenido = [
-      encabezados,
-      ...filas,
-    ]
-      .map((fila) =>
-        fila
-          .map((valor) =>
-            `"${String(valor).replaceAll(
-              '"',
-              '""'
-            )}"`
-          )
-          .join(";")
-      )
-      .join("\n");
+      const contenido = [
+        encabezados,
+        ...filas,
+      ]
+        .map((fila) =>
+          fila
+            .map(
+              (valor) =>
+                `"${String(valor).replaceAll(
+                  '"',
+                  '""'
+                )}"`
+            )
+            .join(";")
+        )
+        .join("\n");
 
-    const blob = new Blob(
-      ["\ufeff", contenido],
-      {
-        type: "text/csv;charset=utf-8;",
-      }
-    );
+      const blob = new Blob(
+        ["\ufeff", contenido],
+        {
+          type: "text/csv;charset=utf-8;",
+        }
+      );
 
-    const url =
-      URL.createObjectURL(blob);
+      const url =
+        URL.createObjectURL(blob);
 
-    const enlace =
-      document.createElement("a");
+      const enlace =
+        document.createElement("a");
 
-    enlace.href = url;
-    enlace.download =
-      `auditoria_${empleado.usuario || empleado.id}.csv`;
+      enlace.href = url;
+      enlace.download = `auditoria_${
+        empleado?.usuario ||
+        empleado?.id ||
+        "empleado"
+      }.csv`;
 
-    document.body.appendChild(enlace);
-    enlace.click();
-    enlace.remove();
+      document.body.appendChild(enlace);
+      enlace.click();
+      enlace.remove();
 
-    URL.revokeObjectURL(url);
-  }, [
-    auditoriaOrdenada,
-    empleado.usuario,
-    empleado.id,
-  ]);
+      URL.revokeObjectURL(url);
+    }, [
+      auditoriaOrdenada,
+      empleado,
+    ]);
 
   // ============================================================
   // DESCARGAR LOGS
   // ============================================================
 
-  const descargarExcelLogs = useCallback(() => {
-    const encabezados = [
-      "ID",
-      "Fecha",
-      "Evento",
-      "Detalle",
-      "IP",
-    ];
+  const descargarExcelLogs =
+    useCallback(() => {
+      const encabezados = [
+        "ID",
+        "Fecha",
+        "Evento",
+        "Detalle",
+        "IP",
+      ];
 
-    const filas =
-      logsOrdenados.map((l) => [
-        l.id ?? "",
-        l.fecha ?? "",
-        l.evento ?? "",
-        l.detalle ?? "",
-        l.ip ?? "",
-      ]);
+      const filas =
+        logsOrdenados.map((l) => [
+          l.id ?? "",
+          l.fecha ?? "",
+          l.evento ?? "",
+          l.detalle ?? "",
+          l.ip ?? "",
+        ]);
 
-    const contenido = [
-      encabezados,
-      ...filas,
-    ]
-      .map((fila) =>
-        fila
-          .map((valor) =>
-            `"${String(valor).replaceAll(
-              '"',
-              '""'
-            )}"`
-          )
-          .join(";")
-      )
-      .join("\n");
+      const contenido = [
+        encabezados,
+        ...filas,
+      ]
+        .map((fila) =>
+          fila
+            .map(
+              (valor) =>
+                `"${String(valor).replaceAll(
+                  '"',
+                  '""'
+                )}"`
+            )
+            .join(";")
+        )
+        .join("\n");
 
-    const blob = new Blob(
-      ["\ufeff", contenido],
-      {
-        type: "text/csv;charset=utf-8;",
-      }
-    );
+      const blob = new Blob(
+        ["\ufeff", contenido],
+        {
+          type: "text/csv;charset=utf-8;",
+        }
+      );
 
-    const url =
-      URL.createObjectURL(blob);
+      const url =
+        URL.createObjectURL(blob);
 
-    const enlace =
-      document.createElement("a");
+      const enlace =
+        document.createElement("a");
 
-    enlace.href = url;
-    enlace.download =
-      `logs_${empleado.usuario || empleado.id}.csv`;
+      enlace.href = url;
+      enlace.download = `logs_${
+        empleado?.usuario ||
+        empleado?.id ||
+        "empleado"
+      }.csv`;
 
-    document.body.appendChild(enlace);
-    enlace.click();
-    enlace.remove();
+      document.body.appendChild(enlace);
+      enlace.click();
+      enlace.remove();
 
-    URL.revokeObjectURL(url);
-  }, [
-    logsOrdenados,
-    empleado.usuario,
-    empleado.id,
-  ]);
+      URL.revokeObjectURL(url);
+    }, [
+      logsOrdenados,
+      empleado,
+    ]);
 
   // ============================================================
   // RESET PASSWORD
   // ============================================================
 
-  const ejecutarResetPassword = useCallback(() => {
-    const password =
-      nuevaPassword.trim();
+  const ejecutarResetPassword =
+    useCallback(() => {
+      const password =
+        nuevaPassword.trim();
 
-    if (
-      typeof empleado.id !== "number" ||
-      !password
-    ) {
-      return;
-    }
+      if (
+        !empleadoValido ||
+        !password
+      ) {
+        return;
+      }
 
-    resetPassword(
-      empleado.id,
-      password
-    );
+      resetPassword(
+        empleado.id,
+        password
+      );
 
-    setNuevaPassword("");
-  }, [
-    empleado.id,
-    nuevaPassword,
-    resetPassword,
-  ]);
+      setNuevaPassword("");
+    }, [
+      empleadoValido,
+      empleado,
+      nuevaPassword,
+      resetPassword,
+    ]);
 
   // ============================================================
   // ASIGNAR ROL
   // ============================================================
 
-  const ejecutarAsignarRol = useCallback(() => {
-    const rolNum =
-      Number(nuevoRol);
+  const ejecutarAsignarRol =
+    useCallback(() => {
+      const rolNum =
+        Number(nuevoRol);
 
-    if (
-      !Number.isFinite(rolNum) ||
-      typeof empleado.id !== "number"
-    ) {
-      return;
-    }
+      if (
+        !Number.isFinite(rolNum) ||
+        !empleadoValido
+      ) {
+        return;
+      }
 
-    asignarRol(
-      empleado.id,
-      rolNum
+      asignarRol(
+        empleado.id,
+        rolNum
+      );
+
+      setNuevoRol("");
+    }, [
+      empleadoValido,
+      empleado,
+      nuevoRol,
+      asignarRol,
+    ]);
+
+  // ============================================================
+  // CARGANDO
+  // ============================================================
+
+  if (!fichaSegura) {
+    return (
+      <div className="p-6 text-white/70 animate-pulse">
+        Cargando ficha…
+      </div>
     );
+  }
 
-    setNuevoRol("");
-  }, [
-    empleado.id,
-    nuevoRol,
-    asignarRol,
-  ]);
+  // ============================================================
+  // EMPLEADO INVÁLIDO
+  // ============================================================
+
+  if (!empleadoValido) {
+    return (
+      <div className="p-6 text-white/70">
+        Datos de empleado no válidos…
+      </div>
+    );
+  }
 
   // ============================================================
   // RENDER
@@ -747,7 +816,8 @@ export default function SeguridadFicha({ empleadoId }) {
 
           <img
             src={
-              typeof empleado.foto === "string"
+              typeof empleado.foto === "string" &&
+              empleado.foto !== "-"
                 ? empleado.foto
                 : "/no-foto.png"
             }
@@ -998,6 +1068,7 @@ export default function SeguridadFicha({ empleadoId }) {
           </span>
 
           Módulos visibles
+
           <span className="text-white/50 text-sm ml-2">
             ({modulosVisibles.length})
           </span>
@@ -1005,6 +1076,7 @@ export default function SeguridadFicha({ empleadoId }) {
 
         {showModulos && (
           <div className="mt-5">
+
             <ul className="space-y-3">
 
               {Object.keys(
@@ -1052,13 +1124,16 @@ export default function SeguridadFicha({ empleadoId }) {
                 );
               })}
 
-            {Object.keys(
-              permisosGlobales || {}
-            ).length === 0 && (
-              <p className="text-white/50 text-sm">
-                No hay módulos disponibles.
-              </p>
-            )}
+              {Object.keys(
+                permisosGlobales || {}
+              ).length === 0 && (
+                <li className="text-white/50 text-sm">
+                  No hay módulos disponibles.
+                </li>
+              )}
+
+            </ul>
+
           </div>
         )}
       </div>
@@ -1188,6 +1263,7 @@ export default function SeguridadFicha({ empleadoId }) {
                         }
                       )}
                     </div>
+
                   </li>
                 );
               }
@@ -1200,6 +1276,7 @@ export default function SeguridadFicha({ empleadoId }) {
                 No hay permisos disponibles.
               </li>
             )}
+
           </ul>
         )}
       </div>
@@ -1262,8 +1339,6 @@ export default function SeguridadFicha({ empleadoId }) {
               📊 Descargar auditoría
             </button>
 
-            {/* FILTROS */}
-
             <div className="flex flex-col md:flex-row gap-4">
 
               <input
@@ -1309,11 +1384,11 @@ export default function SeguridadFicha({ empleadoId }) {
                   setPaginaAud(0);
                 }}
               />
+
             </div>
 
-            {/* TABLA */}
-
             <div className="overflow-x-auto">
+
               <table className="w-full text-sm text-white">
 
                 <thead className="bg-white/10 border-b border-white/20">
@@ -1322,9 +1397,7 @@ export default function SeguridadFicha({ empleadoId }) {
                     <th
                       className="p-3 text-left cursor-pointer hover:text-blue-300 transition"
                       onClick={() =>
-                        ordenarAud(
-                          "fecha"
-                        )
+                        ordenarAud("fecha")
                       }
                     >
                       Fecha{" "}
@@ -1339,9 +1412,7 @@ export default function SeguridadFicha({ empleadoId }) {
                     <th
                       className="p-3 text-left cursor-pointer hover:text-blue-300 transition"
                       onClick={() =>
-                        ordenarAud(
-                          "modulo"
-                        )
+                        ordenarAud("modulo")
                       }
                     >
                       Módulo{" "}
@@ -1356,9 +1427,7 @@ export default function SeguridadFicha({ empleadoId }) {
                     <th
                       className="p-3 text-left cursor-pointer hover:text-blue-300 transition"
                       onClick={() =>
-                        ordenarAud(
-                          "accion"
-                        )
+                        ordenarAud("accion")
                       }
                     >
                       Acción{" "}
@@ -1388,9 +1457,7 @@ export default function SeguridadFicha({ empleadoId }) {
 
                       return (
                         <tr
-                          key={String(
-                            key
-                          )}
+                          key={String(key)}
                           className="
                             border-b
                             border-white/10
@@ -1443,10 +1510,10 @@ export default function SeguridadFicha({ empleadoId }) {
                   )}
 
                 </tbody>
-              </table>
-            </div>
 
-            {/* PAGINACIÓN */}
+              </table>
+
+            </div>
 
             <div className="flex items-center gap-3 mt-4">
 
@@ -1506,6 +1573,7 @@ export default function SeguridadFicha({ empleadoId }) {
               </button>
 
             </div>
+
           </div>
         )}
       </div>
@@ -1568,8 +1636,6 @@ export default function SeguridadFicha({ empleadoId }) {
               📊 Descargar logs
             </button>
 
-            {/* FILTROS */}
-
             <div className="flex flex-col md:flex-row gap-4">
 
               <input
@@ -1615,11 +1681,11 @@ export default function SeguridadFicha({ empleadoId }) {
                   setPaginaLog(0);
                 }}
               />
+
             </div>
 
-            {/* TABLA LOGS */}
-
             <div className="overflow-x-auto">
+
               <table className="w-full text-sm text-white">
 
                 <thead className="bg-white/10 border-b border-white/20">
@@ -1634,9 +1700,7 @@ export default function SeguridadFicha({ empleadoId }) {
                         transition
                       "
                       onClick={() =>
-                        ordenarLog(
-                          "fecha"
-                        )
+                        ordenarLog("fecha")
                       }
                     >
                       Fecha{" "}
@@ -1657,9 +1721,7 @@ export default function SeguridadFicha({ empleadoId }) {
                         transition
                       "
                       onClick={() =>
-                        ordenarLog(
-                          "evento"
-                        )
+                        ordenarLog("evento")
                       }
                     >
                       Evento{" "}
@@ -1693,9 +1755,7 @@ export default function SeguridadFicha({ empleadoId }) {
 
                       return (
                         <tr
-                          key={String(
-                            key
-                          )}
+                          key={String(key)}
                           className="
                             border-b
                             border-white/10
@@ -1747,10 +1807,10 @@ export default function SeguridadFicha({ empleadoId }) {
                   )}
 
                 </tbody>
-              </table>
-            </div>
 
-            {/* PAGINACIÓN */}
+              </table>
+
+            </div>
 
             <div className="flex items-center gap-3 mt-4">
 
@@ -1810,6 +1870,7 @@ export default function SeguridadFicha({ empleadoId }) {
               </button>
 
             </div>
+
           </div>
         )}
       </div>

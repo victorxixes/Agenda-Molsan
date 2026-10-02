@@ -7,6 +7,7 @@ import SeguridadRoles from "./SeguridadRoles";
 import SeguridadPermisos from "./SeguridadPermisos";
 import SeguridadModulos from "./SeguridadModulos";
 
+
 /**
  * ============================================================
  * SEGURIDAD — MOLSAN ERP SAAS PREMIUM 2027
@@ -17,16 +18,14 @@ import SeguridadModulos from "./SeguridadModulos";
  *
  * - Monitor general
  * - Estado del sistema
- * - Indicadores de seguridad
+ * - Indicadores
  * - Actividad reciente
- * - Alertas
+ * - Auditoría
+ * - Logs técnicos
  * - Roles
  * - Permisos
  * - Módulos
- * - Auditoría
- * - Logs técnicos
  *
- * Todo el módulo utiliza el mismo lenguaje visual ERP Premium.
  * ============================================================
  */
 
@@ -57,9 +56,7 @@ const Icono = ({
  */
 
 function arraySeguro(valor) {
-  return Array.isArray(valor)
-    ? valor
-    : [];
+  return Array.isArray(valor) ? valor : [];
 }
 
 
@@ -91,31 +88,23 @@ function IndicadorSeguridad({
 
   const accentClasses = {
     primary: {
-      iconBg:
-        "bg-[var(--erp-primary-soft)]",
-      iconColor:
-        "text-[var(--erp-primary)]",
+      iconBg: "bg-[var(--erp-primary-soft)]",
+      iconColor: "text-[var(--erp-primary)]",
     },
 
     success: {
-      iconBg:
-        "bg-emerald-50",
-      iconColor:
-        "text-emerald-600",
+      iconBg: "bg-emerald-50",
+      iconColor: "text-emerald-600",
     },
 
     warning: {
-      iconBg:
-        "bg-amber-50",
-      iconColor:
-        "text-amber-600",
+      iconBg: "bg-amber-50",
+      iconColor: "text-amber-600",
     },
 
     danger: {
-      iconBg:
-        "bg-red-50",
-      iconColor:
-        "text-red-600",
+      iconBg: "bg-red-50",
+      iconColor: "text-red-600",
     },
   };
 
@@ -126,6 +115,7 @@ function IndicadorSeguridad({
   return (
     <div
       className="
+        group
         bg-[var(--erp-surface)]
         border
         border-[var(--erp-border)]
@@ -152,10 +142,10 @@ function IndicadorSeguridad({
 
           <p
             className="
-              text-xs
+              text-[11px]
               uppercase
-              tracking-wide
-              font-medium
+              tracking-[0.08em]
+              font-semibold
               text-[var(--erp-text-soft)]
             "
           >
@@ -168,6 +158,7 @@ function IndicadorSeguridad({
               font-bold
               text-[var(--erp-text)]
               mt-1
+              tracking-tight
             "
           >
             {valor}
@@ -200,6 +191,9 @@ function IndicadorSeguridad({
             items-center
             justify-center
             flex-shrink-0
+            transition-transform
+            duration-200
+            group-hover:scale-105
           `}
         >
           <Icono
@@ -231,24 +225,23 @@ function TarjetaAcceso({
 
   const accentClasses = {
     primary: {
-      iconBg:
-        "bg-[var(--erp-primary-soft)]",
-      iconColor:
-        "text-[var(--erp-primary)]",
+      iconBg: "bg-[var(--erp-primary-soft)]",
+      iconColor: "text-[var(--erp-primary)]",
     },
 
     warning: {
-      iconBg:
-        "bg-amber-50",
-      iconColor:
-        "text-amber-600",
+      iconBg: "bg-amber-50",
+      iconColor: "text-amber-600",
     },
 
     success: {
-      iconBg:
-        "bg-emerald-50",
-      iconColor:
-        "text-emerald-600",
+      iconBg: "bg-emerald-50",
+      iconColor: "text-emerald-600",
+    },
+
+    danger: {
+      iconBg: "bg-red-50",
+      iconColor: "text-red-600",
     },
   };
 
@@ -288,7 +281,9 @@ function TarjetaAcceso({
           flex
           items-center
           justify-center
-          transition
+          flex-shrink-0
+          transition-transform
+          duration-200
           group-hover:scale-105
         `}
       >
@@ -310,7 +305,7 @@ function TarjetaAcceso({
           "
         >
 
-          <h2
+          <h3
             className="
               text-base
               font-semibold
@@ -318,12 +313,13 @@ function TarjetaAcceso({
             "
           >
             {titulo}
-          </h2>
+          </h3>
 
           <span
             className="
               text-[var(--erp-text-soft)]
-              transition
+              transition-all
+              duration-200
               group-hover:text-[var(--erp-primary)]
               group-hover:translate-x-0.5
             "
@@ -377,8 +373,6 @@ function PanelSeguridad({
         ${className}
       `}
     >
-
-      {/* CABECERA */}
 
       <div
         className="
@@ -441,8 +435,6 @@ function PanelSeguridad({
       </div>
 
 
-      {/* CONTENIDO */}
-
       <div className="p-5">
         {children}
       </div>
@@ -462,15 +454,13 @@ function ActividadReciente({
   auditoria,
 }) {
 
-  const registros =
-    useMemo(() => {
-
-      return arraySeguro(auditoria)
-        .filter((item) => item)
-        .slice(0, 6);
-
-    }, [auditoria]);
-
+  const registros = useMemo(
+    () =>
+      arraySeguro(auditoria)
+        .filter(Boolean)
+        .slice(0, 6),
+    [auditoria]
+  );
 
   return (
     <section
@@ -572,141 +562,149 @@ function ActividadReciente({
 
         ) : (
 
-          registros.map((item, index) => (
+          registros.map((item, index) => {
 
-            <div
-              key={
-                item.id ??
-                `actividad-${index}`
-              }
-              className="
-                px-5
-                py-3.5
-                flex
-                items-start
-                gap-3
-                hover:bg-[var(--erp-primary-soft)]
-                transition
-              "
-            >
+            const usuario =
+              textoSeguro(item?.usuario) ||
+              "Sistema";
 
+            const accion =
+              textoSeguro(item?.accion) ||
+              "Actividad";
+
+            const descripcion =
+              textoSeguro(item?.descripcion) ||
+              "Sin descripción";
+
+            const modulo =
+              textoSeguro(item?.modulo) ||
+              "Sistema";
+
+            const fecha =
+              textoSeguro(item?.fecha) ||
+              "-";
+
+            return (
               <div
+                key={
+                  item?.id ??
+                  `actividad-${index}`
+                }
                 className="
-                  w-8
-                  h-8
-                  rounded-lg
-                  bg-[var(--erp-primary-soft)]
-                  text-[var(--erp-primary)]
+                  px-5
+                  py-3.5
                   flex
-                  items-center
-                  justify-center
-                  flex-shrink-0
+                  items-start
+                  gap-3
+                  hover:bg-[var(--erp-primary-soft)]
+                  transition
                 "
               >
-                <Icono
-                  name="clipboard"
-                  className="w-4 h-4"
-                />
-              </div>
-
-
-              <div className="min-w-0 flex-1">
 
                 <div
                   className="
+                    w-8
+                    h-8
+                    rounded-lg
+                    bg-[var(--erp-primary-soft)]
+                    text-[var(--erp-primary)]
                     flex
-                    flex-wrap
                     items-center
-                    gap-x-2
-                    gap-y-1
+                    justify-center
+                    flex-shrink-0
                   "
                 >
+                  <Icono
+                    name="clipboard"
+                    className="w-4 h-4"
+                  />
+                </div>
 
-                  <span
+
+                <div className="min-w-0 flex-1">
+
+                  <div
                     className="
-                      text-sm
-                      font-medium
-                      text-[var(--erp-text)]
+                      flex
+                      flex-wrap
+                      items-center
+                      gap-x-2
+                      gap-y-1
                     "
                   >
-                    {textoSeguro(item.usuario) ||
-                      "Sistema"}
-                  </span>
 
-                  <span
+                    <span
+                      className="
+                        text-sm
+                        font-medium
+                        text-[var(--erp-text)]
+                      "
+                    >
+                      {usuario}
+                    </span>
+
+                    <span
+                      className="
+                        text-xs
+                        text-[var(--erp-text-soft)]
+                      "
+                    >
+                      ·
+                    </span>
+
+                    <span
+                      className="
+                        text-xs
+                        text-[var(--erp-primary)]
+                      "
+                    >
+                      {accion}
+                    </span>
+
+                  </div>
+
+
+                  <p
                     className="
-                      text-xs
+                      text-sm
+                      text-[var(--erp-text-soft)]
+                      mt-0.5
+                      truncate
+                    "
+                    title={descripcion}
+                  >
+                    {descripcion}
+                  </p>
+
+
+                  <div
+                    className="
+                      flex
+                      flex-wrap
+                      gap-2
+                      mt-1
+                      text-[11px]
                       text-[var(--erp-text-soft)]
                     "
                   >
-                    ·
-                  </span>
 
-                  <span
-                    className="
-                      text-xs
-                      text-[var(--erp-primary)]
-                    "
-                  >
-                    {textoSeguro(item.accion) ||
-                      "Actividad"}
-                  </span>
+                    <span>
+                      {modulo}
+                    </span>
 
-                </div>
+                    <span>·</span>
 
+                    <span>
+                      {fecha}
+                    </span>
 
-                <p
-                  className="
-                    text-sm
-                    text-[var(--erp-text-soft)]
-                    mt-0.5
-                    truncate
-                  "
-                  title={
-                    textoSeguro(
-                      item.descripcion
-                    )
-                  }
-                >
-                  {textoSeguro(
-                    item.descripcion
-                  ) ||
-                    "Sin descripción"}
-                </p>
-
-
-                <div
-                  className="
-                    flex
-                    flex-wrap
-                    gap-2
-                    mt-1
-                    text-[11px]
-                    text-[var(--erp-text-soft)]
-                  "
-                >
-
-                  <span>
-                    {textoSeguro(
-                      item.modulo
-                    ) || "Sistema"}
-                  </span>
-
-                  <span>·</span>
-
-                  <span>
-                    {textoSeguro(
-                      item.fecha
-                    ) || "-"}
-                  </span>
+                  </div>
 
                 </div>
 
               </div>
-
-            </div>
-
-          ))
+            );
+          })
 
         )}
 
@@ -719,7 +717,7 @@ function ActividadReciente({
 
 /**
  * ============================================================
- * ESTADO / ALERTAS
+ * ESTADO DE SEGURIDAD
  * ============================================================
  */
 
@@ -738,48 +736,41 @@ function PanelEstado({
   const intentosFallidos =
     auditoriaSegura.filter(
       (item) =>
-        textoSeguro(
-          item?.accion
-        ).toLowerCase() ===
-        "login_error"
+        textoSeguro(item?.accion)
+          .toLowerCase() === "login_error"
     ).length;
 
 
   const erroresTecnicos =
     logsSeguros.filter(
       (item) =>
-        textoSeguro(
-          item?.evento
-        ).toLowerCase() ===
-        "error"
+        textoSeguro(item?.evento)
+          .toLowerCase() === "error"
     ).length;
 
 
   const advertencias =
     logsSeguros.filter(
       (item) =>
-        textoSeguro(
-          item?.evento
-        ).toLowerCase() ===
-        "warning"
+        textoSeguro(item?.evento)
+          .toLowerCase() === "warning"
     ).length;
 
 
-  const incidencias =
-    erroresTecnicos +
-    advertencias;
+  const sistemaProtegido =
+    intentosFallidos === 0 &&
+    erroresTecnicos === 0 &&
+    advertencias === 0;
 
 
   const estado =
-    incidencias === 0 &&
-    intentosFallidos === 0
+    sistemaProtegido
       ? "Sistema protegido"
       : "Revisión recomendada";
 
 
   const estadoClasses =
-    incidencias === 0 &&
-    intentosFallidos === 0
+    sistemaProtegido
       ? {
           badge:
             "bg-emerald-50 border-emerald-100 text-emerald-700",
@@ -999,9 +990,7 @@ export default function Seguridad() {
    */
 
   useEffect(() => {
-
     cargarTodo();
-
   }, [cargarTodo]);
 
 
@@ -1011,39 +1000,34 @@ export default function Seguridad() {
    * ==========================================================
    */
 
-  const rolesSeguros =
-    useMemo(
-      () => arraySeguro(roles),
-      [roles]
-    );
+  const rolesSeguros = useMemo(
+    () => arraySeguro(roles),
+    [roles]
+  );
 
 
-  const permisosSeguros =
-    useMemo(
-      () => arraySeguro(permisos),
-      [permisos]
-    );
+  const permisosSeguros = useMemo(
+    () => arraySeguro(permisos),
+    [permisos]
+  );
 
 
-  const empleadosSeguros =
-    useMemo(
-      () => arraySeguro(empleados),
-      [empleados]
-    );
+  const empleadosSeguros = useMemo(
+    () => arraySeguro(empleados),
+    [empleados]
+  );
 
 
-  const auditoriaSegura =
-    useMemo(
-      () => arraySeguro(auditoria),
-      [auditoria]
-    );
+  const auditoriaSegura = useMemo(
+    () => arraySeguro(auditoria),
+    [auditoria]
+  );
 
 
-  const logsSeguros =
-    useMemo(
-      () => arraySeguro(logs),
-      [logs]
-    );
+  const logsSeguros = useMemo(
+    () => arraySeguro(logs),
+    [logs]
+  );
 
 
   /**
@@ -1052,33 +1036,18 @@ export default function Seguridad() {
    * ==========================================================
    */
 
-  const usuariosActivos =
-    useMemo(
-      () =>
-        empleadosSeguros.filter(
-          (empleado) =>
-            empleado &&
-            (
-              empleado.activo === true ||
-              empleado.activo === 1
-            )
-        ).length,
-      [empleadosSeguros]
-    );
-
-
-  const erroresSeguros =
-    useMemo(
-      () =>
-        logsSeguros.filter(
-          (item) =>
-            textoSeguro(
-              item?.evento
-            ).toLowerCase() ===
-            "error"
-        ).length,
-      [logsSeguros]
-    );
+  const usuariosActivos = useMemo(
+    () =>
+      empleadosSeguros.filter(
+        (empleado) =>
+          empleado &&
+          (
+            empleado.activo === true ||
+            empleado.activo === 1
+          )
+      ).length,
+    [empleadosSeguros]
+  );
 
 
   /**
@@ -1088,7 +1057,6 @@ export default function Seguridad() {
    */
 
   if (loading) {
-
     return (
       <div
         className="
@@ -1147,7 +1115,7 @@ export default function Seguridad() {
     >
 
       {/* ======================================================
-          CABECERA PRINCIPAL
+          CABECERA
           ====================================================== */}
 
       <section
@@ -1217,6 +1185,7 @@ export default function Seguridad() {
                   className="
                     text-2xl
                     font-bold
+                    tracking-tight
                     text-[var(--erp-text)]
                   "
                 >
@@ -1303,7 +1272,7 @@ export default function Seguridad() {
 
 
       {/* ======================================================
-          INDICADORES
+          RESUMEN
           ====================================================== */}
 
       <section>
@@ -1346,9 +1315,7 @@ export default function Seguridad() {
           <IndicadorSeguridad
             icon="user-group"
             titulo="Usuarios"
-            valor={
-              empleadosSeguros.length
-            }
+            valor={empleadosSeguros.length}
             descripcion="Usuarios disponibles"
           />
 
@@ -1365,9 +1332,7 @@ export default function Seguridad() {
           <IndicadorSeguridad
             icon="shield"
             titulo="Roles"
-            valor={
-              rolesSeguros.length
-            }
+            valor={rolesSeguros.length}
             descripcion="Roles configurados"
           />
 
@@ -1375,9 +1340,7 @@ export default function Seguridad() {
           <IndicadorSeguridad
             icon="shield"
             titulo="Permisos"
-            valor={
-              permisosSeguros.length
-            }
+            valor={permisosSeguros.length}
             descripcion="Permisos registrados"
           />
 
@@ -1385,9 +1348,7 @@ export default function Seguridad() {
           <IndicadorSeguridad
             icon="clipboard"
             titulo="Auditoría"
-            valor={
-              auditoriaSegura.length
-            }
+            valor={auditoriaSegura.length}
             descripcion="Registros disponibles"
             accent={
               auditoriaSegura.length
@@ -1442,19 +1403,13 @@ export default function Seguridad() {
         >
 
           <ActividadReciente
-            auditoria={
-              auditoriaSegura
-            }
+            auditoria={auditoriaSegura}
           />
 
 
           <PanelEstado
-            auditoria={
-              auditoriaSegura
-            }
-            logs={
-              logsSeguros
-            }
+            auditoria={auditoriaSegura}
+            logs={logsSeguros}
           />
 
         </div>
@@ -1463,7 +1418,7 @@ export default function Seguridad() {
 
 
       {/* ======================================================
-          ACCESOS DE CONTROL
+          CONTROL Y SUPERVISIÓN
           ====================================================== */}
 
       <section>
@@ -1525,7 +1480,7 @@ export default function Seguridad() {
 
 
       {/* ======================================================
-          CONFIGURACIÓN
+          CONFIGURACIÓN DE ACCESO
           ====================================================== */}
 
       <section>
@@ -1564,39 +1519,23 @@ export default function Seguridad() {
           "
         >
 
-          {/* ==================================================
-              ROLES
-              ================================================== */}
-
           <PanelSeguridad
             icon="user-group"
             titulo="Roles del sistema"
             descripcion="Perfiles y niveles de acceso"
           >
-
             <SeguridadRoles />
-
           </PanelSeguridad>
 
-
-          {/* ==================================================
-              PERMISOS
-              ================================================== */}
 
           <PanelSeguridad
             icon="shield"
             titulo="Permisos globales"
             descripcion="Autorizaciones disponibles"
           >
-
             <SeguridadPermisos />
-
           </PanelSeguridad>
 
-
-          {/* ==================================================
-              MÓDULOS
-              ================================================== */}
 
           <PanelSeguridad
             icon="folder"
@@ -1604,9 +1543,7 @@ export default function Seguridad() {
             descripcion="Control de acceso a las diferentes áreas del ERP"
             className="xl:col-span-2"
           >
-
             <SeguridadModulos />
-
           </PanelSeguridad>
 
         </div>

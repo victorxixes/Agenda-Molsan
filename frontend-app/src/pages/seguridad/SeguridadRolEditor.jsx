@@ -1,4 +1,3 @@
-```jsx
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useSeguridad } from "../../hooks/useSeguridad";
 
@@ -727,4 +726,4 @@ export default function SeguridadRolEditor() {
     </div>
   );
 }
-```
+

@@ -5,7 +5,7 @@ const API = import.meta.env.VITE_API_URL;
 
 
 // ============================================================
-// HELPERS
+// HELPERS SEGUROS
 // ============================================================
 
 const safeString = (valor, fallback = "") => {
@@ -38,23 +38,6 @@ const safeNumber = (valor, fallback = 0) => {
   return Number.isFinite(numero)
     ? numero
     : fallback;
-};
-
-
-const safeNullableNumber = (valor) => {
-  if (
-    valor === null ||
-    valor === undefined ||
-    valor === ""
-  ) {
-    return null;
-  }
-
-  const numero = Number(valor);
-
-  return Number.isFinite(numero)
-    ? numero
-    : null;
 };
 
 
@@ -126,12 +109,17 @@ const safePermisosDict = (valor) => {
 
   Object.entries(valor).forEach(
     ([modulo, permisos]) => {
-      if (typeof modulo !== "string") {
+
+      if (
+        typeof modulo !== "string"
+      ) {
         return;
       }
 
       resultado[modulo] =
-        safeArrayStrings(permisos);
+        safeArrayStrings(
+          permisos
+        );
     }
   );
 
@@ -157,11 +145,43 @@ const normalizarRol = (rol) => {
     id:
       rol.id !== undefined &&
       rol.id !== null
-        ? safeNumber(rol.id, null)
+        ? safeNumber(rol.id)
         : null,
 
     nombre: safeString(
       rol.nombre
+    ),
+  };
+};
+
+
+// ============================================================
+// NORMALIZAR PERMISO
+// ============================================================
+
+const normalizarPermiso = (permiso) => {
+  if (
+    !permiso ||
+    typeof permiso !== "object"
+  ) {
+    return null;
+  }
+
+  return {
+    ...permiso,
+
+    id:
+      permiso.id !== undefined &&
+      permiso.id !== null
+        ? permiso.id
+        : null,
+
+    modulo: safeString(
+      permiso.modulo
+    ),
+
+    permiso: safeString(
+      permiso.permiso
     ),
   };
 };
@@ -173,9 +193,9 @@ const normalizarRol = (rol) => {
 
 const normalizarEmpleado = (
   empleado,
-  rol = null,
-  modulosVisibles = []
+  extras = {}
 ) => {
+
   if (
     !empleado ||
     typeof empleado !== "object"
@@ -183,10 +203,45 @@ const normalizarEmpleado = (
     return null;
   }
 
-  const rolNormalizado =
-    normalizarRol(rol);
+  const rol =
+    empleado.rol &&
+    typeof empleado.rol === "object"
+      ? empleado.rol
+      : null;
+
+  const rolId =
+    empleado.rol_id !== undefined &&
+    empleado.rol_id !== null
+      ? safeNumber(
+          empleado.rol_id,
+          null
+        )
+      : rol?.id !== undefined &&
+        rol?.id !== null
+        ? safeNumber(
+            rol.id,
+            null
+          )
+        : null;
+
+  const rolNombre =
+    empleado.rol_nombre ||
+    rol?.nombre ||
+    "";
+
+  const modulos =
+    Array.isArray(
+      empleado.modulos_visibles_list
+    )
+      ? empleado.modulos_visibles_list
+      : Array.isArray(
+          extras.modulos_visibles
+        )
+        ? extras.modulos_visibles
+        : [];
 
   return {
+
     ...empleado,
 
     id: safeNumber(
@@ -248,21 +303,20 @@ const normalizarEmpleado = (
       empleado.alergias
     ),
 
-    persona_contacto: safeString(
-      empleado.persona_contacto
-    ),
+    persona_contacto:
+      safeString(
+        empleado.persona_contacto
+      ),
 
-    telefono_contacto: safeString(
-      empleado.telefono_contacto
-    ),
+    telefono_contacto:
+      safeString(
+        empleado.telefono_contacto
+      ),
 
-    observaciones: safeString(
-      empleado.observaciones
-    ),
-
-    activo: safeBoolean(
-      empleado.activo
-    ),
+    observaciones:
+      safeString(
+        empleado.observaciones
+      ),
 
     foto:
       typeof empleado.foto === "string" &&
@@ -271,36 +325,82 @@ const normalizarEmpleado = (
         : null,
 
     departamento_id:
-      safeNullableNumber(
-        empleado.departamento_id
+      empleado.departamento_id === null ||
+      empleado.departamento_id === undefined
+        ? null
+        : safeNumber(
+            empleado.departamento_id,
+            null
+          ),
+
+    departamento_nombre:
+      safeString(
+        empleado.departamento_nombre
       ),
 
     seccion_id:
-      safeNullableNumber(
-        empleado.seccion_id
+      empleado.seccion_id === null ||
+      empleado.seccion_id === undefined
+        ? null
+        : safeNumber(
+            empleado.seccion_id,
+            null
+          ),
+
+    seccion_nombre:
+      safeString(
+        empleado.seccion_nombre
       ),
 
     cargo_id:
-      safeNullableNumber(
-        empleado.cargo_id
+      empleado.cargo_id === null ||
+      empleado.cargo_id === undefined
+        ? null
+        : safeNumber(
+            empleado.cargo_id,
+            null
+          ),
+
+    cargo_nombre:
+      safeString(
+        empleado.cargo_nombre
       ),
 
-    rol_id:
-      rolNormalizado?.id ??
-      safeNullableNumber(
-        empleado.rol_id
-      ),
+    rol_id: rolId,
 
     rol_nombre:
-      rolNormalizado?.nombre ||
       safeString(
-        empleado.rol_nombre
+        rolNombre
       ),
 
-    // Compatibilidad con SeguridadFicha
+    rol: rol
+      ? {
+          id:
+            rol.id !== undefined &&
+            rol.id !== null
+              ? safeNumber(rol.id)
+              : null,
+
+          nombre:
+            safeString(
+              rol.nombre
+            ),
+        }
+      : null,
+
+    activo: safeBoolean(
+      empleado.activo
+    ),
+
+    fecha_alta:
+      empleado.fecha_alta ?? null,
+
+    fecha_baja:
+      empleado.fecha_baja ?? null,
+
     modulos_visibles_list:
       safeArrayStrings(
-        modulosVisibles
+        modulos
       ),
   };
 };
@@ -319,6 +419,8 @@ const normalizarLog = (log) => {
   }
 
   return {
+    ...log,
+
     id:
       log.id !== undefined &&
       log.id !== null
@@ -351,6 +453,7 @@ const normalizarLog = (log) => {
 const normalizarAuditoria = (
   registro
 ) => {
+
   if (
     !registro ||
     typeof registro !== "object"
@@ -359,6 +462,8 @@ const normalizarAuditoria = (
   }
 
   return {
+    ...registro,
+
     id:
       registro.id !== undefined &&
       registro.id !== null
@@ -389,49 +494,11 @@ const normalizarAuditoria = (
 
 
 // ============================================================
-// NORMALIZAR PERMISO
-// ============================================================
-
-const normalizarPermiso = (
-  permiso
-) => {
-  if (
-    !permiso ||
-    typeof permiso !== "object"
-  ) {
-    return null;
-  }
-
-  return {
-    ...permiso,
-
-    id:
-      permiso.id !== undefined &&
-      permiso.id !== null
-        ? permiso.id
-        : null,
-
-    modulo: safeString(
-      permiso.modulo
-    ),
-
-    permiso: safeString(
-      permiso.permiso
-    ),
-  };
-};
-
-
-// ============================================================
 // STORE
 // ============================================================
 
 export const useSeguridadStore =
   create((set, get) => ({
-
-    // ========================================================
-    // ESTADO
-    // ========================================================
 
     roles: [],
 
@@ -453,11 +520,13 @@ export const useSeguridadStore =
     // ========================================================
 
     cargarTodo: async () => {
+
       set({
         loading: true,
       });
 
       try {
+
         const [
           rolesRes,
           permisosRes,
@@ -465,6 +534,7 @@ export const useSeguridadStore =
           auditoriaRes,
           logsRes,
         ] = await Promise.all([
+
           axios.get(
             `${API}/seguridad/roles`
           ),
@@ -484,6 +554,7 @@ export const useSeguridadStore =
           axios.get(
             `${API}/seguridad/logs`
           ),
+
         ]);
 
 
@@ -532,6 +603,7 @@ export const useSeguridadStore =
 
 
         set({
+
           roles:
             rolesData
               .map(normalizarRol)
@@ -549,10 +621,7 @@ export const useSeguridadStore =
           empleados:
             empleadosData
               .map(
-                (empleado) =>
-                  normalizarEmpleado(
-                    empleado
-                  )
+                normalizarEmpleado
               )
               .filter(Boolean),
 
@@ -572,6 +641,7 @@ export const useSeguridadStore =
         });
 
       } catch (error) {
+
         console.error(
           "SEGURIDAD — ERROR CARGANDO DATOS:",
           error
@@ -591,18 +661,26 @@ export const useSeguridadStore =
     cargarFicha: async (
       empleadoId
     ) => {
+
       if (
         empleadoId === null ||
-        empleadoId === undefined
+        empleadoId === undefined ||
+        empleadoId === ""
       ) {
+        set({
+          ficha: null,
+        });
+
         return;
       }
 
       try {
+
         const res =
           await axios.get(
             `${API}/seguridad/empleado/${empleadoId}/ficha-completa`
           );
+
 
         const data =
           res.data &&
@@ -612,17 +690,7 @@ export const useSeguridadStore =
 
 
         // ----------------------------------------------------
-        // ROL
-        // ----------------------------------------------------
-
-        const rol =
-          normalizarRol(
-            data.empleado?.rol
-          );
-
-
-        // ----------------------------------------------------
-        // MÓDULOS
+        // EMPLEADO
         // ----------------------------------------------------
 
         const modulosVisibles =
@@ -631,31 +699,32 @@ export const useSeguridadStore =
           );
 
 
-        // ----------------------------------------------------
-        // PERMISOS
-        //
-        // Backend devuelve:
-        // permisos_modulo
-        //
-        // El frontend mantiene:
-        // permisos_modulo_dict
-        // ----------------------------------------------------
-
-        const permisosModulo =
-          safePermisosDict(
-            data.permisos_modulo
+        const empleado =
+          normalizarEmpleado(
+            data.empleado,
+            {
+              modulos_visibles:
+                modulosVisibles,
+            }
           );
 
 
         // ----------------------------------------------------
-        // EMPLEADO
+        // PERMISOS
+        //
+        // Backend devuelve:
+        //
+        // "permisos_modulo": {...}
+        //
+        // El frontend trabajará internamente con:
+        //
+        // "permisos_modulo_dict"
         // ----------------------------------------------------
 
-        const empleado =
-          normalizarEmpleado(
-            data.empleado,
-            rol,
-            modulosVisibles
+        const permisosModulo =
+          safePermisosDict(
+            data.permisos_modulo ??
+            data.permisos_modulo_dict
           );
 
 
@@ -676,31 +745,40 @@ export const useSeguridadStore =
 
 
         // ----------------------------------------------------
-        // GUARDAR FICHA NORMALIZADA
+        // FICHA NORMALIZADA
         // ----------------------------------------------------
 
+        const fichaNormalizada = {
+
+          ...data,
+
+          empleado,
+
+          modulos_visibles:
+            modulosVisibles,
+
+          permisos_modulo:
+            permisosModulo,
+
+          permisos_modulo_dict:
+            permisosModulo,
+
+          auditoria,
+
+        };
+
+
         set({
-          ficha: {
-            ...data,
 
-            empleado,
-
-            rol,
-
-            modulos_visibles:
-              modulosVisibles,
-
-            permisos_modulo_dict:
-              permisosModulo,
-
-            auditoria,
-          },
+          ficha:
+            fichaNormalizada,
 
           auditoria,
 
         });
 
       } catch (error) {
+
         console.error(
           "SEGURIDAD — ERROR CARGANDO FICHA:",
           error
@@ -708,6 +786,7 @@ export const useSeguridadStore =
 
         set({
           ficha: null,
+          auditoria: [],
         });
       }
     },
@@ -715,19 +794,17 @@ export const useSeguridadStore =
 
     // ========================================================
     // ASIGNAR ROL
-    // ========================================================
     //
     // BACKEND:
-    //
-    // POST
-    // /seguridad/asignar/empleado/{empleado_id}/rol/{rol_id}
-    //
+    // POST /api/seguridad/asignar/
+    //      empleado/{empleado_id}/rol/{rol_id}
     // ========================================================
 
     asignarRol: async (
       empleadoId,
       rolId
     ) => {
+
       if (
         empleadoId === null ||
         empleadoId === undefined ||
@@ -738,15 +815,23 @@ export const useSeguridadStore =
       }
 
       try {
+
         await axios.post(
           `${API}/seguridad/asignar/empleado/${empleadoId}/rol/${rolId}`
         );
 
-        await get().cargarFicha(
-          empleadoId
-        );
+
+        await get()
+          .cargarFicha(
+            empleadoId
+          );
+
+
+        await get()
+          .cargarTodo();
 
       } catch (error) {
+
         console.error(
           "SEGURIDAD — ERROR ASIGNANDO ROL:",
           error
@@ -765,6 +850,7 @@ export const useSeguridadStore =
       empleadoId,
       permisos
     ) => {
+
       if (
         empleadoId === null ||
         empleadoId === undefined
@@ -773,16 +859,20 @@ export const useSeguridadStore =
       }
 
       try {
+
         await axios.post(
           `${API}/seguridad/asignar/empleado/${empleadoId}/permisos`,
           permisos
         );
 
-        await get().cargarFicha(
-          empleadoId
-        );
+
+        await get()
+          .cargarFicha(
+            empleadoId
+          );
 
       } catch (error) {
+
         console.error(
           "SEGURIDAD — ERROR ASIGNANDO PERMISOS:",
           error
@@ -801,6 +891,7 @@ export const useSeguridadStore =
       empleadoId,
       modulos
     ) => {
+
       if (
         empleadoId === null ||
         empleadoId === undefined
@@ -809,16 +900,20 @@ export const useSeguridadStore =
       }
 
       try {
+
         await axios.post(
           `${API}/seguridad/asignar/empleado/${empleadoId}/modulos`,
           modulos
         );
 
-        await get().cargarFicha(
-          empleadoId
-        );
+
+        await get()
+          .cargarFicha(
+            empleadoId
+          );
 
       } catch (error) {
+
         console.error(
           "SEGURIDAD — ERROR ASIGNANDO MÓDULOS:",
           error
@@ -837,6 +932,7 @@ export const useSeguridadStore =
       empleadoId,
       nuevaPassword
     ) => {
+
       if (
         empleadoId === null ||
         empleadoId === undefined ||
@@ -846,6 +942,7 @@ export const useSeguridadStore =
       }
 
       try {
+
         await axios.post(
           `${API}/seguridad/asignar/empleado/${empleadoId}/password`,
           {
@@ -855,6 +952,7 @@ export const useSeguridadStore =
         );
 
       } catch (error) {
+
         console.error(
           "SEGURIDAD — ERROR RESETEANDO PASSWORD:",
           error
@@ -866,12 +964,13 @@ export const useSeguridadStore =
 
 
     // ========================================================
-    // BLOQUEAR
+    // BLOQUEAR USUARIO
     // ========================================================
 
     bloquear: async (
       empleadoId
     ) => {
+
       if (
         empleadoId === null ||
         empleadoId === undefined
@@ -880,19 +979,25 @@ export const useSeguridadStore =
       }
 
       try {
+
         await axios.post(
           `${API}/seguridad/asignar/empleado/${empleadoId}/bloquear`
         );
 
-        await get().cargarTodo();
 
-        await get().cargarFicha(
-          empleadoId
-        );
+        await get()
+          .cargarTodo();
+
+
+        await get()
+          .cargarFicha(
+            empleadoId
+          );
 
       } catch (error) {
+
         console.error(
-          "SEGURIDAD — ERROR BLOQUEANDO EMPLEADO:",
+          "SEGURIDAD — ERROR BLOQUEANDO USUARIO:",
           error
         );
 
@@ -902,12 +1007,13 @@ export const useSeguridadStore =
 
 
     // ========================================================
-    // DESBLOQUEAR
+    // DESBLOQUEAR USUARIO
     // ========================================================
 
     desbloquear: async (
       empleadoId
     ) => {
+
       if (
         empleadoId === null ||
         empleadoId === undefined
@@ -916,19 +1022,25 @@ export const useSeguridadStore =
       }
 
       try {
+
         await axios.post(
           `${API}/seguridad/asignar/empleado/${empleadoId}/desbloquear`
         );
 
-        await get().cargarTodo();
 
-        await get().cargarFicha(
-          empleadoId
-        );
+        await get()
+          .cargarTodo();
+
+
+        await get()
+          .cargarFicha(
+            empleadoId
+          );
 
       } catch (error) {
+
         console.error(
-          "SEGURIDAD — ERROR DESBLOQUEANDO EMPLEADO:",
+          "SEGURIDAD — ERROR DESBLOQUEANDO USUARIO:",
           error
         );
 

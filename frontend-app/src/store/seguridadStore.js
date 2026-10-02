@@ -805,40 +805,37 @@ asignarRol: async (
   rolId
 ) => {
 
-      if (
-        empleadoId === null ||
-        empleadoId === undefined ||
-        rolId === null ||
-        rolId === undefined
-      ) {
-        return;
-      }
+  if (
+    empleadoId === null ||
+    empleadoId === undefined ||
+    rolId === null ||
+    rolId === undefined
+  ) {
+    return;
+  }
 
-      try {
+  try {
 
-        await axios.post(
-    `${API}/seguridad/asignar/empleado/${empleadoId}/rol/${rolId}`
-  );
+    await axios.post(
+      `${API}/seguridad/asignar/empleado/${empleadoId}/rol/${rolId}`
+    );
 
-  await get().cargarFicha(
-    empleadoId
-  );
+    await get().cargarFicha(
+      empleadoId
+    );
+
+    await get().cargarTodo();
+
+  } catch (error) {
+
+    console.error(
+      "SEGURIDAD — ERROR ASIGNANDO ROL:",
+      error
+    );
+
+    throw error;
+  }
 },
-
-        await get()
-          .cargarTodo();
-
-      } catch (error) {
-
-        console.error(
-          "SEGURIDAD — ERROR ASIGNANDO ROL:",
-          error
-        );
-
-        throw error;
-      }
-    },
-
 
     // ========================================================
     // ASIGNAR PERMISOS

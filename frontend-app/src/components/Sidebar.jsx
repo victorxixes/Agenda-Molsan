@@ -363,6 +363,14 @@ export default function Sidebar() {
       icon: "cog",
     },
 
+        {
+      key: "notificaciones",
+      to: "/notificaciones",
+      label: "Notificaciones",
+      icon: "bell",
+      badge: unreadCount,
+    },
+
   ];
 
 
@@ -384,14 +392,6 @@ export default function Sidebar() {
     },
 
 
-
-    {
-      key: "herramientas",
-      to: "/herramientas",
-      label: "Herramientas",
-      icon: "wrench",
-    },
-
     {
       key: "logs",
       to: "/logs",
@@ -406,14 +406,6 @@ export default function Sidebar() {
       icon: "database",
     },
 
-
-    {
-      key: "notificaciones",
-      to: "/notificaciones",
-      label: "Notificaciones",
-      icon: "bell",
-      badge: unreadCount,
-    },
 
     {
       key: "panel-tecnico",

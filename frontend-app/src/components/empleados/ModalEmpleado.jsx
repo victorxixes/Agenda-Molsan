@@ -121,7 +121,6 @@ export default function ModalEmpleado({
         await cargarFicha(
           empleadoId
         );
-
       } catch (err) {
         console.error(
           "MODAL EMPLEADO — ERROR CARGANDO FICHA:",
@@ -181,7 +180,6 @@ export default function ModalEmpleado({
       )
     );
 
-
     const permisos =
       ficha.permisos_modulo &&
       typeof ficha.permisos_modulo ===
@@ -204,7 +202,6 @@ export default function ModalEmpleado({
         permisos
       )
     );
-
   }, [ficha]);
 
 
@@ -338,7 +335,6 @@ export default function ModalEmpleado({
           partes.length - 1
         ][0]
       ).toUpperCase();
-
     }, [
       nombreEmpleado,
     ]);
@@ -592,7 +588,6 @@ export default function ModalEmpleado({
             }
           )
       );
-
     }, [
       permisosDisponibles,
       modulosVisibles,
@@ -751,11 +746,6 @@ export default function ModalEmpleado({
           null
         );
 
-        /*
-         * Guardamos mediante
-         * el store de Seguridad.
-         */
-
         await asignarModulos(
           empleadoId,
           modulosVisibles
@@ -766,10 +756,6 @@ export default function ModalEmpleado({
           permisosModulo
         );
 
-        /*
-         * Recargamos ficha real.
-         */
-
         await cargarFicha(
           empleadoId
         );
@@ -777,7 +763,6 @@ export default function ModalEmpleado({
         setMensaje(
           "Configuración actualizada correctamente."
         );
-
       } catch (err) {
         console.error(
           "MODAL EMPLEADO — ERROR GUARDANDO CONFIGURACIÓN:",
@@ -846,7 +831,6 @@ export default function ModalEmpleado({
         setConfirmReset(
           false
         );
-
       } catch (err) {
         console.error(
           "MODAL EMPLEADO — ERROR RESETEANDO PASSWORD:",
@@ -906,12 +890,6 @@ export default function ModalEmpleado({
       if (
         nuevaFoto
       ) {
-        /*
-         * Actualizamos localmente
-         * la ficha para que la foto
-         * cambie inmediatamente.
-         */
-
         useSeguridadStore.setState(
           (estado) => ({
             ficha:
@@ -945,7 +923,6 @@ export default function ModalEmpleado({
       setMensaje(
         "Fotografía actualizada correctamente."
       );
-
     } catch (err) {
       console.error(
         "MODAL EMPLEADO — ERROR SUBIENDO FOTO:",
@@ -1807,9 +1784,7 @@ export default function ModalEmpleado({
                         >
 
                           {modulosDisponibles.map(
-                            (
-                              modulo
-                            ) => {
+                            (modulo) => {
                               const activo =
                                 modulosVisibles.includes(
                                   modulo
@@ -1904,7 +1879,9 @@ export default function ModalEmpleado({
                     </section>
 
 
-                    {/* PERMISOS */}
+                    {/* ==================================================
+                        PERMISOS
+                    ================================================== */}
 
                     <section
                       className="
@@ -1943,14 +1920,11 @@ export default function ModalEmpleado({
                       </div>
 
 
-                      {modulosDisponibles.length >
-                      0 ? (
+                      {modulosDisponibles.length > 0 ? (
                         <div className="space-y-3">
 
                           {modulosDisponibles.map(
-                            (
-                              modulo
-                            ) => {
+                            (modulo) => {
                               const disponibles =
                                 permisosDisponibles[
                                   modulo
@@ -2022,8 +1996,7 @@ export default function ModalEmpleado({
                                   </div>
 
 
-                                  {disponibles.length >
-                                  0 ? (
+                                  {disponibles.length > 0 ? (
                                     <div
                                       className="
                                         flex
@@ -2033,9 +2006,7 @@ export default function ModalEmpleado({
                                     >
 
                                       {disponibles.map(
-                                        (
-                                          permiso
-                                        ) => {
+                                        (permiso) => {
                                           const activo =
                                             activos.includes(
                                               permiso
@@ -2084,11 +2055,11 @@ export default function ModalEmpleado({
                                                 "
                                               />
 
-                                              {
-                                                capitalizar(
+                                              <span>
+                                                {capitalizar(
                                                   permiso
-                                                )
-                                              }
+                                                )}
+                                              </span>
 
                                             </label>
                                           );

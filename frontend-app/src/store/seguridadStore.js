@@ -5,6 +5,20 @@ const API = import.meta.env.VITE_API_URL;
 
 
 // ============================================================
+// CONTROL GLOBAL DE CARGA
+// ============================================================
+//
+// Evita que varias llamadas simultáneas a cargarTodo()
+// provoquen múltiples tandas de peticiones al backend.
+//
+// Si cargarTodo() ya está ejecutándose, las siguientes llamadas
+// reutilizan la misma Promise.
+// ============================================================
+
+let cargarTodoEnCurso = null;
+
+
+// ============================================================
 // HELPERS SEGUROS
 // ============================================================
 
@@ -150,6 +164,10 @@ const normalizarRol = (rol) => {
 
     nombre: safeString(
       rol.nombre
+    ),
+
+    descripcion: safeString(
+      rol.descripcion
     ),
   };
 };
@@ -516,141 +534,280 @@ export const useSeguridadStore =
 
 
     // ========================================================
+    // CARGAR SOLAMENTE ROLES
+    // ========================================================
+    //
+    // Utilizado por SeguridadRolEditor.
+    //
+    // No tiene sentido cargar permisos, empleados, auditoría
+    // y logs cuando solamente estamos trabajando con roles.
+    // ========================================================
+
+    cargarRoles: async () => {
+
+      try {
+
+        const respuesta =
+          await axios.get(
+            `${API}/seguridad/roles/`
+          );
+
+        const datos =
+          Array.isArray(
+            respuesta.data
+          )
+            ? respuesta.data
+            : [];
+
+        const rolesNormalizados =
+          datos
+            .map(normalizarRol)
+            .filter(Boolean);
+
+        set({
+          roles: rolesNormalizados,
+        });
+
+        return rolesNormalizados;
+
+      } catch (error) {
+
+        console.error(
+          "SEGURIDAD — ERROR CARGANDO ROLES:",
+          error
+        );
+
+        throw error;
+      }
+    },
+
+
+    // ========================================================
     // CARGAR TODO
+    // ========================================================
+    //
+    // Carga:
+    //
+    // - roles
+    // - permisos
+    // - empleados
+    // - auditoría
+    // - logs
+    //
+    // IMPORTANTE:
+    // Si otra parte de la aplicación llama a cargarTodo()
+    // mientras ya existe una carga en curso, NO se genera
+    // otra tanda de peticiones.
+    //
+    // Todas las llamadas concurrentes reutilizan la misma
+    // Promise.
     // ========================================================
 
     cargarTodo: async () => {
+
+      // ------------------------------------------------------
+      // YA EXISTE UNA CARGA EN CURSO
+      // ------------------------------------------------------
+
+      if (cargarTodoEnCurso) {
+
+        return cargarTodoEnCurso;
+
+      }
+
+
+      // ------------------------------------------------------
+      // MARCAR CARGA
+      // ------------------------------------------------------
 
       set({
         loading: true,
       });
 
-      try {
 
-        const [
-          rolesRes,
-          permisosRes,
-          empleadosRes,
-          auditoriaRes,
-          logsRes,
-        ] = await Promise.all([
+      // ------------------------------------------------------
+      // CREAR PROMESA ÚNICA
+      // ------------------------------------------------------
 
-          axios.get(
-            `${API}/seguridad/roles`
-          ),
+      cargarTodoEnCurso = (async () => {
 
-          axios.get(
-            `${API}/seguridad/permisos`
-          ),
+        try {
 
-          axios.get(
-            `${API}/empleados`
-          ),
+          const [
+            rolesRes,
+            permisosRes,
+            empleadosRes,
+            auditoriaRes,
+            logsRes,
+          ] = await Promise.all([
 
-          axios.get(
-            `${API}/seguridad/auditoria`
-          ),
+            axios.get(
+              `${API}/seguridad/roles/`
+            ),
 
-          axios.get(
-            `${API}/seguridad/logs`
-          ),
+            axios.get(
+              `${API}/seguridad/permisos/`
+            ),
 
-        ]);
+            axios.get(
+              `${API}/empleados/`
+            ),
 
+            axios.get(
+              `${API}/seguridad/auditoria/`
+            ),
 
-        const rolesData =
-          Array.isArray(
-            rolesRes.data
-          )
-            ? rolesRes.data
-            : [];
+            axios.get(
+              `${API}/seguridad/logs/`
+            ),
 
-
-        const permisosData =
-          Array.isArray(
-            permisosRes.data
-          )
-            ? permisosRes.data
-            : [];
+          ]);
 
 
-        const empleadosData =
-          Array.isArray(
-            empleadosRes.data
-          )
-            ? empleadosRes.data
-            : Array.isArray(
-                empleadosRes.data?.empleados
-              )
-              ? empleadosRes.data.empleados
+          // --------------------------------------------------
+          // ROLES
+          // --------------------------------------------------
+
+          const rolesData =
+            Array.isArray(
+              rolesRes.data
+            )
+              ? rolesRes.data
               : [];
 
 
-        const auditoriaData =
-          Array.isArray(
-            auditoriaRes.data
-          )
-            ? auditoriaRes.data
-            : [];
+          // --------------------------------------------------
+          // PERMISOS
+          // --------------------------------------------------
+
+          const permisosData =
+            Array.isArray(
+              permisosRes.data
+            )
+              ? permisosRes.data
+              : [];
 
 
-        const logsData =
-          Array.isArray(
-            logsRes.data
-          )
-            ? logsRes.data
-            : [];
+          // --------------------------------------------------
+          // EMPLEADOS
+          // --------------------------------------------------
+
+          const empleadosData =
+            Array.isArray(
+              empleadosRes.data
+            )
+              ? empleadosRes.data
+              : Array.isArray(
+                  empleadosRes.data?.empleados
+                )
+                ? empleadosRes.data.empleados
+                : [];
 
 
-        set({
+          // --------------------------------------------------
+          // AUDITORÍA
+          // --------------------------------------------------
 
-          roles:
-            rolesData
-              .map(normalizarRol)
-              .filter(Boolean),
+          const auditoriaData =
+            Array.isArray(
+              auditoriaRes.data
+            )
+              ? auditoriaRes.data
+              : [];
 
-          permisos:
-            permisosData
-              .map(normalizarPermiso)
-              .filter(
-                (permiso) =>
-                  permiso.modulo &&
-                  permiso.permiso
-              ),
 
-          empleados:
-            empleadosData
-              .map(
-                normalizarEmpleado
-              )
-              .filter(Boolean),
+          // --------------------------------------------------
+          // LOGS
+          // --------------------------------------------------
 
-          auditoria:
-            auditoriaData
-              .map(
-                normalizarAuditoria
-              )
-              .filter(Boolean),
+          const logsData =
+            Array.isArray(
+              logsRes.data
+            )
+              ? logsRes.data
+              : [];
 
-          logs:
-            logsData
-              .map(normalizarLog)
-              .filter(Boolean),
 
-          loading: false,
-        });
+          // --------------------------------------------------
+          // NORMALIZAR Y GUARDAR
+          // --------------------------------------------------
 
-      } catch (error) {
+          set({
 
-        console.error(
-          "SEGURIDAD — ERROR CARGANDO DATOS:",
-          error
-        );
+            roles:
+              rolesData
+                .map(normalizarRol)
+                .filter(Boolean),
 
-        set({
-          loading: false,
-        });
-      }
+            permisos:
+              permisosData
+                .map(normalizarPermiso)
+                .filter(
+                  (permiso) =>
+                    permiso.modulo &&
+                    permiso.permiso
+                ),
+
+            empleados:
+              empleadosData
+                .map(
+                  normalizarEmpleado
+                )
+                .filter(Boolean),
+
+            auditoria:
+              auditoriaData
+                .map(
+                  normalizarAuditoria
+                )
+                .filter(Boolean),
+
+            logs:
+              logsData
+                .map(normalizarLog)
+                .filter(Boolean),
+
+            loading: false,
+
+          });
+
+
+          return true;
+
+        } catch (error) {
+
+          console.error(
+            "SEGURIDAD — ERROR CARGANDO DATOS:",
+            error
+          );
+
+
+          set({
+            loading: false,
+          });
+
+
+          throw error;
+
+        } finally {
+
+          // ------------------------------------------------
+          // LIBERAR CONTROL DE CARGA
+          // ------------------------------------------------
+          //
+          // Es fundamental hacerlo también cuando hay error.
+          // Así una siguiente llamada puede volver a intentarlo.
+          //
+
+          cargarTodoEnCurso = null;
+
+        }
+
+      })();
+
+
+      return cargarTodoEnCurso;
+
     },
 
 
@@ -667,12 +824,14 @@ export const useSeguridadStore =
         empleadoId === undefined ||
         empleadoId === ""
       ) {
+
         set({
           ficha: null,
         });
 
         return;
       }
+
 
       try {
 
@@ -694,12 +853,12 @@ export const useSeguridadStore =
         // ----------------------------------------------------
 
         const modulosVisibles =
-  safeArrayStrings(
-    data.modulos_visibles ??
-    data.modulos_visibles_list ??
-    data.empleado?.modulos_visibles_list ??
-    data.empleado?.modulos_visibles
-  );
+          safeArrayStrings(
+            data.modulos_visibles ??
+            data.modulos_visibles_list ??
+            data.empleado?.modulos_visibles_list ??
+            data.empleado?.modulos_visibles
+          );
 
 
         const empleado =
@@ -714,14 +873,6 @@ export const useSeguridadStore =
 
         // ----------------------------------------------------
         // PERMISOS
-        //
-        // Backend devuelve:
-        //
-        // "permisos_modulo": {...}
-        //
-        // El frontend trabajará internamente con:
-        //
-        // "permisos_modulo_dict"
         // ----------------------------------------------------
 
         const permisosModulo =
@@ -791,54 +942,63 @@ export const useSeguridadStore =
           ficha: null,
           auditoria: [],
         });
+
+        throw error;
       }
     },
 
 
     // ========================================================
     // ASIGNAR ROL
+    // ========================================================
     //
     // BACKEND:
-    // POST /api/seguridad/asignar/
-    //      empleado/{empleado_id}/rol/{rol_id}
+    //
+    // POST
+    // /api/seguridad/asignar/empleado/{empleado_id}/rol/{rol_id}
+    //
     // ========================================================
 
-asignarRol: async (
-  empleadoId,
-  rolId
-) => {
+    asignarRol: async (
+      empleadoId,
+      rolId
+    ) => {
 
-  if (
-    empleadoId === null ||
-    empleadoId === undefined ||
-    rolId === null ||
-    rolId === undefined
-  ) {
-    return;
-  }
+      if (
+        empleadoId === null ||
+        empleadoId === undefined ||
+        rolId === null ||
+        rolId === undefined
+      ) {
+        return;
+      }
 
-  try {
 
-    await axios.post(
-      `${API}/seguridad/asignar/empleado/${empleadoId}/rol/${rolId}`
-    );
+      try {
 
-    await get().cargarFicha(
-      empleadoId
-    );
+        await axios.post(
+          `${API}/seguridad/asignar/empleado/${empleadoId}/rol/${rolId}`
+        );
 
-    await get().cargarTodo();
 
-  } catch (error) {
+        await get().cargarFicha(
+          empleadoId
+        );
 
-    console.error(
-      "SEGURIDAD — ERROR ASIGNANDO ROL:",
-      error
-    );
 
-    throw error;
-  }
-},
+        await get().cargarTodo();
+
+      } catch (error) {
+
+        console.error(
+          "SEGURIDAD — ERROR ASIGNANDO ROL:",
+          error
+        );
+
+        throw error;
+      }
+    },
+
 
     // ========================================================
     // ASIGNAR PERMISOS
@@ -855,6 +1015,7 @@ asignarRol: async (
       ) {
         return;
       }
+
 
       try {
 
@@ -896,6 +1057,7 @@ asignarRol: async (
       ) {
         return;
       }
+
 
       try {
 
@@ -939,6 +1101,7 @@ asignarRol: async (
         return;
       }
 
+
       try {
 
         await axios.post(
@@ -975,6 +1138,7 @@ asignarRol: async (
       ) {
         return;
       }
+
 
       try {
 
@@ -1018,6 +1182,7 @@ asignarRol: async (
       ) {
         return;
       }
+
 
       try {
 

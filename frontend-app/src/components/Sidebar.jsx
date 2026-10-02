@@ -521,28 +521,28 @@ export default function Sidebar() {
         >
 
           <div
-            className="
-              w-9
-              h-9
-              rounded-xl
-              bg-[var(--erp-primary)]
-              text-white
-              flex
-              items-center
-              justify-center
-              shadow-sm
-            "
-          >
-
-            <svg
-              className="w-5 h-5"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-              <use href="/icons/icons.svg#folder" />
-            </svg>
-
-          </div>
+  className="
+    w-9
+    h-9
+    rounded-xl
+    bg-white
+    flex
+    items-center
+    justify-center
+    overflow-hidden
+    flex-shrink-0
+  "
+>
+  <img
+    src="/img/logo.jpg"
+    alt="CancelaGest"
+    className="
+      w-full
+      h-full
+      object-contain
+    "
+  />
+</div>
 
 
           <div className="hidden lg:block">

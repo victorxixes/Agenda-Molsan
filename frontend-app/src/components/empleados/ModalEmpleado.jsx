@@ -121,6 +121,7 @@ export default function ModalEmpleado({
         await cargarFicha(
           empleadoId
         );
+
       } catch (err) {
         console.error(
           "MODAL EMPLEADO — ERROR CARGANDO FICHA:",
@@ -414,15 +415,6 @@ export default function ModalEmpleado({
           return;
         }
 
-        /*
-         * Compatibilidad con el
-         * formato antiguo:
-         *
-         * {
-         *   ver: true
-         * }
-         */
-
         if (
           permisos &&
           typeof permisos ===
@@ -595,6 +587,57 @@ export default function ModalEmpleado({
 
 
   /* ==========================================================
+     CAMPOS DE INFORMACIÓN DEL EMPLEADO
+     
+     IMPORTANTE:
+     Se prepara fuera del JSX para evitar errores de
+     paréntesis durante la transformación de Vite/esbuild.
+  ========================================================== */
+
+  const camposEmpleado =
+    useMemo(() => {
+      if (
+        !empleado ||
+        typeof empleado !==
+          "object"
+      ) {
+        return [];
+      }
+
+      const camposExcluidos = [
+        "foto",
+        "foto_url",
+        "fotoUrl",
+        "avatar",
+        "avatar_url",
+        "rol",
+        "modulos",
+        "modulos_visibles",
+        "modulos_visibles_list",
+        "permisos",
+        "permisos_modulo",
+        "permisos_modulo_dict",
+      ];
+
+      return Object.entries(
+        empleado
+      )
+        .filter(
+          ([clave]) =>
+            !camposExcluidos.includes(
+              clave
+            )
+        )
+        .slice(
+          0,
+          40
+        );
+    }, [
+      empleado,
+    ]);
+
+
+  /* ==========================================================
      HELPERS
   ========================================================== */
 
@@ -763,6 +806,7 @@ export default function ModalEmpleado({
         setMensaje(
           "Configuración actualizada correctamente."
         );
+
       } catch (err) {
         console.error(
           "MODAL EMPLEADO — ERROR GUARDANDO CONFIGURACIÓN:",
@@ -831,6 +875,7 @@ export default function ModalEmpleado({
         setConfirmReset(
           false
         );
+
       } catch (err) {
         console.error(
           "MODAL EMPLEADO — ERROR RESETEANDO PASSWORD:",
@@ -923,6 +968,7 @@ export default function ModalEmpleado({
       setMensaje(
         "Fotografía actualizada correctamente."
       );
+
     } catch (err) {
       console.error(
         "MODAL EMPLEADO — ERROR SUBIENDO FOTO:",
@@ -1604,83 +1650,51 @@ export default function ModalEmpleado({
                         "
                       >
 
-                        {Object.entries(
-                          empleado
-                        )
-                          .filter(
-                            ([
-                              clave,
-                            ]) =>
-                              ![
-                                "foto",
-                                "foto_url",
-                                "fotoUrl",
-                                "avatar",
-                                "avatar_url",
-                                "rol",
-                                "modulos",
-                                "modulos_visibles",
-                                "modulos_visibles_list",
-                                "permisos",
-                                "permisos_modulo",
-                                "permisos_modulo_dict",
-                              ].includes(
+                        {camposEmpleado.map(
+                          ([clave, valor]) => (
+                            <div
+                              key={
                                 clave
-                              )
-                          )
-                          .slice(
-                            0,
-                            40
-                          )
-                          .map(
-                            ([
-                              clave,
-                              valor,
-                            ]) => (
-                              <div
-                                key={
-                                  clave
-                                }
+                              }
+                              className="
+                                rounded-xl
+                                border
+                                border-slate-100
+                                bg-slate-50/70
+                                px-4
+                                py-3
+                              "
+                            >
+
+                              <p
                                 className="
-                                  rounded-xl
-                                  border
-                                  border-slate-100
-                                  bg-slate-50/70
-                                  px-4
-                                  py-3
+                                  text-[11px]
+                                  font-semibold
+                                  uppercase
+                                  tracking-wide
+                                  text-slate-400
                                 "
                               >
+                                {capitalizar(
+                                  clave
+                                )}
+                              </p>
 
-                                <p
-                                  className="
-                                    text-[11px]
-                                    font-semibold
-                                    uppercase
-                                    tracking-wide
-                                    text-slate-400
-                                  "
-                                >
-                                  {capitalizar(
-                                    clave
-                                  )}
-                                </p>
+                              <p
+                                className="
+                                  mt-1
+                                  break-words
+                                  text-sm
+                                  font-medium
+                                  text-slate-800
+                                "
+                              >
+                                {mostrarValor(
+                                  valor
+                                )}
+                              </p>
 
-                                <p
-                                  className="
-                                    mt-1
-                                    break-words
-                                    text-sm
-                                    font-medium
-                                    text-slate-800
-                                  "
-                                >
-                                  {mostrarValor(
-                                    valor
-                                  )}
-                                </p>
-
-                              </div>
-                            )
+                            </div>
                           )
                         )}
 
@@ -1784,7 +1798,9 @@ export default function ModalEmpleado({
                         >
 
                           {modulosDisponibles.map(
-                            (modulo) => {
+                            (
+                              modulo
+                            ) => {
                               const activo =
                                 modulosVisibles.includes(
                                   modulo
@@ -1879,9 +1895,7 @@ export default function ModalEmpleado({
                     </section>
 
 
-                    {/* ==================================================
-                        PERMISOS
-                    ================================================== */}
+                    {/* PERMISOS */}
 
                     <section
                       className="
@@ -1920,11 +1934,14 @@ export default function ModalEmpleado({
                       </div>
 
 
-                      {modulosDisponibles.length > 0 ? (
+                      {modulosDisponibles.length >
+                      0 ? (
                         <div className="space-y-3">
 
                           {modulosDisponibles.map(
-                            (modulo) => {
+                            (
+                              modulo
+                            ) => {
                               const disponibles =
                                 permisosDisponibles[
                                   modulo
@@ -1996,7 +2013,8 @@ export default function ModalEmpleado({
                                   </div>
 
 
-                                  {disponibles.length > 0 ? (
+                                  {disponibles.length >
+                                  0 ? (
                                     <div
                                       className="
                                         flex
@@ -2006,7 +2024,9 @@ export default function ModalEmpleado({
                                     >
 
                                       {disponibles.map(
-                                        (permiso) => {
+                                        (
+                                          permiso
+                                        ) => {
                                           const activo =
                                             activos.includes(
                                               permiso
@@ -2055,11 +2075,9 @@ export default function ModalEmpleado({
                                                 "
                                               />
 
-                                              <span>
-                                                {capitalizar(
-                                                  permiso
-                                                )}
-                                              </span>
+                                              {capitalizar(
+                                                permiso
+                                              )}
 
                                             </label>
                                           );

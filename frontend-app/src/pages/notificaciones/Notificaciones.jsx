@@ -556,5 +556,3 @@ export default function Notificaciones() {
     </div>
   );
 }
-
-Este ya queda bastante más integrado con el estilo **Premium 2027** que estamos aplicando al resto de módulos. Además, el botón **Limpiar** queda desactivado visualmente cuando no hay nada que limpiar y el estado vacío deja claro que el WebSocket sigue activo.

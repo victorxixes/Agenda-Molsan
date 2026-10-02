@@ -337,7 +337,7 @@ export default function Sidebar() {
     {
       key: "ctn",
       to: "/ctn",
-      label: "CTN — Notarios",
+      label: "CTN",
       icon: "globe",
     },
 

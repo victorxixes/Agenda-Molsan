@@ -2,20 +2,11 @@ import { useState } from "react";
 import { useUtilidades } from "../../hooks/useUtilidades";
 
 /**
- * IMPORTAR CTN — MOLSAN ERP SAAS PREMIUM 2027
- *
- * - Glass Luxe
- * - Selector de archivo premium
- * - Feedback visual
- * - Mantiene la lógica actual
+ * IMPORTAR CTN — MOLSAN ERP PREMIUM 2027
  */
 
 export default function ImportarCTN() {
-  const {
-    importarCTN,
-    loading,
-    resultado,
-  } = useUtilidades();
+  const { importarCTN, loading, resultado } = useUtilidades();
 
   const [file, setFile] = useState(null);
 
@@ -26,29 +17,44 @@ export default function ImportarCTN() {
   };
 
   return (
-    <div className="min-h-full p-4 sm:p-6 lg:p-8 animate-fadeIn">
+    <div className="min-h-full p-4 sm:p-6 lg:p-8 space-y-6 animate-fadeIn">
 
       {/* =====================================================
           CABECERA
       ===================================================== */}
 
-      <div className="mb-7">
+      <div
+        className="
+          relative overflow-hidden
+          rounded-[24px]
+          border border-slate-200/80
+          bg-white/80
+          backdrop-blur-xl
+          shadow-[0_18px_50px_rgba(15,23,42,0.08)]
+          p-6 sm:p-7
+        "
+      >
 
-        <div className="flex items-center gap-3">
+        <div
+          className="
+            absolute inset-x-0 top-0 h-px
+            bg-gradient-to-r
+            from-transparent
+            via-blue-400/60
+            to-transparent
+          "
+        />
+
+        <div className="flex items-center gap-4">
 
           <div
             className="
-              flex
-              items-center
-              justify-center
-              w-11
-              h-11
+              flex h-12 w-12
+              items-center justify-center
               rounded-2xl
               bg-blue-50
-              border
-              border-blue-100
-              shadow-sm
-              text-xl
+              border border-blue-100
+              text-2xl
             "
           >
             📥
@@ -56,20 +62,12 @@ export default function ImportarCTN() {
 
           <div>
 
-            <h1
-              className="
-                text-2xl
-                sm:text-3xl
-                font-bold
-                tracking-tight
-                text-slate-800
-              "
-            >
+            <h1 className="text-2xl sm:text-3xl font-bold text-slate-800">
               Importar CTN
             </h1>
 
             <p className="mt-1 text-sm text-slate-500">
-              Importa registros CTN desde un archivo Excel.
+              Importa información desde un fichero Excel.
             </p>
 
           </div>
@@ -80,256 +78,184 @@ export default function ImportarCTN() {
 
 
       {/* =====================================================
-          TARJETA PRINCIPAL
+          PANEL IMPORTACIÓN
       ===================================================== */}
 
-      <div className="max-w-3xl">
+      <div
+        className="
+          max-w-3xl
+          relative overflow-hidden
+          rounded-[24px]
+          border border-slate-200/80
+          bg-white/85
+          backdrop-blur-xl
+          shadow-[0_18px_50px_rgba(15,23,42,0.08)]
+          p-6 sm:p-7
+        "
+      >
 
-        <div
-          className="
-            relative
-            overflow-hidden
-            rounded-[24px]
-            border
-            border-slate-200/80
-            bg-white/80
-            backdrop-blur-xl
-            shadow-[0_18px_50px_rgba(15,23,42,0.08)]
-          "
-        >
+        <div className="space-y-5">
 
-          {/* Brillo superior */}
+          {/* SELECTOR */}
 
-          <div
-            className="
-              absolute
-              top-0
-              left-0
-              right-0
-              h-px
-              bg-gradient-to-r
-              from-transparent
-              via-blue-400/50
-              to-transparent
-            "
-          />
+          <div>
 
-
-          {/* =================================================
-              CABECERA TARJETA
-          ================================================= */}
-
-          <div
-            className="
-              px-5
-              py-5
-              sm:px-7
-              border-b
-              border-slate-200/70
-            "
-          >
-
-            <h2 className="text-lg font-semibold text-slate-800">
-              Archivo de importación
-            </h2>
-
-            <p className="mt-1 text-sm text-slate-500">
-              Selecciona un archivo Excel en formato .xlsx.
-            </p>
-
-          </div>
-
-
-          {/* =================================================
-              CONTENIDO
-          ================================================= */}
-
-          <div className="p-5 sm:p-7 space-y-6">
-
-            {/* ZONA ARCHIVO */}
+            <label className="block mb-2 text-sm font-medium text-slate-700">
+              Archivo Excel
+            </label>
 
             <label
-              htmlFor="ctn-file"
               className="
-                group
-                flex
-                flex-col
-                items-center
-                justify-center
-                min-h-[190px]
+                flex flex-col
+                items-center justify-center
+                gap-2
+                min-h-36
                 rounded-2xl
-                border-2
-                border-dashed
+                border-2 border-dashed
                 border-slate-200
                 bg-slate-50/70
-                px-6
-                py-8
-                text-center
+                px-5
                 cursor-pointer
                 transition-all
-                duration-200
                 hover:border-blue-300
                 hover:bg-blue-50/40
               "
             >
 
-              <div
-                className="
-                  flex
-                  items-center
-                  justify-center
-                  w-14
-                  h-14
-                  rounded-2xl
-                  bg-white
-                  border
-                  border-slate-200
-                  shadow-sm
-                  text-2xl
-                  mb-4
-                  transition-transform
-                  duration-200
-                  group-hover:scale-105
-                "
-              >
-                📊
-              </div>
+              <span className="text-4xl">
+                {file ? "📊" : "📁"}
+              </span>
 
+              <span className="text-sm font-medium text-slate-700">
+                {file
+                  ? file.name
+                  : "Selecciona el fichero Excel"}
+              </span>
 
-              {file ? (
-                <>
-                  <p className="text-sm font-semibold text-slate-700 break-all">
-                    {file.name}
-                  </p>
-
-                  <p className="mt-1 text-xs text-slate-400">
-                    Archivo seleccionado correctamente
-                  </p>
-                </>
-              ) : (
-                <>
-                  <p className="text-sm font-semibold text-slate-700">
-                    Selecciona el archivo Excel
-                  </p>
-
-                  <p className="mt-1 text-xs text-slate-400">
-                    Formato admitido: .xlsx
-                  </p>
-                </>
-              )}
+              <span className="text-xs text-slate-400">
+                Formato permitido: .xlsx
+              </span>
 
               <input
-                id="ctn-file"
                 type="file"
                 accept=".xlsx"
                 className="hidden"
-                onChange={(e) => {
-                  const seleccionado =
-                    e.target.files?.[0] || null;
-
-                  setFile(seleccionado);
-                }}
+                onChange={(e) =>
+                  setFile(e.target.files?.[0] || null)
+                }
+                disabled={loading}
               />
 
             </label>
 
+          </div>
 
-            {/* BOTÓN */}
 
-            <div className="flex justify-end">
+          {/* INFORMACIÓN */}
 
-              <button
-                type="button"
-                onClick={enviar}
-                disabled={!file || loading}
-                className="
-                  inline-flex
-                  items-center
-                  justify-center
-                  gap-2
-                  min-w-[150px]
-                  rounded-xl
-                  px-5
-                  py-3
-                  text-sm
-                  font-semibold
-                  text-white
-                  bg-gradient-to-r
-                  from-blue-600
-                  to-blue-500
-                  shadow-[0_10px_25px_rgba(37,99,235,0.18)]
-                  transition-all
-                  duration-200
-                  hover:from-blue-500
-                  hover:to-blue-400
-                  hover:shadow-[0_14px_30px_rgba(37,99,235,0.24)]
-                  active:scale-[0.98]
-                  disabled:cursor-not-allowed
-                  disabled:opacity-40
-                  disabled:shadow-none
-                "
-              >
+          {file && (
+            <div
+              className="
+                flex items-center gap-3
+                rounded-xl
+                border border-blue-100
+                bg-blue-50/70
+                px-4 py-3
+                text-sm text-blue-700
+                animate-fadeIn
+              "
+            >
+              <span>✓</span>
 
-                {loading ? (
-                  <>
-                    <span
-                      className="
-                        w-4
-                        h-4
-                        rounded-full
-                        border-2
-                        border-white/30
-                        border-t-white
-                        animate-spin
-                      "
-                    />
+              <div className="min-w-0">
 
-                    Importando...
-                  </>
-                ) : (
-                  <>
-                    <span>📥</span>
-                    Importar
-                  </>
-                )}
+                <div className="font-medium">
+                  Archivo seleccionado
+                </div>
 
-              </button>
+                <div className="truncate text-xs text-blue-600/70">
+                  {file.name}
+                </div>
+
+              </div>
 
             </div>
+          )}
 
 
-            {/* =================================================
-                RESULTADO
-            ================================================= */}
+          {/* BOTÓN */}
 
-            {resultado && (
-              <div
-                className="
-                  flex
-                  items-center
-                  gap-3
-                  rounded-xl
-                  border
-                  border-emerald-200
-                  bg-emerald-50
-                  px-4
-                  py-4
-                  text-emerald-700
-                  shadow-sm
-                  animate-fadeIn
-                "
-              >
+          <div className="flex justify-end">
+
+            <button
+              onClick={enviar}
+              disabled={!file || loading}
+              className="
+                inline-flex
+                items-center
+                justify-center
+                gap-2
+                rounded-xl
+                px-6 py-3
+                text-sm font-semibold
+                text-white
+                bg-gradient-to-r
+                from-blue-600
+                to-blue-500
+                shadow-[0_10px_25px_rgba(37,99,235,0.20)]
+                transition-all
+                hover:from-blue-500
+                hover:to-blue-400
+                active:scale-[0.98]
+                disabled:opacity-40
+                disabled:cursor-not-allowed
+              "
+            >
+
+              {loading && (
+                <span
+                  className="
+                    h-4 w-4
+                    rounded-full
+                    border-2
+                    border-white/30
+                    border-t-white
+                    animate-spin
+                  "
+                />
+              )}
+
+              {loading
+                ? "Importando..."
+                : "Importar fichero"}
+
+            </button>
+
+          </div>
+
+
+          {/* RESULTADO */}
+
+          {resultado && (
+            <div
+              className="
+                rounded-2xl
+                border border-emerald-200
+                bg-emerald-50
+                p-5
+                animate-fadeIn
+              "
+            >
+
+              <div className="flex items-center gap-3">
 
                 <div
                   className="
-                    flex
-                    items-center
-                    justify-center
-                    w-9
-                    h-9
-                    rounded-full
+                    flex h-10 w-10
+                    items-center justify-center
+                    rounded-xl
                     bg-emerald-100
-                    text-emerald-600
+                    text-emerald-700
                     font-bold
                   "
                 >
@@ -338,20 +264,20 @@ export default function ImportarCTN() {
 
                 <div>
 
-                  <p className="text-sm font-semibold">
+                  <div className="font-semibold text-emerald-800">
                     Importación completada
-                  </p>
+                  </div>
 
-                  <p className="text-xs text-emerald-600/80 mt-0.5">
-                    {resultado.importados} registros importados correctamente.
-                  </p>
+                  <div className="mt-0.5 text-sm text-emerald-700">
+                    {resultado.importados} registros importados
+                  </div>
 
                 </div>
 
               </div>
-            )}
 
-          </div>
+            </div>
+          )}
 
         </div>
 

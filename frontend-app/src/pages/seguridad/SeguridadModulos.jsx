@@ -1,845 +1,470 @@
-import {
-  useCallback,
-  useMemo,
-} from "react";
-
-import {
-  useSeguridad,
-} from "../../hooks/useSeguridad";
-
-
-/* =========================================================
-   SEGURIDAD — MÓDULOS
-   MOLSAN ERP SAAS PREMIUM 2027
-========================================================= */
+import { useCallback, useMemo } from "react";
+import { useSeguridad } from "../../hooks/useSeguridad";
 
 export default function SeguridadModulos() {
-
   const {
     permisos = [],
     ficha,
     asignarModulos,
   } = useSeguridad();
 
-
-  /* =======================================================
-     DATOS EMPLEADO
-  ======================================================= */
-
   const empleado =
-    ficha?.empleado ||
-    {};
-
+    ficha && typeof ficha === "object"
+      ? ficha.empleado || {}
+      : {};
 
   const modulosVisiblesRaw =
-    empleado.modulos_visibles_list ||
-    [];
+    empleado.modulos_visibles_list || [];
 
+  // =========================================================
+  // MÓDULOS VISIBLES
+  // =========================================================
 
-  /* =======================================================
-     MÓDULOS VISIBLES
-  ======================================================= */
-
-  const modulosVisibles =
-    useMemo(
-      () => {
-
-        return Array.isArray(
-          modulosVisiblesRaw
+  const modulosVisibles = useMemo(() => {
+    return Array.isArray(modulosVisiblesRaw)
+      ? modulosVisiblesRaw.filter(
+          (m) => typeof m === "string"
         )
-          ? modulosVisiblesRaw.filter(
-              (modulo) =>
-                typeof modulo === "string"
-            )
-          : [];
+      : [];
+  }, [modulosVisiblesRaw]);
 
-      },
-      [
-        modulosVisiblesRaw,
-      ]
-    );
+  // =========================================================
+  // MÓDULOS DISPONIBLES
+  // =========================================================
 
+  const modulosGlobales = useMemo(() => {
+    if (!Array.isArray(permisos)) {
+      return [];
+    }
 
-  /* =======================================================
-     MÓDULOS DISPONIBLES
-  ======================================================= */
+    const lista = permisos
+      .filter(
+        (p) =>
+          p &&
+          typeof p === "object" &&
+          typeof p.modulo === "string"
+      )
+      .map((p) => p.modulo);
 
-  const modulosGlobales =
-    useMemo(
-      () => {
+    return [...new Set(lista)];
+  }, [permisos]);
 
-        if (
-          !Array.isArray(
-            permisos
-          )
-        ) {
-          return [];
-        }
+  // =========================================================
+  // CAMBIAR MÓDULO
+  // =========================================================
 
+  const cambiarModulo = useCallback(
+    (modulo) => {
+      if (
+        typeof modulo !== "string" ||
+        !empleado?.id
+      ) {
+        return;
+      }
 
-        const lista =
-          permisos
+      let nuevo;
 
-            .filter(
-              (permiso) =>
-                permiso &&
-                typeof permiso === "object" &&
-                typeof permiso.modulo === "string"
-            )
-
-            .map(
-              (permiso) =>
-                permiso.modulo
-            );
-
-
-        return [
-          ...new Set(
-            lista
-          ),
-        ];
-
-      },
-      [
-        permisos,
-      ]
-    );
-
-
-  /* =======================================================
-     CAMBIAR MÓDULO
-  ======================================================= */
-
-  const cambiarModulo =
-    useCallback(
-      (modulo) => {
-
-        if (
-          typeof modulo !== "string"
-        ) {
-          return;
-        }
-
-
-        let nuevo;
-
-
-        if (
-          modulosVisibles.includes(
-            modulo
-          )
-        ) {
-
-          nuevo =
-            modulosVisibles.filter(
-              (item) =>
-                item !== modulo
-            );
-
-        } else {
-
-          nuevo = [
-            ...modulosVisibles,
-            modulo,
-          ];
-
-        }
-
-
-        asignarModulos(
-          empleado.id,
-          nuevo
+      if (modulosVisibles.includes(modulo)) {
+        nuevo = modulosVisibles.filter(
+          (m) => m !== modulo
         );
+      } else {
+        nuevo = [
+          ...modulosVisibles,
+          modulo,
+        ];
+      }
 
-      },
-      [
-        modulosVisibles,
-        asignarModulos,
+      asignarModulos(
         empleado.id,
-      ]
+        nuevo
+      );
+    },
+    [
+      modulosVisibles,
+      asignarModulos,
+      empleado?.id,
+    ]
+  );
+
+  // =========================================================
+  // SIN FICHA
+  // =========================================================
+
+  if (!ficha || typeof ficha !== "object") {
+    return (
+      <div
+        className="
+          flex
+          min-h-[300px]
+          items-center
+          justify-center
+          rounded-3xl
+          border border-white/10
+          bg-white/[0.04]
+          p-8
+          text-white
+          backdrop-blur-xl
+        "
+      >
+        <div className="text-center">
+          <div className="mb-3 text-4xl">
+            🔐
+          </div>
+
+          <p className="font-semibold text-white/80">
+            Selecciona un empleado
+          </p>
+
+          <p className="mt-1 text-sm text-white/45">
+            La configuración de módulos aparecerá aquí.
+          </p>
+        </div>
+      </div>
     );
-
-
-  /* =======================================================
-     VALIDACIÓN
-  ======================================================= */
-
-  if (
-    !ficha ||
-    typeof ficha !== "object"
-  ) {
-
-    return null;
-
   }
 
-
-  /* =======================================================
-     ESTADÍSTICAS
-  ======================================================= */
-
-  const totalModulos =
-    modulosGlobales.length;
-
-
-  const modulosActivos =
-    modulosVisibles.filter(
-      (modulo) =>
-        modulosGlobales.includes(
-          modulo
-        )
-    ).length;
-
-
-  const porcentaje =
-    totalModulos > 0
-      ? Math.round(
-          (
-            modulosActivos /
-            totalModulos
-          ) * 100
-        )
-      : 0;
-
-
-  /* =======================================================
-     RENDER
-  ======================================================= */
-
   return (
-
     <div
       className="
-        erp-page
+        w-full
         space-y-6
+        text-white
         animate-fade-in
       "
     >
-
-      {/* ===================================================
+      {/* =====================================================
           CABECERA
-      =================================================== */}
+      ===================================================== */}
 
-      <section
+      <div
         className="
-          erp-card
-          p-6
+          relative
+          overflow-hidden
+          rounded-3xl
+          border border-white/15
+          bg-white/[0.06]
+          px-6
+          py-6
+          backdrop-blur-2xl
+          shadow-[0_20px_70px_rgba(0,0,0,0.28)]
         "
       >
+        <div
+          className="
+            pointer-events-none
+            absolute
+            -right-20
+            -top-24
+            h-64
+            w-64
+            rounded-full
+            bg-blue-500/10
+            blur-3xl
+          "
+        />
 
         <div
           className="
-            flex
-            flex-col
-            lg:flex-row
-            lg:items-center
-            lg:justify-between
-            gap-6
+            pointer-events-none
+            absolute
+            -bottom-24
+            left-1/3
+            h-48
+            w-48
+            rounded-full
+            bg-cyan-500/10
+            blur-3xl
           "
-        >
+        />
 
-          <div>
-
+        <div className="relative flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-center gap-4">
             <div
               className="
                 flex
-                items-center
-                gap-3
-                mb-2
-              "
-            >
-
-              <div
-                className="
-                  w-11
-                  h-11
-                  rounded-xl
-                  flex
-                  items-center
-                  justify-center
-                  bg-[var(--erp-primary-soft)]
-                  border
-                  border-[var(--erp-border)]
-                  text-xl
-                  shrink-0
-                "
-              >
-                🧩
-              </div>
-
-
-              <div>
-
-                <div
-                  className="
-                    text-xs
-                    uppercase
-                    tracking-[0.16em]
-                    font-semibold
-                    text-[var(--erp-primary)]
-                  "
-                >
-                  Seguridad
-                </div>
-
-
-                <h1
-                  className="
-                    text-2xl
-                    font-semibold
-                    text-[var(--erp-text)]
-                    mt-0.5
-                  "
-                >
-                  Módulos visibles
-                </h1>
-
-              </div>
-
-            </div>
-
-
-            <p
-              className="
-                text-sm
-                text-[var(--erp-text-soft)]
-                max-w-3xl
-              "
-            >
-              Define qué módulos del ERP puede visualizar
-              este empleado.
-            </p>
-
-          </div>
-
-
-          {/* =================================================
-              RESUMEN
-          ================================================= */}
-
-          <div
-            className="
-              flex
-              flex-wrap
-              items-center
-              gap-3
-            "
-          >
-
-            <div
-              className="
-                rounded-xl
-                border
-                border-[var(--erp-border)]
-                bg-[var(--erp-surface-soft)]
-                px-4
-                py-3
-                min-w-[125px]
-              "
-            >
-
-              <div
-                className="
-                  text-[11px]
-                  uppercase
-                  tracking-wide
-                  font-semibold
-                  text-[var(--erp-text-soft)]
-                "
-              >
-                Módulos activos
-              </div>
-
-
-              <div
-                className="
-                  text-xl
-                  font-semibold
-                  text-[var(--erp-text)]
-                  mt-0.5
-                "
-              >
-                {modulosActivos}
-
-                <span
-                  className="
-                    text-sm
-                    font-normal
-                    text-[var(--erp-text-soft)]
-                  "
-                >
-                  {" "}
-                  / {totalModulos}
-                </span>
-
-              </div>
-
-            </div>
-
-
-            <div
-              className="
-                rounded-xl
-                border
-                border-[var(--erp-border)]
-                bg-[var(--erp-surface-soft)]
-                px-4
-                py-3
-                min-w-[100px]
-              "
-            >
-
-              <div
-                className="
-                  text-[11px]
-                  uppercase
-                  tracking-wide
-                  font-semibold
-                  text-[var(--erp-text-soft)]
-                "
-              >
-                Acceso
-              </div>
-
-
-              <div
-                className="
-                  text-xl
-                  font-semibold
-                  text-[var(--erp-primary)]
-                  mt-0.5
-                "
-              >
-                {porcentaje}%
-              </div>
-
-            </div>
-
-          </div>
-
-        </div>
-
-      </section>
-
-
-      {/* ===================================================
-          EMPLEADO
-      =================================================== */}
-
-      <section
-        className="
-          erp-card
-          p-5
-        "
-      >
-
-        <div
-          className="
-            flex
-            flex-col
-            sm:flex-row
-            sm:items-center
-            sm:justify-between
-            gap-4
-          "
-        >
-
-          <div
-            className="
-              flex
-              items-center
-              gap-3
-            "
-          >
-
-            <div
-              className="
-                w-10
-                h-10
-                rounded-xl
-                flex
+                h-12
+                w-12
+                shrink-0
                 items-center
                 justify-center
-                bg-[var(--erp-surface-soft)]
-                border
-                border-[var(--erp-border)]
-                text-lg
-                shrink-0
-              "
-            >
-              👤
-            </div>
-
-
-            <div>
-
-              <div
-                className="
-                  text-sm
-                  font-semibold
-                  text-[var(--erp-text)]
-                "
-              >
-                {empleado.nombre || "Empleado"}{" "}
-                {empleado.apellidos || ""}
-              </div>
-
-
-              <div
-                className="
-                  text-xs
-                  text-[var(--erp-text-soft)]
-                  mt-0.5
-                "
-              >
-                Usuario:{" "}
-                {empleado.usuario ||
-                  "Sin usuario"}
-              </div>
-
-            </div>
-
-          </div>
-
-
-          <div
-            className="
-              inline-flex
-              items-center
-              gap-2
-              text-xs
-              font-medium
-              text-[var(--erp-text-soft)]
-            "
-          >
-
-            <span
-              className="
-                w-2
-                h-2
-                rounded-full
-                bg-emerald-500
-              "
-            />
-
-            Configuración de acceso
-
-          </div>
-
-        </div>
-
-      </section>
-
-
-      {/* ===================================================
-          MÓDULOS
-      =================================================== */}
-
-      <section
-        className="
-          erp-card
-          p-6
-        "
-      >
-
-        <div
-          className="
-            flex
-            items-center
-            justify-between
-            gap-4
-            mb-5
-          "
-        >
-
-          <div>
-
-            <h2
-              className="
-                text-lg
-                font-semibold
-                text-[var(--erp-text)]
-              "
-            >
-              Módulos del sistema
-            </h2>
-
-
-            <p
-              className="
-                text-xs
-                text-[var(--erp-text-soft)]
-                mt-1
-              "
-            >
-              Activa o desactiva la visibilidad
-              de cada módulo.
-            </p>
-
-          </div>
-
-        </div>
-
-
-        {modulosGlobales.length === 0 ? (
-
-          <div
-            className="
-              rounded-2xl
-              border
-              border-dashed
-              border-[var(--erp-border)]
-              bg-[var(--erp-surface-soft)]
-              px-6
-              py-10
-              text-center
-            "
-          >
-
-            <div
-              className="
-                text-3xl
-                mb-3
+                rounded-2xl
+                border border-blue-400/20
+                bg-blue-500/10
+                text-2xl
+                shadow-lg
               "
             >
               🧩
             </div>
 
+            <div>
+              <h2
+                className="
+                  text-2xl
+                  font-bold
+                  tracking-tight
+                  text-white
+                "
+              >
+                Módulos visibles
+              </h2>
 
-            <div
-              className="
-                text-sm
-                font-semibold
-                text-[var(--erp-text)]
-              "
-            >
-              No hay módulos disponibles
+              <p className="mt-1 text-sm text-white/50">
+                Configura los módulos que puede visualizar este empleado.
+              </p>
             </div>
-
-
-            <div
-              className="
-                text-xs
-                text-[var(--erp-text-soft)]
-                mt-1
-              "
-            >
-              No se han encontrado módulos configurables
-              para este empleado.
-            </div>
-
           </div>
-
-        ) : (
 
           <div
             className="
-              grid
-              grid-cols-1
-              md:grid-cols-2
-              xl:grid-cols-3
-              gap-4
+              flex
+              w-fit
+              items-center
+              gap-2
+              rounded-full
+              border border-blue-400/20
+              bg-blue-400/10
+              px-4
+              py-2
+              text-xs
+              font-semibold
+              text-blue-300
             "
           >
+            <span className="text-base">
+              👤
+            </span>
 
-            {modulosGlobales.map(
-              (modulo) => {
+            {empleado.nombre || "Empleado"}
+          </div>
+        </div>
+      </div>
 
-                const activo =
-                  modulosVisibles.includes(
-                    modulo
-                  );
+      {/* =====================================================
+          RESUMEN
+      ===================================================== */}
 
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div
+          className="
+            rounded-2xl
+            border border-white/10
+            bg-white/[0.045]
+            p-5
+            backdrop-blur-xl
+            shadow-lg
+          "
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-white/40">
+                Disponibles
+              </p>
 
-                return (
+              <p className="mt-2 text-3xl font-bold text-white">
+                {modulosGlobales.length}
+              </p>
+            </div>
 
-                  <label
-                    key={modulo}
-                    className={`
-                      group
-                      flex
-                      items-center
-                      justify-between
-                      gap-4
-                      rounded-2xl
-                      border
-                      px-4
-                      py-4
-                      cursor-pointer
-                      transition-all
-                      duration-200
+            <div
+              className="
+                flex
+                h-11
+                w-11
+                items-center
+                justify-center
+                rounded-xl
+                bg-white/10
+                text-xl
+              "
+            >
+              🧩
+            </div>
+          </div>
+        </div>
 
-                      ${
-                        activo
-                          ? `
-                            border-[var(--erp-primary)]
-                            bg-[var(--erp-primary-soft)]
-                          `
-                          : `
-                            border-[var(--erp-border)]
-                            bg-[var(--erp-surface-soft)]
-                            hover:border-[var(--erp-primary)]
-                            hover:bg-[var(--erp-surface)]
-                          `
-                      }
-                    `}
-                  >
+        <div
+          className="
+            rounded-2xl
+            border border-emerald-400/15
+            bg-emerald-400/[0.05]
+            p-5
+            backdrop-blur-xl
+            shadow-lg
+          "
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-emerald-300/60">
+                Visibles
+              </p>
 
-                    {/* =====================================
-                        INFORMACIÓN MÓDULO
-                    ===================================== */}
+              <p className="mt-2 text-3xl font-bold text-emerald-300">
+                {modulosVisibles.length}
+              </p>
+            </div>
 
-                    <div
-                      className="
-                        flex
-                        items-center
-                        gap-3
-                        min-w-0
-                      "
-                    >
+            <div
+              className="
+                flex
+                h-11
+                w-11
+                items-center
+                justify-center
+                rounded-xl
+                bg-emerald-400/10
+                text-xl
+              "
+            >
+              ✓
+            </div>
+          </div>
+        </div>
+      </div>
 
-                      <div
-                        className={`
-                          w-10
-                          h-10
-                          rounded-xl
-                          flex
-                          items-center
-                          justify-center
-                          shrink-0
-                          border
-                          transition
-                          ${
-                            activo
-                              ? `
-                                bg-[var(--erp-primary)]
-                                border-[var(--erp-primary)]
-                                text-white
-                              `
-                              : `
-                                bg-[var(--erp-surface)]
-                                border-[var(--erp-border)]
-                                text-[var(--erp-text-soft)]
-                              `
-                          }
-                        `}
-                      >
-                        {activo
-                          ? "✓"
-                          : "○"}
-                      </div>
+      {/* =====================================================
+          LISTADO
+      ===================================================== */}
 
+      <div
+        className="
+          rounded-3xl
+          border border-white/15
+          bg-white/[0.045]
+          p-5
+          backdrop-blur-2xl
+          shadow-[0_20px_70px_rgba(0,0,0,0.22)]
+          md:p-6
+        "
+      >
+        <div className="mb-5">
+          <h3 className="text-lg font-semibold text-white">
+            Módulos del sistema
+          </h3>
 
-                      <div
-                        className="
-                          min-w-0
-                        "
-                      >
+          <p className="mt-1 text-sm text-white/40">
+            Activa o desactiva el acceso visual a cada módulo.
+          </p>
+        </div>
 
-                        <div
-                          className="
-                            text-sm
-                            font-semibold
-                            text-[var(--erp-text)]
-                            truncate
-                          "
-                        >
-                          {modulo}
-                        </div>
+        {modulosGlobales.length === 0 ? (
+          <div
+            className="
+              rounded-2xl
+              border border-dashed border-white/10
+              bg-black/10
+              px-5
+              py-10
+              text-center
+            "
+          >
+            <div className="mb-3 text-3xl">
+              🧩
+            </div>
 
+            <p className="font-medium text-white/60">
+              No hay módulos disponibles.
+            </p>
 
-                        <div
-                          className="
-                            text-[11px]
-                            text-[var(--erp-text-soft)]
-                            mt-0.5
-                          "
-                        >
-                          {activo
-                            ? "Módulo visible"
-                            : "Módulo oculto"}
-                        </div>
+            <p className="mt-1 text-sm text-white/35">
+              No se han encontrado módulos configurables.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {modulosGlobales.map((modulo) => {
+              const activo =
+                modulosVisibles.includes(modulo);
 
-                      </div>
-
-                    </div>
-
-
-                    {/* =====================================
-                        CHECKBOX REAL
-                    ===================================== */}
-
-                    <input
-                      type="checkbox"
-                      checked={activo}
-                      onChange={() =>
-                        cambiarModulo(
-                          modulo
-                        )
-                      }
-                      className="
-                        sr-only
-                      "
-                    />
-
-
-                    {/* =====================================
-                        SWITCH
-                    ===================================== */}
-
+              return (
+                <label
+                  key={modulo}
+                  className={`
+                    group
+                    flex
+                    cursor-pointer
+                    items-center
+                    justify-between
+                    rounded-2xl
+                    border
+                    px-4
+                    py-4
+                    transition-all
+                    duration-200
+                    ${
+                      activo
+                        ? `
+                          border-emerald-400/25
+                          bg-emerald-400/[0.08]
+                          shadow-[0_8px_30px_rgba(16,185,129,0.08)]
+                        `
+                        : `
+                          border-white/10
+                          bg-white/[0.025]
+                          hover:border-white/20
+                          hover:bg-white/[0.06]
+                        `
+                    }
+                  `}
+                >
+                  <div className="flex min-w-0 items-center gap-3">
                     <div
                       className={`
-                        relative
-                        w-11
-                        h-6
-                        rounded-full
+                        flex
+                        h-10
+                        w-10
                         shrink-0
-                        transition-colors
-                        duration-200
+                        items-center
+                        justify-center
+                        rounded-xl
+                        text-sm
+                        font-bold
+                        transition
                         ${
                           activo
-                            ? "bg-[var(--erp-primary)]"
-                            : "bg-slate-300"
+                            ? "bg-emerald-400/15 text-emerald-300"
+                            : "bg-white/10 text-white/45"
                         }
                       `}
                     >
-
-                      <div
-                        className={`
-                          absolute
-                          top-1
-                          left-0
-                          w-4
-                          h-4
-                          rounded-full
-                          bg-white
-                          shadow-sm
-                          transition-transform
-                          duration-200
-                          ${
-                            activo
-                              ? "translate-x-6"
-                              : "translate-x-1"
-                          }
-                        `}
-                      />
-
+                      {activo ? "✓" : "•"}
                     </div>
 
-                  </label>
+                    <span
+                      className={`
+                        truncate
+                        font-semibold
+                        ${
+                          activo
+                            ? "text-white"
+                            : "text-white/65"
+                        }
+                      `}
+                    >
+                      {modulo}
+                    </span>
+                  </div>
 
-                );
-
-              }
-            )}
-
+                  <input
+                    type="checkbox"
+                    checked={activo}
+                    onChange={() =>
+                      cambiarModulo(modulo)
+                    }
+                    className="
+                      h-5
+                      w-5
+                      cursor-pointer
+                      accent-emerald-500
+                    "
+                  />
+                </label>
+              );
+            })}
           </div>
-
         )}
-
-      </section>
-
+      </div>
     </div>
-
   );
 }

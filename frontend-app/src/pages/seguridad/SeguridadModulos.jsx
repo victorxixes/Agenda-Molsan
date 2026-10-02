@@ -7,37 +7,8 @@ import {
 import { useSeguridad } from "../../hooks/useSeguridad";
 
 
-/**
- * ============================================================
- * SEGURIDAD — MÓDULOS
- * MOLSAN ERP SAAS PREMIUM 2027
- * ============================================================
- */
-
-
-function Chevron({ abierto }) {
-  return (
-    <svg
-      className={`
-        w-4
-        h-4
-        transition-transform
-        duration-200
-        ${abierto ? "rotate-180" : ""}
-      `}
-      viewBox="0 0 20 20"
-      fill="none"
-      aria-hidden="true"
-    >
-      <path
-        d="M5 7.5L10 12.5L15 7.5"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
+function arraySeguro(valor) {
+  return Array.isArray(valor) ? valor : [];
 }
 
 
@@ -50,15 +21,9 @@ export default function SeguridadModulos() {
   } = useSeguridad();
 
 
-  const [listaAbierta, setListaAbierta] =
-    useState(true);
+  const [busqueda, setBusqueda] =
+    useState("");
 
-
-  /**
-   * ==========================================================
-   * EMPLEADO
-   * ==========================================================
-   */
 
   const empleado =
     ficha &&
@@ -67,83 +32,142 @@ export default function SeguridadModulos() {
       : {};
 
 
-  const modulosVisiblesRaw =
-    empleado.modulos_visibles_list || [];
-
-
   /**
-   * ==========================================================
+   * ============================================================
    * MÓDULOS VISIBLES
-   * ==========================================================
+   * ============================================================
    */
 
-  const modulosVisibles =
-    useMemo(() => {
+  const modulosVisibles = useMemo(() => {
 
-      return Array.isArray(
-        modulosVisiblesRaw
+    const lista =
+      Array.isArray(
+        empleado.modulos_visibles_list
       )
-        ? modulosVisiblesRaw.filter(
-            (modulo) =>
-              typeof modulo === "string"
+        ? empleado.modulos_visibles_list
+        : Array.isArray(
+            ficha?.modulos_visibles
           )
-        : [];
+          ? ficha.modulos_visibles
+          : [];
 
-    }, [modulosVisiblesRaw]);
+
+    return lista.filter(
+      (modulo) =>
+        typeof modulo === "string"
+    );
+
+  }, [
+    empleado,
+    ficha,
+  ]);
 
 
   /**
-   * ==========================================================
-   * MÓDULOS DISPONIBLES
-   * ==========================================================
+   * ============================================================
+   * MÓDULOS GLOBALES
+   * ============================================================
    */
 
   const modulosGlobales =
     useMemo(() => {
 
-      if (!Array.isArray(permisos)) {
-        return [];
-      }
+      const conjunto =
+        new Set();
 
-      const lista =
+
+      arraySeguro(
         permisos
-          .filter(
-            (permiso) =>
-              permiso &&
-              typeof permiso === "object" &&
-              typeof permiso.modulo === "string"
-          )
-          .map(
-            (permiso) =>
-              permiso.modulo.trim()
-          )
-          .filter(Boolean);
+      ).forEach(
+        (permiso) => {
 
-      return [
-        ...new Set(lista),
-      ].sort(
-        (a, b) =>
-          a.localeCompare(
-            b,
-            "es",
-            {
-              sensitivity: "base",
-            }
+          if (
+            permiso &&
+            typeof permiso === "object" &&
+            typeof permiso.modulo === "string"
+          ) {
+            conjunto.add(
+              permiso.modulo.trim()
+            );
+          }
+
+        }
+      );
+
+
+      modulosVisibles.forEach(
+        (modulo) =>
+          conjunto.add(
+            modulo
           )
       );
 
-    }, [permisos]);
+
+      return Array.from(
+        conjunto
+      )
+        .filter(Boolean)
+        .sort(
+          (a, b) =>
+            a.localeCompare(
+              b,
+              "es",
+              {
+                sensitivity: "base",
+              }
+            )
+        );
+
+    }, [
+      permisos,
+      modulosVisibles,
+    ]);
 
 
   /**
-   * ==========================================================
+   * ============================================================
+   * FILTRO
+   * ============================================================
+   */
+
+  const modulosFiltrados =
+    useMemo(() => {
+
+      const texto =
+        busqueda
+          .trim()
+          .toLowerCase();
+
+
+      if (!texto) {
+        return modulosGlobales;
+      }
+
+
+      return modulosGlobales.filter(
+        (modulo) =>
+          modulo
+            .toLowerCase()
+            .includes(
+              texto
+            )
+      );
+
+    }, [
+      modulosGlobales,
+      busqueda,
+    ]);
+
+
+  /**
+   * ============================================================
    * CAMBIAR MÓDULO
-   * ==========================================================
+   * ============================================================
    */
 
   const cambiarModulo =
     useCallback(
-      (modulo) => {
+      async (modulo) => {
 
         if (
           typeof modulo !== "string" ||
@@ -152,33 +176,36 @@ export default function SeguridadModulos() {
           return;
         }
 
-        let nuevo;
 
-        if (
+        const nuevo =
           modulosVisibles.includes(
             modulo
           )
-        ) {
+            ? modulosVisibles.filter(
+                (item) =>
+                  item !== modulo
+              )
+            : [
+                ...modulosVisibles,
+                modulo,
+              ];
 
-          nuevo =
-            modulosVisibles.filter(
-              (item) =>
-                item !== modulo
-            );
 
-        } else {
+        try {
 
-          nuevo = [
-            ...modulosVisibles,
-            modulo,
-          ];
+          await asignarModulos(
+            empleado.id,
+            nuevo
+          );
+
+        } catch (error) {
+
+          console.error(
+            "Error asignando módulo:",
+            error
+          );
 
         }
-
-        asignarModulos(
-          empleado.id,
-          nuevo
-        );
 
       },
       [
@@ -190,53 +217,34 @@ export default function SeguridadModulos() {
 
 
   /**
-   * ==========================================================
+   * ============================================================
    * SIN FICHA
-   * ==========================================================
+   * ============================================================
    */
 
   if (
     !ficha ||
-    typeof ficha !== "object" ||
-    !empleado?.id
+    typeof ficha !== "object"
   ) {
-
     return (
       <div
         className="
           rounded-2xl
           border
-          border-dashed
           border-[var(--erp-border)]
-          bg-[var(--erp-bg)]
-          px-5
-          py-12
+          bg-[var(--erp-surface)]
+          p-10
           text-center
         "
       >
 
-        <div
-          className="
-            w-11
-            h-11
-            rounded-xl
-            bg-[var(--erp-primary-soft)]
-            text-[var(--erp-primary)]
-            flex
-            items-center
-            justify-center
-            mx-auto
-            mb-3
-          "
-        >
-          <span className="text-lg">
-            🔐
-          </span>
+        <div className="text-3xl">
+          📦
         </div>
 
         <p
           className="
-            text-sm
+            mt-3
             font-semibold
             text-[var(--erp-text)]
           "
@@ -247,7 +255,7 @@ export default function SeguridadModulos() {
         <p
           className="
             mt-1
-            text-xs
+            text-sm
             text-[var(--erp-text-soft)]
           "
         >
@@ -259,12 +267,6 @@ export default function SeguridadModulos() {
   }
 
 
-  /**
-   * ==========================================================
-   * RENDER
-   * ==========================================================
-   */
-
   return (
     <div
       className="
@@ -273,385 +275,364 @@ export default function SeguridadModulos() {
       "
     >
 
-      {/* RESUMEN */}
+      {/* CABECERA */}
 
       <div
         className="
-          grid
-          grid-cols-1
-          sm:grid-cols-2
-          gap-3
+          flex
+          flex-col
+          gap-4
+          rounded-2xl
+          border
+          border-[var(--erp-border)]
+          bg-[var(--erp-surface)]
+          p-5
+          shadow-sm
+          md:flex-row
+          md:items-center
+          md:justify-between
         "
       >
 
         <div
           className="
-            rounded-2xl
-            border
-            border-[var(--erp-border)]
-            bg-[var(--erp-bg)]
-            px-4
-            py-4
+            flex
+            items-center
+            gap-3
           "
         >
 
-          <p
+          <div
             className="
-              text-[10px]
-              uppercase
-              tracking-[0.08em]
-              font-semibold
-              text-[var(--erp-text-soft)]
+              flex
+              h-11
+              w-11
+              shrink-0
+              items-center
+              justify-center
+              rounded-xl
+              bg-blue-50
+              text-xl
             "
           >
-            Disponibles
-          </p>
+            📦
+          </div>
 
-          <p
-            className="
-              mt-1
-              text-2xl
-              font-bold
-              text-[var(--erp-text)]
-            "
-          >
-            {modulosGlobales.length}
-          </p>
+          <div>
+
+            <h2
+              className="
+                text-xl
+                font-bold
+                text-[var(--erp-text)]
+              "
+            >
+              Módulos visibles
+            </h2>
+
+            <p
+              className="
+                mt-0.5
+                text-sm
+                text-[var(--erp-text-soft)]
+              "
+            >
+              Configura los módulos que puede visualizar este empleado.
+            </p>
+
+          </div>
 
         </div>
 
 
         <div
           className="
-            rounded-2xl
-            border
-            border-emerald-100
-            bg-emerald-50/60
-            px-4
-            py-4
+            flex
+            flex-wrap
+            items-center
+            gap-2
           "
         >
 
-          <p
+          <span
             className="
-              text-[10px]
-              uppercase
-              tracking-[0.08em]
+              inline-flex
+              items-center
+              rounded-full
+              border
+              border-blue-200
+              bg-blue-50
+              px-3
+              py-1.5
+              text-xs
               font-semibold
-              text-emerald-600
+              text-blue-700
             "
           >
-            Visibles
-          </p>
+            {modulosGlobales.length} disponibles
+          </span>
 
-          <p
+          <span
             className="
-              mt-1
-              text-2xl
-              font-bold
-              text-emerald-600
+              inline-flex
+              items-center
+              rounded-full
+              border
+              border-emerald-200
+              bg-emerald-50
+              px-3
+              py-1.5
+              text-xs
+              font-semibold
+              text-emerald-700
             "
           >
-            {modulosVisibles.length}
-          </p>
+            {modulosVisibles.length} visibles
+          </span>
 
         </div>
 
       </div>
 
 
-      {/* LISTADO PLEGABLE */}
+      {/* FILTRO */}
 
-      <section
+      <div
         className="
           rounded-2xl
           border
           border-[var(--erp-border)]
           bg-[var(--erp-surface)]
-          overflow-hidden
+          p-4
+          shadow-sm
         "
       >
 
-        <button
-          type="button"
-          onClick={() =>
-            setListaAbierta(
-              (prev) => !prev
+        <input
+          type="text"
+          value={busqueda}
+          onChange={(event) =>
+            setBusqueda(
+              event.target.value
             )
           }
+          placeholder="Buscar módulo..."
           className="
             w-full
+            rounded-xl
+            border
+            border-[var(--erp-border)]
+            bg-[var(--erp-bg)]
+            px-4
+            py-2.5
+            text-sm
+            text-[var(--erp-text)]
+            outline-none
+            placeholder:text-[var(--erp-text-soft)]
+            focus:border-[var(--erp-primary)]
+            focus:ring-2
+            focus:ring-[var(--erp-primary-soft)]
+          "
+        />
+
+      </div>
+
+
+      {/* LISTADO */}
+
+      <div
+        className="
+          rounded-2xl
+          border
+          border-[var(--erp-border)]
+          bg-[var(--erp-surface)]
+          p-4
+          shadow-sm
+        "
+      >
+
+        <div
+          className="
+            mb-3
             flex
             items-center
+            justify-between
             gap-3
-            px-4
-            py-3.5
-            text-left
-            hover:bg-[var(--erp-primary-soft)]
-            transition
           "
-          aria-expanded={listaAbierta}
         >
 
-          <div
-            className="
-              w-9
-              h-9
-              rounded-xl
-              bg-[var(--erp-primary-soft)]
-              text-[var(--erp-primary)]
-              flex
-              items-center
-              justify-center
-              flex-shrink-0
-            "
-          >
-            <span className="text-base">
-              🧩
-            </span>
-          </div>
+          <div>
 
-
-          <div className="min-w-0 flex-1">
-
-            <div
+            <h3
               className="
-                flex
-                flex-wrap
-                items-center
-                gap-2
+                text-base
+                font-semibold
+                text-[var(--erp-text)]
               "
             >
-
-              <span
-                className="
-                  text-sm
-                  font-semibold
-                  text-[var(--erp-text)]
-                "
-              >
-                Módulos del sistema
-              </span>
-
-              <span
-                className="
-                  px-2
-                  py-0.5
-                  rounded-md
-                  bg-[var(--erp-bg)]
-                  border
-                  border-[var(--erp-border)]
-                  text-[10px]
-                  font-medium
-                  text-[var(--erp-text-soft)]
-                "
-              >
-                {modulosGlobales.length} disponibles
-              </span>
-
-            </div>
-
+              Módulos del sistema
+            </h3>
 
             <p
               className="
+                mt-0.5
                 text-xs
                 text-[var(--erp-text-soft)]
-                mt-0.5
               "
             >
-              Activa o desactiva el acceso visual a cada módulo.
+              Activa o desactiva el acceso visual.
             </p>
 
           </div>
 
-
-          <div
+          <span
             className="
-              w-8
-              h-8
-              rounded-lg
-              flex
-              items-center
-              justify-center
+              text-xs
               text-[var(--erp-text-soft)]
-              flex-shrink-0
             "
           >
-            <Chevron
-              abierto={listaAbierta}
-            />
-          </div>
+            {modulosFiltrados.length} mostrados
+          </span>
 
-        </button>
+        </div>
 
 
-        {listaAbierta && (
-
+        {modulosFiltrados.length ===
+          0 ? (
           <div
             className="
-              border-t
+              rounded-xl
+              border
+              border-dashed
               border-[var(--erp-border)]
-              bg-[var(--erp-bg)]
-              p-4
+              p-8
+              text-center
+              text-sm
+              text-[var(--erp-text-soft)]
+            "
+          >
+            No hay módulos que coincidan con la búsqueda.
+          </div>
+        ) : (
+          <div
+            className="
+              grid
+              grid-cols-1
+              gap-2.5
+              md:grid-cols-2
+              xl:grid-cols-3
             "
           >
 
-            {modulosGlobales.length === 0 ? (
+            {modulosFiltrados.map(
+              (modulo) => {
 
-              <div
-                className="
-                  rounded-xl
-                  border
-                  border-dashed
-                  border-[var(--erp-border)]
-                  bg-[var(--erp-surface)]
-                  px-5
-                  py-8
-                  text-center
-                "
-              >
+                const activo =
+                  modulosVisibles.includes(
+                    modulo
+                  );
 
-                <p
-                  className="
-                    text-sm
-                    font-medium
-                    text-[var(--erp-text)]
-                  "
-                >
-                  No hay módulos disponibles.
-                </p>
 
-                <p
-                  className="
-                    mt-1
-                    text-xs
-                    text-[var(--erp-text-soft)]
-                  "
-                >
-                  No se han encontrado módulos configurables.
-                </p>
+                return (
+                  <label
+                    key={modulo}
+                    className={`
+                      group
+                      flex
+                      cursor-pointer
+                      items-center
+                      justify-between
+                      gap-3
+                      rounded-xl
+                      border
+                      px-4
+                      py-3
+                      transition
+                      ${
+                        activo
+                          ? `
+                            border-blue-200
+                            bg-blue-50
+                            hover:bg-blue-100/70
+                          `
+                          : `
+                            border-[var(--erp-border)]
+                            bg-[var(--erp-bg)]
+                            hover:border-blue-200
+                            hover:bg-blue-50/40
+                          `
+                      }
+                    `}
+                  >
 
-              </div>
+                    <div
+                      className="
+                        flex
+                        min-w-0
+                        items-center
+                        gap-3
+                      "
+                    >
 
-            ) : (
-
-              <div
-                className="
-                  grid
-                  grid-cols-1
-                  md:grid-cols-2
-                  xl:grid-cols-3
-                  gap-2.5
-                "
-              >
-
-                {modulosGlobales.map(
-                  (modulo) => {
-
-                    const activo =
-                      modulosVisibles.includes(
-                        modulo
-                      );
-
-                    return (
-                      <label
-                        key={modulo}
+                      <span
                         className={`
-                          group
-                          flex
-                          items-center
-                          justify-between
-                          gap-3
-                          rounded-xl
-                          border
-                          px-3
-                          py-3
-                          cursor-pointer
-                          transition-all
-                          duration-200
+                          h-2.5
+                          w-2.5
+                          shrink-0
+                          rounded-full
                           ${
                             activo
-                              ? "border-emerald-200 bg-emerald-50/70"
-                              : "border-[var(--erp-border)] bg-[var(--erp-surface)] hover:border-[var(--erp-primary)] hover:bg-[var(--erp-primary-soft)]"
+                              ? "bg-emerald-500"
+                              : "bg-slate-300"
+                          }
+                        `}
+                      />
+
+                      <span
+                        className={`
+                          truncate
+                          text-sm
+                          font-semibold
+                          ${
+                            activo
+                              ? "text-blue-800"
+                              : "text-[var(--erp-text)]"
                           }
                         `}
                       >
+                        {modulo}
+                      </span>
 
-                        <div
-                          className="
-                            flex
-                            min-w-0
-                            items-center
-                            gap-3
-                          "
-                        >
-
-                          <span
-                            className={`
-                              w-2.5
-                              h-2.5
-                              rounded-full
-                              flex-shrink-0
-                              border
-                              ${
-                                activo
-                                  ? "bg-emerald-500 border-emerald-600"
-                                  : "bg-slate-300 border-slate-400"
-                              }
-                            `}
-                          />
-
-                          <span
-                            className={`
-                              truncate
-                              text-sm
-                              font-medium
-                              ${
-                                activo
-                                  ? "text-[var(--erp-text)]"
-                                  : "text-[var(--erp-text-soft)]"
-                              }
-                            `}
-                            title={modulo}
-                          >
-                            {modulo}
-                          </span>
-
-                        </div>
+                    </div>
 
 
-                        <input
-                          type="checkbox"
-                          checked={activo}
-                          onChange={() =>
-                            cambiarModulo(
-                              modulo
-                            )
-                          }
-                          className="
-                            h-4
-                            w-4
-                            flex-shrink-0
-                            cursor-pointer
-                            accent-[var(--erp-primary)]
-                          "
-                        />
+                    <input
+                      type="checkbox"
+                      checked={activo}
+                      onChange={() =>
+                        cambiarModulo(
+                          modulo
+                        )
+                      }
+                      className="
+                        h-4
+                        w-4
+                        shrink-0
+                        cursor-pointer
+                        accent-blue-500
+                      "
+                    />
 
-                      </label>
-                    );
+                  </label>
+                );
 
-                  }
-                )}
-
-              </div>
-
+              }
             )}
 
           </div>
-
         )}
 
-      </section>
+      </div>
 
     </div>
   );

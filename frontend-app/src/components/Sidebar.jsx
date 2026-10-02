@@ -347,14 +347,15 @@ export default function Sidebar() {
       label: "Intranet",
       icon: "globe",
     },
-
+    
     {
-      key: "noticias",
-      to: "/noticias",
-      label: "Noticias",
-      icon: "newspaper",
+      key: "mensajes",
+      to: "/mensajes",
+      label: "Mensajes",
+      icon: "chat",
+      badge: mensajesNoLeidos,
     },
-
+   
     {
       key: "utilidades",
       to: "/herramientas/utilidades",
@@ -382,12 +383,7 @@ export default function Sidebar() {
       icon: "chart",
     },
 
-    {
-      key: "documentos",
-      to: "/documentos",
-      label: "Documentos",
-      icon: "file",
-    },
+
 
     {
       key: "herramientas",
@@ -410,13 +406,6 @@ export default function Sidebar() {
       icon: "database",
     },
 
-    {
-      key: "mensajes",
-      to: "/mensajes",
-      label: "Mensajes",
-      icon: "chat",
-      badge: mensajesNoLeidos,
-    },
 
     {
       key: "notificaciones",

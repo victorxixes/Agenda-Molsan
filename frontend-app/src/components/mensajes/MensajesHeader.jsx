@@ -1,15 +1,24 @@
 import { useMemo } from "react";
 
 /**
- * MensajesHeader — SJ‑2026 Premium
- * - Avatar + estado online
+ * MENSAJES HEADER — MOLSAN ERP SAAS PREMIUM 2027
+ *
+ * Cabecera de conversación:
+ * - Avatar
+ * - Estado online
  * - Nombre completo
- * - Animación suave
+ * - Glass Luxe claro
  */
 
-export default function MensajesHeader({ otroId, conectados }) {
+export default function MensajesHeader({
+  otroId,
+  conectados,
+}) {
   const usuario = useMemo(
-    () => conectados.find((x) => x.id === otroId),
+    () =>
+      conectados.find(
+        (x) => x.id === otroId
+      ),
     [conectados, otroId]
   );
 
@@ -18,25 +27,151 @@ export default function MensajesHeader({ otroId, conectados }) {
     : "/no-foto.png";
 
   return (
-    <div className="flex items-center gap-3 border-b pb-3 mb-3 animate-fadeIn">
-      {/* AVATAR */}
-      <div className="relative w-12 h-12 rounded-full overflow-hidden border bg-gray-200 shadow-md">
-        <img src={fotoUrl} className="w-full h-full object-cover" />
+    <div
+      className="
+        mb-4
+        flex
+        items-center
+        justify-between
+        gap-3
+        rounded-2xl
+        border
+        border-slate-200/80
+        bg-white/80
+        px-4
+        py-3
+        shadow-sm
+        animate-fadeIn
+      "
+    >
+      {/* =====================================================
+          USUARIO
+      ===================================================== */}
 
-        {usuario && (
-          <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border border-white rounded-full animate-pulse"></span>
-        )}
+      <div
+        className="
+          flex
+          min-w-0
+          items-center
+          gap-3
+        "
+      >
+        {/* Avatar */}
+
+        <div
+          className="
+            relative
+            h-12
+            w-12
+            shrink-0
+          "
+        >
+          <img
+            src={fotoUrl}
+            alt=""
+            className="
+              h-12
+              w-12
+              rounded-full
+              border
+              border-slate-200
+              object-cover
+              shadow-sm
+            "
+          />
+
+          {usuario && (
+            <span
+              className="
+                absolute
+                bottom-0
+                right-0
+                h-3.5
+                w-3.5
+                rounded-full
+                border-2
+                border-white
+                bg-emerald-500
+                animate-pulse
+              "
+            />
+          )}
+        </div>
+
+        {/* Nombre */}
+
+        <div className="min-w-0">
+          <div
+            className="
+              truncate
+              text-base
+              font-bold
+              tracking-tight
+              text-slate-700
+            "
+          >
+            {usuario?.nombre}{" "}
+            {usuario?.apellidos}
+          </div>
+
+          <div
+            className="
+              mt-0.5
+              flex
+              items-center
+              gap-1.5
+              text-xs
+            "
+          >
+            <span
+              className={`
+                h-1.5
+                w-1.5
+                rounded-full
+                ${
+                  usuario
+                    ? "bg-emerald-500"
+                    : "bg-slate-300"
+                }
+              `}
+            />
+
+            <span
+              className={
+                usuario
+                  ? "text-emerald-600"
+                  : "text-slate-400"
+              }
+            >
+              {usuario
+                ? "Online"
+                : "Offline"}
+            </span>
+          </div>
+        </div>
       </div>
 
-      {/* NOMBRE + ESTADO */}
-      <div>
-        <div className="font-semibold text-gray-900 text-lg drop-shadow-sm">
-          {usuario?.nombre} {usuario?.apellidos}
-        </div>
+      {/* =====================================================
+          INDICADOR
+      ===================================================== */}
 
-        <div className="text-sm text-gray-500">
-          {usuario ? "Online" : "Offline"}
-        </div>
+      <div
+        className="
+          hidden
+          sm:flex
+          items-center
+          rounded-full
+          border
+          border-blue-100
+          bg-blue-50
+          px-3
+          py-1.5
+          text-[11px]
+          font-medium
+          text-blue-500
+        "
+      >
+        Mensajería interna
       </div>
     </div>
   );

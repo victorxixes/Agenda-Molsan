@@ -7,40 +7,61 @@ import {
 
 import { useSeguridad } from "../../hooks/useSeguridad";
 
+
+/**
+ * ============================================================
+ * SEGURIDAD ROLES — MOLSAN ERP SAAS PREMIUM 2027
+ * ============================================================
+ *
+ * IMPORTANTE:
+ *
+ * Este componente NO realiza cargas globales.
+ *
+ * La carga de Seguridad se realiza exclusivamente desde:
+ *
+ * Seguridad.jsx
+ *
+ * Este módulo solamente consume:
+ *
+ * - roles
+ * - empleados
+ * - permisos
+ *
+ * ============================================================
+ */
+
 export default function SeguridadRoles() {
+
   const {
     roles = [],
     empleados = [],
     permisos = [],
-    cargarTodo,
   } = useSeguridad();
+
 
   // ============================================================
   // ESTADOS
   // ============================================================
 
-  const [busqueda, setBusqueda] = useState("");
-  const [orden, setOrden] = useState({
-    campo: "nombre",
-    asc: true,
-  });
+  const [busqueda, setBusqueda] =
+    useState("");
+
+  const [orden, setOrden] =
+    useState({
+      campo: "nombre",
+      asc: true,
+    });
 
   const [rolSeleccionado, setRolSeleccionado] =
     useState(null);
 
-  // ============================================================
-  // CARGAR DATOS
-  // ============================================================
-
-  useEffect(() => {
-    cargarTodo();
-  }, [cargarTodo]);
 
   // ============================================================
   // ROLES SEGUROS
   // ============================================================
 
   const rolesSeguros = useMemo(() => {
+
     if (!Array.isArray(roles)) {
       return [];
     }
@@ -52,13 +73,16 @@ export default function SeguridadRoles() {
         typeof rol.id !== "undefined" &&
         typeof rol.nombre === "string"
     );
+
   }, [roles]);
+
 
   // ============================================================
   // EMPLEADOS SEGUROS
   // ============================================================
 
   const empleadosSeguros = useMemo(() => {
+
     if (!Array.isArray(empleados)) {
       return [];
     }
@@ -70,13 +94,16 @@ export default function SeguridadRoles() {
         typeof empleado.id === "number" &&
         typeof empleado.nombre === "string"
     );
+
   }, [empleados]);
+
 
   // ============================================================
   // PERMISOS SEGUROS
   // ============================================================
 
   const permisosSeguros = useMemo(() => {
+
     if (!Array.isArray(permisos)) {
       return [];
     }
@@ -88,287 +115,374 @@ export default function SeguridadRoles() {
         typeof permiso.modulo === "string" &&
         typeof permiso.permiso === "string"
     );
+
   }, [permisos]);
 
+
   // ============================================================
-  // BUSCAR EMPLEADOS DE UN ROL
-  //
-  // El backend puede devolver:
-  //
-  // empleado.rol
-  // empleado.rol_id
-  // empleado.id_rol
-  //
-  // Soportamos las variantes sin romper la pantalla.
+  // EMPLEADOS POR ROL
   // ============================================================
 
   const empleadosPorRol = useMemo(() => {
+
     const mapa = {};
 
-    empleadosSeguros.forEach((empleado) => {
-      const rol =
-        empleado.rol &&
-        typeof empleado.rol === "object"
-          ? empleado.rol
-          : null;
+    empleadosSeguros.forEach(
+      (empleado) => {
 
-      const rolId =
-        empleado.rol_id ??
-        empleado.id_rol ??
-        rol?.id ??
-        null;
+        const rol =
+          empleado.rol &&
+          typeof empleado.rol === "object"
+            ? empleado.rol
+            : null;
 
-      if (
-        rolId === null ||
-        typeof rolId === "undefined"
-      ) {
-        return;
+        const rolId =
+          empleado.rol_id ??
+          empleado.id_rol ??
+          rol?.id ??
+          null;
+
+        if (
+          rolId === null ||
+          typeof rolId === "undefined"
+        ) {
+          return;
+        }
+
+        const clave =
+          String(rolId);
+
+        if (!mapa[clave]) {
+          mapa[clave] = [];
+        }
+
+        mapa[clave].push(
+          empleado
+        );
       }
-
-      const clave = String(rolId);
-
-      if (!mapa[clave]) {
-        mapa[clave] = [];
-      }
-
-      mapa[clave].push(empleado);
-    });
+    );
 
     return mapa;
+
   }, [empleadosSeguros]);
+
 
   // ============================================================
   // PERMISOS POR MÓDULO
   // ============================================================
 
   const permisosPorModulo = useMemo(() => {
+
     const mapa = {};
 
-    permisosSeguros.forEach((permiso) => {
-      const modulo = permiso.modulo;
+    permisosSeguros.forEach(
+      (permiso) => {
 
-      if (!mapa[modulo]) {
-        mapa[modulo] = [];
-      }
+        const modulo =
+          permiso.modulo;
 
-      if (
-        !mapa[modulo].includes(
-          permiso.permiso
-        )
-      ) {
-        mapa[modulo].push(
-          permiso.permiso
-        );
+        if (!mapa[modulo]) {
+          mapa[modulo] = [];
+        }
+
+        if (
+          !mapa[modulo].includes(
+            permiso.permiso
+          )
+        ) {
+          mapa[modulo].push(
+            permiso.permiso
+          );
+        }
       }
-    });
+    );
 
     return mapa;
+
   }, [permisosSeguros]);
 
-  // ============================================================
-  // MÓDULOS
-  // ============================================================
-
-  const modulosDisponibles = useMemo(() => {
-    return Object.keys(
-      permisosPorModulo
-    ).sort((a, b) =>
-      a.localeCompare(b, "es", {
-        sensitivity: "base",
-      })
-    );
-  }, [permisosPorModulo]);
 
   // ============================================================
-  // DATOS ENRIQUECIDOS DE ROLES
+  // CATÁLOGO DE MÓDULOS
   // ============================================================
 
-  const rolesEnriquecidos = useMemo(() => {
-    return rolesSeguros.map((rol) => {
-      const usuarios =
-        empleadosPorRol[String(rol.id)] ||
-        [];
+  const modulosDisponibles =
+    useMemo(() => {
 
-      const permisosRol =
-        Array.isArray(rol.permisos)
-          ? rol.permisos
-          : Array.isArray(
-              rol.permisos_ids
+      return Object.keys(
+        permisosPorModulo
+      ).sort(
+        (a, b) =>
+          a.localeCompare(
+            b,
+            "es",
+            {
+              sensitivity:
+                "base",
+            }
+          )
+      );
+
+    }, [permisosPorModulo]);
+
+
+  // ============================================================
+  // ENRIQUECER ROLES
+  // ============================================================
+
+  const rolesEnriquecidos =
+    useMemo(() => {
+
+      return rolesSeguros.map(
+        (rol) => {
+
+          const usuarios =
+            empleadosPorRol[
+              String(rol.id)
+            ] || [];
+
+
+          const permisosRol =
+            Array.isArray(
+              rol.permisos
             )
-          ? rol.permisos_ids
-          : [];
+              ? rol.permisos
+              : Array.isArray(
+                  rol.permisos_ids
+                )
+                ? rol.permisos_ids
+                : [];
 
-      const modulosRol =
-        Array.isArray(rol.modulos)
-          ? rol.modulos
-          : Array.isArray(
-              rol.modulos_visibles
+
+          const modulosRol =
+            Array.isArray(
+              rol.modulos
             )
-          ? rol.modulos_visibles
-          : [];
+              ? rol.modulos
+              : Array.isArray(
+                  rol.modulos_visibles
+                )
+                ? rol.modulos_visibles
+                : [];
 
-      return {
-        ...rol,
 
-        usuarios,
+          return {
 
-        usuariosCount:
-          Number.isFinite(
-            Number(rol.usuarios_count)
-          )
-            ? Number(
-                rol.usuarios_count
+            ...rol,
+
+            usuarios,
+
+            usuariosCount:
+              Number.isFinite(
+                Number(
+                  rol.usuarios_count
+                )
               )
-            : usuarios.length,
+                ? Number(
+                    rol.usuarios_count
+                  )
+                : usuarios.length,
 
-        permisosCount:
-          Number.isFinite(
-            Number(rol.permisos_count)
-          )
-            ? Number(
-                rol.permisos_count
+            permisosCount:
+              Number.isFinite(
+                Number(
+                  rol.permisos_count
+                )
               )
-            : permisosRol.length,
+                ? Number(
+                    rol.permisos_count
+                  )
+                : permisosRol.length,
 
-        modulosCount:
-          Number.isFinite(
-            Number(rol.modulos_count)
-          )
-            ? Number(
-                rol.modulos_count
+            modulosCount:
+              Number.isFinite(
+                Number(
+                  rol.modulos_count
+                )
               )
-            : modulosRol.length,
+                ? Number(
+                    rol.modulos_count
+                  )
+                : modulosRol.length,
 
-        permisosRol,
+            permisosRol,
 
-        modulosRol,
-      };
-    });
-  }, [
-    rolesSeguros,
-    empleadosPorRol,
-  ]);
+            modulosRol,
+
+          };
+        }
+      );
+
+    }, [
+      rolesSeguros,
+      empleadosPorRol,
+    ]);
+
 
   // ============================================================
   // FILTRAR
   // ============================================================
 
-  const rolesFiltrados = useMemo(() => {
-    const texto =
-      busqueda.trim().toLowerCase();
+  const rolesFiltrados =
+    useMemo(() => {
 
-    if (!texto) {
-      return rolesEnriquecidos;
-    }
+      const texto =
+        busqueda
+          .trim()
+          .toLowerCase();
 
-    return rolesEnriquecidos.filter(
-      (rol) => {
-        const contenido = [
-          rol.id,
-          rol.nombre,
-          rol.descripcion,
-          rol.codigo,
-        ]
-          .map((valor) =>
-            String(
-              valor ?? ""
-            ).toLowerCase()
-          )
-          .join(" ");
-
-        return contenido.includes(texto);
+      if (!texto) {
+        return rolesEnriquecidos;
       }
-    );
-  }, [
-    rolesEnriquecidos,
-    busqueda,
-  ]);
+
+      return rolesEnriquecidos.filter(
+        (rol) => {
+
+          const contenido = [
+            rol.id,
+            rol.nombre,
+            rol.descripcion,
+            rol.codigo,
+          ]
+            .map(
+              (valor) =>
+                String(
+                  valor ?? ""
+                ).toLowerCase()
+            )
+            .join(" ");
+
+          return contenido.includes(
+            texto
+          );
+        }
+      );
+
+    }, [
+      rolesEnriquecidos,
+      busqueda,
+    ]);
+
 
   // ============================================================
   // ORDENAR
   // ============================================================
 
-  const ordenar = useCallback(
-    (campo) => {
-      setOrden((prev) => ({
-        campo,
-        asc:
-          prev.campo === campo
-            ? !prev.asc
-            : true,
-      }));
-    },
-    []
-  );
+  const ordenar =
+    useCallback(
+      (campo) => {
 
-  const rolesOrdenados = useMemo(() => {
-    const {
-      campo,
-      asc,
-    } = orden;
+        setOrden(
+          (prev) => ({
+            campo,
 
-    const direccion =
-      asc ? 1 : -1;
-
-    return [
-      ...rolesFiltrados,
-    ].sort((a, b) => {
-      let va = a?.[campo];
-      let vb = b?.[campo];
-
-      if (
-        typeof va === "number" &&
-        typeof vb === "number"
-      ) {
-        return (
-          (va - vb) *
-          direccion
+            asc:
+              prev.campo === campo
+                ? !prev.asc
+                : true,
+          })
         );
-      }
 
-      va = String(
-        va ?? ""
-      ).toLowerCase();
+      },
+      []
+    );
 
-      vb = String(
-        vb ?? ""
-      ).toLowerCase();
 
-      if (va < vb) {
-        return -1 * direccion;
-      }
+  const rolesOrdenados =
+    useMemo(() => {
 
-      if (va > vb) {
-        return 1 * direccion;
-      }
+      const {
+        campo,
+        asc,
+      } = orden;
 
-      return 0;
-    });
-  }, [
-    rolesFiltrados,
-    orden,
-  ]);
+      const direccion =
+        asc ? 1 : -1;
+
+      return [
+        ...rolesFiltrados,
+      ].sort(
+        (a, b) => {
+
+          let va =
+            a?.[campo];
+
+          let vb =
+            b?.[campo];
+
+
+          if (
+            typeof va ===
+              "number" &&
+            typeof vb ===
+              "number"
+          ) {
+
+            return (
+              (va - vb) *
+              direccion
+            );
+          }
+
+
+          va =
+            String(
+              va ?? ""
+            ).toLowerCase();
+
+          vb =
+            String(
+              vb ?? ""
+            ).toLowerCase();
+
+
+          if (va < vb) {
+            return -1 *
+              direccion;
+          }
+
+          if (va > vb) {
+            return 1 *
+              direccion;
+          }
+
+          return 0;
+        }
+      );
+
+    }, [
+      rolesFiltrados,
+      orden,
+    ]);
+
 
   // ============================================================
   // SELECCIONAR ROL
   // ============================================================
 
-  const seleccionarRol = useCallback(
-    (rol) => {
-      if (!rol) {
-        return;
-      }
+  const seleccionarRol =
+    useCallback(
+      (rol) => {
 
-      setRolSeleccionado(rol);
-    },
-    []
-  );
+        if (!rol) {
+          return;
+        }
+
+        setRolSeleccionado(
+          rol
+        );
+
+      },
+      []
+    );
+
 
   // ============================================================
-  // LIMPIAR SELECCIÓN SI DESAPARECE
+  // LIMPIAR SELECCIÓN
   // ============================================================
 
   useEffect(() => {
+
     if (!rolSeleccionado) {
       return;
     }
@@ -383,104 +497,154 @@ export default function SeguridadRoles() {
       );
 
     if (!sigueExistiendo) {
-      setRolSeleccionado(null);
+      setRolSeleccionado(
+        null
+      );
     }
+
   }, [
     rolesOrdenados,
     rolSeleccionado,
   ]);
 
+
   // ============================================================
   // ESTADÍSTICAS
   // ============================================================
 
-  const estadisticas = useMemo(() => {
-    const total =
-      rolesEnriquecidos.length;
+  const estadisticas =
+    useMemo(() => {
 
-    const activos =
-      rolesEnriquecidos.filter(
-        (rol) =>
-          rol.activo !== false &&
-          rol.habilitado !== false
-      ).length;
+      const total =
+        rolesEnriquecidos.length;
 
-    const usuariosAsignados =
-      rolesEnriquecidos.reduce(
-        (total, rol) =>
-          total +
-          Number(
-            rol.usuariosCount || 0
-          ),
-        0
-      );
 
-    const rolesConPermisos =
-      rolesEnriquecidos.filter(
-        (rol) =>
-          Number(
-            rol.permisosCount || 0
-          ) > 0
-      ).length;
+      const activos =
+        rolesEnriquecidos.filter(
+          (rol) =>
+            rol.activo !== false &&
+            rol.habilitado !== false
+        ).length;
 
-    return {
-      total,
-      activos,
-      usuariosAsignados,
-      rolesConPermisos,
-    };
-  }, [
-    rolesEnriquecidos,
-  ]);
+
+      const usuariosAsignados =
+        rolesEnriquecidos.reduce(
+          (totalActual, rol) =>
+            totalActual +
+            Number(
+              rol.usuariosCount ||
+              0
+            ),
+          0
+        );
+
+
+      const rolesConPermisos =
+        rolesEnriquecidos.filter(
+          (rol) =>
+            Number(
+              rol.permisosCount ||
+              0
+            ) > 0
+        ).length;
+
+
+      return {
+        total,
+        activos,
+        usuariosAsignados,
+        rolesConPermisos,
+      };
+
+    }, [
+      rolesEnriquecidos,
+    ]);
+
 
   // ============================================================
   // ESTADO DEL ROL
   // ============================================================
 
-  const obtenerEstadoRol = useCallback(
-    (rol) => {
-      if (
-        rol.activo === false ||
-        rol.habilitado === false
-      ) {
-        return {
-          texto: "INACTIVO",
-          clase:
-            "border-red-400/20 bg-red-400/10 text-red-300",
-          punto: "bg-red-400",
-        };
-      }
+  const obtenerEstadoRol =
+    useCallback(
+      (rol) => {
 
-      return {
-        texto: "ACTIVO",
-        clase:
-          "border-emerald-400/20 bg-emerald-400/10 text-emerald-300",
-        punto: "bg-emerald-400",
-      };
-    },
-    []
-  );
+        if (
+          rol.activo === false ||
+          rol.habilitado === false
+        ) {
+
+          return {
+
+            texto:
+              "INACTIVO",
+
+            clase:
+              "border-red-400/20 bg-red-400/10 text-red-300",
+
+            punto:
+              "bg-red-400",
+
+          };
+        }
+
+
+        return {
+
+          texto:
+            "ACTIVO",
+
+          clase:
+            "border-emerald-400/20 bg-emerald-400/10 text-emerald-300",
+
+          punto:
+            "bg-emerald-400",
+
+        };
+
+      },
+      []
+    );
+
 
   // ============================================================
   // CARGANDO
   // ============================================================
+  //
+  // El padre ya controla el loading global.
+  //
+  // Aquí solamente mostramos un estado vacío si aún
+  // no existen roles.
+  // ============================================================
 
-  if (
-    !Array.isArray(roles)
-  ) {
+  if (!Array.isArray(roles)) {
+
     return (
-      <div className="p-6 text-white/70 animate-pulse">
+      <div
+        className="
+          p-6
+          text-[var(--erp-text-soft)]
+          animate-pulse
+        "
+      >
         Cargando roles…
       </div>
     );
   }
+
 
   // ============================================================
   // RENDER
   // ============================================================
 
   return (
-    <div className="w-full space-y-6 text-white animate-fade-in">
+
+    <div
+      className="
+        w-full
+        space-y-6
+      "
+    >
 
       {/* ======================================================
           CABECERA
@@ -488,96 +652,76 @@ export default function SeguridadRoles() {
 
       <div
         className="
-          relative
-          overflow-hidden
-          rounded-3xl
-          border border-white/15
-          bg-white/[0.06]
-          backdrop-blur-2xl
-          shadow-[0_20px_70px_rgba(0,0,0,0.28)]
-          px-6
-          py-6
+          rounded-2xl
+          border
+          border-[var(--erp-border)]
+          bg-[var(--erp-bg)]
+          p-5
         "
       >
-        <div
-          className="
-            pointer-events-none
-            absolute
-            -right-20
-            -top-24
-            h-64
-            w-64
-            rounded-full
-            bg-purple-500/10
-            blur-3xl
-          "
-        />
 
         <div
           className="
-            pointer-events-none
-            absolute
-            -bottom-24
-            left-1/3
-            h-48
-            w-48
-            rounded-full
-            bg-blue-500/10
-            blur-3xl
-          "
-        />
-
-        <div
-          className="
-            relative
             flex
             flex-col
             gap-4
-            md:flex-row
-            md:items-center
-            md:justify-between
+            lg:flex-row
+            lg:items-center
+            lg:justify-between
           "
         >
-          <div>
-            <div className="flex items-center gap-3">
 
-              <div
+          <div
+            className="
+              flex
+              items-center
+              gap-3
+            "
+          >
+
+            <div
+              className="
+                flex
+                h-11
+                w-11
+                items-center
+                justify-center
+                rounded-xl
+                bg-[var(--erp-primary-soft)]
+                text-xl
+              "
+            >
+              🛡️
+            </div>
+
+
+            <div>
+
+              <h2
                 className="
-                  flex
-                  h-12
-                  w-12
-                  items-center
-                  justify-center
-                  rounded-2xl
-                  border border-white/15
-                  bg-white/10
-                  text-2xl
-                  shadow-lg
+                  text-xl
+                  font-bold
+                  tracking-tight
+                  text-[var(--erp-text)]
                 "
               >
-                👥
-              </div>
+                Roles de seguridad
+              </h2>
 
-              <div>
-                <h1
-                  className="
-                    text-2xl
-                    font-bold
-                    tracking-tight
-                    text-white
-                    md:text-3xl
-                  "
-                >
-                  Roles de seguridad
-                </h1>
-
-                <p className="mt-1 text-sm text-white/55">
-                  Control centralizado de perfiles y niveles de acceso del ERP.
-                </p>
-              </div>
+              <p
+                className="
+                  mt-1
+                  text-sm
+                  text-[var(--erp-text-soft)]
+                "
+              >
+                Control centralizado de perfiles y niveles de acceso.
+              </p>
 
             </div>
+
           </div>
+
 
           <div
             className="
@@ -586,30 +730,34 @@ export default function SeguridadRoles() {
               items-center
               gap-2
               rounded-full
-              border border-purple-400/20
-              bg-purple-400/10
-              px-4
-              py-2
+              border
+              border-[var(--erp-border)]
+              bg-[var(--erp-surface)]
+              px-3
+              py-1.5
               text-xs
               font-semibold
-              text-purple-300
+              text-[var(--erp-text-soft)]
             "
           >
+
             <span
               className="
-                h-2
-                w-2
+                h-1.5
+                w-1.5
                 rounded-full
-                bg-purple-400
-                shadow-[0_0_10px_rgba(192,132,252,0.8)]
+                bg-emerald-500
               "
             />
 
-            CONTROL DE ROLES
+            {estadisticas.total} roles
+
           </div>
 
         </div>
+
       </div>
+
 
       {/* ======================================================
           KPIs
@@ -625,155 +773,233 @@ export default function SeguridadRoles() {
         "
       >
 
-        {/* TOTAL */}
-
         <div
           className="
-            rounded-3xl
-            border border-white/15
-            bg-white/[0.05]
-            backdrop-blur-2xl
+            rounded-2xl
+            border
+            border-[var(--erp-border)]
+            bg-[var(--erp-surface)]
             p-5
-            shadow-[0_15px_50px_rgba(0,0,0,0.18)]
           "
         >
+
           <div className="flex items-center justify-between">
-            <span className="text-sm text-white/55">
+
+            <span
+              className="
+                text-sm
+                text-[var(--erp-text-soft)]
+              "
+            >
               Total roles
             </span>
 
             <span className="text-xl">
               🛡️
             </span>
+
           </div>
 
-          <div className="mt-3 text-3xl font-bold">
+          <div
+            className="
+              mt-3
+              text-3xl
+              font-bold
+              text-[var(--erp-text)]
+            "
+          >
             {estadisticas.total}
           </div>
 
-          <div className="mt-1 text-xs text-white/40">
+          <div
+            className="
+              mt-1
+              text-xs
+              text-[var(--erp-text-soft)]
+            "
+          >
             Perfiles definidos
           </div>
+
         </div>
 
-        {/* ACTIVOS */}
 
         <div
           className="
-            rounded-3xl
-            border border-white/15
-            bg-white/[0.05]
-            backdrop-blur-2xl
+            rounded-2xl
+            border
+            border-[var(--erp-border)]
+            bg-[var(--erp-surface)]
             p-5
-            shadow-[0_15px_50px_rgba(0,0,0,0.18)]
           "
         >
+
           <div className="flex items-center justify-between">
-            <span className="text-sm text-white/55">
+
+            <span
+              className="
+                text-sm
+                text-[var(--erp-text-soft)]
+              "
+            >
               Roles activos
             </span>
 
             <span className="text-xl">
               🟢
             </span>
+
           </div>
 
-          <div className="mt-3 text-3xl font-bold">
+          <div
+            className="
+              mt-3
+              text-3xl
+              font-bold
+              text-[var(--erp-text)]
+            "
+          >
             {estadisticas.activos}
           </div>
 
-          <div className="mt-1 text-xs text-white/40">
+          <div
+            className="
+              mt-1
+              text-xs
+              text-[var(--erp-text-soft)]
+            "
+          >
             Disponibles para uso
           </div>
+
         </div>
 
-        {/* USUARIOS */}
 
         <div
           className="
-            rounded-3xl
-            border border-white/15
-            bg-white/[0.05]
-            backdrop-blur-2xl
+            rounded-2xl
+            border
+            border-[var(--erp-border)]
+            bg-[var(--erp-surface)]
             p-5
-            shadow-[0_15px_50px_rgba(0,0,0,0.18)]
           "
         >
+
           <div className="flex items-center justify-between">
-            <span className="text-sm text-white/55">
+
+            <span
+              className="
+                text-sm
+                text-[var(--erp-text-soft)]
+              "
+            >
               Usuarios asignados
             </span>
 
             <span className="text-xl">
               👤
             </span>
+
           </div>
 
-          <div className="mt-3 text-3xl font-bold">
+          <div
+            className="
+              mt-3
+              text-3xl
+              font-bold
+              text-[var(--erp-text)]
+            "
+          >
             {estadisticas.usuariosAsignados}
           </div>
 
-          <div className="mt-1 text-xs text-white/40">
+          <div
+            className="
+              mt-1
+              text-xs
+              text-[var(--erp-text-soft)]
+            "
+          >
             Distribuidos entre roles
           </div>
+
         </div>
 
-        {/* PERMISOS */}
 
         <div
           className="
-            rounded-3xl
-            border border-white/15
-            bg-white/[0.05]
-            backdrop-blur-2xl
+            rounded-2xl
+            border
+            border-[var(--erp-border)]
+            bg-[var(--erp-surface)]
             p-5
-            shadow-[0_15px_50px_rgba(0,0,0,0.18)]
           "
         >
+
           <div className="flex items-center justify-between">
-            <span className="text-sm text-white/55">
+
+            <span
+              className="
+                text-sm
+                text-[var(--erp-text-soft)]
+              "
+            >
               Roles con permisos
             </span>
 
             <span className="text-xl">
               🔐
             </span>
+
           </div>
 
-          <div className="mt-3 text-3xl font-bold">
+          <div
+            className="
+              mt-3
+              text-3xl
+              font-bold
+              text-[var(--erp-text)]
+            "
+          >
             {estadisticas.rolesConPermisos}
           </div>
 
-          <div className="mt-1 text-xs text-white/40">
+          <div
+            className="
+              mt-1
+              text-xs
+              text-[var(--erp-text-soft)]
+            "
+          >
             Con configuración de acceso
           </div>
+
         </div>
 
       </div>
 
+
       {/* ======================================================
-          MONITOR PRINCIPAL
+          TABLA
       ====================================================== */}
 
       <div
         className="
           overflow-hidden
-          rounded-3xl
-          border border-white/15
-          bg-white/[0.045]
-          backdrop-blur-2xl
-          shadow-[0_20px_70px_rgba(0,0,0,0.24)]
+          rounded-2xl
+          border
+          border-[var(--erp-border)]
+          bg-[var(--erp-surface)]
         "
       >
-
-        {/* CABECERA TABLA */}
 
         <div
           className="
             flex
             flex-col
             gap-4
-            border-b border-white/10
+            border-b
+            border-[var(--erp-border)]
             p-5
             md:flex-row
             md:items-center
@@ -782,14 +1008,29 @@ export default function SeguridadRoles() {
         >
 
           <div>
-            <h2 className="text-lg font-semibold">
-              Perfiles de seguridad
-            </h2>
 
-            <p className="mt-1 text-sm text-white/45">
+            <h3
+              className="
+                text-lg
+                font-semibold
+                text-[var(--erp-text)]
+              "
+            >
+              Perfiles de seguridad
+            </h3>
+
+            <p
+              className="
+                mt-1
+                text-sm
+                text-[var(--erp-text-soft)]
+              "
+            >
               Selecciona un rol para inspeccionar su configuración.
             </p>
+
           </div>
+
 
           <div className="w-full md:w-80">
 
@@ -804,19 +1045,20 @@ export default function SeguridadRoles() {
               placeholder="Buscar rol..."
               className="
                 w-full
-                rounded-2xl
-                border border-white/15
-                bg-white/[0.07]
+                rounded-xl
+                border
+                border-[var(--erp-border)]
+                bg-[var(--erp-bg)]
                 px-4
                 py-2.5
                 text-sm
-                text-white
-                placeholder-white/35
+                text-[var(--erp-text)]
+                placeholder-[var(--erp-text-soft)]
                 outline-none
                 transition
-                focus:border-blue-400/40
+                focus:border-[var(--erp-primary)]
                 focus:ring-2
-                focus:ring-blue-400/20
+                focus:ring-[var(--erp-primary-soft)]
               "
             />
 
@@ -824,13 +1066,18 @@ export default function SeguridadRoles() {
 
         </div>
 
-        {/* TABLA */}
 
         <div className="overflow-x-auto">
 
           <table className="w-full min-w-[850px] text-sm">
 
-            <thead className="border-b border-white/10 bg-white/[0.035]">
+            <thead
+              className="
+                border-b
+                border-[var(--erp-border)]
+                bg-[var(--erp-bg)]
+              "
+            >
 
               <tr>
 
@@ -844,9 +1091,7 @@ export default function SeguridadRoles() {
                     font-semibold
                     uppercase
                     tracking-wide
-                    text-white/45
-                    transition
-                    hover:text-white
+                    text-[var(--erp-text-soft)]
                   "
                   onClick={() =>
                     ordenar("id")
@@ -854,10 +1099,13 @@ export default function SeguridadRoles() {
                 >
                   ID{" "}
                   {orden.campo === "id" &&
-                    (orden.asc
-                      ? "▲"
-                      : "▼")}
+                    (
+                      orden.asc
+                        ? "▲"
+                        : "▼"
+                    )}
                 </th>
+
 
                 <th
                   className="
@@ -869,21 +1117,21 @@ export default function SeguridadRoles() {
                     font-semibold
                     uppercase
                     tracking-wide
-                    text-white/45
-                    transition
-                    hover:text-white
+                    text-[var(--erp-text-soft)]
                   "
                   onClick={() =>
                     ordenar("nombre")
                   }
                 >
                   Rol{" "}
-                  {orden.campo ===
-                    "nombre" &&
-                    (orden.asc
-                      ? "▲"
-                      : "▼")}
+                  {orden.campo === "nombre" &&
+                    (
+                      orden.asc
+                        ? "▲"
+                        : "▼"
+                    )}
                 </th>
+
 
                 <th
                   className="
@@ -894,11 +1142,12 @@ export default function SeguridadRoles() {
                     font-semibold
                     uppercase
                     tracking-wide
-                    text-white/45
+                    text-[var(--erp-text-soft)]
                   "
                 >
                   Estado
                 </th>
+
 
                 <th
                   className="
@@ -910,9 +1159,7 @@ export default function SeguridadRoles() {
                     font-semibold
                     uppercase
                     tracking-wide
-                    text-white/45
-                    transition
-                    hover:text-white
+                    text-[var(--erp-text-soft)]
                   "
                   onClick={() =>
                     ordenar(
@@ -923,10 +1170,13 @@ export default function SeguridadRoles() {
                   Usuarios{" "}
                   {orden.campo ===
                     "usuariosCount" &&
-                    (orden.asc
-                      ? "▲"
-                      : "▼")}
+                    (
+                      orden.asc
+                        ? "▲"
+                        : "▼"
+                    )}
                 </th>
+
 
                 <th
                   className="
@@ -938,9 +1188,7 @@ export default function SeguridadRoles() {
                     font-semibold
                     uppercase
                     tracking-wide
-                    text-white/45
-                    transition
-                    hover:text-white
+                    text-[var(--erp-text-soft)]
                   "
                   onClick={() =>
                     ordenar(
@@ -951,10 +1199,13 @@ export default function SeguridadRoles() {
                   Módulos{" "}
                   {orden.campo ===
                     "modulosCount" &&
-                    (orden.asc
-                      ? "▲"
-                      : "▼")}
+                    (
+                      orden.asc
+                        ? "▲"
+                        : "▼"
+                    )}
                 </th>
+
 
                 <th
                   className="
@@ -966,9 +1217,7 @@ export default function SeguridadRoles() {
                     font-semibold
                     uppercase
                     tracking-wide
-                    text-white/45
-                    transition
-                    hover:text-white
+                    text-[var(--erp-text-soft)]
                   "
                   onClick={() =>
                     ordenar(
@@ -979,10 +1228,13 @@ export default function SeguridadRoles() {
                   Permisos{" "}
                   {orden.campo ===
                     "permisosCount" &&
-                    (orden.asc
-                      ? "▲"
-                      : "▼")}
+                    (
+                      orden.asc
+                        ? "▲"
+                        : "▼"
+                    )}
                 </th>
+
 
                 <th
                   className="
@@ -993,7 +1245,7 @@ export default function SeguridadRoles() {
                     font-semibold
                     uppercase
                     tracking-wide
-                    text-white/45
+                    text-[var(--erp-text-soft)]
                   "
                 >
                   Control
@@ -1003,29 +1255,31 @@ export default function SeguridadRoles() {
 
             </thead>
 
+
             <tbody>
 
               {rolesOrdenados.map(
                 (rol) => {
+
                   const estado =
                     obtenerEstadoRol(
                       rol
                     );
+
 
                   const seleccionado =
                     rolSeleccionado &&
                     String(
                       rolSeleccionado.id
                     ) ===
-                      String(
-                        rol.id
-                      );
+                    String(
+                      rol.id
+                    );
+
 
                   return (
                     <tr
-                      key={String(
-                        rol.id
-                      )}
+                      key={String(rol.id)}
                       onClick={() =>
                         seleccionarRol(
                           rol
@@ -1034,35 +1288,58 @@ export default function SeguridadRoles() {
                       className={`
                         cursor-pointer
                         border-b
-                        border-white/10
+                        border-[var(--erp-border)]
                         transition
                         ${
                           seleccionado
-                            ? "bg-blue-400/[0.09]"
-                            : "hover:bg-white/[0.045]"
+                            ? "bg-[var(--erp-primary-soft)]"
+                            : "hover:bg-[var(--erp-bg)]"
                         }
                       `}
                     >
 
-                      <td className="px-5 py-4 text-white/45">
+                      <td
+                        className="
+                          px-5
+                          py-4
+                          text-[var(--erp-text-soft)]
+                        "
+                      >
                         #{rol.id}
                       </td>
 
+
                       <td className="px-5 py-4">
 
-                        <div className="font-semibold text-white">
+                        <div
+                          className="
+                            font-semibold
+                            text-[var(--erp-text)]
+                          "
+                        >
                           {rol.nombre}
                         </div>
 
                         {(rol.descripcion ||
                           rol.codigo) && (
-                          <div className="mt-1 max-w-md truncate text-xs text-white/40">
+
+                          <div
+                            className="
+                              mt-1
+                              max-w-md
+                              truncate
+                              text-xs
+                              text-[var(--erp-text-soft)]
+                            "
+                          >
                             {rol.descripcion ||
                               rol.codigo}
                           </div>
+
                         )}
 
                       </td>
+
 
                       <td className="px-5 py-4 text-center">
 
@@ -1080,6 +1357,7 @@ export default function SeguridadRoles() {
                             ${estado.clase}
                           `}
                         >
+
                           <span
                             className={`
                               h-1.5
@@ -1090,9 +1368,11 @@ export default function SeguridadRoles() {
                           />
 
                           {estado.texto}
+
                         </span>
 
                       </td>
+
 
                       <td className="px-5 py-4 text-center">
 
@@ -1103,11 +1383,13 @@ export default function SeguridadRoles() {
                             items-center
                             justify-center
                             rounded-xl
-                            border border-white/10
-                            bg-white/[0.05]
+                            border
+                            border-[var(--erp-border)]
+                            bg-[var(--erp-bg)]
                             px-3
                             py-1.5
                             font-semibold
+                            text-[var(--erp-text)]
                           "
                         >
                           {rol.usuariosCount}
@@ -1115,45 +1397,57 @@ export default function SeguridadRoles() {
 
                       </td>
 
-                      <td className="px-5 py-4 text-center">
 
-                        <span className="text-white/75">
-                          {rol.modulosCount}
-                        </span>
-
+                      <td
+                        className="
+                          px-5
+                          py-4
+                          text-center
+                          text-[var(--erp-text)]
+                        "
+                      >
+                        {rol.modulosCount}
                       </td>
 
-                      <td className="px-5 py-4 text-center">
 
-                        <span className="text-white/75">
-                          {rol.permisosCount}
-                        </span>
-
+                      <td
+                        className="
+                          px-5
+                          py-4
+                          text-center
+                          text-[var(--erp-text)]
+                        "
+                      >
+                        {rol.permisosCount}
                       </td>
+
 
                       <td className="px-5 py-4 text-right">
 
                         <button
                           type="button"
                           onClick={(event) => {
+
                             event.stopPropagation();
 
                             seleccionarRol(
                               rol
                             );
+
                           }}
                           className="
                             rounded-xl
-                            border border-white/15
-                            bg-white/[0.06]
+                            border
+                            border-[var(--erp-border)]
+                            bg-[var(--erp-bg)]
                             px-3
                             py-1.5
                             text-xs
                             font-semibold
-                            text-white/75
+                            text-[var(--erp-text-soft)]
                             transition
-                            hover:bg-white/10
-                            hover:text-white
+                            hover:bg-[var(--erp-primary-soft)]
+                            hover:text-[var(--erp-primary)]
                           "
                         >
                           👁️ Inspeccionar
@@ -1166,9 +1460,12 @@ export default function SeguridadRoles() {
                 }
               )}
 
+
               {rolesOrdenados.length ===
                 0 && (
+
                 <tr>
+
                   <td
                     colSpan={7}
                     className="
@@ -1177,18 +1474,33 @@ export default function SeguridadRoles() {
                       text-center
                     "
                   >
+
                     <div className="text-4xl">
                       🛡️
                     </div>
 
-                    <p className="mt-3 font-semibold text-white/70">
+                    <p
+                      className="
+                        mt-3
+                        font-semibold
+                        text-[var(--erp-text)]
+                      "
+                    >
                       No hay roles
                     </p>
 
-                    <p className="mt-1 text-sm text-white/40">
+                    <p
+                      className="
+                        mt-1
+                        text-sm
+                        text-[var(--erp-text-soft)]
+                      "
+                    >
                       No se han encontrado perfiles que coincidan con la búsqueda.
                     </p>
+
                   </td>
+
                 </tr>
               )}
 
@@ -1200,19 +1512,20 @@ export default function SeguridadRoles() {
 
       </div>
 
+
       {/* ======================================================
-          DETALLE DEL ROL
+          DETALLE
       ====================================================== */}
 
       {rolSeleccionado && (
+
         <div
           className="
             overflow-hidden
-            rounded-3xl
-            border border-white/15
-            bg-white/[0.05]
-            backdrop-blur-2xl
-            shadow-[0_20px_70px_rgba(0,0,0,0.24)]
+            rounded-2xl
+            border
+            border-[var(--erp-border)]
+            bg-[var(--erp-surface)]
           "
         >
 
@@ -1223,7 +1536,8 @@ export default function SeguridadRoles() {
               flex
               flex-col
               gap-4
-              border-b border-white/10
+              border-b
+              border-[var(--erp-border)]
               p-6
               md:flex-row
               md:items-center
@@ -1231,7 +1545,13 @@ export default function SeguridadRoles() {
             "
           >
 
-            <div className="flex items-center gap-4">
+            <div
+              className="
+                flex
+                items-center
+                gap-4
+              "
+            >
 
               <div
                 className="
@@ -1241,47 +1561,74 @@ export default function SeguridadRoles() {
                   items-center
                   justify-center
                   rounded-2xl
-                  border border-purple-400/20
-                  bg-purple-400/10
+                  bg-[var(--erp-primary-soft)]
                   text-2xl
                 "
               >
                 🛡️
               </div>
 
+
               <div>
-                <div className="text-xs font-semibold uppercase tracking-wide text-white/40">
+
+                <div
+                  className="
+                    text-xs
+                    font-semibold
+                    uppercase
+                    tracking-wide
+                    text-[var(--erp-text-soft)]
+                  "
+                >
                   Rol seleccionado
                 </div>
 
-                <h2 className="mt-1 text-2xl font-bold">
+                <h2
+                  className="
+                    mt-1
+                    text-2xl
+                    font-bold
+                    text-[var(--erp-text)]
+                  "
+                >
                   {rolSeleccionado.nombre}
                 </h2>
 
-                <p className="mt-1 text-sm text-white/45">
+                <p
+                  className="
+                    mt-1
+                    text-sm
+                    text-[var(--erp-text-soft)]
+                  "
+                >
                   ID #{rolSeleccionado.id}
                 </p>
+
               </div>
 
             </div>
 
+
             <button
               type="button"
               onClick={() =>
-                setRolSeleccionado(null)
+                setRolSeleccionado(
+                  null
+                )
               }
               className="
                 w-fit
                 rounded-xl
-                border border-white/15
-                bg-white/[0.06]
+                border
+                border-[var(--erp-border)]
+                bg-[var(--erp-bg)]
                 px-4
                 py-2
                 text-sm
-                text-white/65
+                text-[var(--erp-text-soft)]
                 transition
-                hover:bg-white/10
-                hover:text-white
+                hover:bg-[var(--erp-primary-soft)]
+                hover:text-[var(--erp-primary)]
               "
             >
               Cerrar
@@ -1289,68 +1636,125 @@ export default function SeguridadRoles() {
 
           </div>
 
+
           {/* RESUMEN */}
 
-          <div className="grid grid-cols-1 gap-4 p-6 sm:grid-cols-3">
+          <div
+            className="
+              grid
+              grid-cols-1
+              gap-4
+              p-6
+              sm:grid-cols-3
+            "
+          >
 
             <div
               className="
                 rounded-2xl
-                border border-white/10
-                bg-white/[0.035]
+                border
+                border-[var(--erp-border)]
+                bg-[var(--erp-bg)]
                 p-4
               "
             >
-              <div className="text-xs uppercase tracking-wide text-white/40">
+
+              <div
+                className="
+                  text-xs
+                  uppercase
+                  tracking-wide
+                  text-[var(--erp-text-soft)]
+                "
+              >
                 Usuarios
               </div>
 
-              <div className="mt-2 text-2xl font-bold">
-                {
-                  rolSeleccionado.usuariosCount
-                }
+              <div
+                className="
+                  mt-2
+                  text-2xl
+                  font-bold
+                  text-[var(--erp-text)]
+                "
+              >
+                {rolSeleccionado.usuariosCount}
               </div>
+
             </div>
+
 
             <div
               className="
                 rounded-2xl
-                border border-white/10
-                bg-white/[0.035]
+                border
+                border-[var(--erp-border)]
+                bg-[var(--erp-bg)]
                 p-4
               "
             >
-              <div className="text-xs uppercase tracking-wide text-white/40">
+
+              <div
+                className="
+                  text-xs
+                  uppercase
+                  tracking-wide
+                  text-[var(--erp-text-soft)]
+                "
+              >
                 Módulos
               </div>
 
-              <div className="mt-2 text-2xl font-bold">
-                {
-                  rolSeleccionado.modulosCount
-                }
+              <div
+                className="
+                  mt-2
+                  text-2xl
+                  font-bold
+                  text-[var(--erp-text)]
+                "
+              >
+                {rolSeleccionado.modulosCount}
               </div>
+
             </div>
+
 
             <div
               className="
                 rounded-2xl
-                border border-white/10
-                bg-white/[0.035]
+                border
+                border-[var(--erp-border)]
+                bg-[var(--erp-bg)]
                 p-4
               "
             >
-              <div className="text-xs uppercase tracking-wide text-white/40">
+
+              <div
+                className="
+                  text-xs
+                  uppercase
+                  tracking-wide
+                  text-[var(--erp-text-soft)]
+                "
+              >
                 Permisos
               </div>
 
-              <div className="mt-2 text-2xl font-bold">
-                {
-                  rolSeleccionado.permisosCount
-                }
+              <div
+                className="
+                  mt-2
+                  text-2xl
+                  font-bold
+                  text-[var(--erp-text)]
+                "
+              >
+                {rolSeleccionado.permisosCount}
               </div>
+
             </div>
 
           </div>
+
 
           {/* INFORMACIÓN */}
 
@@ -1360,7 +1764,7 @@ export default function SeguridadRoles() {
               grid-cols-1
               gap-6
               border-t
-              border-white/10
+              border-[var(--erp-border)]
               p-6
               lg:grid-cols-2
             "
@@ -1371,60 +1775,98 @@ export default function SeguridadRoles() {
             <div>
 
               <div className="mb-3">
-                <h3 className="font-semibold">
+
+                <h3
+                  className="
+                    font-semibold
+                    text-[var(--erp-text)]
+                  "
+                >
                   👥 Usuarios asignados
                 </h3>
 
-                <p className="mt-1 text-xs text-white/40">
+                <p
+                  className="
+                    mt-1
+                    text-xs
+                    text-[var(--erp-text-soft)]
+                  "
+                >
                   Empleados vinculados a este rol.
                 </p>
+
               </div>
+
 
               <div className="space-y-2">
 
-                {rolSeleccionado.usuarios
-                  ?.slice(0, 10)
-                  .map((empleado) => (
-                    <div
-                      key={String(
-                        empleado.id
-                      )}
-                      className="
-                        flex
-                        items-center
-                        justify-between
-                        rounded-xl
-                        border border-white/10
-                        bg-white/[0.035]
-                        px-4
-                        py-3
-                      "
-                    >
-                      <div>
-                        <div className="font-medium">
-                          {empleado.nombre}
+                {Array.isArray(
+                  rolSeleccionado.usuarios
+                ) &&
+                  rolSeleccionado.usuarios
+                    .slice(0, 10)
+                    .map(
+                      (empleado) => (
+
+                        <div
+                          key={String(
+                            empleado.id
+                          )}
+                          className="
+                            flex
+                            items-center
+                            justify-between
+                            rounded-xl
+                            border
+                            border-[var(--erp-border)]
+                            bg-[var(--erp-bg)]
+                            px-4
+                            py-3
+                          "
+                        >
+
+                          <div>
+
+                            <div
+                              className="
+                                font-medium
+                                text-[var(--erp-text)]
+                              "
+                            >
+                              {empleado.nombre}
+                            </div>
+
+                            <div
+                              className="
+                                text-xs
+                                text-[var(--erp-text-soft)]
+                              "
+                            >
+                              {empleado.usuario ||
+                                `ID ${empleado.id}`}
+                            </div>
+
+                          </div>
+
+
+                          <span
+                            className={`
+                              h-2
+                              w-2
+                              rounded-full
+                              ${
+                                empleado.activo
+                                  ? "bg-emerald-500"
+                                  : "bg-red-500"
+                              }
+                            `}
+                          />
+
                         </div>
 
-                        <div className="text-xs text-white/40">
-                          {empleado.usuario ||
-                            `ID ${empleado.id}`}
-                        </div>
-                      </div>
+                      )
+                    )}
 
-                      <span
-                        className={`
-                          h-2
-                          w-2
-                          rounded-full
-                          ${
-                            empleado.activo
-                              ? "bg-emerald-400"
-                              : "bg-red-400"
-                          }
-                        `}
-                      />
-                    </div>
-                  ))}
 
                 {(!Array.isArray(
                   rolSeleccionado.usuarios
@@ -1432,20 +1874,24 @@ export default function SeguridadRoles() {
                   rolSeleccionado
                     .usuarios.length ===
                     0) && (
+
                   <div
                     className="
                       rounded-xl
-                      border border-dashed
-                      border-white/10
+                      border
+                      border-dashed
+                      border-[var(--erp-border)]
                       p-5
                       text-center
                       text-sm
-                      text-white/40
+                      text-[var(--erp-text-soft)]
                     "
                   >
                     No hay usuarios vinculados identificados.
                   </div>
+
                 )}
+
 
                 {Array.isArray(
                   rolSeleccionado.usuarios
@@ -1453,93 +1899,288 @@ export default function SeguridadRoles() {
                   rolSeleccionado
                     .usuarios.length >
                     10 && (
-                    <div className="text-xs text-white/35">
+
+                    <div
+                      className="
+                        text-xs
+                        text-[var(--erp-text-soft)]
+                      "
+                    >
                       Mostrando los primeros 10 usuarios.
                     </div>
+
                   )}
 
               </div>
 
             </div>
 
-            {/* PERMISOS */}
+
+            {/* CONFIGURACIÓN DEL ROL */}
 
             <div>
 
               <div className="mb-3">
-                <h3 className="font-semibold">
-                  🔐 Capacidad de acceso
+
+                <h3
+                  className="
+                    font-semibold
+                    text-[var(--erp-text)]
+                  "
+                >
+                  🔐 Configuración del rol
                 </h3>
 
-                <p className="mt-1 text-xs text-white/40">
-                  Información disponible en el catálogo global de permisos.
+                <p
+                  className="
+                    mt-1
+                    text-xs
+                    text-[var(--erp-text-soft)]
+                  "
+                >
+                  Módulos y permisos asociados al perfil.
                 </p>
+
               </div>
+
 
               <div className="space-y-3">
 
-                {modulosDisponibles
-                  .slice(0, 8)
-                  .map((modulo) => {
+                {/* MÓDULOS DEL ROL */}
 
-                    const lista =
-                      permisosPorModulo[
-                        modulo
-                      ] || [];
+                {Array.isArray(
+                  rolSeleccionado.modulosRol
+                ) &&
+                  rolSeleccionado
+                    .modulosRol.length >
+                    0 && (
 
-                    return (
+                    <div
+                      className="
+                        rounded-xl
+                        border
+                        border-[var(--erp-border)]
+                        bg-[var(--erp-bg)]
+                        p-4
+                      "
+                    >
+
                       <div
-                        key={modulo}
                         className="
-                          rounded-xl
-                          border border-white/10
-                          bg-white/[0.035]
-                          p-4
+                          flex
+                          items-center
+                          justify-between
+                          gap-3
                         "
                       >
 
-                        <div className="flex items-center justify-between gap-3">
+                        <span
+                          className="
+                            font-medium
+                            text-[var(--erp-text)]
+                          "
+                        >
+                          Módulos asignados
+                        </span>
 
-                          <span className="font-medium">
-                            {modulo}
-                          </span>
-
-                          <span
-                            className="
-                              rounded-full
-                              border border-white/10
-                              bg-white/[0.05]
-                              px-2.5
-                              py-1
-                              text-[11px]
-                              text-white/50
-                            "
-                          >
-                            {lista.length} permisos
-                          </span>
-
-                        </div>
+                        <span
+                          className="
+                            rounded-full
+                            border
+                            border-[var(--erp-border)]
+                            bg-[var(--erp-surface)]
+                            px-2.5
+                            py-1
+                            text-[11px]
+                            text-[var(--erp-text-soft)]
+                          "
+                        >
+                          {
+                            rolSeleccionado
+                              .modulosRol
+                              .length
+                          }
+                        </span>
 
                       </div>
-                    );
-                  })}
 
-                {modulosDisponibles.length ===
-                  0 && (
-                  <div
-                    className="
-                      rounded-xl
-                      border border-dashed
-                      border-white/10
-                      p-5
-                      text-center
-                      text-sm
-                      text-white/40
-                    "
-                  >
-                    No hay catálogo global de permisos disponible.
-                  </div>
-                )}
+
+                      <div
+                        className="
+                          mt-3
+                          flex
+                          flex-wrap
+                          gap-2
+                        "
+                      >
+
+                        {rolSeleccionado
+                          .modulosRol
+                          .slice(0, 20)
+                          .map(
+                            (modulo, index) => (
+
+                              <span
+                                key={`${modulo}-${index}`}
+                                className="
+                                  rounded-lg
+                                  border
+                                  border-[var(--erp-border)]
+                                  bg-[var(--erp-surface)]
+                                  px-2.5
+                                  py-1.5
+                                  text-xs
+                                  text-[var(--erp-text-soft)]
+                                "
+                              >
+                                {String(
+                                  modulo
+                                )}
+                              </span>
+
+                            )
+                          )}
+
+                      </div>
+
+                    </div>
+
+                  )}
+
+
+                {/* PERMISOS DEL ROL */}
+
+                {Array.isArray(
+                  rolSeleccionado.permisosRol
+                ) &&
+                  rolSeleccionado
+                    .permisosRol.length >
+                    0 && (
+
+                    <div
+                      className="
+                        rounded-xl
+                        border
+                        border-[var(--erp-border)]
+                        bg-[var(--erp-bg)]
+                        p-4
+                      "
+                    >
+
+                      <div
+                        className="
+                          flex
+                          items-center
+                          justify-between
+                          gap-3
+                        "
+                      >
+
+                        <span
+                          className="
+                            font-medium
+                            text-[var(--erp-text)]
+                          "
+                        >
+                          Permisos asignados
+                        </span>
+
+                        <span
+                          className="
+                            rounded-full
+                            border
+                            border-[var(--erp-border)]
+                            bg-[var(--erp-surface)]
+                            px-2.5
+                            py-1
+                            text-[11px]
+                            text-[var(--erp-text-soft)]
+                          "
+                        >
+                          {
+                            rolSeleccionado
+                              .permisosRol
+                              .length
+                          }
+                        </span>
+
+                      </div>
+
+
+                      <div
+                        className="
+                          mt-3
+                          flex
+                          flex-wrap
+                          gap-2
+                        "
+                      >
+
+                        {rolSeleccionado
+                          .permisosRol
+                          .slice(0, 20)
+                          .map(
+                            (permiso, index) => (
+
+                              <span
+                                key={`${permiso}-${index}`}
+                                className="
+                                  rounded-lg
+                                  border
+                                  border-[var(--erp-border)]
+                                  bg-[var(--erp-surface)]
+                                  px-2.5
+                                  py-1.5
+                                  text-xs
+                                  text-[var(--erp-text-soft)]
+                                "
+                              >
+                                {String(
+                                  permiso
+                                )}
+                              </span>
+
+                            )
+                          )}
+
+                      </div>
+
+                    </div>
+
+                  )}
+
+
+                {/* SI NO HAY CONFIGURACIÓN ESPECÍFICA */}
+
+                {(!Array.isArray(
+                  rolSeleccionado.modulosRol
+                ) ||
+                  rolSeleccionado
+                    .modulosRol.length ===
+                    0) &&
+                  (!Array.isArray(
+                    rolSeleccionado.permisosRol
+                  ) ||
+                    rolSeleccionado
+                      .permisosRol.length ===
+                      0) && (
+
+                    <div
+                      className="
+                        rounded-xl
+                        border
+                        border-dashed
+                        border-[var(--erp-border)]
+                        p-5
+                        text-center
+                        text-sm
+                        text-[var(--erp-text-soft)]
+                      "
+                    >
+                      El backend no proporciona actualmente una configuración específica de módulos y permisos para este rol.
+                    </div>
+
+                  )}
 
               </div>
 
@@ -1547,49 +2188,236 @@ export default function SeguridadRoles() {
 
           </div>
 
-          {/* AVISO EDITOR */}
+
+          {/* CATÁLOGO GLOBAL */}
 
           <div
             className="
               border-t
-              border-white/10
-              bg-purple-400/[0.045]
+              border-[var(--erp-border)]
+              bg-[var(--erp-bg)]
+              px-6
+              py-5
+            "
+          >
+
+            <div
+              className="
+                flex
+                flex-col
+                gap-2
+                md:flex-row
+                md:items-center
+                md:justify-between
+              "
+            >
+
+              <div>
+
+                <div
+                  className="
+                    text-sm
+                    font-semibold
+                    text-[var(--erp-text)]
+                  "
+                >
+                  Catálogo global disponible
+                </div>
+
+                <div
+                  className="
+                    mt-1
+                    text-xs
+                    text-[var(--erp-text-soft)]
+                  "
+                >
+                  {modulosDisponibles.length} módulos disponibles en el sistema.
+                </div>
+
+              </div>
+
+
+              <div
+                className="
+                  inline-flex
+                  w-fit
+                  rounded-full
+                  border
+                  border-[var(--erp-border)]
+                  bg-[var(--erp-surface)]
+                  px-3
+                  py-1.5
+                  text-[11px]
+                  font-semibold
+                  text-[var(--erp-text-soft)]
+                "
+              >
+                CATÁLOGO DE PERMISOS
+              </div>
+
+            </div>
+
+
+            {modulosDisponibles.length > 0 && (
+
+              <div
+                className="
+                  mt-4
+                  grid
+                  grid-cols-1
+                  sm:grid-cols-2
+                  lg:grid-cols-3
+                  gap-3
+                "
+              >
+
+                {modulosDisponibles
+                  .slice(0, 12)
+                  .map(
+                    (modulo) => {
+
+                      const lista =
+                        permisosPorModulo[
+                          modulo
+                        ] || [];
+
+
+                      return (
+
+                        <div
+                          key={modulo}
+                          className="
+                            rounded-xl
+                            border
+                            border-[var(--erp-border)]
+                            bg-[var(--erp-surface)]
+                            p-3
+                          "
+                        >
+
+                          <div
+                            className="
+                              flex
+                              items-center
+                              justify-between
+                              gap-2
+                            "
+                          >
+
+                            <span
+                              className="
+                                truncate
+                                text-sm
+                                font-medium
+                                text-[var(--erp-text)]
+                              "
+                              title={modulo}
+                            >
+                              {modulo}
+                            </span>
+
+                            <span
+                              className="
+                                flex-shrink-0
+                                rounded-full
+                                border
+                                border-[var(--erp-border)]
+                                px-2
+                                py-0.5
+                                text-[10px]
+                                text-[var(--erp-text-soft)]
+                              "
+                            >
+                              {lista.length}
+                            </span>
+
+                          </div>
+
+                        </div>
+
+                      );
+
+                    }
+                  )}
+
+              </div>
+
+            )}
+
+          </div>
+
+
+          {/* AVISO */}
+
+          <div
+            className="
+              border-t
+              border-[var(--erp-border)]
+              bg-[var(--erp-primary-soft)]
               px-6
               py-4
             "
           >
-            <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+
+            <div
+              className="
+                flex
+                flex-col
+                gap-2
+                md:flex-row
+                md:items-center
+                md:justify-between
+              "
+            >
 
               <div>
-                <div className="text-sm font-semibold text-purple-200">
+
+                <div
+                  className="
+                    text-sm
+                    font-semibold
+                    text-[var(--erp-text)]
+                  "
+                >
                   Configuración avanzada
                 </div>
 
-                <div className="mt-1 text-xs text-white/40">
+                <div
+                  className="
+                    mt-1
+                    text-xs
+                    text-[var(--erp-text-soft)]
+                  "
+                >
                   La edición completa del rol se centralizará en SeguridadRolEditor.
                 </div>
+
               </div>
+
 
               <span
                 className="
                   w-fit
                   rounded-full
-                  border border-purple-400/20
-                  bg-purple-400/10
+                  border
+                  border-[var(--erp-border)]
+                  bg-[var(--erp-surface)]
                   px-3
                   py-1.5
                   text-[11px]
                   font-semibold
-                  text-purple-300
+                  text-[var(--erp-primary)]
                 "
               >
                 EDITOR DE ROLES
               </span>
 
             </div>
+
           </div>
 
         </div>
+
       )}
 
     </div>

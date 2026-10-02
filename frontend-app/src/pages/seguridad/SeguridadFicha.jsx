@@ -1,5 +1,3 @@
-// frontend-app/src/pages/seguridad/SeguridadFicha.jsx
-
 import {
   useEffect,
   useState,
@@ -31,8 +29,8 @@ export default function SeguridadFicha({ empleadoId }) {
   const [nuevaPassword, setNuevaPassword] = useState("");
   const [nuevoRol, setNuevoRol] = useState("");
 
-  const [showModulos, setShowModulos] = useState(false);
-  const [showPermisos, setShowPermisos] = useState(false);
+  const [showModulos, setShowModulos] = useState(true);
+  const [showPermisos, setShowPermisos] = useState(true);
   const [showAuditoria, setShowAuditoria] = useState(false);
   const [showLogs, setShowLogs] = useState(false);
 
@@ -96,7 +94,7 @@ export default function SeguridadFicha({ empleadoId }) {
   }, [ficha]);
 
   // ============================================================
-  // EMPLEADO SEGURO
+  // EMPLEADO
   // ============================================================
 
   const empleado = fichaSegura?.empleado || null;
@@ -129,14 +127,6 @@ export default function SeguridadFicha({ empleadoId }) {
 
   // ============================================================
   // MÓDULOS VISIBLES
-  //
-  // EL BACKEND DEVUELVE:
-  //
-  // "modulos_visibles": [...]
-  //
-  // NO:
-  //
-  // empleado.modulos_visibles_list
   // ============================================================
 
   const modulosVisibles = useMemo(() => {
@@ -155,14 +145,6 @@ export default function SeguridadFicha({ empleadoId }) {
 
   // ============================================================
   // PERMISOS DEL EMPLEADO
-  //
-  // EL BACKEND DEVUELVE:
-  //
-  // "permisos_modulo": {...}
-  //
-  // NO:
-  //
-  // ficha.permisos_modulo_dict
   // ============================================================
 
   const permisosEmpleado = useMemo(() => {
@@ -213,14 +195,6 @@ export default function SeguridadFicha({ empleadoId }) {
 
   // ============================================================
   // MÓDULOS DISPONIBLES
-  //
-  // Combinamos:
-  //
-  // 1. Los módulos existentes en permisosGlobales.
-  // 2. Los módulos que ya tiene asignados el empleado.
-  //
-  // Así nunca desaparece un módulo asignado aunque todavía
-  // no exista en la tabla permisos.
   // ============================================================
 
   const modulosDisponibles = useMemo(() => {
@@ -620,7 +594,7 @@ export default function SeguridadFicha({ empleadoId }) {
   ]);
 
   // ============================================================
-  // ICONOS AUDITORÍA
+  // ICONOS
   // ============================================================
 
   const iconosAccion = useMemo(
@@ -638,10 +612,6 @@ export default function SeguridadFicha({ empleadoId }) {
     }),
     []
   );
-
-  // ============================================================
-  // ICONOS LOGS
-  // ============================================================
 
   const iconosEvento = useMemo(
     () => ({
@@ -661,7 +631,7 @@ export default function SeguridadFicha({ empleadoId }) {
   );
 
   // ============================================================
-  // DESCARGAR AUDITORÍA
+  // EXPORTAR AUDITORÍA
   // ============================================================
 
   const descargarExcelAuditoria =
@@ -733,7 +703,7 @@ export default function SeguridadFicha({ empleadoId }) {
     ]);
 
   // ============================================================
-  // DESCARGAR LOGS
+  // EXPORTAR LOGS
   // ============================================================
 
   const descargarExcelLogs =
@@ -883,8 +853,23 @@ export default function SeguridadFicha({ empleadoId }) {
 
   if (!fichaSegura) {
     return (
-      <div className="p-6 text-white/70 animate-pulse">
-        Cargando ficha…
+      <div className="w-full p-6 text-white">
+        <div
+          className="
+            rounded-3xl
+            border border-white/10
+            bg-white/[0.05]
+            backdrop-blur-2xl
+            p-8
+            shadow-[0_20px_70px_rgba(0,0,0,0.25)]
+          "
+        >
+          <div className="animate-pulse">
+            <div className="h-8 w-72 rounded-lg bg-white/10" />
+            <div className="mt-4 h-4 w-96 max-w-full rounded bg-white/10" />
+            <div className="mt-8 h-32 rounded-2xl bg-white/5" />
+          </div>
+        </div>
       </div>
     );
   }
@@ -895,291 +880,730 @@ export default function SeguridadFicha({ empleadoId }) {
 
   if (!empleadoValido) {
     return (
-      <div className="p-6 text-white/70">
-        Datos de empleado no válidos…
+      <div className="w-full p-6 text-white">
+        <div
+          className="
+            rounded-3xl
+            border border-red-400/20
+            bg-red-500/10
+            p-8
+            text-red-200
+          "
+        >
+          No se han podido cargar los datos de seguridad del empleado.
+        </div>
       </div>
     );
   }
+
+  // ============================================================
+  // MÉTRICAS
+  // ============================================================
+
+  const totalPermisos = Object.values(
+    permisosEmpleado || {}
+  ).reduce(
+    (total, lista) =>
+      total +
+      (Array.isArray(lista)
+        ? lista.length
+        : 0),
+    0
+  );
+
+  const totalAuditoria =
+    auditoriaOrdenada.length;
+
+  const totalLogs =
+    logsOrdenados.length;
 
   // ============================================================
   // RENDER
   // ============================================================
 
   return (
-    <div className="p-6 space-y-8 text-white animate-fade-in">
+    <div
+      className="
+        w-full
+        space-y-6
+        text-white
+        animate-fade-in
+      "
+    >
 
       {/* ======================================================
-          CABECERA
+          CABECERA PRINCIPAL
       ====================================================== */}
 
-      <div
+      <section
         className="
-          bg-white/10 backdrop-blur-xl
-          border border-white/20 rounded-2xl
-          shadow-xl p-6
+          relative
+          overflow-hidden
+          rounded-3xl
+          border border-white/15
+          bg-white/[0.06]
+          backdrop-blur-2xl
+          shadow-[0_20px_70px_rgba(0,0,0,0.28)]
+          p-6
         "
       >
-        <h1 className="text-3xl font-bold text-white drop-shadow mb-6">
-          Ficha de seguridad — SJ-2026
-          <span className="text-white/50">
-            {" "}·{" "}
-          </span>
-          {empleado.nombre}
-          <span className="text-white/50">
-            {" "}
-            ({empleado.usuario || "-"})
-          </span>
-        </h1>
 
-        <div className="flex flex-col lg:flex-row gap-6">
+        <div
+          className="
+            pointer-events-none
+            absolute
+            -right-24
+            -top-24
+            h-72
+            w-72
+            rounded-full
+            bg-blue-500/10
+            blur-3xl
+          "
+        />
 
-          <img
-            src={
-              typeof empleado.foto === "string" &&
-              empleado.foto !== "-"
-                ? empleado.foto
-                : "/no-foto.png"
-            }
-            alt="Foto empleado"
-            className="
-              w-32 h-32 rounded-xl
-              border border-white/20
-              object-cover shadow-lg
-            "
-          />
+        <div
+          className="
+            pointer-events-none
+            absolute
+            -bottom-24
+            left-1/3
+            h-56
+            w-56
+            rounded-full
+            bg-purple-500/10
+            blur-3xl
+          "
+        />
+
+        <div className="relative">
 
           <div
             className="
-              grid grid-cols-1
-              md:grid-cols-2
-              gap-x-10 gap-y-3
-              text-white/90 text-sm
-              flex-1
+              flex
+              flex-col
+              gap-5
+              xl:flex-row
+              xl:items-center
+              xl:justify-between
             "
           >
-            <div>
-              <strong>ID:</strong>{" "}
-              {empleado.id}
+
+            <div className="flex items-center gap-4">
+
+              <div
+                className="
+                  flex
+                  h-14
+                  w-14
+                  shrink-0
+                  items-center
+                  justify-center
+                  rounded-2xl
+                  border border-white/15
+                  bg-white/10
+                  text-2xl
+                  shadow-lg
+                "
+              >
+                🛡️
+              </div>
+
+              <div>
+                <div className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-300/80">
+                  Centro de seguridad
+                </div>
+
+                <h1 className="mt-1 text-2xl font-bold tracking-tight text-white md:text-3xl">
+                  Ficha de seguridad
+                </h1>
+
+                <p className="mt-1 text-sm text-white/50">
+                  Control de acceso, credenciales, permisos y trazabilidad del empleado.
+                </p>
+              </div>
+
             </div>
 
-            <div>
-              <strong>Usuario:</strong>{" "}
-              {empleado.usuario || "-"}
+            <div
+              className={`
+                inline-flex
+                w-fit
+                items-center
+                gap-2
+                rounded-full
+                border
+                px-4
+                py-2
+                text-xs
+                font-semibold
+                ${
+                  empleado.activo
+                    ? "border-emerald-400/20 bg-emerald-400/10 text-emerald-300"
+                    : "border-red-400/20 bg-red-400/10 text-red-300"
+                }
+              `}
+            >
+
+              <span
+                className={`
+                  h-2
+                  w-2
+                  rounded-full
+                  ${
+                    empleado.activo
+                      ? "bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.8)]"
+                      : "bg-red-400 shadow-[0_0_10px_rgba(248,113,113,0.8)]"
+                  }
+                `}
+              />
+
+              {empleado.activo
+                ? "CUENTA ACTIVA"
+                : "CUENTA BLOQUEADA"}
+
             </div>
 
-            <div>
-              <strong>Nombre:</strong>{" "}
-              {empleado.nombre}
-            </div>
-
-            <div>
-              <strong>Apellidos:</strong>{" "}
-              {empleado.apellidos || "-"}
-            </div>
-
-            <div>
-              <strong>DNI:</strong>{" "}
-              {empleado.dni || "-"}
-            </div>
-
-            <div>
-              <strong>Email:</strong>{" "}
-              {empleado.email_empresa || "-"}
-            </div>
-
-            <div>
-              <strong>Activo:</strong>{" "}
-
-              {empleado.activo ? (
-                <span className="text-green-400 font-semibold">
-                  Sí
-                </span>
-              ) : (
-                <span className="text-red-400 font-semibold">
-                  No
-                </span>
-              )}
-            </div>
-
-            <div>
-              <strong>Rol:</strong>{" "}
-              {nombreRol}
-            </div>
           </div>
+
+          {/* PERFIL */}
+
+          <div
+            className="
+              mt-7
+              grid
+              grid-cols-1
+              gap-6
+              xl:grid-cols-[auto_1fr]
+            "
+          >
+
+            <div className="flex justify-center xl:justify-start">
+
+              <div className="relative">
+
+                <img
+                  src={
+                    typeof empleado.foto === "string" &&
+                    empleado.foto !== "-"
+                      ? empleado.foto
+                      : "/no-foto.png"
+                  }
+                  alt="Foto empleado"
+                  className="
+                    h-32
+                    w-32
+                    rounded-3xl
+                    border
+                    border-white/15
+                    object-cover
+                    bg-white/10
+                    shadow-2xl
+                  "
+                />
+
+                <span
+                  className={`
+                    absolute
+                    -bottom-2
+                    -right-2
+                    rounded-full
+                    border-4
+                    border-slate-900/70
+                    px-3
+                    py-1
+                    text-[10px]
+                    font-bold
+                    ${
+                      empleado.activo
+                        ? "bg-emerald-400 text-emerald-950"
+                        : "bg-red-400 text-red-950"
+                    }
+                  `}
+                >
+                  {empleado.activo
+                    ? "ACTIVO"
+                    : "BLOQUEADO"}
+                </span>
+
+              </div>
+
+            </div>
+
+            <div>
+
+              <div className="flex flex-col gap-1">
+
+                <h2 className="text-2xl font-bold text-white">
+                  {empleado.nombre}
+                  {empleado.apellidos
+                    ? ` ${empleado.apellidos}`
+                    : ""}
+                </h2>
+
+                <div className="text-sm text-white/50">
+                  @{empleado.usuario || "-"}
+                </div>
+
+              </div>
+
+              <div
+                className="
+                  mt-5
+                  grid
+                  grid-cols-1
+                  gap-3
+                  sm:grid-cols-2
+                  lg:grid-cols-4
+                "
+              >
+
+                <div className="rounded-2xl border border-white/10 bg-white/[0.045] p-4">
+                  <div className="text-[11px] uppercase tracking-wider text-white/40">
+                    ID empleado
+                  </div>
+                  <div className="mt-1 font-semibold text-white">
+                    {empleado.id}
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-white/10 bg-white/[0.045] p-4">
+                  <div className="text-[11px] uppercase tracking-wider text-white/40">
+                    DNI
+                  </div>
+                  <div className="mt-1 font-semibold text-white">
+                    {empleado.dni || "-"}
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-white/10 bg-white/[0.045] p-4">
+                  <div className="text-[11px] uppercase tracking-wider text-white/40">
+                    Rol
+                  </div>
+                  <div className="mt-1 font-semibold text-blue-300">
+                    {nombreRol}
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-white/10 bg-white/[0.045] p-4">
+                  <div className="text-[11px] uppercase tracking-wider text-white/40">
+                    Estado
+                  </div>
+                  <div
+                    className={`
+                      mt-1
+                      font-semibold
+                      ${
+                        empleado.activo
+                          ? "text-emerald-300"
+                          : "text-red-300"
+                      }
+                    `}
+                  >
+                    {empleado.activo
+                      ? "Operativo"
+                      : "Bloqueado"}
+                  </div>
+                </div>
+
+              </div>
+
+              <div className="mt-4 text-sm text-white/60">
+                <span className="text-white/40">
+                  Email:
+                </span>{" "}
+                {empleado.email_empresa || "-"}
+              </div>
+
+            </div>
+
+          </div>
+
+          {/* ACCIONES */}
+
+          <div
+            className="
+              relative
+              mt-7
+              flex
+              flex-wrap
+              gap-3
+              border-t
+              border-white/10
+              pt-5
+            "
+          >
+
+            {empleado.activo ? (
+              <button
+                type="button"
+                className="
+                  inline-flex
+                  items-center
+                  gap-2
+                  rounded-xl
+                  border
+                  border-red-400/20
+                  bg-red-500/10
+                  px-4
+                  py-2.5
+                  text-sm
+                  font-semibold
+                  text-red-300
+                  transition
+                  hover:bg-red-500/20
+                  active:scale-[0.97]
+                "
+                onClick={() =>
+                  bloquear(empleado.id)
+                }
+              >
+                🔒 Bloquear usuario
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="
+                  inline-flex
+                  items-center
+                  gap-2
+                  rounded-xl
+                  border
+                  border-emerald-400/20
+                  bg-emerald-500/10
+                  px-4
+                  py-2.5
+                  text-sm
+                  font-semibold
+                  text-emerald-300
+                  transition
+                  hover:bg-emerald-500/20
+                  active:scale-[0.97]
+                "
+                onClick={() =>
+                  desbloquear(empleado.id)
+                }
+              >
+                🔓 Desbloquear usuario
+              </button>
+            )}
+
+          </div>
+
         </div>
 
-        <div className="mt-6 flex flex-wrap gap-3">
-
-          {empleado.activo ? (
-            <button
-              className="
-                px-4 py-2 rounded-xl
-                bg-red-600 hover:bg-red-700
-                text-white shadow-lg
-                transition active:scale-[0.97]
-              "
-              onClick={() =>
-                bloquear(empleado.id)
-              }
-            >
-              🔒 Bloquear usuario
-            </button>
-          ) : (
-            <button
-              className="
-                px-4 py-2 rounded-xl
-                bg-green-600 hover:bg-green-700
-                text-white shadow-lg
-                transition active:scale-[0.97]
-              "
-              onClick={() =>
-                desbloquear(empleado.id)
-              }
-            >
-              🔓 Desbloquear usuario
-            </button>
-          )}
-        </div>
-      </div>
+      </section>
 
       {/* ======================================================
-          SEGURIDAD DEL USUARIO
+          RESUMEN DE SEGURIDAD
       ====================================================== */}
 
-      <div
+      <section
         className="
-          bg-white/10 backdrop-blur-xl
-          border border-white/20 rounded-2xl
-          shadow-xl p-6 space-y-6
+          grid
+          grid-cols-1
+          gap-4
+          sm:grid-cols-2
+          xl:grid-cols-4
         "
       >
-        <h2 className="text-xl font-semibold text-white drop-shadow">
-          Seguridad del usuario
-        </h2>
 
-        {/* RESET PASSWORD */}
+        <div className="rounded-3xl border border-white/10 bg-white/[0.05] p-5 backdrop-blur-2xl shadow-lg">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold uppercase tracking-wider text-white/40">
+              Módulos
+            </span>
+            <span className="text-xl">📦</span>
+          </div>
 
-        <div>
-          <label className="block text-sm mb-2 text-white/80">
-            Nueva contraseña
-          </label>
+          <div className="mt-3 text-3xl font-bold text-white">
+            {modulosVisibles.length}
+          </div>
 
-          <div className="flex flex-col md:flex-row gap-3">
-
-            <input
-              type="password"
-              className="
-                flex-1
-                bg-white/10
-                border border-white/20
-                rounded-xl px-3 py-2
-                text-white
-                placeholder-white/40
-                focus:ring-2
-                focus:ring-blue-400
-                transition
-              "
-              placeholder="Introducir nueva contraseña"
-              value={nuevaPassword}
-              onChange={(e) =>
-                setNuevaPassword(
-                  e.target.value
-                )
-              }
-            />
-
-            <button
-              className="
-                px-4 py-2
-                rounded-xl
-                bg-blue-600
-                hover:bg-blue-700
-                text-white
-                shadow-lg
-                transition
-                active:scale-[0.97]
-              "
-              onClick={
-                ejecutarResetPassword
-              }
-            >
-              🔑 Resetear contraseña
-            </button>
-
+          <div className="mt-1 text-xs text-white/40">
+            módulos visibles
           </div>
         </div>
 
-        {/* ASIGNAR ROL */}
+        <div className="rounded-3xl border border-white/10 bg-white/[0.05] p-5 backdrop-blur-2xl shadow-lg">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold uppercase tracking-wider text-white/40">
+              Permisos
+            </span>
+            <span className="text-xl">🔧</span>
+          </div>
 
-        <div>
-          <label className="block text-sm mb-2 text-white/80">
-            Nuevo rol (ID)
-          </label>
+          <div className="mt-3 text-3xl font-bold text-white">
+            {totalPermisos}
+          </div>
 
-          <div className="flex flex-col md:flex-row gap-3">
+          <div className="mt-1 text-xs text-white/40">
+            permisos asignados
+          </div>
+        </div>
 
-            <input
-              type="number"
-              className="
-                flex-1
-                bg-white/10
-                border border-white/20
-                rounded-xl px-3 py-2
-                text-white
-                focus:ring-2
-                focus:ring-purple-400
-                transition
-              "
-              placeholder="ID del rol"
-              value={nuevoRol}
-              onChange={(e) =>
-                setNuevoRol(
-                  e.target.value
-                )
-              }
-            />
+        <div className="rounded-3xl border border-white/10 bg-white/[0.05] p-5 backdrop-blur-2xl shadow-lg">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold uppercase tracking-wider text-white/40">
+              Auditoría
+            </span>
+            <span className="text-xl">📊</span>
+          </div>
 
-            <button
-              className="
-                px-4 py-2
-                rounded-xl
-                bg-purple-600
-                hover:bg-purple-700
-                text-white
-                shadow-lg
-                transition
-                active:scale-[0.97]
-              "
-              onClick={
-                ejecutarAsignarRol
-              }
-            >
+          <div className="mt-3 text-3xl font-bold text-white">
+            {totalAuditoria}
+          </div>
+
+          <div className="mt-1 text-xs text-white/40">
+            eventos registrados
+          </div>
+        </div>
+
+        <div className="rounded-3xl border border-white/10 bg-white/[0.05] p-5 backdrop-blur-2xl shadow-lg">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold uppercase tracking-wider text-white/40">
+              Logs
+            </span>
+            <span className="text-xl">📝</span>
+          </div>
+
+          <div className="mt-3 text-3xl font-bold text-white">
+            {totalLogs}
+          </div>
+
+          <div className="mt-1 text-xs text-white/40">
+            registros técnicos
+          </div>
+        </div>
+
+      </section>
+
+      {/* ======================================================
+          CREDENCIALES
+      ====================================================== */}
+
+      <section
+        className="
+          rounded-3xl
+          border border-white/10
+          bg-white/[0.05]
+          p-6
+          backdrop-blur-2xl
+          shadow-[0_20px_70px_rgba(0,0,0,0.22)]
+        "
+      >
+
+        <div className="flex items-center gap-3">
+
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-blue-400/20 bg-blue-400/10 text-xl">
+            🔐
+          </div>
+
+          <div>
+            <h2 className="text-xl font-semibold text-white">
+              Credenciales y acceso
+            </h2>
+
+            <p className="mt-1 text-sm text-white/45">
+              Operaciones sensibles sobre la cuenta del empleado.
+            </p>
+          </div>
+
+        </div>
+
+        <div className="mt-6 grid grid-cols-1 gap-5 xl:grid-cols-2">
+
+          {/* PASSWORD */}
+
+          <div
+            className="
+              rounded-2xl
+              border border-white/10
+              bg-black/10
+              p-5
+            "
+          >
+
+            <div className="text-sm font-semibold text-white">
+              🔑 Restablecer contraseña
+            </div>
+
+            <p className="mt-1 text-xs text-white/40">
+              Establece una nueva contraseña para la cuenta.
+            </p>
+
+            <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+
+              <input
+                type="password"
+                value={nuevaPassword}
+                onChange={(e) =>
+                  setNuevaPassword(
+                    e.target.value
+                  )
+                }
+                placeholder="Nueva contraseña"
+                className="
+                  min-w-0
+                  flex-1
+                  rounded-xl
+                  border border-white/10
+                  bg-white/[0.06]
+                  px-4
+                  py-2.5
+                  text-sm
+                  text-white
+                  outline-none
+                  placeholder:text-white/30
+                  transition
+                  focus:border-blue-400/40
+                  focus:ring-2
+                  focus:ring-blue-400/10
+                "
+              />
+
+              <button
+                type="button"
+                onClick={
+                  ejecutarResetPassword
+                }
+                disabled={
+                  !nuevaPassword.trim()
+                }
+                className="
+                  rounded-xl
+                  border border-blue-400/20
+                  bg-blue-500/10
+                  px-4
+                  py-2.5
+                  text-sm
+                  font-semibold
+                  text-blue-300
+                  transition
+                  hover:bg-blue-500/20
+                  disabled:cursor-not-allowed
+                  disabled:opacity-40
+                "
+              >
+                Resetear
+              </button>
+
+            </div>
+
+          </div>
+
+          {/* ROL */}
+
+          <div
+            className="
+              rounded-2xl
+              border border-white/10
+              bg-black/10
+              p-5
+            "
+          >
+
+            <div className="text-sm font-semibold text-white">
               👤 Asignar rol
-            </button>
+            </div>
+
+            <p className="mt-1 text-xs text-white/40">
+              Rol actualmente asignado:{" "}
+              <span className="text-purple-300">
+                {nombreRol}
+              </span>
+            </p>
+
+            <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+
+              <input
+                type="number"
+                value={nuevoRol}
+                onChange={(e) =>
+                  setNuevoRol(
+                    e.target.value
+                  )
+                }
+                placeholder="ID del nuevo rol"
+                className="
+                  min-w-0
+                  flex-1
+                  rounded-xl
+                  border border-white/10
+                  bg-white/[0.06]
+                  px-4
+                  py-2.5
+                  text-sm
+                  text-white
+                  outline-none
+                  placeholder:text-white/30
+                  transition
+                  focus:border-purple-400/40
+                  focus:ring-2
+                  focus:ring-purple-400/10
+                "
+              />
+
+              <button
+                type="button"
+                onClick={
+                  ejecutarAsignarRol
+                }
+                disabled={
+                  !nuevoRol
+                }
+                className="
+                  rounded-xl
+                  border border-purple-400/20
+                  bg-purple-500/10
+                  px-4
+                  py-2.5
+                  text-sm
+                  font-semibold
+                  text-purple-300
+                  transition
+                  hover:bg-purple-500/20
+                  disabled:cursor-not-allowed
+                  disabled:opacity-40
+                "
+              >
+                Asignar rol
+              </button>
+
+            </div>
 
           </div>
+
         </div>
-      </div>
+
+      </section>
 
       {/* ======================================================
           MÓDULOS VISIBLES
       ====================================================== */}
 
-      <div
+      <section
         className="
-          bg-white/10 backdrop-blur-xl
-          border border-white/20 rounded-2xl
-          shadow-xl p-6
+          overflow-hidden
+          rounded-3xl
+          border border-white/10
+          bg-white/[0.05]
+          backdrop-blur-2xl
+          shadow-[0_20px_70px_rgba(0,0,0,0.22)]
         "
       >
 
         <button
+          type="button"
           className="
-            text-xl font-semibold
-            text-white drop-shadow
-            w-full text-left
-            hover:text-blue-300
+            flex
+            w-full
+            items-center
+            justify-between
+            p-6
+            text-left
             transition
+            hover:bg-white/[0.025]
           "
           onClick={() =>
             setShowModulos(
@@ -1188,22 +1612,52 @@ export default function SeguridadFicha({ empleadoId }) {
           }
         >
 
-          <span className="mr-2">
-            {showModulos ? "▼" : "▶"}
-          </span>
+          <div className="flex items-center gap-3">
 
-          Módulos visibles
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-cyan-400/20 bg-cyan-400/10 text-xl">
+              📦
+            </div>
 
-          <span className="text-white/50 text-sm ml-2">
-            ({modulosVisibles.length})
-          </span>
+            <div>
+              <h2 className="text-xl font-semibold text-white">
+                Módulos visibles
+              </h2>
+
+              <p className="mt-1 text-xs text-white/40">
+                Control de los módulos disponibles para este empleado.
+              </p>
+            </div>
+
+          </div>
+
+          <div className="flex items-center gap-3">
+
+            <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold text-white/60">
+              {modulosVisibles.length}
+            </span>
+
+            <span className="text-white/40">
+              {showModulos
+                ? "▼"
+                : "▶"}
+            </span>
+
+          </div>
 
         </button>
 
         {showModulos && (
-          <div className="mt-5">
+          <div className="border-t border-white/10 p-6">
 
-            <ul className="space-y-3">
+            <div
+              className="
+                grid
+                grid-cols-1
+                gap-3
+                md:grid-cols-2
+                xl:grid-cols-3
+              "
+            >
 
               {modulosDisponibles.map(
                 (modulo) => {
@@ -1214,23 +1668,40 @@ export default function SeguridadFicha({ empleadoId }) {
                     );
 
                   return (
-                    <li
+                    <label
                       key={modulo}
-                      className="
-                        flex items-center
+                      className={`
+                        flex
+                        cursor-pointer
+                        items-center
                         justify-between
-                        bg-white/5
-                        border border-white/10
-                        rounded-xl
-                        px-4 py-3
-                        hover:bg-white/10
+                        gap-4
+                        rounded-2xl
+                        border
+                        px-4
+                        py-4
                         transition
-                      "
+                        ${
+                          visible
+                            ? "border-blue-400/20 bg-blue-400/10"
+                            : "border-white/10 bg-white/[0.03] hover:bg-white/[0.06]"
+                        }
+                      `}
                     >
 
-                      <span className="font-medium">
-                        {modulo}
-                      </span>
+                      <div className="flex min-w-0 items-center gap-3">
+
+                        <span className="text-lg">
+                          {visible
+                            ? "🟢"
+                            : "⚪"}
+                        </span>
+
+                        <span className="truncate text-sm font-medium text-white">
+                          {modulo}
+                        </span>
+
+                      </div>
 
                       <input
                         type="checkbox"
@@ -1241,50 +1712,59 @@ export default function SeguridadFicha({ empleadoId }) {
                           )
                         }
                         className="
-                          h-5 w-5
-                          accent-blue-500
+                          h-5
+                          w-5
+                          shrink-0
                           cursor-pointer
+                          accent-blue-500
                         "
                       />
 
-                    </li>
+                    </label>
                   );
                 }
               )}
 
-              {modulosDisponibles.length ===
-                0 && (
-                <li className="text-white/50 text-sm">
-                  No hay módulos disponibles.
-                </li>
-              )}
+            </div>
 
-            </ul>
+            {modulosDisponibles.length ===
+              0 && (
+              <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 text-center text-sm text-white/40">
+                No hay módulos disponibles.
+              </div>
+            )}
 
           </div>
         )}
 
-      </div>
+      </section>
 
       {/* ======================================================
-          PERMISOS POR MÓDULO
+          PERMISOS
       ====================================================== */}
 
-      <div
+      <section
         className="
-          bg-white/10 backdrop-blur-xl
-          border border-white/20 rounded-2xl
-          shadow-xl p-6
+          overflow-hidden
+          rounded-3xl
+          border border-white/10
+          bg-white/[0.05]
+          backdrop-blur-2xl
+          shadow-[0_20px_70px_rgba(0,0,0,0.22)]
         "
       >
 
         <button
+          type="button"
           className="
-            text-xl font-semibold
-            text-white drop-shadow
-            w-full text-left
-            hover:text-purple-300
+            flex
+            w-full
+            items-center
+            justify-between
+            p-6
+            text-left
             transition
+            hover:bg-white/[0.025]
           "
           onClick={() =>
             setShowPermisos(
@@ -1293,149 +1773,212 @@ export default function SeguridadFicha({ empleadoId }) {
           }
         >
 
-          <span className="mr-2">
-            {showPermisos ? "▼" : "▶"}
-          </span>
+          <div className="flex items-center gap-3">
 
-          Permisos por módulo
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-purple-400/20 bg-purple-400/10 text-xl">
+              🔧
+            </div>
+
+            <div>
+              <h2 className="text-xl font-semibold text-white">
+                Permisos por módulo
+              </h2>
+
+              <p className="mt-1 text-xs text-white/40">
+                Control granular de las capacidades del empleado.
+              </p>
+            </div>
+
+          </div>
+
+          <span className="text-white/40">
+            {showPermisos
+              ? "▼"
+              : "▶"}
+          </span>
 
         </button>
 
         {showPermisos && (
-          <ul className="space-y-6 mt-5">
+          <div className="border-t border-white/10 p-6">
 
-            {Object.entries(
-              permisosGlobales || {}
-            ).map(
-              ([
-                modulo,
-                permsDisponibles,
-              ]) => {
+            <div className="space-y-6">
 
-                const listaPerms =
-                  Array.isArray(
-                    permsDisponibles
-                  )
-                    ? permsDisponibles
-                    : [];
+              {Object.entries(
+                permisosGlobales || {}
+              ).map(
+                ([
+                  modulo,
+                  permsDisponibles,
+                ]) => {
 
-                return (
-                  <li key={modulo}>
+                  const listaPerms =
+                    Array.isArray(
+                      permsDisponibles
+                    )
+                      ? permsDisponibles
+                      : [];
 
-                    <strong className="text-lg">
-                      {modulo}
-                    </strong>
-
+                  return (
                     <div
+                      key={modulo}
                       className="
-                        grid
-                        grid-cols-1
-                        sm:grid-cols-2
-                        md:grid-cols-4
-                        gap-3
-                        mt-3
+                        rounded-2xl
+                        border border-white/10
+                        bg-black/10
+                        p-5
                       "
                     >
 
-                      {listaPerms.map(
-                        (perm) => {
+                      <div className="flex items-center justify-between">
 
-                          const checked =
-                            Array.isArray(
-                              permisosEmpleado[
+                        <div>
+                          <div className="font-semibold text-white">
+                            {modulo}
+                          </div>
+
+                          <div className="mt-1 text-xs text-white/40">
+                            {listaPerms.length} permisos disponibles
+                          </div>
+                        </div>
+
+                        <span className="rounded-full border border-purple-400/20 bg-purple-400/10 px-3 py-1 text-xs font-semibold text-purple-300">
+                          {Array.isArray(
+                            permisosEmpleado[
+                              modulo
+                            ]
+                          )
+                            ? permisosEmpleado[
                                 modulo
-                              ]
-                            )
-                              ? permisosEmpleado[
+                              ].length
+                            : 0}
+                        </span>
+
+                      </div>
+
+                      <div
+                        className="
+                          mt-4
+                          grid
+                          grid-cols-1
+                          gap-3
+                          sm:grid-cols-2
+                          lg:grid-cols-4
+                        "
+                      >
+
+                        {listaPerms.map(
+                          (perm) => {
+
+                            const checked =
+                              Array.isArray(
+                                permisosEmpleado[
                                   modulo
-                                ].includes(
-                                  perm
-                                )
-                              : false;
-
-                          return (
-                            <label
-                              key={`${modulo}-${perm}`}
-                              className="
-                                flex
-                                items-center
-                                gap-2
-                                text-sm
-                                bg-white/10
-                                border
-                                border-white/20
-                                rounded-xl
-                                px-3 py-2
-                                hover:bg-white/20
-                                transition
-                                cursor-pointer
-                              "
-                            >
-
-                              <input
-                                type="checkbox"
-                                checked={checked}
-                                onChange={() =>
-                                  cambiarPermiso(
-                                    modulo,
+                                ]
+                              )
+                                ? permisosEmpleado[
+                                    modulo
+                                  ].includes(
                                     perm
                                   )
-                                }
-                                className="
-                                  accent-purple-500
-                                  h-4 w-4
+                                : false;
+
+                            return (
+                              <label
+                                key={`${modulo}-${perm}`}
+                                className={`
+                                  flex
                                   cursor-pointer
-                                "
-                              />
+                                  items-center
+                                  gap-3
+                                  rounded-xl
+                                  border
+                                  px-3
+                                  py-3
+                                  text-sm
+                                  transition
+                                  ${
+                                    checked
+                                      ? "border-purple-400/20 bg-purple-400/10 text-purple-200"
+                                      : "border-white/10 bg-white/[0.03] text-white/60 hover:bg-white/[0.06]"
+                                  }
+                                `}
+                              >
 
-                              <span>
-                                {perm}
-                              </span>
+                                <input
+                                  type="checkbox"
+                                  checked={checked}
+                                  onChange={() =>
+                                    cambiarPermiso(
+                                      modulo,
+                                      perm
+                                    )
+                                  }
+                                  className="
+                                    h-4
+                                    w-4
+                                    cursor-pointer
+                                    accent-purple-500
+                                  "
+                                />
 
-                            </label>
-                          );
-                        }
-                      )}
+                                <span className="truncate">
+                                  {perm}
+                                </span>
+
+                              </label>
+                            );
+                          }
+                        )}
+
+                      </div>
 
                     </div>
+                  );
+                }
+              )}
 
-                  </li>
-                );
-              }
-            )}
+              {Object.keys(
+                permisosGlobales || {}
+              ).length === 0 && (
+                <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 text-center text-sm text-white/40">
+                  No hay permisos disponibles.
+                </div>
+              )}
 
-            {Object.keys(
-              permisosGlobales || {}
-            ).length === 0 && (
-              <li className="text-white/50 text-sm">
-                No hay permisos disponibles.
-              </li>
-            )}
+            </div>
 
-          </ul>
+          </div>
         )}
 
-      </div>
+      </section>
 
       {/* ======================================================
-          AUDITORÍA DEL USUARIO
+          AUDITORÍA
       ====================================================== */}
 
-      <div
+      <section
         className="
-          bg-white/10 backdrop-blur-xl
-          border border-white/20 rounded-2xl
-          shadow-xl p-6 space-y-4
+          overflow-hidden
+          rounded-3xl
+          border border-white/10
+          bg-white/[0.05]
+          backdrop-blur-2xl
+          shadow-[0_20px_70px_rgba(0,0,0,0.22)]
         "
       >
 
         <button
+          type="button"
           className="
-            text-xl font-semibold
-            text-white drop-shadow
-            w-full text-left
-            hover:text-green-300
+            flex
+            w-full
+            items-center
+            justify-between
+            p-6
+            text-left
             transition
+            hover:bg-white/[0.025]
           "
           onClick={() =>
             setShowAuditoria(
@@ -1444,103 +1987,136 @@ export default function SeguridadFicha({ empleadoId }) {
           }
         >
 
-          <span className="mr-2">
-            {showAuditoria ? "▼" : "▶"}
-          </span>
+          <div className="flex items-center gap-3">
 
-          Auditoría del usuario
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-emerald-400/20 bg-emerald-400/10 text-xl">
+              📊
+            </div>
 
-          <span className="text-white/50 text-sm ml-2">
-            ({auditoriaOrdenada.length})
-          </span>
+            <div>
+              <h2 className="text-xl font-semibold text-white">
+                Auditoría del usuario
+              </h2>
+
+              <p className="mt-1 text-xs text-white/40">
+                Trazabilidad de las acciones realizadas por este empleado.
+              </p>
+            </div>
+
+          </div>
+
+          <div className="flex items-center gap-3">
+
+            <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold text-white/60">
+              {auditoriaOrdenada.length}
+            </span>
+
+            <span className="text-white/40">
+              {showAuditoria
+                ? "▼"
+                : "▶"}
+            </span>
+
+          </div>
 
         </button>
 
         {showAuditoria && (
-          <div className="space-y-4">
+          <div className="space-y-5 border-t border-white/10 p-6">
 
-            <button
-              onClick={
-                descargarExcelAuditoria
-              }
-              className="
-                px-4 py-2
-                bg-green-600
-                hover:bg-green-700
-                text-white
-                rounded-xl
-                shadow-lg
-                transition
-                text-sm
-                active:scale-[0.97]
-              "
-            >
-              📊 Descargar auditoría
-            </button>
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
 
-            <div className="flex flex-col md:flex-row gap-4">
+              <div className="flex flex-col gap-3 md:flex-row">
 
-              <input
-                type="text"
+                <input
+                  type="text"
+                  value={busquedaAud}
+                  onChange={(e) => {
+                    setBusquedaAud(
+                      e.target.value
+                    );
+                    setPaginaAud(0);
+                  }}
+                  placeholder="Buscar módulo, acción o descripción..."
+                  className="
+                    w-full
+                    rounded-xl
+                    border border-white/10
+                    bg-white/[0.05]
+                    px-4
+                    py-2.5
+                    text-sm
+                    text-white
+                    outline-none
+                    placeholder:text-white/30
+                    focus:border-blue-400/30
+                    focus:ring-2
+                    focus:ring-blue-400/10
+                    md:w-80
+                  "
+                />
+
+                <input
+                  type="date"
+                  value={filtroFechaAud}
+                  onChange={(e) => {
+                    setFiltroFechaAud(
+                      e.target.value
+                    );
+                    setPaginaAud(0);
+                  }}
+                  className="
+                    rounded-xl
+                    border border-white/10
+                    bg-white/[0.05]
+                    px-4
+                    py-2.5
+                    text-sm
+                    text-white
+                    outline-none
+                    focus:border-blue-400/30
+                  "
+                />
+
+              </div>
+
+              <button
+                type="button"
+                onClick={
+                  descargarExcelAuditoria
+                }
                 className="
-                  w-full md:w-1/2
-                  bg-white/10
-                  border border-white/20
-                  rounded-xl px-3 py-2
-                  text-white
-                  placeholder-white/40
-                  focus:ring-2
-                  focus:ring-blue-400
+                  inline-flex
+                  w-fit
+                  items-center
+                  gap-2
+                  rounded-xl
+                  border border-emerald-400/20
+                  bg-emerald-500/10
+                  px-4
+                  py-2.5
+                  text-sm
+                  font-semibold
+                  text-emerald-300
                   transition
+                  hover:bg-emerald-500/20
                 "
-                placeholder="Buscar por módulo, acción o descripción..."
-                value={busquedaAud}
-                onChange={(e) => {
-                  setBusquedaAud(
-                    e.target.value
-                  );
-                  setPaginaAud(0);
-                }}
-              />
-
-              <input
-                type="date"
-                className="
-                  w-full md:w-1/3
-                  bg-white/10
-                  border border-white/20
-                  rounded-xl px-3 py-2
-                  text-white
-                  focus:ring-2
-                  focus:ring-blue-400
-                  transition
-                "
-                value={filtroFechaAud}
-                onChange={(e) => {
-                  setFiltroFechaAud(
-                    e.target.value
-                  );
-                  setPaginaAud(0);
-                }}
-              />
+              >
+                📊 Exportar auditoría
+              </button>
 
             </div>
 
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto rounded-2xl border border-white/10">
 
-              <table className="w-full text-sm text-white">
+              <table className="w-full min-w-[760px] text-sm">
 
-                <thead className="bg-white/10 border-b border-white/20">
+                <thead className="bg-white/[0.06]">
 
                   <tr>
 
                     <th
-                      className="
-                        p-3 text-left
-                        cursor-pointer
-                        hover:text-blue-300
-                        transition
-                      "
+                      className="cursor-pointer whitespace-nowrap px-4 py-3 text-left font-semibold text-white/70 hover:text-white"
                       onClick={() =>
                         ordenarAud("fecha")
                       }
@@ -1555,12 +2131,7 @@ export default function SeguridadFicha({ empleadoId }) {
                     </th>
 
                     <th
-                      className="
-                        p-3 text-left
-                        cursor-pointer
-                        hover:text-blue-300
-                        transition
-                      "
+                      className="cursor-pointer whitespace-nowrap px-4 py-3 text-left font-semibold text-white/70 hover:text-white"
                       onClick={() =>
                         ordenarAud("modulo")
                       }
@@ -1575,12 +2146,7 @@ export default function SeguridadFicha({ empleadoId }) {
                     </th>
 
                     <th
-                      className="
-                        p-3 text-left
-                        cursor-pointer
-                        hover:text-blue-300
-                        transition
-                      "
+                      className="cursor-pointer whitespace-nowrap px-4 py-3 text-left font-semibold text-white/70 hover:text-white"
                       onClick={() =>
                         ordenarAud("accion")
                       }
@@ -1594,7 +2160,7 @@ export default function SeguridadFicha({ empleadoId }) {
                         : ""}
                     </th>
 
-                    <th className="p-3 text-left">
+                    <th className="px-4 py-3 text-left font-semibold text-white/70">
                       Descripción
                     </th>
 
@@ -1605,43 +2171,47 @@ export default function SeguridadFicha({ empleadoId }) {
                 <tbody>
 
                   {auditoriaPaginada.map(
-                    (a) => {
+                    (a, index) => {
 
                       const key =
                         a.id ??
-                        `${a.fecha}-${a.modulo}-${a.accion}`;
+                        `${a.fecha}-${a.modulo}-${a.accion}-${index}`;
 
                       return (
                         <tr
                           key={String(key)}
                           className="
-                            border-b
+                            border-t
                             border-white/10
-                            hover:bg-white/5
                             transition
+                            hover:bg-white/[0.035]
                           "
                         >
 
-                          <td className="p-3">
+                          <td className="whitespace-nowrap px-4 py-3 text-white/65">
                             {a.fecha || "-"}
                           </td>
 
-                          <td className="p-3">
+                          <td className="px-4 py-3 text-white/80">
                             {a.modulo || "-"}
                           </td>
 
-                          <td className="p-3">
+                          <td className="px-4 py-3">
 
-                            {iconosAccion[
-                              a.accion
-                            ] ||
-                              iconosAccion.default}{" "}
+                            <span className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-2.5 py-1 text-xs font-semibold text-white/70">
 
-                            {a.accion || "-"}
+                              {iconosAccion[
+                                a.accion
+                              ] ||
+                                iconosAccion.default}
+
+                              {a.accion || "-"}
+
+                            </span>
 
                           </td>
 
-                          <td className="p-3">
+                          <td className="px-4 py-3 text-white/65">
                             {a.descripcion ||
                               "-"}
                           </td>
@@ -1654,19 +2224,12 @@ export default function SeguridadFicha({ empleadoId }) {
                   {auditoriaPaginada.length ===
                     0 && (
                     <tr>
-
                       <td
                         colSpan={4}
-                        className="
-                          p-6
-                          text-center
-                          text-white/50
-                        "
+                        className="px-6 py-10 text-center text-sm text-white/35"
                       >
-                        No hay registros de
-                        auditoría.
+                        No hay registros de auditoría.
                       </td>
-
                     </tr>
                   )}
 
@@ -1676,89 +2239,118 @@ export default function SeguridadFicha({ empleadoId }) {
 
             </div>
 
-            <div className="flex items-center gap-3 mt-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
 
-              <button
-                disabled={
-                  paginaAud === 0
-                }
-                onClick={() =>
-                  setPaginaAud(
-                    (prev) =>
-                      Math.max(
-                        prev - 1,
-                        0
-                      )
-                  )
-                }
-                className="
-                  px-3 py-1
-                  bg-white/10
-                  border border-white/20
-                  rounded-xl
-                  disabled:opacity-40
-                  hover:bg-white/20
-                  transition
-                "
-              >
-                ← Anterior
-              </button>
-
-              <span className="text-sm text-white/70">
-                Página {paginaAud + 1}
+              <span className="text-xs text-white/40">
+                Mostrando{" "}
+                {auditoriaPaginada.length}{" "}
+                de{" "}
+                {auditoriaOrdenada.length}{" "}
+                registros
               </span>
 
-              <button
-                disabled={
-                  (paginaAud + 1) *
-                    pageSizeAud >=
-                  auditoriaOrdenada.length
-                }
-                onClick={() =>
-                  setPaginaAud(
-                    (prev) =>
-                      prev + 1
-                  )
-                }
-                className="
-                  px-3 py-1
-                  bg-white/10
-                  border border-white/20
-                  rounded-xl
-                  disabled:opacity-40
-                  hover:bg-white/20
-                  transition
-                "
-              >
-                Siguiente →
-              </button>
+              <div className="flex items-center gap-2">
+
+                <button
+                  type="button"
+                  disabled={
+                    paginaAud === 0
+                  }
+                  onClick={() =>
+                    setPaginaAud(
+                      (prev) =>
+                        Math.max(
+                          prev - 1,
+                          0
+                        )
+                    )
+                  }
+                  className="
+                    rounded-xl
+                    border border-white/10
+                    bg-white/[0.05]
+                    px-3
+                    py-2
+                    text-xs
+                    text-white/70
+                    transition
+                    hover:bg-white/10
+                    disabled:cursor-not-allowed
+                    disabled:opacity-30
+                  "
+                >
+                  ← Anterior
+                </button>
+
+                <span className="rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-xs text-white/60">
+                  Página {paginaAud + 1}
+                </span>
+
+                <button
+                  type="button"
+                  disabled={
+                    (paginaAud + 1) *
+                      pageSizeAud >=
+                    auditoriaOrdenada.length
+                  }
+                  onClick={() =>
+                    setPaginaAud(
+                      (prev) =>
+                        prev + 1
+                    )
+                  }
+                  className="
+                    rounded-xl
+                    border border-white/10
+                    bg-white/[0.05]
+                    px-3
+                    py-2
+                    text-xs
+                    text-white/70
+                    transition
+                    hover:bg-white/10
+                    disabled:cursor-not-allowed
+                    disabled:opacity-30
+                  "
+                >
+                  Siguiente →
+                </button>
+
+              </div>
 
             </div>
 
           </div>
         )}
 
-      </div>
+      </section>
 
       {/* ======================================================
-          LOGS DEL USUARIO
+          LOGS
       ====================================================== */}
 
-      <div
+      <section
         className="
-          bg-white/10 backdrop-blur-xl
-          border border-white/20 rounded-2xl
-          shadow-xl p-6 space-y-4
+          overflow-hidden
+          rounded-3xl
+          border border-white/10
+          bg-white/[0.05]
+          backdrop-blur-2xl
+          shadow-[0_20px_70px_rgba(0,0,0,0.22)]
         "
       >
 
         <button
+          type="button"
           className="
-            text-xl font-semibold
-            text-white drop-shadow
-            w-full text-left
-            hover:text-purple-300
+            flex
+            w-full
+            items-center
+            justify-between
+            p-6
+            text-left
             transition
+            hover:bg-white/[0.025]
           "
           onClick={() =>
             setShowLogs(
@@ -1767,104 +2359,136 @@ export default function SeguridadFicha({ empleadoId }) {
           }
         >
 
-          <span className="mr-2">
-            {showLogs ? "▼" : "▶"}
-          </span>
+          <div className="flex items-center gap-3">
 
-          Logs del usuario
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-orange-400/20 bg-orange-400/10 text-xl">
+              📝
+            </div>
 
-          <span className="text-white/50 text-sm ml-2">
-            ({logsOrdenados.length})
-          </span>
+            <div>
+              <h2 className="text-xl font-semibold text-white">
+                Logs técnicos del usuario
+              </h2>
+
+              <p className="mt-1 text-xs text-white/40">
+                Eventos técnicos, autenticación, errores y actividad sensible.
+              </p>
+            </div>
+
+          </div>
+
+          <div className="flex items-center gap-3">
+
+            <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold text-white/60">
+              {logsOrdenados.length}
+            </span>
+
+            <span className="text-white/40">
+              {showLogs
+                ? "▼"
+                : "▶"}
+            </span>
+
+          </div>
 
         </button>
 
         {showLogs && (
-          <div className="space-y-4">
+          <div className="space-y-5 border-t border-white/10 p-6">
 
-            <button
-              onClick={
-                descargarExcelLogs
-              }
-              className="
-                px-4 py-2
-                bg-green-600
-                hover:bg-green-700
-                text-white
-                rounded-xl
-                shadow-lg
-                transition
-                text-sm
-                active:scale-[0.97]
-              "
-            >
-              📊 Descargar logs
-            </button>
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
 
-            <div className="flex flex-col md:flex-row gap-4">
+              <div className="flex flex-col gap-3 md:flex-row">
 
-              <input
-                type="text"
+                <input
+                  type="text"
+                  value={busquedaLog}
+                  onChange={(e) => {
+                    setBusquedaLog(
+                      e.target.value
+                    );
+                    setPaginaLog(0);
+                  }}
+                  placeholder="Buscar evento, detalle, IP o fecha..."
+                  className="
+                    w-full
+                    rounded-xl
+                    border border-white/10
+                    bg-white/[0.05]
+                    px-4
+                    py-2.5
+                    text-sm
+                    text-white
+                    outline-none
+                    placeholder:text-white/30
+                    focus:border-purple-400/30
+                    focus:ring-2
+                    focus:ring-purple-400/10
+                    md:w-80
+                  "
+                />
+
+                <input
+                  type="date"
+                  value={filtroFechaLog}
+                  onChange={(e) => {
+                    setFiltroFechaLog(
+                      e.target.value
+                    );
+                    setPaginaLog(0);
+                  }}
+                  className="
+                    rounded-xl
+                    border border-white/10
+                    bg-white/[0.05]
+                    px-4
+                    py-2.5
+                    text-sm
+                    text-white
+                    outline-none
+                    focus:border-purple-400/30
+                  "
+                />
+
+              </div>
+
+              <button
+                type="button"
+                onClick={
+                  descargarExcelLogs
+                }
                 className="
-                  w-full md:w-1/2
-                  bg-white/10
-                  border border-white/20
-                  rounded-xl px-3 py-2
-                  text-white
-                  placeholder-white/40
-                  focus:ring-2
-                  focus:ring-purple-400
+                  inline-flex
+                  w-fit
+                  items-center
+                  gap-2
+                  rounded-xl
+                  border border-orange-400/20
+                  bg-orange-500/10
+                  px-4
+                  py-2.5
+                  text-sm
+                  font-semibold
+                  text-orange-300
                   transition
+                  hover:bg-orange-500/20
                 "
-                placeholder="Buscar por evento, detalle, IP o fecha..."
-                value={busquedaLog}
-                onChange={(e) => {
-                  setBusquedaLog(
-                    e.target.value
-                  );
-                  setPaginaLog(0);
-                }}
-              />
-
-              <input
-                type="date"
-                className="
-                  w-full md:w-1/3
-                  bg-white/10
-                  border border-white/20
-                  rounded-xl px-3 py-2
-                  text-white
-                  focus:ring-2
-                  focus:ring-purple-400
-                  transition
-                "
-                value={filtroFechaLog}
-                onChange={(e) => {
-                  setFiltroFechaLog(
-                    e.target.value
-                  );
-                  setPaginaLog(0);
-                }}
-              />
+              >
+                📊 Exportar logs
+              </button>
 
             </div>
 
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto rounded-2xl border border-white/10">
 
-              <table className="w-full text-sm text-white">
+              <table className="w-full min-w-[820px] text-sm">
 
-                <thead className="bg-white/10 border-b border-white/20">
+                <thead className="bg-white/[0.06]">
 
                   <tr>
 
                     <th
-                      className="
-                        p-3
-                        text-left
-                        cursor-pointer
-                        hover:text-purple-300
-                        transition
-                      "
+                      className="cursor-pointer whitespace-nowrap px-4 py-3 text-left font-semibold text-white/70 hover:text-white"
                       onClick={() =>
                         ordenarLog("fecha")
                       }
@@ -1879,13 +2503,7 @@ export default function SeguridadFicha({ empleadoId }) {
                     </th>
 
                     <th
-                      className="
-                        p-3
-                        text-left
-                        cursor-pointer
-                        hover:text-purple-300
-                        transition
-                      "
+                      className="cursor-pointer whitespace-nowrap px-4 py-3 text-left font-semibold text-white/70 hover:text-white"
                       onClick={() =>
                         ordenarLog("evento")
                       }
@@ -1899,11 +2517,11 @@ export default function SeguridadFicha({ empleadoId }) {
                         : ""}
                     </th>
 
-                    <th className="p-3 text-left">
+                    <th className="px-4 py-3 text-left font-semibold text-white/70">
                       Detalle
                     </th>
 
-                    <th className="p-3 text-left">
+                    <th className="px-4 py-3 text-left font-semibold text-white/70">
                       IP
                     </th>
 
@@ -1914,43 +2532,47 @@ export default function SeguridadFicha({ empleadoId }) {
                 <tbody>
 
                   {logsPaginados.map(
-                    (l) => {
+                    (l, index) => {
 
                       const key =
                         l.id ??
-                        `${l.fecha}-${l.evento}-${l.detalle}`;
+                        `${l.fecha}-${l.evento}-${l.detalle}-${index}`;
 
                       return (
                         <tr
                           key={String(key)}
                           className="
-                            border-b
+                            border-t
                             border-white/10
-                            hover:bg-white/5
                             transition
+                            hover:bg-white/[0.035]
                           "
                         >
 
-                          <td className="p-3">
+                          <td className="whitespace-nowrap px-4 py-3 text-white/65">
                             {l.fecha || "-"}
                           </td>
 
-                          <td className="p-3">
+                          <td className="px-4 py-3">
 
-                            {iconosEvento[
-                              l.evento
-                            ] ||
-                              iconosEvento.default}{" "}
+                            <span className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-2.5 py-1 text-xs font-semibold text-white/70">
 
-                            {l.evento || "-"}
+                              {iconosEvento[
+                                l.evento
+                              ] ||
+                                iconosEvento.default}
+
+                              {l.evento || "-"}
+
+                            </span>
 
                           </td>
 
-                          <td className="p-3">
+                          <td className="px-4 py-3 text-white/65">
                             {l.detalle || "-"}
                           </td>
 
-                          <td className="p-3">
+                          <td className="px-4 py-3 font-mono text-xs text-white/50">
                             {l.ip || "-"}
                           </td>
 
@@ -1962,19 +2584,12 @@ export default function SeguridadFicha({ empleadoId }) {
                   {logsPaginados.length ===
                     0 && (
                     <tr>
-
                       <td
                         colSpan={4}
-                        className="
-                          p-6
-                          text-center
-                          text-white/50
-                        "
+                        className="px-6 py-10 text-center text-sm text-white/35"
                       >
-                        No hay registros de
-                        logs.
+                        No hay registros de logs.
                       </td>
-
                     </tr>
                   )}
 
@@ -1984,69 +2599,91 @@ export default function SeguridadFicha({ empleadoId }) {
 
             </div>
 
-            <div className="flex items-center gap-3 mt-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
 
-              <button
-                disabled={
-                  paginaLog === 0
-                }
-                onClick={() =>
-                  setPaginaLog(
-                    (prev) =>
-                      Math.max(
-                        prev - 1,
-                        0
-                      )
-                  )
-                }
-                className="
-                  px-3 py-1
-                  bg-white/10
-                  border border-white/20
-                  rounded-xl
-                  disabled:opacity-40
-                  hover:bg-white/20
-                  transition
-                "
-              >
-                ← Anterior
-              </button>
-
-              <span className="text-sm text-white/70">
-                Página {paginaLog + 1}
+              <span className="text-xs text-white/40">
+                Mostrando{" "}
+                {logsPaginados.length}{" "}
+                de{" "}
+                {logsOrdenados.length}{" "}
+                registros
               </span>
 
-              <button
-                disabled={
-                  (paginaLog + 1) *
-                    pageSizeLog >=
-                  logsOrdenados.length
-                }
-                onClick={() =>
-                  setPaginaLog(
-                    (prev) =>
-                      prev + 1
-                  )
-                }
-                className="
-                  px-3 py-1
-                  bg-white/10
-                  border border-white/20
-                  rounded-xl
-                  disabled:opacity-40
-                  hover:bg-white/20
-                  transition
-                "
-              >
-                Siguiente →
-              </button>
+              <div className="flex items-center gap-2">
+
+                <button
+                  type="button"
+                  disabled={
+                    paginaLog === 0
+                  }
+                  onClick={() =>
+                    setPaginaLog(
+                      (prev) =>
+                        Math.max(
+                          prev - 1,
+                          0
+                        )
+                    )
+                  }
+                  className="
+                    rounded-xl
+                    border border-white/10
+                    bg-white/[0.05]
+                    px-3
+                    py-2
+                    text-xs
+                    text-white/70
+                    transition
+                    hover:bg-white/10
+                    disabled:cursor-not-allowed
+                    disabled:opacity-30
+                  "
+                >
+                  ← Anterior
+                </button>
+
+                <span className="rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-xs text-white/60">
+                  Página {paginaLog + 1}
+                </span>
+
+                <button
+                  type="button"
+                  disabled={
+                    (paginaLog + 1) *
+                      pageSizeLog >=
+                    logsOrdenados.length
+                  }
+                  onClick={() =>
+                    setPaginaLog(
+                      (prev) =>
+                        prev + 1
+                    )
+                  }
+                  className="
+                    rounded-xl
+                    border border-white/10
+                    bg-white/[0.05]
+                    px-3
+                    py-2
+                    text-xs
+                    text-white/70
+                    transition
+                    hover:bg-white/10
+                    disabled:cursor-not-allowed
+                    disabled:opacity-30
+                  "
+                >
+                  Siguiente →
+                </button>
+
+              </div>
 
             </div>
 
           </div>
         )}
 
-      </div>
+      </section>
 
     </div>
   );

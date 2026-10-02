@@ -7,76 +7,58 @@ import {
 import { useSeguridad } from "../../hooks/useSeguridad";
 
 
-/**
- * ============================================================
- * SEGURIDAD — PERMISOS
- * MOLSAN ERP SAAS PREMIUM 2027
- * ============================================================
- *
- * Cada módulo funciona como acordeón independiente.
- *
- * Cerrado:
- *   - nombre del módulo
- *   - número de permisos
- *   - número de permisos activos
- *   - estado de acceso
- *
- * Abierto:
- *   - permisos individuales
- *   - checkboxes
- * ============================================================
- */
-
-
-function Chevron({ abierto }) {
-  return (
-    <svg
-      className={`
-        w-4
-        h-4
-        transition-transform
-        duration-200
-        ${abierto ? "rotate-180" : ""}
-      `}
-      viewBox="0 0 20 20"
-      fill="none"
-      aria-hidden="true"
-    >
-      <path
-        d="M5 7.5L10 12.5L15 7.5"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
+function arraySeguro(valor) {
+  return Array.isArray(valor) ? valor : [];
 }
 
 
-function IconoEscudo() {
-  return (
-    <svg
-      className="w-4 h-4"
-      viewBox="0 0 24 24"
-      fill="none"
-      aria-hidden="true"
-    >
-      <path
-        d="M12 3L19 6V11C19 16 16 19.5 12 21C8 19.5 5 16 5 11V6L12 3Z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinejoin="round"
-      />
+function textoSeguro(valor) {
+  if (
+    valor === null ||
+    typeof valor === "undefined"
+  ) {
+    return "";
+  }
 
-      <path
-        d="M9 12L11 14L15 10"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
+  return String(valor);
+}
+
+
+function Chip({
+  children,
+  tone = "neutral",
+}) {
+
+  const estilos = {
+    neutral:
+      "border-[var(--erp-border)] bg-[var(--erp-bg)] text-[var(--erp-text-soft)]",
+
+    primary:
+      "border-blue-200 bg-blue-50 text-blue-700",
+
+    success:
+      "border-emerald-200 bg-emerald-50 text-emerald-700",
+
+    purple:
+      "border-purple-200 bg-purple-50 text-purple-700",
+  };
+
+  return (
+    <span
+      className={`
+        inline-flex
+        items-center
+        rounded-full
+        border
+        px-2.5
+        py-1
+        text-[11px]
+        font-semibold
+        ${estilos[tone] || estilos.neutral}
+      `}
+    >
+      {children}
+    </span>
   );
 }
 
@@ -94,43 +76,65 @@ export default function SeguridadPermisos() {
   const [busqueda, setBusqueda] =
     useState("");
 
+
   const [moduloSeleccionado, setModuloSeleccionado] =
     useState("todos");
+
 
   const [procesando, setProcesando] =
     useState(false);
 
-  const [abiertos, setAbiertos] =
-    useState({});
+
+  const [modulosAbiertos, setModulosAbiertos] =
+    useState(() => new Set());
 
 
   /**
-   * ==========================================================
+   * ============================================================
    * EMPLEADO
-   * ==========================================================
+   * ============================================================
    */
 
-  const empleado =
-    ficha &&
-    typeof ficha === "object" &&
-    ficha.empleado &&
-    typeof ficha.empleado === "object"
-      ? ficha.empleado
-      : null;
+  const empleado = useMemo(() => {
+
+    if (
+      !ficha ||
+      typeof ficha !== "object"
+    ) {
+      return null;
+    }
+
+    if (
+      !ficha.empleado ||
+      typeof ficha.empleado !== "object"
+    ) {
+      return null;
+    }
+
+    return ficha.empleado;
+
+  }, [ficha]);
 
 
-  const empleadoId =
-    empleado &&
-    Number.isFinite(Number(empleado.id)) &&
-    Number(empleado.id) > 0
-      ? Number(empleado.id)
+  const empleadoId = useMemo(() => {
+
+    const id =
+      Number(
+        empleado?.id
+      );
+
+    return Number.isFinite(id) &&
+      id > 0
+      ? id
       : null;
+
+  }, [empleado]);
 
 
   /**
-   * ==========================================================
-   * PERMISOS DEL EMPLEADO
-   * ==========================================================
+   * ============================================================
+   * PERMISOS EMPLEADO
+   * ============================================================
    */
 
   const permisosEmpleado = useMemo(() => {
@@ -144,7 +148,8 @@ export default function SeguridadPermisos() {
 
     if (
       !ficha.permisos_modulo_dict ||
-      typeof ficha.permisos_modulo_dict !== "object" ||
+      typeof ficha.permisos_modulo_dict !==
+        "object" ||
       Array.isArray(
         ficha.permisos_modulo_dict
       )
@@ -158,80 +163,71 @@ export default function SeguridadPermisos() {
 
 
   /**
-   * ==========================================================
-   * AGRUPAR PERMISOS
-   * ==========================================================
+   * ============================================================
+   * PERMISOS GLOBALES
+   * ============================================================
    */
 
   const permisosGlobales = useMemo(() => {
 
-    if (!Array.isArray(permisos)) {
-      return {};
-    }
+    const resultado = {};
 
-    return permisos.reduce(
-      (acc, permiso) => {
+    arraySeguro(permisos).forEach(
+      (permiso) => {
 
         if (
           !permiso ||
-          typeof permiso !== "object" ||
-          typeof permiso.modulo !== "string" ||
-          typeof permiso.permiso !== "string"
+          typeof permiso !== "object"
         ) {
-          return acc;
+          return;
+        }
+
+        if (
+          typeof permiso.modulo !==
+            "string" ||
+          typeof permiso.permiso !==
+            "string"
+        ) {
+          return;
         }
 
         const modulo =
           permiso.modulo.trim();
 
-        const nombrePermiso =
+        const nombre =
           permiso.permiso.trim();
 
         if (
           !modulo ||
-          !nombrePermiso
+          !nombre
         ) {
-          return acc;
+          return;
         }
 
-        if (!acc[modulo]) {
-          acc[modulo] = [];
+        if (!resultado[modulo]) {
+          resultado[modulo] = [];
         }
 
         if (
-          !acc[modulo].includes(
-            nombrePermiso
+          !resultado[modulo].includes(
+            nombre
           )
         ) {
-          acc[modulo].push(
-            nombrePermiso
+          resultado[modulo].push(
+            nombre
           );
         }
 
-        return acc;
-
-      },
-      {}
+      }
     );
 
-  }, [permisos]);
 
+    Object.keys(
+      resultado
+    ).forEach(
+      (modulo) => {
 
-  /**
-   * ==========================================================
-   * ORDENAR
-   * ==========================================================
-   */
-
-  const permisosGlobalesOrdenados =
-    useMemo(() => {
-
-      const resultado = {};
-
-      Object.keys(
-        permisosGlobales
-      )
-        .sort(
+        resultado[modulo].sort(
           (a, b) =>
             a.localeCompare(
               b,
@@ -240,51 +236,96 @@ export default function SeguridadPermisos() {
                 sensitivity: "base",
               }
             )
-        )
-        .forEach((modulo) => {
+        );
 
-          resultado[modulo] = [
-            ...(permisosGlobales[modulo] || []),
-          ].sort(
-            (a, b) =>
-              a.localeCompare(
-                b,
-                "es",
-                {
-                  sensitivity: "base",
-                }
-              )
-          );
+      }
+    );
 
-        });
 
-      return resultado;
+    return resultado;
 
-    }, [permisosGlobales]);
+  }, [permisos]);
 
 
   /**
-   * ==========================================================
+   * ============================================================
    * MÓDULOS
-   * ==========================================================
+   *
+   * Unión del catálogo de permisos y de los módulos visibles.
+   *
+   * Esto evita volver a mostrar 14 aquí mientras el empleado
+   * tiene 18 módulos visibles.
+   * ============================================================
    */
 
-  const modulos = useMemo(
-    () =>
-      Object.keys(
-        permisosGlobalesOrdenados
-      ),
-    [permisosGlobalesOrdenados]
-  );
+  const modulos = useMemo(() => {
+
+    const conjunto =
+      new Set();
+
+    Object.keys(
+      permisosGlobales
+    ).forEach(
+      (modulo) =>
+        conjunto.add(modulo)
+    );
+
+
+    const modulosVisibles =
+      Array.isArray(
+        empleado?.modulos_visibles_list
+      )
+        ? empleado.modulos_visibles_list
+        : Array.isArray(
+            ficha?.modulos_visibles
+          )
+          ? ficha.modulos_visibles
+          : [];
+
+
+    modulosVisibles.forEach(
+      (modulo) => {
+
+        if (
+          typeof modulo === "string" &&
+          modulo.trim()
+        ) {
+          conjunto.add(
+            modulo.trim()
+          );
+        }
+
+      }
+    );
+
+
+    return Array.from(
+      conjunto
+    ).sort(
+      (a, b) =>
+        a.localeCompare(
+          b,
+          "es",
+          {
+            sensitivity: "base",
+          }
+        )
+    );
+
+  }, [
+    permisosGlobales,
+    empleado,
+    ficha,
+  ]);
 
 
   /**
-   * ==========================================================
-   * FILTRADO
-   * ==========================================================
+   * ============================================================
+   * FILTRO
+   * ============================================================
    */
 
-  const permisosFiltrados =
+  const modulosFiltrados =
     useMemo(() => {
 
       const texto =
@@ -292,15 +333,9 @@ export default function SeguridadPermisos() {
           .trim()
           .toLowerCase();
 
-      const resultado = {};
 
-      Object.entries(
-        permisosGlobalesOrdenados
-      ).forEach(
-        ([
-          modulo,
-          listaPermisos,
-        ]) => {
+      return modulos.filter(
+        (modulo) => {
 
           if (
             moduloSeleccionado !==
@@ -308,121 +343,196 @@ export default function SeguridadPermisos() {
             modulo !==
               moduloSeleccionado
           ) {
-            return;
+            return false;
           }
 
-          const moduloCoincide =
+
+          if (!texto) {
+            return true;
+          }
+
+
+          const coincideModulo =
             modulo
               .toLowerCase()
-              .includes(texto);
+              .includes(
+                texto
+              );
 
-          const permisosCoinciden =
-            listaPermisos.filter(
+
+          const coincidePermiso =
+            arraySeguro(
+              permisosGlobales[
+                modulo
+              ]
+            ).some(
               (permiso) =>
                 permiso
                   .toLowerCase()
-                  .includes(texto)
+                  .includes(
+                    texto
+                  )
             );
 
-          if (
-            !texto ||
-            moduloCoincide
-          ) {
-            resultado[modulo] =
-              listaPermisos;
 
-            return;
-          }
-
-          if (
-            permisosCoinciden.length > 0
-          ) {
-            resultado[modulo] =
-              permisosCoinciden;
-          }
+          return (
+            coincideModulo ||
+            coincidePermiso
+          );
 
         }
       );
 
-      return resultado;
-
     }, [
-      permisosGlobalesOrdenados,
+      modulos,
       busqueda,
       moduloSeleccionado,
+      permisosGlobales,
     ]);
 
 
   /**
-   * ==========================================================
-   * ESTADÍSTICAS
-   * ==========================================================
+   * ============================================================
+   * TOTAL PERMISOS DEL CATÁLOGO
+   * ============================================================
    */
 
-  const estadisticas =
+  const totalPermisos =
+    useMemo(
+      () =>
+        Object.values(
+          permisosGlobales
+        ).reduce(
+          (
+            total,
+            lista
+          ) =>
+            total +
+            arraySeguro(
+              lista
+            ).length,
+          0
+        ),
+      [permisosGlobales]
+    );
+
+
+  /**
+   * ============================================================
+   * PERMISOS ASIGNADOS VÁLIDOS
+   *
+   * Solo contamos permisos que existen realmente en el catálogo.
+   * Así evitamos coberturas superiores al 100%.
+   * ============================================================
+   */
+
+  const permisosAsignados =
     useMemo(() => {
 
-      const modulos =
-        Object.keys(
-          permisosGlobalesOrdenados
-        );
+      let total = 0;
 
-      const disponibles =
-        modulos.reduce(
-          (total, modulo) =>
-            total +
-            (
-              permisosGlobalesOrdenados[
+
+      Object.entries(
+        permisosGlobales
+      ).forEach(
+        ([
+          modulo,
+          disponibles,
+        ]) => {
+
+          const actuales =
+            arraySeguro(
+              permisosEmpleado[
                 modulo
-              ]?.length || 0
-            ),
-          0
-        );
+              ]
+            );
 
-      const asignados =
-        modulos.reduce(
-          (total, modulo) => {
 
-            const disponiblesModulo =
-              permisosGlobalesOrdenados[
-                modulo
-              ] || [];
+          actuales.forEach(
+            (permiso) => {
 
-            const activos =
-              disponiblesModulo.filter(
-                (permiso) =>
-                  Array.isArray(
-                    permisosEmpleado[
-                      modulo
-                    ]
-                  ) &&
-                  permisosEmpleado[
-                    modulo
-                  ].includes(permiso)
-              ).length;
+              if (
+                disponibles.includes(
+                  permiso
+                )
+              ) {
+                total += 1;
+              }
 
-            return total + activos;
+            }
+          );
 
-          },
-          0
-        );
+        }
+      );
 
-      return {
-        modulos: modulos.length,
-        disponibles,
-        asignados,
-      };
+
+      return total;
 
     }, [
-      permisosGlobalesOrdenados,
+      permisosGlobales,
       permisosEmpleado,
     ]);
 
 
+  const porcentajeAsignado =
+    totalPermisos > 0
+      ? Math.min(
+          100,
+          Math.round(
+            (
+              permisosAsignados /
+              totalPermisos
+            ) *
+              100
+          )
+        )
+      : 0;
+
+
   /**
-   * ==========================================================
+   * ============================================================
+   * TOGGLE MÓDULO
+   * ============================================================
+   */
+
+  const toggleModulo =
+    useCallback(
+      (modulo) => {
+
+        setModulosAbiertos(
+          (actual) => {
+
+            const siguiente =
+              new Set(actual);
+
+            if (
+              siguiente.has(
+                modulo
+              )
+            ) {
+              siguiente.delete(
+                modulo
+              );
+            } else {
+              siguiente.add(
+                modulo
+              );
+            }
+
+            return siguiente;
+
+          }
+        );
+
+      },
+      []
+    );
+
+
+  /**
+   * ============================================================
    * CAMBIAR PERMISO
-   * ==========================================================
+   * ============================================================
    */
 
   const cambiarPermiso =
@@ -434,44 +544,40 @@ export default function SeguridadPermisos() {
 
         if (
           !empleadoId ||
-          typeof modulo !== "string" ||
-          typeof permiso !== "string"
+          typeof modulo !==
+            "string" ||
+          typeof permiso !==
+            "string"
         ) {
           return;
         }
 
+
         const nuevo = {
-          ...permisosEmpleado,
+          ...(permisosEmpleado || {}),
         };
 
-        if (
-          !Array.isArray(
-            nuevo[modulo]
-          )
-        ) {
-          nuevo[modulo] = [];
-        }
 
-        if (
-          nuevo[modulo].includes(
+        const actuales =
+          arraySeguro(
+            nuevo[modulo]
+          );
+
+
+        nuevo[modulo] =
+          actuales.includes(
             permiso
           )
-        ) {
+            ? actuales.filter(
+                (item) =>
+                  item !==
+                  permiso
+              )
+            : [
+                ...actuales,
+                permiso,
+              ];
 
-          nuevo[modulo] =
-            nuevo[modulo].filter(
-              (p) =>
-                p !== permiso
-            );
-
-        } else {
-
-          nuevo[modulo] = [
-            ...nuevo[modulo],
-            permiso,
-          ];
-
-        }
 
         try {
 
@@ -484,12 +590,19 @@ export default function SeguridadPermisos() {
 
           if (
             typeof cargarFicha ===
-              "function"
+            "function"
           ) {
             await cargarFicha(
               empleadoId
             );
           }
+
+        } catch (error) {
+
+          console.error(
+            "Error asignando permiso:",
+            error
+          );
 
         } finally {
 
@@ -508,89 +621,139 @@ export default function SeguridadPermisos() {
 
 
   /**
-   * ==========================================================
-   * TOGGLE MÓDULO
-   * ==========================================================
+   * ============================================================
+   * CAMBIAR TODOS
+   * ============================================================
    */
 
-  const toggleModulo =
-    (modulo) => {
+  const cambiarTodosModulo =
+    useCallback(
+      async (
+        modulo
+      ) => {
 
-      setAbiertos(
-        (prev) => ({
-          ...prev,
-          [modulo]:
-            !prev[modulo],
-        })
-      );
-
-    };
+        if (
+          !empleadoId ||
+          typeof modulo !==
+            "string"
+        ) {
+          return;
+        }
 
 
-  const abrirTodos = () => {
+        const disponibles =
+          arraySeguro(
+            permisosGlobales[
+              modulo
+            ]
+          );
 
-    const nuevo = {};
 
-    Object.keys(
-      permisosFiltrados
-    ).forEach(
-      (modulo) => {
-        nuevo[modulo] = true;
-      }
+        if (
+          disponibles.length === 0
+        ) {
+          return;
+        }
+
+
+        const actuales =
+          arraySeguro(
+            permisosEmpleado[
+              modulo
+            ]
+          );
+
+
+        const todosActivos =
+          disponibles.every(
+            (permiso) =>
+              actuales.includes(
+                permiso
+              )
+          );
+
+
+        const nuevo = {
+          ...(permisosEmpleado || {}),
+        };
+
+
+        nuevo[modulo] =
+          todosActivos
+            ? []
+            : [...disponibles];
+
+
+        try {
+
+          setProcesando(true);
+
+          await asignarPermisos(
+            empleadoId,
+            nuevo
+          );
+
+          if (
+            typeof cargarFicha ===
+            "function"
+          ) {
+            await cargarFicha(
+              empleadoId
+            );
+          }
+
+        } catch (error) {
+
+          console.error(
+            "Error actualizando permisos del módulo:",
+            error
+          );
+
+        } finally {
+
+          setProcesando(false);
+
+        }
+
+      },
+      [
+        empleadoId,
+        permisosEmpleado,
+        permisosGlobales,
+        asignarPermisos,
+        cargarFicha,
+      ]
     );
-
-    setAbiertos(nuevo);
-
-  };
-
-
-  const cerrarTodos = () => {
-    setAbiertos({});
-  };
 
 
   /**
-   * ==========================================================
+   * ============================================================
    * SIN FICHA
-   * ==========================================================
+   * ============================================================
    */
 
-  if (!ficha || !empleado) {
-
+  if (
+    !ficha ||
+    typeof ficha !== "object"
+  ) {
     return (
       <div
         className="
           rounded-2xl
           border
-          border-dashed
           border-[var(--erp-border)]
-          bg-[var(--erp-bg)]
-          px-5
-          py-12
+          bg-[var(--erp-surface)]
+          p-10
           text-center
         "
       >
-
-        <div
-          className="
-            w-11
-            h-11
-            rounded-xl
-            bg-[var(--erp-primary-soft)]
-            text-[var(--erp-primary)]
-            flex
-            items-center
-            justify-center
-            mx-auto
-            mb-3
-          "
-        >
-          <IconoEscudo />
+        <div className="text-3xl">
+          🔑
         </div>
 
         <p
           className="
-            text-sm
+            mt-3
             font-semibold
             text-[var(--erp-text)]
           "
@@ -601,7 +764,7 @@ export default function SeguridadPermisos() {
         <p
           className="
             mt-1
-            text-xs
+            text-sm
             text-[var(--erp-text-soft)]
           "
         >
@@ -613,12 +776,6 @@ export default function SeguridadPermisos() {
   }
 
 
-  /**
-   * ==========================================================
-   * RENDER
-   * ==========================================================
-   */
-
   return (
     <div
       className="
@@ -627,241 +784,198 @@ export default function SeguridadPermisos() {
       "
     >
 
-      {/* FILTROS */}
+      {/* CABECERA */}
 
       <div
         className="
+          flex
+          flex-col
+          gap-4
           rounded-2xl
           border
           border-[var(--erp-border)]
-          bg-[var(--erp-bg)]
-          p-4
+          bg-[var(--erp-surface)]
+          p-5
+          shadow-sm
+          md:flex-row
+          md:items-center
+          md:justify-between
         "
       >
 
         <div
           className="
             flex
-            flex-col
-            lg:flex-row
+            items-center
             gap-3
-            lg:items-center
           "
         >
 
-          <div className="flex-1">
-
-            <label
-              className="
-                block
-                text-[11px]
-                font-semibold
-                uppercase
-                tracking-[0.06em]
-                text-[var(--erp-text-soft)]
-                mb-1.5
-              "
-            >
-              Buscar
-            </label>
-
-            <input
-              type="text"
-              value={busqueda}
-              onChange={(e) =>
-                setBusqueda(
-                  e.target.value
-                )
-              }
-              placeholder="Buscar módulo o permiso..."
-              className="
-                w-full
-                h-10
-                rounded-xl
-                border
-                border-[var(--erp-border)]
-                bg-[var(--erp-surface)]
-                px-3
-                text-sm
-                text-[var(--erp-text)]
-                outline-none
-                focus:border-[var(--erp-primary)]
-                focus:ring-2
-                focus:ring-[var(--erp-primary-soft)]
-              "
-            />
-
+          <div
+            className="
+              flex
+              h-11
+              w-11
+              shrink-0
+              items-center
+              justify-center
+              rounded-xl
+              bg-[var(--erp-primary-soft)]
+              text-xl
+            "
+          >
+            🔑
           </div>
 
+          <div>
 
-          <div className="w-full lg:w-64">
-
-            <label
+            <p
               className="
-                block
                 text-[11px]
                 font-semibold
                 uppercase
-                tracking-[0.06em]
-                text-[var(--erp-text-soft)]
-                mb-1.5
+                tracking-[0.14em]
+                text-[var(--erp-primary)]
               "
             >
-              Módulo
-            </label>
+              Centro de seguridad
+            </p>
 
-            <select
-              value={moduloSeleccionado}
-              onChange={(e) =>
-                setModuloSeleccionado(
-                  e.target.value
-                )
-              }
+            <h2
               className="
-                w-full
-                h-10
-                rounded-xl
-                border
-                border-[var(--erp-border)]
-                bg-[var(--erp-surface)]
-                px-3
-                text-sm
+                mt-1
+                text-xl
+                font-bold
                 text-[var(--erp-text)]
-                outline-none
-                focus:border-[var(--erp-primary)]
               "
             >
+              Permisos por módulo
+            </h2>
 
-              <option value="todos">
-                Todos los módulos
-              </option>
-
-              {modulos.map(
-                (modulo) => (
-                  <option
-                    key={modulo}
-                    value={modulo}
-                  >
-                    {modulo}
-                  </option>
-                )
-              )}
-
-            </select>
+            <p
+              className="
+                mt-0.5
+                text-sm
+                text-[var(--erp-text-soft)]
+              "
+            >
+              {empleado?.nombre || "Empleado"}
+            </p>
 
           </div>
 
         </div>
 
 
+        <Chip tone="primary">
+          {porcentajeAsignado}% cobertura
+        </Chip>
+
+      </div>
+
+
+      {/* RESUMEN */}
+
+      <div
+        className="
+          grid
+          grid-cols-1
+          gap-3
+          sm:grid-cols-2
+          xl:grid-cols-4
+        "
+      >
+
         <div
           className="
-            flex
-            flex-wrap
-            items-center
-            justify-between
-            gap-3
-            mt-4
-            pt-3
-            border-t
+            rounded-2xl
+            border
             border-[var(--erp-border)]
+            bg-[var(--erp-surface)]
+            p-4
+            shadow-sm
           "
         >
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--erp-text-soft)]">
+            Módulos
+          </p>
+          <p className="mt-1 text-2xl font-bold text-[var(--erp-text)]">
+            {modulos.length}
+          </p>
+          <p className="text-xs text-[var(--erp-text-soft)]">
+            catálogo completo
+          </p>
+        </div>
 
-          <div
-            className="
-              flex
-              flex-wrap
-              gap-2
-              text-xs
-              text-[var(--erp-text-soft)]
-            "
-          >
 
-            <span>
-              {estadisticas.modulos} módulos
-            </span>
+        <div
+          className="
+            rounded-2xl
+            border
+            border-blue-200
+            bg-blue-50
+            p-4
+          "
+        >
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-blue-600">
+            Disponibles
+          </p>
+          <p className="mt-1 text-2xl font-bold text-blue-700">
+            {totalPermisos}
+          </p>
+          <p className="text-xs text-blue-600">
+            permisos del catálogo
+          </p>
+        </div>
 
-            <span>·</span>
 
-            <span>
-              {estadisticas.asignados} asignados
-            </span>
+        <div
+          className="
+            rounded-2xl
+            border
+            border-emerald-200
+            bg-emerald-50
+            p-4
+          "
+        >
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-emerald-600">
+            Asignados
+          </p>
+          <p className="mt-1 text-2xl font-bold text-emerald-700">
+            {permisosAsignados}
+          </p>
+          <p className="text-xs text-emerald-600">
+            permisos válidos
+          </p>
+        </div>
 
-            <span>·</span>
 
-            <span>
-              {estadisticas.disponibles} disponibles
-            </span>
+        <div
+          className="
+            rounded-2xl
+            border
+            border-purple-200
+            bg-purple-50
+            p-4
+          "
+        >
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-purple-600">
+            Cobertura
+          </p>
 
-            {procesando && (
-              <>
-                <span>·</span>
-                <span
-                  className="
-                    text-[var(--erp-primary)]
-                    font-medium
-                  "
-                >
-                  Guardando…
-                </span>
-              </>
-            )}
-
+          <div className="mt-1 flex items-center justify-between">
+            <p className="text-2xl font-bold text-purple-700">
+              {porcentajeAsignado}%
+            </p>
           </div>
 
-
-          <div
-            className="
-              flex
-              items-center
-              gap-2
-            "
-          >
-
-            <button
-              type="button"
-              onClick={abrirTodos}
-              className="
-                px-3
-                py-2
-                rounded-lg
-                border
-                border-[var(--erp-border)]
-                bg-[var(--erp-surface)]
-                text-xs
-                font-medium
-                text-[var(--erp-text-soft)]
-                hover:text-[var(--erp-primary)]
-                hover:border-[var(--erp-primary)]
-                transition
-              "
-            >
-              Expandir todos
-            </button>
-
-
-            <button
-              type="button"
-              onClick={cerrarTodos}
-              className="
-                px-3
-                py-2
-                rounded-lg
-                border
-                border-[var(--erp-border)]
-                bg-[var(--erp-surface)]
-                text-xs
-                font-medium
-                text-[var(--erp-text-soft)]
-                hover:text-[var(--erp-primary)]
-                hover:border-[var(--erp-primary)]
-                transition
-              "
-            >
-              Contraer todos
-            </button>
-
+          <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-purple-100">
+            <div
+              className="h-full rounded-full bg-purple-500 transition-all"
+              style={{
+                width: `${porcentajeAsignado}%`,
+              }}
+            />
           </div>
 
         </div>
@@ -869,199 +983,380 @@ export default function SeguridadPermisos() {
       </div>
 
 
-      {/* MÓDULOS */}
+      {/* FILTROS */}
 
-      {Object.keys(
-        permisosFiltrados
-      ).length === 0 ? (
+      <div
+        className="
+          rounded-2xl
+          border
+          border-[var(--erp-border)]
+          bg-[var(--erp-surface)]
+          p-4
+          shadow-sm
+        "
+      >
 
         <div
           className="
-            rounded-2xl
-            border
-            border-dashed
-            border-[var(--erp-border)]
-            bg-[var(--erp-bg)]
-            px-5
-            py-10
-            text-center
+            flex
+            flex-col
+            gap-3
+            lg:flex-row
+            lg:items-center
           "
         >
 
-          <p
+          <input
+            type="text"
+            value={busqueda}
+            onChange={(event) =>
+              setBusqueda(
+                event.target.value
+              )
+            }
+            placeholder="Buscar módulo o permiso..."
             className="
+              min-w-0
+              flex-1
+              rounded-xl
+              border
+              border-[var(--erp-border)]
+              bg-[var(--erp-bg)]
+              px-4
+              py-2.5
               text-sm
+              text-[var(--erp-text)]
+              outline-none
+              placeholder:text-[var(--erp-text-soft)]
+              focus:border-[var(--erp-primary)]
+              focus:ring-2
+              focus:ring-[var(--erp-primary-soft)]
+            "
+          />
+
+
+          <select
+            value={moduloSeleccionado}
+            onChange={(event) =>
+              setModuloSeleccionado(
+                event.target.value
+              )
+            }
+            className="
+              w-full
+              rounded-xl
+              border
+              border-[var(--erp-border)]
+              bg-[var(--erp-bg)]
+              px-4
+              py-2.5
+              text-sm
+              text-[var(--erp-text)]
+              outline-none
+              lg:w-64
+            "
+          >
+
+            <option value="todos">
+              Todos los módulos
+            </option>
+
+            {modulos.map(
+              (modulo) => (
+                <option
+                  key={modulo}
+                  value={modulo}
+                >
+                  {modulo}
+                </option>
+              )
+            )}
+
+          </select>
+
+
+          {(busqueda ||
+            moduloSeleccionado !==
+              "todos") && (
+            <button
+              type="button"
+              onClick={() => {
+                setBusqueda("");
+                setModuloSeleccionado(
+                  "todos"
+                );
+              }}
+              className="
+                rounded-xl
+                border
+                border-[var(--erp-border)]
+                bg-[var(--erp-bg)]
+                px-4
+                py-2.5
+                text-sm
+                font-semibold
+                text-[var(--erp-text-soft)]
+                hover:text-[var(--erp-primary)]
+              "
+            >
+              Limpiar
+            </button>
+          )}
+
+        </div>
+
+      </div>
+
+
+      {/* CONFIGURACIÓN */}
+
+      <div
+        className="
+          rounded-2xl
+          border
+          border-[var(--erp-border)]
+          bg-[var(--erp-surface)]
+          p-4
+          shadow-sm
+        "
+      >
+
+        <div className="mb-3">
+
+          <h3
+            className="
+              text-base
               font-semibold
               text-[var(--erp-text)]
             "
           >
-            No hay permisos que mostrar
-          </p>
+            Configuración de permisos
+          </h3>
 
           <p
             className="
-              mt-1
+              mt-0.5
               text-xs
               text-[var(--erp-text-soft)]
             "
           >
-            Prueba con otro módulo o término de búsqueda.
+            Abre únicamente el módulo que quieras editar.
           </p>
 
         </div>
 
-      ) : (
 
-        <div
-          className="
-            space-y-2
-          "
-        >
+        {modulosFiltrados.length ===
+          0 ? (
+          <div
+            className="
+              rounded-xl
+              border
+              border-dashed
+              border-[var(--erp-border)]
+              p-8
+              text-center
+              text-sm
+              text-[var(--erp-text-soft)]
+            "
+          >
+            No se han encontrado módulos o permisos.
+          </div>
+        ) : (
+          <div className="space-y-2">
 
-          {Object.entries(
-            permisosFiltrados
-          ).map(
-            ([
-              modulo,
-              permisosDisponibles,
-            ]) => {
+            {modulosFiltrados.map(
+              (modulo) => {
 
-              const permisosActivos =
-                permisosDisponibles.filter(
-                  (permiso) =>
-                    Array.isArray(
-                      permisosEmpleado[
-                        modulo
-                      ]
-                    ) &&
+                const disponibles =
+                  arraySeguro(
+                    permisosGlobales[
+                      modulo
+                    ]
+                  );
+
+                const actuales =
+                  arraySeguro(
                     permisosEmpleado[
                       modulo
-                    ].includes(
-                      permiso
-                    )
-                ).length;
+                    ]
+                  );
 
-              const completo =
-                permisosDisponibles.length > 0 &&
-                permisosActivos ===
-                  permisosDisponibles.length;
+                const activos =
+                  disponibles.filter(
+                    (permiso) =>
+                      actuales.includes(
+                        permiso
+                      )
+                  ).length;
 
-              const abierto =
-                abiertos[modulo] === true;
+                const completo =
+                  disponibles.length >
+                    0 &&
+                  activos ===
+                    disponibles.length;
 
-              return (
-                <section
-                  key={modulo}
-                  className="
-                    rounded-2xl
-                    border
-                    border-[var(--erp-border)]
-                    bg-[var(--erp-surface)]
-                    overflow-hidden
-                    transition-all
-                    duration-200
-                  "
-                >
+                const abierto =
+                  modulosAbiertos.has(
+                    modulo
+                  );
 
-                  <button
-                    type="button"
-                    onClick={() =>
-                      toggleModulo(modulo)
-                    }
+
+                return (
+                  <div
+                    key={modulo}
                     className="
-                      w-full
-                      flex
-                      items-center
-                      gap-3
-                      px-4
-                      py-3.5
-                      text-left
-                      hover:bg-[var(--erp-primary-soft)]
-                      transition
+                      overflow-hidden
+                      rounded-xl
+                      border
+                      border-[var(--erp-border)]
+                      bg-[var(--erp-bg)]
                     "
-                    aria-expanded={abierto}
                   >
 
                     <div
-                      className={`
-                        w-9
-                        h-9
-                        rounded-xl
+                      className="
                         flex
                         items-center
-                        justify-center
-                        flex-shrink-0
-                        ${
-                          completo
-                            ? "bg-emerald-50 text-emerald-600"
-                            : "bg-[var(--erp-primary-soft)] text-[var(--erp-primary)]"
-                        }
-                      `}
+                        justify-between
+                        gap-3
+                        px-4
+                        py-3
+                      "
                     >
-                      {completo ? (
-                        <span className="text-sm font-bold">
-                          ✓
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          toggleModulo(
+                            modulo
+                          )
+                        }
+                        className="
+                          flex
+                          min-w-0
+                          flex-1
+                          items-center
+                          gap-3
+                          text-left
+                        "
+                      >
+
+                        <span
+                          className={`
+                            flex
+                            h-9
+                            w-9
+                            shrink-0
+                            items-center
+                            justify-center
+                            rounded-lg
+                            text-sm
+                            font-bold
+                            ${
+                              completo
+                                ? "bg-emerald-100 text-emerald-700"
+                                : "bg-[var(--erp-primary-soft)] text-[var(--erp-primary)]"
+                            }
+                          `}
+                        >
+                          {completo
+                            ? "✓"
+                            : "🔑"}
                         </span>
-                      ) : (
-                        <IconoEscudo />
-                      )}
-                    </div>
 
 
-                    <div className="min-w-0 flex-1">
+                        <span className="min-w-0">
+
+                          <span
+                            className="
+                              block
+                              truncate
+                              text-sm
+                              font-semibold
+                              text-[var(--erp-text)]
+                            "
+                          >
+                            {modulo}
+                          </span>
+
+                          <span
+                            className="
+                              block
+                              text-xs
+                              text-[var(--erp-text-soft)]
+                            "
+                          >
+                            {activos} de{" "}
+                            {disponibles.length}{" "}
+                            permisos activos
+                          </span>
+
+                        </span>
+
+                      </button>
+
 
                       <div
                         className="
                           flex
-                          flex-wrap
+                          shrink-0
                           items-center
                           gap-2
                         "
                       >
 
-                        <span
-                          className="
-                            text-sm
-                            font-semibold
-                            text-[var(--erp-text)]
-                          "
-                        >
-                          {modulo}
-                        </span>
+                        {completo && (
+                          <Chip tone="success">
+                            Completo
+                          </Chip>
+                        )}
+
+
+                        {disponibles.length >
+                          0 && (
+                          <button
+                            type="button"
+                            disabled={
+                              procesando
+                            }
+                            onClick={() =>
+                              cambiarTodosModulo(
+                                modulo
+                              )
+                            }
+                            className="
+                              hidden
+                              rounded-lg
+                              border
+                              border-[var(--erp-border)]
+                              bg-[var(--erp-surface)]
+                              px-2.5
+                              py-1.5
+                              text-[11px]
+                              font-semibold
+                              text-[var(--erp-text-soft)]
+                              hover:text-[var(--erp-primary)]
+                              disabled:opacity-40
+                              sm:inline-flex
+                            "
+                          >
+                            {completo
+                              ? "Desactivar todos"
+                              : "Activar todos"}
+                          </button>
+                        )}
 
 
                         <span
                           className="
-                            px-2
-                            py-0.5
-                            rounded-md
-                            bg-[var(--erp-bg)]
-                            border
-                            border-[var(--erp-border)]
-                            text-[10px]
-                            font-medium
+                            text-xs
                             text-[var(--erp-text-soft)]
                           "
                         >
-                          {permisosDisponibles.length} permisos
-                        </span>
-
-
-                        <span
-                          className={`
-                            px-2
-                            py-0.5
-                            rounded-md
-                            text-[10px]
-                            font-semibold
-                            ${
-                              completo
-                                ? "bg-emerald-50 text-emerald-700 border border-emerald-100"
-                                : "bg-[var(--erp-bg)] text-[var(--erp-text-soft)] border border-[var(--erp-border)]"
-                            }
-                          `}
-                        >
-                          {permisosActivos} activos
+                          {abierto
+                            ? "▲"
+                            : "▼"}
                         </span>
 
                       </div>
@@ -1069,159 +1364,131 @@ export default function SeguridadPermisos() {
                     </div>
 
 
-                    <div
-                      className="
-                        flex
-                        items-center
-                        gap-3
-                        flex-shrink-0
-                      "
-                    >
-
-                      <span
-                        className="
-                          hidden
-                          sm:inline
-                          text-[11px]
-                          text-[var(--erp-text-soft)]
-                        "
-                      >
-                        {completo
-                          ? "Acceso completo"
-                          : "Configurar"}
-                      </span>
-
+                    {abierto && (
                       <div
                         className="
-                          w-8
-                          h-8
-                          rounded-lg
-                          flex
-                          items-center
-                          justify-center
-                          text-[var(--erp-text-soft)]
-                        "
-                      >
-                        <Chevron
-                          abierto={abierto}
-                        />
-                      </div>
-
-                    </div>
-
-                  </button>
-
-
-                  {abierto && (
-                    <div
-                      className="
-                        border-t
-                        border-[var(--erp-border)]
-                        bg-[var(--erp-bg)]
-                        p-4
-                      "
-                    >
-
-                      <div
-                        className="
-                          grid
-                          grid-cols-1
-                          sm:grid-cols-2
-                          xl:grid-cols-4
-                          gap-2.5
+                          border-t
+                          border-[var(--erp-border)]
+                          p-3
                         "
                       >
 
-                        {permisosDisponibles.map(
-                          (permiso) => {
+                        {disponibles.length ===
+                        0 ? (
+                          <div
+                            className="
+                              rounded-lg
+                              border
+                              border-dashed
+                              border-[var(--erp-border)]
+                              p-4
+                              text-center
+                              text-xs
+                              text-[var(--erp-text-soft)]
+                            "
+                          >
+                            Este módulo no tiene permisos definidos en el catálogo global.
+                          </div>
+                        ) : (
+                          <div
+                            className="
+                              grid
+                              grid-cols-1
+                              gap-2
+                              sm:grid-cols-2
+                              lg:grid-cols-4
+                            "
+                          >
 
-                            const activo =
-                              Array.isArray(
-                                permisosEmpleado[
-                                  modulo
-                                ]
-                              ) &&
-                              permisosEmpleado[
-                                modulo
-                              ].includes(
-                                permiso
-                              );
+                            {disponibles.map(
+                              (permiso) => {
 
-                            return (
-                              <label
-                                key={permiso}
-                                className={`
-                                  flex
-                                  items-center
-                                  gap-3
-                                  rounded-xl
-                                  border
-                                  px-3
-                                  py-2.5
-                                  cursor-pointer
-                                  transition
-                                  ${
-                                    activo
-                                      ? "border-[var(--erp-primary)] bg-[var(--erp-primary-soft)]"
-                                      : "border-[var(--erp-border)] bg-[var(--erp-surface)] hover:border-[var(--erp-primary)]"
-                                  }
-                                `}
-                              >
+                                const activo =
+                                  actuales.includes(
+                                    permiso
+                                  );
 
-                                <input
-                                  type="checkbox"
-                                  checked={activo}
-                                  disabled={
-                                    procesando
-                                  }
-                                  onChange={() =>
-                                    cambiarPermiso(
-                                      modulo,
-                                      permiso
-                                    )
-                                  }
-                                  className="
-                                    h-4
-                                    w-4
-                                    cursor-pointer
-                                    accent-[var(--erp-primary)]
-                                  "
-                                />
 
-                                <span
-                                  className={`
-                                    text-sm
-                                    font-medium
-                                    ${
-                                      activo
-                                        ? "text-[var(--erp-text)]"
-                                        : "text-[var(--erp-text-soft)]"
-                                    }
-                                  `}
-                                >
-                                  {permiso}
-                                </span>
+                                return (
+                                  <label
+                                    key={`${modulo}-${permiso}`}
+                                    className={`
+                                      flex
+                                      cursor-pointer
+                                      items-center
+                                      gap-3
+                                      rounded-lg
+                                      border
+                                      px-3
+                                      py-2.5
+                                      transition
+                                      ${
+                                        activo
+                                          ? "border-emerald-200 bg-emerald-50"
+                                          : "border-[var(--erp-border)] bg-[var(--erp-surface)] hover:bg-[var(--erp-bg)]"
+                                      }
+                                    `}
+                                  >
 
-                              </label>
-                            );
+                                    <input
+                                      type="checkbox"
+                                      checked={
+                                        activo
+                                      }
+                                      disabled={
+                                        procesando
+                                      }
+                                      onChange={() =>
+                                        cambiarPermiso(
+                                          modulo,
+                                          permiso
+                                        )
+                                      }
+                                      className="
+                                        h-4
+                                        w-4
+                                        cursor-pointer
+                                        accent-emerald-500
+                                      "
+                                    />
 
-                          }
+                                    <span
+                                      className={`
+                                        truncate
+                                        text-sm
+                                        font-medium
+                                        ${
+                                          activo
+                                            ? "text-emerald-700"
+                                            : "text-[var(--erp-text)]"
+                                        }
+                                      `}
+                                    >
+                                      {permiso}
+                                    </span>
+
+                                  </label>
+                                );
+
+                              }
+                            )}
+
+                          </div>
                         )}
 
                       </div>
+                    )}
 
-                    </div>
-                  )}
+                  </div>
+                );
 
-                </section>
-              );
+              }
+            )}
 
-            }
-          )}
+          </div>
+        )}
 
-        </div>
-
-      )}
+      </div>
 
     </div>
   );

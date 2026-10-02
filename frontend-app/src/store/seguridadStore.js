@@ -800,10 +800,10 @@ export const useSeguridadStore =
     //      empleado/{empleado_id}/rol/{rol_id}
     // ========================================================
 
-    asignarRol: async (
-      empleadoId,
-      rolId
-    ) => {
+asignarRol: async (
+  empleadoId,
+  rolId
+) => {
 
       if (
         empleadoId === null ||
@@ -817,15 +817,13 @@ export const useSeguridadStore =
       try {
 
         await axios.post(
-          `${API}/seguridad/asignar/empleado/${empleadoId}/rol/${rolId}`
-        );
+    `${API}/seguridad/asignar/empleado/${empleadoId}/rol/${rolId}`
+  );
 
-
-        await get()
-          .cargarFicha(
-            empleadoId
-          );
-
+  await get().cargarFicha(
+    empleadoId
+  );
+},
 
         await get()
           .cargarTodo();

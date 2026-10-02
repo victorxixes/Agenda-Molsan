@@ -1,9 +1,11 @@
 import { NavLink } from "react-router-dom";
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+
 import { puedeVerModulo } from "../utils/permisos";
 import { useAuthStore } from "../store/authStore";
 import { useMensajesStore } from "../store/mensajesStore";
 import { useNotificacionesStore } from "../store/notificacionesStore";
+
 
 /**
  * ============================================================
@@ -95,6 +97,34 @@ const BellIcon = () => (
 
 /**
  * ============================================================
+ * ICONO CHEVRON
+ * ============================================================
+ */
+
+const ChevronDownIcon = ({ open = false }) => (
+  <svg
+    className={`
+      w-3.5 h-3.5
+      flex-shrink-0
+      transition-transform
+      duration-200
+      ${open ? "rotate-180" : ""}
+    `}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    <path d="m6 9 6 6 6-6" />
+  </svg>
+);
+
+
+/**
+ * ============================================================
  * BOTÓN DE NAVEGACIÓN
  * ============================================================
  */
@@ -172,6 +202,86 @@ const TopNavItem = ({
 
 /**
  * ============================================================
+ * ELEMENTO DEL MENÚ "MÁS"
+ * ============================================================
+ */
+
+const MoreNavItem = ({
+  to,
+  label,
+  icon,
+  badge = 0,
+  onNavigate,
+}) => (
+  <NavLink
+    to={to}
+    onClick={onNavigate}
+    className={({ isActive }) =>
+      `
+      flex
+      items-center
+      gap-2.5
+      w-full
+      px-3
+      py-2.5
+      rounded-xl
+      text-sm
+      font-medium
+      transition-all
+      duration-200
+      border
+
+      ${
+        isActive
+          ? `
+            bg-[var(--erp-primary)]
+            text-white
+            border-[var(--erp-primary)]
+            shadow-sm
+          `
+          : `
+            bg-white
+            text-[var(--erp-text)]
+            border-[var(--erp-border)]
+            hover:bg-[var(--erp-primary-soft)]
+            hover:text-[var(--erp-primary)]
+            hover:border-[var(--erp-primary)]
+          `
+      }
+      `
+    }
+  >
+    <NavIcon name={icon} />
+
+    <span className="flex-1 text-left">
+      {label}
+    </span>
+
+    {badge > 0 && (
+      <span
+        className="
+          min-w-[19px]
+          h-[19px]
+          px-1
+          flex
+          items-center
+          justify-center
+          rounded-full
+          bg-red-500
+          text-white
+          text-[10px]
+          font-bold
+        "
+      >
+        {badge}
+      </span>
+    )}
+  </NavLink>
+);
+
+
+/**
+ * ============================================================
  * SEPARADOR
  * ============================================================
  */
@@ -185,6 +295,7 @@ const NavSeparator = () => (
       flex-shrink-0
       mx-0.5
     "
+    aria-hidden="true"
   />
 );
 
@@ -193,8 +304,24 @@ const NavSeparator = () => (
  * ============================================================
  * SIDEBAR
  *
- * Aunque el nombre del fichero sigue siendo Sidebar.jsx,
- * visualmente funciona como navegación superior.
+ * Visualmente funciona como navegación superior.
+ *
+ * PRINCIPALES:
+ *
+ *   Expedientes
+ *   Dashboard
+ *   Agenda
+ *   Empleados
+ *   CTN
+ *   Intranet
+ *   Noticias
+ *   Utilidades
+ *
+ * RESTO:
+ *
+ *   Más ▾
+ *
+ * TODO SE FILTRA SEGÚN puedeVerModulo().
  * ============================================================
  */
 
@@ -211,6 +338,17 @@ export default function Sidebar() {
     (s) => s.unreadCount || 0
   );
 
+  const [moreOpen, setMoreOpen] = useState(false);
+
+  const moreRef = useRef(null);
+
+
+  /**
+   * ==========================================================
+   * USUARIO SEGURO
+   * ==========================================================
+   */
+
   const safeUser = useMemo(
     () =>
       empleado || {
@@ -222,6 +360,304 @@ export default function Sidebar() {
   );
 
 
+  /**
+   * ==========================================================
+   * CATÁLOGO DE MÓDULOS
+   *
+   * El orden aquí determina el orden visual.
+   * ==========================================================
+   */
+
+  const modulos = useMemo(
+    () => [
+      {
+        id: "expedientes",
+        label: "Expedientes",
+        to: "/expedientes",
+        icon: "folder",
+        principal: true,
+      },
+
+      {
+        id: "dashboard",
+        label: "Dashboard",
+        to: "/dashboard",
+        icon: "home",
+        principal: true,
+      },
+
+      {
+        id: "agenda",
+        label: "Agenda",
+        to: "/agenda",
+        icon: "calendar",
+        principal: true,
+      },
+
+      {
+        id: "empleados",
+        label: "Empleados",
+        to: "/empleados",
+        icon: "user-group",
+        principal: true,
+      },
+
+      {
+        id: "ctn",
+        label: "CTN — Notarios",
+        to: "/ctn",
+        icon: "globe",
+        principal: true,
+      },
+
+      {
+        id: "intranet",
+        label: "Intranet",
+        to: "/intranet",
+        icon: "globe",
+        principal: true,
+      },
+
+      {
+        id: "noticias",
+        label: "Noticias",
+        to: "/noticias",
+        icon: "news",
+        principal: true,
+      },
+
+      {
+        id: "utilidades",
+        label: "Utilidades",
+        to: "/herramientas/utilidades",
+        icon: "cog",
+        principal: true,
+      },
+
+
+      /**
+       * ========================================================
+       * RESTO DE MÓDULOS
+       * ========================================================
+       */
+
+      {
+        id: "documentos",
+        label: "Documentos",
+        to: "/documentos",
+        icon: "file-text",
+        principal: false,
+      },
+
+      {
+        id: "herramientas",
+        label: "Herramientas",
+        to: "/herramientas",
+        icon: "wrench",
+        principal: false,
+      },
+
+      {
+        id: "logs",
+        label: "Logs",
+        to: "/logs",
+        icon: "clipboard",
+        principal: false,
+      },
+
+      {
+        id: "maestros",
+        label: "Maestros",
+        to: "/maestros",
+        icon: "database",
+        principal: false,
+      },
+
+      {
+        id: "mensajes",
+        label: "Mensajes",
+        to: "/mensajes",
+        icon: "chat",
+        principal: false,
+        badge: mensajesNoLeidos,
+      },
+
+      {
+        id: "notificaciones",
+        label: "Notificaciones",
+        to: "/notificaciones",
+        icon: "bell",
+        principal: false,
+        badge: unreadCount,
+      },
+
+      {
+        id: "panel-tecnico",
+        label: "Panel técnico",
+        to: "/panel-tecnico",
+        icon: "settings",
+        principal: false,
+      },
+
+      {
+        id: "realtime",
+        label: "Realtime",
+        to: "/realtime",
+        icon: "activity",
+        principal: false,
+      },
+
+      {
+        id: "seguridad",
+        label: "Seguridad",
+        to: "/seguridad",
+        icon: "shield",
+        principal: false,
+      },
+    ],
+    [
+      mensajesNoLeidos,
+      unreadCount,
+    ]
+  );
+
+
+  /**
+   * ==========================================================
+   * MÓDULOS VISIBLES
+   *
+   * IMPORTANTE:
+   *
+   * Aquí se filtra TODO.
+   *
+   * Por tanto:
+   *
+   * usuario A -> 5 módulos
+   * usuario B -> 10 módulos
+   * usuario C -> 18 módulos
+   *
+   * cada uno verá una navegación distinta.
+   * ==========================================================
+   */
+
+  const modulosVisibles = useMemo(
+    () =>
+      modulos.filter((modulo) =>
+        puedeVerModulo(modulo.id)
+      ),
+    [modulos]
+  );
+
+
+  /**
+   * ==========================================================
+   * PRINCIPALES VISIBLES
+   * ==========================================================
+   */
+
+  const modulosPrincipales = useMemo(
+    () =>
+      modulosVisibles.filter(
+        (modulo) => modulo.principal
+      ),
+    [modulosVisibles]
+  );
+
+
+  /**
+   * ==========================================================
+   * MÓDULOS DENTRO DE "MÁS"
+   * ==========================================================
+   */
+
+  const modulosMas = useMemo(
+    () =>
+      modulosVisibles.filter(
+        (modulo) => !modulo.principal
+      ),
+    [modulosVisibles]
+  );
+
+
+  /**
+   * ==========================================================
+   * CERRAR "MÁS" AL HACER CLICK FUERA
+   * ==========================================================
+   */
+
+  useEffect(() => {
+
+    if (!moreOpen) {
+      return undefined;
+    }
+
+    const handlePointerDown = (event) => {
+
+      if (
+        moreRef.current &&
+        !moreRef.current.contains(event.target)
+      ) {
+        setMoreOpen(false);
+      }
+
+    };
+
+    document.addEventListener(
+      "mousedown",
+      handlePointerDown
+    );
+
+    return () => {
+      document.removeEventListener(
+        "mousedown",
+        handlePointerDown
+      );
+    };
+
+  }, [moreOpen]);
+
+
+  /**
+   * ==========================================================
+   * CERRAR "MÁS" CON ESC
+   * ==========================================================
+   */
+
+  useEffect(() => {
+
+    if (!moreOpen) {
+      return undefined;
+    }
+
+    const handleKeyDown = (event) => {
+
+      if (event.key === "Escape") {
+        setMoreOpen(false);
+      }
+
+    };
+
+    document.addEventListener(
+      "keydown",
+      handleKeyDown
+    );
+
+    return () => {
+      document.removeEventListener(
+        "keydown",
+        handleKeyDown
+      );
+    };
+
+  }, [moreOpen]);
+
+
+  /**
+   * ==========================================================
+   * RENDER
+   * ==========================================================
+   */
+
   return (
     <header
       className="
@@ -230,6 +666,8 @@ export default function Sidebar() {
         border-b
         border-[var(--erp-border)]
         shadow-sm
+        relative
+        z-50
       "
     >
 
@@ -246,6 +684,7 @@ export default function Sidebar() {
           min-w-0
         "
       >
+
 
         {/* ====================================================
             MARCA
@@ -282,6 +721,7 @@ export default function Sidebar() {
             </svg>
           </div>
 
+
           <div className="hidden lg:block">
 
             <div
@@ -311,7 +751,7 @@ export default function Sidebar() {
 
 
         {/* ====================================================
-            NAVEGACIÓN
+            NAVEGACIÓN PRINCIPAL
             ==================================================== */}
 
         <nav
@@ -325,112 +765,215 @@ export default function Sidebar() {
             scrollbar-thin
             pb-0.5
           "
+          aria-label="Navegación principal"
         >
 
-          {/* GENERAL */}
+          {modulosPrincipales.map(
+            (modulo, index) => {
 
-          {puedeVerModulo("expedientes") && (
-            <TopNavItem
-              to="/expedientes"
-              label="Expedientes"
-              icon="folder"
-            />
-          )}
+              /**
+               * ------------------------------------------------
+               * Separador después de Agenda
+               * ------------------------------------------------
+               */
 
-          <TopNavItem
-            to="/dashboard"
-            label="Dashboard"
-            icon="home"
-          />
+              const mostrarSeparador =
+                modulo.id === "empleados" &&
+                modulosPrincipales.some(
+                  (m) => m.id === "expedientes"
+                );
 
-          {puedeVerModulo("agenda") && (
-            <TopNavItem
-              to="/agenda"
-              label="Agenda"
-              icon="calendar"
-            />
-          )}
+              return (
+                <div
+                  key={modulo.id}
+                  className="
+                    flex
+                    items-center
+                    gap-1.5
+                  "
+                >
 
+                  {mostrarSeparador && (
+                    <NavSeparator />
+                  )}
 
-          {/* SEPARADOR */}
+                  <TopNavItem
+                    to={modulo.to}
+                    label={modulo.label}
+                    icon={modulo.icon}
+                    badge={modulo.badge || 0}
+                  />
 
-          {(puedeVerModulo("empleados") ||
-            puedeVerModulo("ctn") ||
-            puedeVerModulo("intranet") ||
-            puedeVerModulo("mensajes")) && (
-            <NavSeparator />
-          )}
+                </div>
+              );
 
-
-          {/* GESTIÓN */}
-
-          {puedeVerModulo("empleados") && (
-            <TopNavItem
-              to="/empleados"
-              label="Empleados"
-              icon="user-group"
-            />
-          )}
-
-          {puedeVerModulo("ctn") && (
-            <TopNavItem
-              to="/ctn"
-              label="CTN — Notarios"
-              icon="globe"
-            />
-          )}
-
-          {puedeVerModulo("intranet") && (
-            <TopNavItem
-              to="/intranet"
-              label="Intranet"
-              icon="globe"
-            />
-          )}
-
-          {puedeVerModulo("mensajes") && (
-            <TopNavItem
-              to="/mensajes"
-              label="Mensajes"
-              icon="chat"
-              badge={mensajesNoLeidos}
-            />
+            }
           )}
 
 
-          {/* SEPARADOR */}
+          {/* ==================================================
+              BOTÓN MÁS
 
-          {(puedeVerModulo("logs") ||
-            puedeVerModulo("seguridad") ||
-            puedeVerModulo("utilidades")) && (
-            <NavSeparator />
-          )}
+              SOLO aparece si existen módulos adicionales
+              visibles para el usuario.
+              ================================================== */}
+
+          {modulosMas.length > 0 && (
+
+            <div
+              ref={moreRef}
+              className="
+                relative
+                flex-shrink-0
+              "
+            >
+
+              <button
+                type="button"
+                onClick={() =>
+                  setMoreOpen((value) => !value)
+                }
+                aria-expanded={moreOpen}
+                aria-haspopup="menu"
+                className={`
+                  flex
+                  items-center
+                  gap-2
+                  px-3
+                  py-2
+                  rounded-xl
+                  whitespace-nowrap
+                  text-sm
+                  font-medium
+                  transition-all
+                  duration-200
+                  border
+
+                  ${
+                    moreOpen
+                      ? `
+                        bg-[var(--erp-primary)]
+                        text-white
+                        border-[var(--erp-primary)]
+                        shadow-sm
+                      `
+                      : `
+                        bg-white
+                        text-[var(--erp-text)]
+                        border-[var(--erp-border)]
+                        hover:bg-[var(--erp-primary-soft)]
+                        hover:text-[var(--erp-primary)]
+                        hover:border-[var(--erp-primary)]
+                      `
+                  }
+                `}
+              >
+
+                <span>
+                  Más
+                </span>
+
+                <ChevronDownIcon
+                  open={moreOpen}
+                />
+
+              </button>
 
 
-          {/* SISTEMA */}
+              {/* ==============================================
+                  MENÚ DESPLEGABLE
+                  ============================================== */}
 
-          {puedeVerModulo("logs") && (
-            <TopNavItem
-              to="/logs"
-              label="Logs"
-              icon="clipboard"
-            />
-          )}
+              {moreOpen && (
 
-          {puedeVerModulo("seguridad") && (
-            <TopNavItem
-              to="/seguridad"
-              label="Seguridad"
-              icon="shield"
-            />
-          )}
+                <div
+                  role="menu"
+                  className="
+                    absolute
+                    top-[calc(100%+8px)]
+                    right-0
+                    w-[250px]
+                    max-h-[min(70vh,520px)]
+                    overflow-y-auto
+                    p-2
+                    rounded-2xl
+                    border
+                    border-[var(--erp-border)]
+                    bg-[var(--erp-surface)]
+                    shadow-xl
+                    z-[100]
+                    animate-in
+                    fade-in
+                    slide-in-from-top-1
+                    duration-150
+                  "
+                >
 
-          {puedeVerModulo("utilidades") && (
-            <TopNavItem
-              to="/herramientas/utilidades"
-              label="Utilidades"
-              icon="cog"
-            />
+                  <div
+                    className="
+                      px-3
+                      pt-2
+                      pb-2.5
+                      mb-1
+                      border-b
+                      border-[var(--erp-border)]
+                    "
+                  >
+
+                    <div
+                      className="
+                        text-[11px]
+                        font-bold
+                        uppercase
+                        tracking-wider
+                        text-[var(--erp-text-soft)]
+                      "
+                    >
+                      Más módulos
+                    </div>
+
+                    <div
+                      className="
+                        text-[11px]
+                        text-[var(--erp-text-soft)]
+                        mt-0.5
+                      "
+                    >
+                      {modulosMas.length} disponibles
+                    </div>
+
+                  </div>
+
+
+                  <div className="space-y-1">
+
+                    {modulosMas.map(
+                      (modulo) => (
+                        <div
+                          key={modulo.id}
+                          role="menuitem"
+                        >
+                          <MoreNavItem
+                            to={modulo.to}
+                            label={modulo.label}
+                            icon={modulo.icon}
+                            badge={modulo.badge || 0}
+                            onNavigate={() =>
+                              setMoreOpen(false)
+                            }
+                          />
+                        </div>
+                      )
+                    )}
+
+                  </div>
+
+                </div>
+
+              )}
+
+            </div>
+
           )}
 
         </nav>
@@ -438,7 +981,6 @@ export default function Sidebar() {
 
         {/* ====================================================
             ACCIONES DERECHA
-            PERFIL + NOTIFICACIONES + SALIR
             ==================================================== */}
 
         <div
@@ -453,11 +995,15 @@ export default function Sidebar() {
           "
         >
 
-          {/* NOTIFICACIONES */}
+
+          {/* ==================================================
+              NOTIFICACIONES
+              ================================================== */}
 
           <button
             type="button"
             title="Notificaciones"
+            aria-label="Notificaciones"
             className="
               relative
               w-9
@@ -508,7 +1054,9 @@ export default function Sidebar() {
           </button>
 
 
-          {/* PERFIL */}
+          {/* ==================================================
+              PERFIL
+              ================================================== */}
 
           <button
             type="button"
@@ -518,6 +1066,7 @@ export default function Sidebar() {
                 .setPerfilModal(safeUser.id)
             }
             title="Mi perfil"
+            aria-label="Mi perfil"
             className="
               w-9
               h-9
@@ -540,12 +1089,15 @@ export default function Sidebar() {
           </button>
 
 
-          {/* CERRAR SESIÓN */}
+          {/* ==================================================
+              CERRAR SESIÓN
+              ================================================== */}
 
           <button
             type="button"
             onClick={logout}
             title="Cerrar sesión"
+            aria-label="Cerrar sesión"
             className="
               w-9
               h-9

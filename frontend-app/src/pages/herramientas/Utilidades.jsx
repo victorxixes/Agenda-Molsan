@@ -1,73 +1,215 @@
-import { useCallback } from "react";
 import { Link } from "react-router-dom";
 
 /**
- * Utilidades — SJ‑2026 Premium
- * - Cards glass‑UI
- * - Animación fade‑in
+ * UTILIDADES — MOLSAN ERP PREMIUM 2027
  */
 
 export default function Utilidades() {
-  const titulo = useCallback(() => "Utilidades del sistema", []);
-
   return (
-    <div className="p-6 space-y-6 animate-fade-in">
+    <div className="min-h-full p-4 sm:p-6 lg:p-8 space-y-6 animate-fadeIn">
 
-      <h1 className="text-3xl font-bold text-white drop-shadow mb-4">
-        {titulo()}
-      </h1>
+      {/* =====================================================
+          CABECERA
+      ===================================================== */}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div
+        className="
+          relative overflow-hidden
+          rounded-[24px]
+          border border-slate-200/80
+          bg-white/80
+          backdrop-blur-xl
+          shadow-[0_18px_50px_rgba(15,23,42,0.08)]
+          p-6 sm:p-7
+        "
+      >
+
+        <div
+          className="
+            absolute inset-x-0 top-0 h-px
+            bg-gradient-to-r
+            from-transparent
+            via-blue-400/60
+            to-transparent
+          "
+        />
+
+        <div className="relative flex items-center gap-4">
+
+          <div
+            className="
+              flex h-12 w-12 shrink-0
+              items-center justify-center
+              rounded-2xl
+              bg-indigo-50
+              border border-indigo-100
+              text-2xl
+              shadow-sm
+            "
+          >
+            ⚙️
+          </div>
+
+          <div>
+
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-800">
+              Utilidades del sistema
+            </h1>
+
+            <p className="mt-1 text-sm text-slate-500">
+              Procesos auxiliares, importaciones, documentos e informes.
+            </p>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      {/* =====================================================
+          CARDS
+      ===================================================== */}
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
 
         <Card
+          icon="📥"
           titulo="Importar CTN"
-          descripcion="Importar fichero Excel con notarias."
+          descripcion="Importar fichero Excel con información de notarías."
           link="/herramientas/importar-ctn"
         />
 
         <Card
+          icon="📰"
           titulo="Crear noticia"
           descripcion="Publicar una noticia en la intranet."
           link="/herramientas/utilidades/crear-noticia"
         />
 
         <Card
+          icon="📄"
           titulo="Subir documento"
           descripcion="Subir documentos a la intranet."
           link="/herramientas/utilidades/subir-documento"
         />
 
         <Card
+          icon="📊"
           titulo="Informes"
           descripcion="Listados y estadísticas de apoderados."
           link="/herramientas/informes"
         />
 
-        {/* NUEVO: IMPORTADOR ABSIS */}
         <Card
+          icon="📦"
           titulo="Importador ABSIS"
-          descripcion="Importar expedientes del Excel matriz ABSIS."
+          descripcion="Importar expedientes desde el Excel matriz ABSIS."
           link="/herramientas/importador-absis"
+          destacado
         />
 
       </div>
+
     </div>
   );
 }
 
-function Card({ titulo, descripcion, link }) {
+
+/* =========================================================
+   CARD
+========================================================= */
+
+function Card({
+  icon,
+  titulo,
+  descripcion,
+  link,
+  destacado = false,
+}) {
   return (
     <Link
       to={link}
-      className="
-        bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
-        p-6 shadow-xl hover:bg-white/20 transition block active:scale-[0.97]
-      "
+      className={`
+        group relative overflow-hidden
+        rounded-[22px]
+        border
+        bg-white/80
+        backdrop-blur-xl
+        p-5
+        shadow-[0_12px_35px_rgba(15,23,42,0.07)]
+        transition-all duration-300
+        hover:-translate-y-1
+        hover:shadow-[0_20px_45px_rgba(15,23,42,0.11)]
+        active:scale-[0.98]
+
+        ${
+          destacado
+            ? "border-blue-200/80 bg-blue-50/50"
+            : "border-slate-200/80"
+        }
+      `}
     >
-      <h2 className="text-xl font-semibold text-white drop-shadow mb-2">
-        {titulo}
-      </h2>
-      <p className="text-sm text-white/70">{descripcion}</p>
+
+      <div
+        className="
+          absolute inset-x-0 top-0 h-px
+          bg-gradient-to-r
+          from-transparent
+          via-blue-400/50
+          to-transparent
+          opacity-0
+          group-hover:opacity-100
+          transition-opacity
+        "
+      />
+
+      <div className="flex items-start gap-4">
+
+        <div
+          className={`
+            flex h-12 w-12 shrink-0
+            items-center justify-center
+            rounded-2xl
+            border
+            text-xl
+            transition-all duration-300
+            group-hover:scale-105
+            ${
+              destacado
+                ? "bg-blue-100 border-blue-200"
+                : "bg-slate-50 border-slate-200"
+            }
+          `}
+        >
+          {icon}
+        </div>
+
+        <div className="flex-1 min-w-0">
+
+          <h2 className="text-base font-semibold text-slate-800">
+            {titulo}
+          </h2>
+
+          <p className="mt-1.5 text-sm leading-5 text-slate-500">
+            {descripcion}
+          </p>
+
+        </div>
+
+        <span
+          className="
+            text-slate-300
+            group-hover:text-blue-500
+            group-hover:translate-x-1
+            transition-all
+          "
+        >
+          →
+        </span>
+
+      </div>
+
     </Link>
   );
 }

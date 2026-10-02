@@ -2,13 +2,38 @@ import { useEffect, useState } from "react";
 import { useAuthStore } from "../../store/authStore";
 import axios from "../../api/axios";
 
+/**
+ * ============================================================
+ * INTRANET — MOLSAN ERP SAAS PREMIUM 2027
+ * ============================================================
+ *
+ * Diseño:
+ * - Premium / Glass Luxe claro
+ * - Coherente con el resto del ERP
+ * - Fondo claro corporativo
+ * - Tarjetas glass
+ * - Azul corporativo
+ * - Responsive
+ * - Animaciones suaves
+ *
+ * Funcionalidad:
+ * - Mantiene autenticación actual
+ * - Mantiene carga de noticias
+ * - Mantiene carga de documentos
+ * - Mantiene permisos de administrador
+ * - Mantiene eliminación
+ * - Mantiene descarga de documentos
+ */
+
 function Intranet() {
   const { token, authReady, empleado } = useAuthStore();
 
-  const esAdmin = empleado?.rol?.nombre === "admin";
+  const esAdmin =
+    empleado?.rol?.nombre === "admin";
 
   const [noticias, setNoticias] = useState([]);
   const [documentos, setDocumentos] = useState([]);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -17,18 +42,22 @@ function Intranet() {
   // =========================================================
 
   useEffect(() => {
-    if (!authReady || !token) return;
+    if (!authReady || !token) {
+      return;
+    }
 
     async function cargar() {
       try {
         setLoading(true);
         setError(null);
 
-        const [resNoticias, resDocumentos] =
-          await Promise.all([
-            axios.get("/noticias"),
-            axios.get("/documentos"),
-          ]);
+        const [
+          resNoticias,
+          resDocumentos,
+        ] = await Promise.all([
+          axios.get("/noticias"),
+          axios.get("/documentos"),
+        ]);
 
         setNoticias(
           Array.isArray(resNoticias.data)
@@ -68,12 +97,17 @@ function Intranet() {
         `/noticias/${id}`
       );
 
-      setNoticias(
-        noticias.filter(
+      setNoticias((actuales) =>
+        actuales.filter(
           (n) => n.id !== id
         )
       );
-    } catch {
+    } catch (e) {
+      console.error(
+        "Error eliminando noticia",
+        e
+      );
+
       alert(
         "Error eliminando noticia"
       );
@@ -90,12 +124,17 @@ function Intranet() {
         `/documentos/${id}`
       );
 
-      setDocumentos(
-        documentos.filter(
+      setDocumentos((actuales) =>
+        actuales.filter(
           (d) => d.id !== id
         )
       );
-    } catch {
+    } catch (e) {
+      console.error(
+        "Error eliminando documento",
+        e
+      );
+
       alert(
         "Error eliminando documento"
       );
@@ -108,77 +147,51 @@ function Intranet() {
 
   if (!authReady) {
     return (
-      <div className="animate-fadeIn">
-
+      <div
+        className="
+          min-h-[400px]
+          flex
+          items-center
+          justify-center
+        "
+      >
         <div
           className="
-            relative
-            overflow-hidden
-
-            rounded-[26px]
-
+            flex
+            items-center
+            gap-3
+            rounded-2xl
             border
-            border-white/90
-
+            border-slate-200
             bg-white/80
-
+            px-6
+            py-4
+            shadow-sm
             backdrop-blur-xl
-
-            shadow-[0_20px_60px_rgba(15,23,42,0.08)]
-
-            p-8
           "
         >
+          <span
+            className="
+              h-5
+              w-5
+              rounded-full
+              border-2
+              border-slate-200
+              border-t-blue-500
+              animate-spin
+            "
+          />
 
-          <div className="flex items-center gap-4">
-
-            <div
-              className="
-                flex
-                h-11
-                w-11
-                shrink-0
-                items-center
-                justify-center
-
-                rounded-2xl
-
-                bg-blue-50
-
-                text-xl
-              "
-            >
-              🔐
-            </div>
-
-            <div>
-
-              <h2
-                className="
-                  text-base
-                  font-semibold
-                  text-slate-800
-                "
-              >
-                Intranet
-              </h2>
-
-              <p
-                className="
-                  mt-1
-                  text-sm
-                  text-slate-500
-                "
-              >
-                Cargando sesión…
-              </p>
-
-            </div>
-
-          </div>
-
+          <span
+            className="
+              text-sm
+              font-medium
+              text-slate-600
+            "
+          >
+            Cargando sesión…
+          </span>
         </div>
-
       </div>
     );
   }
@@ -189,92 +202,51 @@ function Intranet() {
 
   if (loading) {
     return (
-      <div className="animate-fadeIn">
-
+      <div
+        className="
+          min-h-[400px]
+          flex
+          items-center
+          justify-center
+        "
+      >
         <div
           className="
-            relative
-            overflow-hidden
-
-            rounded-[26px]
-
+            flex
+            items-center
+            gap-3
+            rounded-2xl
             border
-            border-white/90
-
+            border-white/80
             bg-white/80
-
+            px-6
+            py-4
+            shadow-[0_15px_40px_rgba(15,23,42,0.08)]
             backdrop-blur-xl
-
-            shadow-[0_20px_60px_rgba(15,23,42,0.08)]
-
-            p-8
           "
         >
+          <span
+            className="
+              h-5
+              w-5
+              rounded-full
+              border-2
+              border-blue-100
+              border-t-blue-500
+              animate-spin
+            "
+          />
 
-          <div className="flex items-center gap-4">
-
-            <div
-              className="
-                flex
-                h-11
-                w-11
-                shrink-0
-                items-center
-                justify-center
-
-                rounded-2xl
-
-                bg-blue-50
-
-                text-xl
-              "
-            >
-              🏢
-            </div>
-
-            <div className="flex-1">
-
-              <h2
-                className="
-                  text-base
-                  font-semibold
-                  text-slate-800
-                "
-              >
-                Intranet
-              </h2>
-
-              <p
-                className="
-                  mt-1
-                  text-sm
-                  text-slate-500
-                "
-              >
-                Cargando información…
-              </p>
-
-            </div>
-
-            <div
-              className="
-                h-5
-                w-5
-
-                rounded-full
-
-                border-2
-                border-blue-200
-                border-t-blue-600
-
-                animate-spin
-              "
-            />
-
-          </div>
-
+          <span
+            className="
+              text-sm
+              font-medium
+              text-slate-600
+            "
+          >
+            Cargando intranet…
+          </span>
         </div>
-
       </div>
     );
   }
@@ -285,74 +257,65 @@ function Intranet() {
 
   if (error) {
     return (
-      <div className="animate-fadeIn">
-
+      <div
+        className="
+          rounded-3xl
+          border
+          border-red-200
+          bg-white/80
+          p-8
+          shadow-[0_15px_40px_rgba(15,23,42,0.06)]
+          backdrop-blur-xl
+          animate-[fadeIn_0.3s_ease]
+        "
+      >
         <div
           className="
-            rounded-[26px]
-
-            border
-            border-red-200
-
-            bg-white/85
-
-            backdrop-blur-xl
-
-            shadow-[0_20px_60px_rgba(15,23,42,0.08)]
-
-            p-8
+            flex
+            items-start
+            gap-4
           "
         >
-
-          <div className="flex items-start gap-4">
-
-            <div
-              className="
-                flex
-                h-11
-                w-11
-                shrink-0
-                items-center
-                justify-center
-
-                rounded-2xl
-
-                bg-red-50
-
-                text-lg
-              "
-            >
-              ⚠️
-            </div>
-
-            <div>
-
-              <h2
-                className="
-                  text-base
-                  font-semibold
-                  text-slate-800
-                "
-              >
-                No se ha podido cargar la intranet
-              </h2>
-
-              <p
-                className="
-                  mt-1
-                  text-sm
-                  text-red-500
-                "
-              >
-                {error}
-              </p>
-
-            </div>
-
+          <div
+            className="
+              flex
+              h-11
+              w-11
+              shrink-0
+              items-center
+              justify-center
+              rounded-2xl
+              bg-red-50
+              text-red-500
+              border
+              border-red-100
+            "
+          >
+            !
           </div>
 
-        </div>
+          <div>
+            <h2
+              className="
+                text-base
+                font-semibold
+                text-slate-800
+              "
+            >
+              No se ha podido cargar la intranet
+            </h2>
 
+            <p
+              className="
+                mt-1
+                text-sm
+                text-slate-500
+              "
+            >
+              {error}
+            </p>
+          </div>
+        </div>
       </div>
     );
   }
@@ -365,168 +328,68 @@ function Intranet() {
     <div
       className="
         relative
-
+        min-h-full
+        overflow-hidden
         animate-fadeIn
-
-        space-y-6
       "
     >
 
       {/* =====================================================
-          CABECERA INTRANET
+          FONDO DECORATIVO
       ===================================================== */}
 
       <div
         className="
-          relative
+          pointer-events-none
+          absolute
+          inset-0
           overflow-hidden
-
-          rounded-[26px]
-
-          border
-          border-white/90
-
-          bg-white/80
-
-          backdrop-blur-xl
-
-          shadow-[0_20px_60px_rgba(15,23,42,0.07)]
-
-          px-6
-          py-5
-          sm:px-7
         "
       >
 
-        {/* brillo superior */}
-
         <div
           className="
             absolute
-            top-0
-            left-0
-            right-0
-
-            h-[2px]
-
-            bg-gradient-to-r
-            from-transparent
-            via-blue-500/40
-            to-transparent
-          "
-        />
-
-        {/* decoración */}
-
-        <div
-          className="
-            absolute
-
-            -right-20
-            -top-24
-
-            h-56
-            w-56
-
+            -top-40
+            -right-40
+            h-[420px]
+            w-[420px]
             rounded-full
-
-            bg-blue-400/[0.05]
-
+            bg-blue-400/10
             blur-3xl
-
-            pointer-events-none
           "
         />
 
         <div
           className="
-            relative
-
-            flex
-            items-center
-            gap-4
+            absolute
+            -bottom-40
+            -left-40
+            h-[420px]
+            w-[420px]
+            rounded-full
+            bg-cyan-300/10
+            blur-3xl
           "
-        >
-
-          <div
-            className="
-              flex
-              h-12
-              w-12
-              shrink-0
-
-              items-center
-              justify-center
-
-              rounded-2xl
-
-              border
-              border-blue-100
-
-              bg-gradient-to-br
-              from-blue-50
-              to-cyan-50
-
-              text-xl
-
-              shadow-sm
-            "
-          >
-            🏢
-          </div>
-
-          <div className="min-w-0">
-
-            <h1
-              className="
-                text-xl
-                sm:text-2xl
-
-                font-bold
-
-                tracking-tight
-
-                text-slate-800
-              "
-            >
-              Intranet
-            </h1>
-
-            <p
-              className="
-                mt-0.5
-
-                text-sm
-
-                text-slate-500
-              "
-            >
-              Noticias y documentación interna
-            </p>
-
-          </div>
-
-        </div>
+        />
 
       </div>
 
 
       {/* =====================================================
-          COLUMNAS
+          CONTENIDO
       ===================================================== */}
 
       <div
         className="
-          grid
-          grid-cols-1
-          xl:grid-cols-2
-
-          gap-6
+          relative
+          z-10
+          space-y-6
         "
       >
 
         {/* ===================================================
-            NOTICIAS
+            CABECERA
         =================================================== */}
 
         <section
@@ -534,100 +397,109 @@ function Intranet() {
             relative
             overflow-hidden
 
-            rounded-[26px]
+            rounded-[28px]
 
             border
-            border-white/90
+            border-white/80
 
-            bg-white/80
+            bg-white/75
 
-            backdrop-blur-xl
+            backdrop-blur-2xl
 
-            shadow-[0_20px_60px_rgba(15,23,42,0.07)]
+            shadow-[0_18px_55px_rgba(15,23,42,0.08)]
+
+            p-6
+            sm:p-7
           "
         >
 
-          {/* línea superior */}
+          {/* Línea superior */}
 
           <div
             className="
               absolute
-              top-0
               left-0
               right-0
-
-              h-[2px]
-
+              top-0
+              h-px
               bg-gradient-to-r
-              from-blue-500/0
-              via-blue-500/35
-              to-blue-500/0
+              from-transparent
+              via-blue-400/50
+              to-transparent
             "
           />
-
-
-          {/* CABECERA */}
 
           <div
             className="
               flex
-              items-center
-              justify-between
-
-              border-b
-              border-slate-100
-
-              px-5
-              py-4
-              sm:px-6
+              flex-col
+              gap-5
+              sm:flex-row
+              sm:items-center
+              sm:justify-between
             "
           >
+
+            {/* TÍTULO */}
 
             <div
               className="
                 flex
                 items-center
-                gap-3
+                gap-4
               "
             >
 
               <div
                 className="
                   flex
-                  h-10
-                  w-10
+                  h-14
+                  w-14
+                  shrink-0
                   items-center
                   justify-center
 
-                  rounded-xl
+                  rounded-2xl
+
+                  border
+                  border-blue-100
 
                   bg-blue-50
 
-                  text-lg
+                  text-2xl
+
+                  shadow-sm
                 "
               >
-                📰
+                🏢
               </div>
 
               <div>
 
-                <h2
+                <h1
                   className="
-                    text-base
-                    font-semibold
+                    text-2xl
+                    sm:text-3xl
+
+                    font-bold
+
+                    tracking-tight
+
                     text-slate-800
                   "
                 >
-                  Noticias internas
-                </h2>
+                  Intranet
+                </h1>
 
                 <p
                   className="
-                    text-xs
-                    text-slate-400
+                    mt-1
+                    text-sm
+                    sm:text-base
+                    text-slate-500
                   "
                 >
-                  Comunicaciones de la empresa
+                  Información y documentación interna
                 </p>
 
               </div>
@@ -635,86 +507,400 @@ function Intranet() {
             </div>
 
 
-            <span
+            {/* INDICADOR */}
+
+            <div
               className="
                 inline-flex
+                w-fit
                 items-center
+                gap-2
+
                 rounded-full
 
                 border
                 border-blue-100
 
-                bg-blue-50
+                bg-blue-50/80
 
-                px-2.5
-                py-1
+                px-4
+                py-2
 
-                text-[11px]
+                text-xs
                 font-semibold
 
                 text-blue-600
               "
             >
-              {noticias.length}
-            </span>
+
+              <span
+                className="
+                  h-2
+                  w-2
+                  rounded-full
+                  bg-blue-500
+                  shadow-[0_0_0_4px_rgba(59,130,246,0.10)]
+                "
+              />
+
+              Área interna
+
+            </div>
+
+          </div>
+
+        </section>
+
+
+        {/* ===================================================
+            RESUMEN
+        =================================================== */}
+
+        <section
+          className="
+            grid
+            grid-cols-1
+            sm:grid-cols-2
+            gap-4
+          "
+        >
+
+          {/* NOTICIAS */}
+
+          <div
+            className="
+              relative
+              overflow-hidden
+
+              rounded-2xl
+
+              border
+              border-white/80
+
+              bg-white/70
+
+              backdrop-blur-xl
+
+              p-5
+
+              shadow-[0_12px_35px_rgba(15,23,42,0.06)]
+
+              transition-all
+              duration-200
+
+              hover:-translate-y-0.5
+              hover:shadow-[0_18px_45px_rgba(15,23,42,0.09)]
+            "
+          >
+
+            <div
+              className="
+                flex
+                items-center
+                justify-between
+              "
+            >
+
+              <div>
+
+                <p
+                  className="
+                    text-xs
+                    font-semibold
+                    uppercase
+                    tracking-[0.14em]
+                    text-slate-400
+                  "
+                >
+                  Noticias
+                </p>
+
+                <p
+                  className="
+                    mt-1
+                    text-2xl
+                    font-bold
+                    text-slate-800
+                  "
+                >
+                  {noticias.length}
+                </p>
+
+              </div>
+
+              <div
+                className="
+                  flex
+                  h-11
+                  w-11
+                  items-center
+                  justify-center
+                  rounded-xl
+                  bg-blue-50
+                  border
+                  border-blue-100
+                  text-xl
+                "
+              >
+                📰
+              </div>
+
+            </div>
 
           </div>
 
 
-          {/* CONTENIDO */}
+          {/* DOCUMENTOS */}
 
           <div
             className="
+              relative
+              overflow-hidden
+
+              rounded-2xl
+
+              border
+              border-white/80
+
+              bg-white/70
+
+              backdrop-blur-xl
+
+              p-5
+
+              shadow-[0_12px_35px_rgba(15,23,42,0.06)]
+
+              transition-all
+              duration-200
+
+              hover:-translate-y-0.5
+              hover:shadow-[0_18px_45px_rgba(15,23,42,0.09)]
+            "
+          >
+
+            <div
+              className="
+                flex
+                items-center
+                justify-between
+              "
+            >
+
+              <div>
+
+                <p
+                  className="
+                    text-xs
+                    font-semibold
+                    uppercase
+                    tracking-[0.14em]
+                    text-slate-400
+                  "
+                >
+                  Documentos
+                </p>
+
+                <p
+                  className="
+                    mt-1
+                    text-2xl
+                    font-bold
+                    text-slate-800
+                  "
+                >
+                  {documentos.length}
+                </p>
+
+              </div>
+
+              <div
+                className="
+                  flex
+                  h-11
+                  w-11
+                  items-center
+                  justify-center
+                  rounded-xl
+                  bg-cyan-50
+                  border
+                  border-cyan-100
+                  text-xl
+                "
+              >
+                📁
+              </div>
+
+            </div>
+
+          </div>
+
+        </section>
+
+
+        {/* ===================================================
+            CONTENIDO PRINCIPAL
+        =================================================== */}
+
+        <div
+          className="
+            grid
+            grid-cols-1
+            xl:grid-cols-2
+            gap-6
+          "
+        >
+
+          {/* =================================================
+              NOTICIAS
+          ================================================= */}
+
+          <section
+            className="
+              relative
+              overflow-hidden
+
+              rounded-[28px]
+
+              border
+              border-white/80
+
+              bg-white/75
+
+              backdrop-blur-2xl
+
+              shadow-[0_18px_55px_rgba(15,23,42,0.08)]
+
               p-5
               sm:p-6
             "
           >
 
-            {noticias.length === 0 ? (
+            <div
+              className="
+                absolute
+                left-0
+                right-0
+                top-0
+                h-px
+                bg-gradient-to-r
+                from-transparent
+                via-blue-400/40
+                to-transparent
+              "
+            />
+
+
+            {/* CABECERA */}
+
+            <div
+              className="
+                mb-5
+                flex
+                items-center
+                justify-between
+                gap-3
+              "
+            >
 
               <div
                 className="
                   flex
-                  flex-col
                   items-center
-                  justify-center
+                  gap-3
+                "
+              >
 
+                <div
+                  className="
+                    flex
+                    h-10
+                    w-10
+                    items-center
+                    justify-center
+                    rounded-xl
+                    bg-blue-50
+                    border
+                    border-blue-100
+                    text-lg
+                  "
+                >
+                  📰
+                </div>
+
+                <div>
+
+                  <h2
+                    className="
+                      text-lg
+                      font-bold
+                      text-slate-800
+                    "
+                  >
+                    Noticias internas
+                  </h2>
+
+                  <p
+                    className="
+                      text-xs
+                      text-slate-400
+                    "
+                  >
+                    Comunicaciones de la empresa
+                  </p>
+
+                </div>
+
+              </div>
+
+
+              <span
+                className="
+                  rounded-full
+                  bg-slate-100
+                  px-3
+                  py-1
+                  text-xs
+                  font-semibold
+                  text-slate-500
+                "
+              >
+                {noticias.length}
+              </span>
+
+            </div>
+
+
+            {/* LISTA */}
+
+            {noticias.length === 0 ? (
+
+              <div
+                className="
                   rounded-2xl
-
                   border
                   border-dashed
                   border-slate-200
-
                   bg-slate-50/70
-
-                  px-6
+                  px-5
                   py-10
-
                   text-center
                 "
               >
 
                 <div
                   className="
-                    mb-3
-
+                    mx-auto
                     flex
                     h-12
                     w-12
-
                     items-center
                     justify-center
-
                     rounded-2xl
-
                     bg-white
-
                     border
                     border-slate-200
-
+                    text-xl
                     shadow-sm
-
-                    text-lg
                   "
                 >
                   📰
@@ -722,6 +908,7 @@ function Intranet() {
 
                 <p
                   className="
+                    mt-3
                     text-sm
                     font-medium
                     text-slate-600
@@ -744,231 +931,209 @@ function Intranet() {
 
             ) : (
 
-              <ul className="space-y-3">
+              <div
+                className="
+                  space-y-3
+                "
+              >
 
                 {noticias.map((n) => (
 
-                  <li
+                  <article
                     key={n.id}
-
                     className="
                       group
 
                       rounded-2xl
 
                       border
-                      border-slate-100
+                      border-slate-200/80
 
-                      bg-white
+                      bg-white/80
 
                       p-4
 
-                      shadow-[0_5px_20px_rgba(15,23,42,0.04)]
+                      shadow-sm
 
                       transition-all
                       duration-200
 
-                      hover:-translate-y-[1px]
+                      hover:-translate-y-0.5
 
-                      hover:border-blue-100
+                      hover:border-blue-200
 
-                      hover:shadow-[0_10px_30px_rgba(15,23,42,0.07)]
+                      hover:shadow-[0_12px_30px_rgba(15,23,42,0.07)]
+
+                      animate-[fadeIn_0.3s_ease]
                     "
                   >
 
                     <div
                       className="
                         flex
-                        items-start
-                        justify-between
-
-                        gap-4
+                        flex-col
+                        gap-3
                       "
                     >
 
-                      <div className="min-w-0">
+                      <div
+                        className="
+                          flex
+                          flex-col
+                          gap-2
+                          sm:flex-row
+                          sm:items-start
+                          sm:justify-between
+                        "
+                      >
 
                         <h3
                           className="
                             font-semibold
-
                             text-slate-800
-
-                            leading-snug
                           "
                         >
                           {n.titulo}
                         </h3>
 
+                        {n.fecha_publicacion && (
+                          <span
+                            className="
+                              shrink-0
+                              text-xs
+                              text-slate-400
+                            "
+                          >
+                            {new Date(
+                              n.fecha_publicacion
+                            ).toLocaleString(
+                              "es-ES"
+                            )}
+                          </span>
+                        )}
+
                       </div>
 
 
-                      {n.fecha_publicacion && (
-                        <span
+                      {n.descripcion && (
+                        <p
                           className="
-                            shrink-0
-
-                            rounded-lg
-
-                            bg-slate-50
-
-                            px-2.5
-                            py-1
-
-                            text-[10px]
-
-                            font-medium
-
-                            text-slate-400
+                            text-sm
+                            leading-6
+                            text-slate-500
                           "
                         >
-                          {new Date(
-                            n.fecha_publicacion
-                          ).toLocaleString()}
-                        </span>
+                          {n.descripcion}
+                        </p>
+                      )}
+
+
+                      {esAdmin && (
+                        <div
+                          className="
+                            pt-1
+                            flex
+                            justify-end
+                          "
+                        >
+
+                          <button
+                            onClick={() =>
+                              eliminarNoticia(
+                                n.id
+                              )
+                            }
+                            className="
+                              rounded-xl
+
+                              border
+                              border-red-200
+
+                              bg-red-50
+
+                              px-3
+                              py-1.5
+
+                              text-xs
+                              font-semibold
+
+                              text-red-600
+
+                              transition-all
+
+                              hover:bg-red-100
+                              hover:border-red-300
+
+                              active:scale-[0.98]
+                            "
+                          >
+                            Eliminar
+                          </button>
+
+                        </div>
                       )}
 
                     </div>
 
-
-                    {n.descripcion && (
-                      <p
-                        className="
-                          mt-2
-
-                          text-sm
-
-                          leading-relaxed
-
-                          text-slate-500
-                        "
-                      >
-                        {n.descripcion}
-                      </p>
-                    )}
-
-
-                    {esAdmin && (
-                      <div
-                        className="
-                          mt-4
-
-                          flex
-                          justify-end
-                        "
-                      >
-
-                        <button
-                          onClick={() =>
-                            eliminarNoticia(n.id)
-                          }
-
-                          className="
-                            rounded-xl
-
-                            border
-                            border-red-100
-
-                            bg-red-50
-
-                            px-3
-                            py-1.5
-
-                            text-xs
-                            font-medium
-
-                            text-red-500
-
-                            transition-all
-
-                            hover:border-red-200
-
-                            hover:bg-red-100
-
-                            hover:text-red-600
-                          "
-                        >
-                          Eliminar
-                        </button>
-
-                      </div>
-                    )}
-
-                  </li>
+                  </article>
 
                 ))}
 
-              </ul>
+              </div>
 
             )}
 
-          </div>
-
-        </section>
+          </section>
 
 
-        {/* ===================================================
-            DOCUMENTOS
-        =================================================== */}
+          {/* =================================================
+              DOCUMENTOS
+          ================================================= */}
 
-        <section
-          className="
-            relative
-            overflow-hidden
-
-            rounded-[26px]
-
-            border
-            border-white/90
-
-            bg-white/80
-
-            backdrop-blur-xl
-
-            shadow-[0_20px_60px_rgba(15,23,42,0.07)]
-          "
-        >
-
-          {/* línea superior */}
-
-          <div
+          <section
             className="
-              absolute
-              top-0
-              left-0
-              right-0
+              relative
+              overflow-hidden
 
-              h-[2px]
+              rounded-[28px]
 
-              bg-gradient-to-r
-              from-transparent
-              via-cyan-500/35
-              to-transparent
-            "
-          />
+              border
+              border-white/80
 
+              bg-white/75
 
-          {/* CABECERA */}
+              backdrop-blur-2xl
 
-          <div
-            className="
-              flex
-              items-center
-              justify-between
+              shadow-[0_18px_55px_rgba(15,23,42,0.08)]
 
-              border-b
-              border-slate-100
-
-              px-5
-              py-4
-              sm:px-6
+              p-5
+              sm:p-6
             "
           >
 
             <div
               className="
+                absolute
+                left-0
+                right-0
+                top-0
+                h-px
+                bg-gradient-to-r
+                from-transparent
+                via-cyan-400/40
+                to-transparent
+              "
+            />
+
+
+            {/* CABECERA */}
+
+            <div
+              className="
+                mb-5
                 flex
                 items-center
+                justify-between
                 gap-3
               "
             >
@@ -976,128 +1141,102 @@ function Intranet() {
               <div
                 className="
                   flex
-                  h-10
-                  w-10
-
                   items-center
-                  justify-center
-
-                  rounded-xl
-
-                  bg-cyan-50
-
-                  text-lg
+                  gap-3
                 "
               >
-                📁
-              </div>
 
-              <div>
-
-                <h2
+                <div
                   className="
-                    text-base
-                    font-semibold
-                    text-slate-800
+                    flex
+                    h-10
+                    w-10
+                    items-center
+                    justify-center
+                    rounded-xl
+                    bg-cyan-50
+                    border
+                    border-cyan-100
+                    text-lg
                   "
                 >
-                  Documentos internos
-                </h2>
+                  📁
+                </div>
 
-                <p
-                  className="
-                    text-xs
-                    text-slate-400
-                  "
-                >
-                  Archivos disponibles para la empresa
-                </p>
+                <div>
+
+                  <h2
+                    className="
+                      text-lg
+                      font-bold
+                      text-slate-800
+                    "
+                  >
+                    Documentos internos
+                  </h2>
+
+                  <p
+                    className="
+                      text-xs
+                      text-slate-400
+                    "
+                  >
+                    Documentación corporativa
+                  </p>
+
+                </div>
 
               </div>
+
+
+              <span
+                className="
+                  rounded-full
+                  bg-slate-100
+                  px-3
+                  py-1
+                  text-xs
+                  font-semibold
+                  text-slate-500
+                "
+              >
+                {documentos.length}
+              </span>
 
             </div>
 
 
-            <span
-              className="
-                inline-flex
-                items-center
-                rounded-full
-
-                border
-                border-cyan-100
-
-                bg-cyan-50
-
-                px-2.5
-                py-1
-
-                text-[11px]
-                font-semibold
-
-                text-cyan-600
-              "
-            >
-              {documentos.length}
-            </span>
-
-          </div>
-
-
-          {/* CONTENIDO */}
-
-          <div
-            className="
-              p-5
-              sm:p-6
-            "
-          >
+            {/* LISTA */}
 
             {documentos.length === 0 ? (
 
               <div
                 className="
-                  flex
-                  flex-col
-                  items-center
-                  justify-center
-
                   rounded-2xl
-
                   border
                   border-dashed
                   border-slate-200
-
                   bg-slate-50/70
-
-                  px-6
+                  px-5
                   py-10
-
                   text-center
                 "
               >
 
                 <div
                   className="
-                    mb-3
-
+                    mx-auto
                     flex
                     h-12
                     w-12
-
                     items-center
                     justify-center
-
                     rounded-2xl
-
                     bg-white
-
                     border
                     border-slate-200
-
+                    text-xl
                     shadow-sm
-
-                    text-lg
                   "
                 >
                   📁
@@ -1105,6 +1244,7 @@ function Intranet() {
 
                 <p
                   className="
+                    mt-3
                     text-sm
                     font-medium
                     text-slate-600
@@ -1127,35 +1267,40 @@ function Intranet() {
 
             ) : (
 
-              <ul className="space-y-3">
+              <div
+                className="
+                  space-y-3
+                "
+              >
 
                 {documentos.map((d) => (
 
-                  <li
+                  <article
                     key={d.id}
-
                     className="
                       group
 
                       rounded-2xl
 
                       border
-                      border-slate-100
+                      border-slate-200/80
 
-                      bg-white
+                      bg-white/80
 
                       p-4
 
-                      shadow-[0_5px_20px_rgba(15,23,42,0.04)]
+                      shadow-sm
 
                       transition-all
                       duration-200
 
-                      hover:-translate-y-[1px]
+                      hover:-translate-y-0.5
 
-                      hover:border-cyan-100
+                      hover:border-cyan-200
 
-                      hover:shadow-[0_10px_30px_rgba(15,23,42,0.07)]
+                      hover:shadow-[0_12px_30px_rgba(15,23,42,0.07)]
+
+                      animate-[fadeIn_0.3s_ease]
                     "
                   >
 
@@ -1164,7 +1309,6 @@ function Intranet() {
                         flex
                         flex-col
                         gap-4
-
                         sm:flex-row
                         sm:items-center
                         sm:justify-between
@@ -1177,7 +1321,7 @@ function Intranet() {
                         className="
                           flex
                           min-w-0
-                          items-start
+                          items-center
                           gap-3
                         "
                       >
@@ -1185,36 +1329,37 @@ function Intranet() {
                         <div
                           className="
                             flex
-                            h-10
-                            w-10
+                            h-11
+                            w-11
                             shrink-0
-
                             items-center
                             justify-center
 
                             rounded-xl
 
-                            bg-slate-50
+                            bg-cyan-50
 
                             border
-                            border-slate-100
+                            border-cyan-100
 
-                            text-base
+                            text-lg
                           "
                         >
                           📄
                         </div>
 
 
-                        <div className="min-w-0">
+                        <div
+                          className="
+                            min-w-0
+                          "
+                        >
 
                           <div
                             className="
-                              font-semibold
-
-                              text-slate-800
-
                               truncate
+                              font-semibold
+                              text-slate-800
                             "
                           >
                             {d.titulo}
@@ -1225,15 +1370,28 @@ function Intranet() {
                             <div
                               className="
                                 mt-1
-
                                 text-sm
-
                                 text-slate-500
-
-                                leading-relaxed
                               "
                             >
                               {d.concepto}
+                            </div>
+                          )}
+
+
+                          {d.fecha_publicacion && (
+                            <div
+                              className="
+                                mt-1
+                                text-xs
+                                text-slate-400
+                              "
+                            >
+                              {new Date(
+                                d.fecha_publicacion
+                              ).toLocaleString(
+                                "es-ES"
+                              )}
                             </div>
                           )}
 
@@ -1248,13 +1406,16 @@ function Intranet() {
                         className="
                           flex
                           shrink-0
+                          items-center
                           gap-2
                         "
                       >
 
                         <a
-                          href={`${import.meta.env.VITE_API_URL}/documentos/descargar/${d.id}`}
-
+                          href={`
+                            ${import.meta.env.VITE_API_URL}
+                            /documentos/descargar/${d.id}
+                          `}
                           className="
                             inline-flex
                             items-center
@@ -1263,11 +1424,11 @@ function Intranet() {
                             rounded-xl
 
                             border
-                            border-blue-100
+                            border-blue-200
 
                             bg-blue-50
 
-                            px-3.5
+                            px-3
                             py-2
 
                             text-xs
@@ -1277,11 +1438,10 @@ function Intranet() {
 
                             transition-all
 
-                            hover:border-blue-200
-
                             hover:bg-blue-100
+                            hover:border-blue-300
 
-                            hover:text-blue-700
+                            active:scale-[0.98]
                           "
                         >
                           Descargar
@@ -1291,9 +1451,10 @@ function Intranet() {
                         {esAdmin && (
                           <button
                             onClick={() =>
-                              eliminarDocumento(d.id)
+                              eliminarDocumento(
+                                d.id
+                              )
                             }
-
                             className="
                               inline-flex
                               items-center
@@ -1302,25 +1463,24 @@ function Intranet() {
                               rounded-xl
 
                               border
-                              border-red-100
+                              border-red-200
 
                               bg-red-50
 
-                              px-3.5
+                              px-3
                               py-2
 
                               text-xs
-                              font-medium
+                              font-semibold
 
-                              text-red-500
+                              text-red-600
 
                               transition-all
 
-                              hover:border-red-200
-
                               hover:bg-red-100
+                              hover:border-red-300
 
-                              hover:text-red-600
+                              active:scale-[0.98]
                             "
                           >
                             Eliminar
@@ -1331,17 +1491,17 @@ function Intranet() {
 
                     </div>
 
-                  </li>
+                  </article>
 
                 ))}
 
-              </ul>
+              </div>
 
             )}
 
-          </div>
+          </section>
 
-        </section>
+        </div>
 
       </div>
 

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from backend.app.database import SessionLocal
+from backend.app.database import get_db
 from backend.app.empleados.models import Empleado
 from backend.app.maestros.models import Departamento, Seccion, Cargo
 
@@ -13,27 +13,16 @@ router = APIRouter(
 
 
 # ============================================================
-# DATABASE
+# PLANTILLA GLOBAL DE PERMISOS SJ-2026
 # ============================================================
-
-def get_db():
-    db = SessionLocal()
-
-    try:
-        yield db
-
-    finally:
-        db.close()
-
-
-# ============================================================
-# PLANTILLA PERMISOS SJ-2026
 #
-# Esta plantilla representa TODOS los módulos/permisos
-# disponibles en el sistema.
+# Esta plantilla contiene todos los módulos y permisos
+# disponibles actualmente en Molsan ERP.
 #
-# Se utiliza cuando un empleado todavía no tiene permisos
-# personalizados almacenados.
+# IMPORTANTE:
+# La plantilla NO se guarda automáticamente en la base de datos.
+# Solamente se utiliza como valor inicial cuando el empleado
+# todavía no tiene permisos personalizados.
 # ============================================================
 
 PLANTILLA_PERMISOS = {
@@ -43,119 +32,102 @@ PLANTILLA_PERMISOS = {
         "editar",
         "eliminar",
     ],
-
     "logs": [
         "ver",
         "crear",
         "editar",
         "eliminar",
     ],
-
     "agenda": [
         "ver",
         "crear",
         "editar",
         "eliminar",
     ],
-
     "intranet": [
         "ver",
         "crear",
         "editar",
         "eliminar",
     ],
-
     "maestros": [
         "ver",
         "crear",
         "editar",
         "eliminar",
     ],
-
     "mensajes": [
         "ver",
         "crear",
         "editar",
         "eliminar",
     ],
-
     "noticias": [
         "ver",
         "crear",
         "editar",
         "eliminar",
     ],
-
     "realtime": [
         "ver",
         "crear",
         "editar",
         "eliminar",
     ],
-
     "auditoria": [
         "ver",
         "crear",
         "editar",
         "eliminar",
     ],
-
     "dashboard": [
         "ver",
         "crear",
         "editar",
         "eliminar",
     ],
-
     "empleados": [
         "ver",
         "crear",
         "editar",
         "eliminar",
     ],
-
     "seguridad": [
         "ver",
         "crear",
         "editar",
         "eliminar",
     ],
-
     "documentos": [
         "ver",
         "crear",
         "editar",
         "eliminar",
     ],
-
     "utilidades": [
         "ver",
         "crear",
         "editar",
         "eliminar",
     ],
-
     "herramientas": [
         "ver",
         "crear",
         "editar",
         "eliminar",
     ],
-
     "panel-tecnico": [
         "ver",
         "crear",
         "editar",
         "eliminar",
     ],
-
     "expedientes": [
         "ver",
         "crear",
         "editar",
         "eliminar",
     ],
-
     "notificaciones": [
         "ver",
         "crear",
@@ -166,21 +138,22 @@ PLANTILLA_PERMISOS = {
 
 
 # ============================================================
-# HELPERS
+# HELPERS DE NORMALIZACIÓN
 # ============================================================
 
 def _lista_strings(valor):
     """
-    Devuelve únicamente strings válidos.
-    Evita que JSONB corruptos o valores inesperados
-    lleguen al frontend.
+    Devuelve una lista formada exclusivamente por strings.
+
+    Evita que valores inesperados almacenados en JSONB lleguen
+    al frontend y provoquen errores de React.
     """
 
     if not isinstance(valor, list):
         return []
 
     return [
-        str(item)
+        item
         for item in valor
         if isinstance(item, str)
     ]
@@ -190,14 +163,21 @@ def _permisos_dict(valor):
     """
     Normaliza permisos_modulo_dict.
 
-    Esperamos:
+    Entrada esperada:
 
-    {
-        "expedientes": [
-            "ver",
-            "crear"
-        ]
-    }
+        {
+            "expedientes": [
+                "ver",
+                "crear"
+            ],
+            "empleados": [
+                "ver"
+            ]
+        }
+
+    Salida siempre segura:
+
+        dict[str, list[str]]
     """
 
     if not isinstance(valor, dict):
@@ -219,11 +199,11 @@ def _permisos_dict(valor):
 
 def _nombre_relacion(objeto):
     """
-    Obtiene de forma segura el nombre de una relación
-    de maestros.
+    Obtiene de forma segura el nombre de una relación.
 
-    Actualmente los modelos utilizan normalmente
-    el campo 'nombre'.
+    Los modelos de maestros utilizan normalmente el campo
+    'nombre', pero mantenemos el helper blindado por si en
+    algún momento cambia el modelo.
     """
 
     if objeto is None:
@@ -241,6 +221,21 @@ def _nombre_relacion(objeto):
     return str(nombre)
 
 
+def _copiar_plantilla_permisos():
+    """
+    Devuelve una copia independiente de la plantilla.
+
+    No devolvemos directamente PLANTILLA_PERMISOS para evitar
+    que una modificación accidental altere el objeto global.
+    """
+
+    return {
+        modulo: list(permisos)
+        for modulo, permisos
+        in PLANTILLA_PERMISOS.items()
+    }
+
+
 # ============================================================
 # FICHA COMPLETA DEL EMPLEADO
 # ============================================================
@@ -253,17 +248,16 @@ def ficha_completa(
     db: Session = Depends(get_db)
 ):
     """
-    Devuelve toda la información necesaria para la ficha
-    de seguridad de un empleado.
+    Devuelve la información necesaria para la ficha de
+    seguridad de un empleado.
 
-    IMPORTANTE:
-    El contrato JSON está normalizado para que el frontend
-    siempre reciba la misma estructura.
+    El JSON está normalizado para que React reciba siempre
+    la misma estructura.
     """
 
-    # --------------------------------------------------------
-    # BUSCAR EMPLEADO
-    # --------------------------------------------------------
+    # ========================================================
+    # 1. BUSCAR EMPLEADO
+    # ========================================================
 
     empleado = (
         db.query(Empleado)
@@ -274,15 +268,14 @@ def ficha_completa(
     )
 
     if not empleado:
-
         raise HTTPException(
             status_code=404,
             detail="Empleado no encontrado"
         )
 
-    # --------------------------------------------------------
-    # RELACIONES MAESTROS
-    # --------------------------------------------------------
+    # ========================================================
+    # 2. RELACIONES DE MAESTROS
+    # ========================================================
 
     departamento = None
     seccion = None
@@ -321,32 +314,32 @@ def ficha_completa(
             .first()
         )
 
-    # --------------------------------------------------------
-    # MÓDULOS VISIBLES
-    # --------------------------------------------------------
+    # ========================================================
+    # 3. MÓDULOS VISIBLES
+    # ========================================================
 
     modulos_visibles = _lista_strings(
         empleado.modulos_visibles_list
     )
 
-    # --------------------------------------------------------
-    # PERMISOS PERSONALIZADOS
-    # --------------------------------------------------------
+    # ========================================================
+    # 4. PERMISOS PERSONALIZADOS
+    # ========================================================
 
     permisos_personalizados = _permisos_dict(
         empleado.permisos_modulo_dict
     )
 
-    # --------------------------------------------------------
-    # PERMISOS FINALES
+    # ========================================================
+    # 5. PERMISOS FINALES
+    # ========================================================
     #
-    # Si el empleado no tiene ningún permiso configurado,
-    # mostramos la plantilla completa.
+    # Si no existen permisos personalizados utilizamos la
+    # plantilla global.
     #
     # IMPORTANTE:
-    # No modificamos el valor almacenado en la base de datos.
-    # Solo construimos la respuesta.
-    # --------------------------------------------------------
+    # NO modificamos el JSONB almacenado en PostgreSQL.
+    # ========================================================
 
     if permisos_personalizados:
 
@@ -356,15 +349,13 @@ def ficha_completa(
 
     else:
 
-        permisos_finales = {
-            modulo: list(permisos)
-            for modulo, permisos
-            in PLANTILLA_PERMISOS.items()
-        }
+        permisos_finales = (
+            _copiar_plantilla_permisos()
+        )
 
-    # --------------------------------------------------------
-    # ROL
-    # --------------------------------------------------------
+    # ========================================================
+    # 6. ROL
+    # ========================================================
 
     rol_id = empleado.rol_id
 
@@ -372,23 +363,39 @@ def ficha_completa(
 
     if empleado.rol:
 
-        rol_nombre = getattr(
-            empleado.rol,
-            "nombre",
-            ""
-        ) or ""
+        rol_nombre = (
+            getattr(
+                empleado.rol,
+                "nombre",
+                ""
+            )
+            or ""
+        )
 
         rol_nombre = str(
             rol_nombre
         )
 
-    # --------------------------------------------------------
-    # EMPLEADO NORMALIZADO
-    # --------------------------------------------------------
+    # ========================================================
+    # 7. DATOS DEL EMPLEADO
+    # ========================================================
+    #
+    # NO devolvemos directamente el objeto SQLAlchemy.
+    #
+    # Esto es importante:
+    #
+    #     "empleado": empleado
+    #
+    # puede generar respuestas difíciles de controlar.
+    #
+    # En su lugar construimos explícitamente el JSON.
+    # ========================================================
 
     empleado_data = {
 
-        "id": empleado.id,
+        "id": int(
+            empleado.id
+        ),
 
         "nombre": (
             empleado.nombre
@@ -477,34 +484,53 @@ def ficha_completa(
         ),
     }
 
-    # --------------------------------------------------------
-    # AUDITORÍA
+    # ========================================================
+    # 8. AUDITORÍA
+    # ========================================================
     #
-    # De momento permanece vacía porque todavía no tenemos
-    # conectada la tabla/sistema real de auditoría.
-    #
-    # NO inventamos datos.
-    # --------------------------------------------------------
+    # Todavía no conectamos aquí la tabla real de auditoría.
+    # No inventamos información.
+    # ========================================================
 
     auditoria = []
 
-    # --------------------------------------------------------
-    # RESPUESTA
-    # --------------------------------------------------------
+    # ========================================================
+    # 9. RESPUESTA NORMALIZADA
+    # ========================================================
 
     return {
 
+        # ----------------------------------------------------
+        # EMPLEADO
+        # ----------------------------------------------------
+
         "empleado": empleado_data,
 
-        # Alias útil para otros consumidores.
+        # ----------------------------------------------------
+        # MÓDULOS
+        # ----------------------------------------------------
+        #
+        # Alias compatible con otros posibles consumidores.
+        #
+
         "modulos_visibles": (
             modulos_visibles
         ),
 
-        # NOMBRE OFICIAL QUE UTILIZARÁ REACT.
+        # ----------------------------------------------------
+        # PERMISOS
+        # ----------------------------------------------------
+        #
+        # ESTE ES EL NOMBRE OFICIAL QUE UTILIZA REACT.
+        #
+
         "permisos_modulo_dict": (
             permisos_finales
         ),
+
+        # ----------------------------------------------------
+        # DEPARTAMENTO
+        # ----------------------------------------------------
 
         "departamento": (
             {
@@ -517,6 +543,10 @@ def ficha_completa(
             else None
         ),
 
+        # ----------------------------------------------------
+        # SECCIÓN
+        # ----------------------------------------------------
+
         "seccion": (
             {
                 "id": seccion.id,
@@ -528,6 +558,10 @@ def ficha_completa(
             else None
         ),
 
+        # ----------------------------------------------------
+        # CARGO
+        # ----------------------------------------------------
+
         "cargo": (
             {
                 "id": cargo.id,
@@ -538,6 +572,10 @@ def ficha_completa(
             if cargo
             else None
         ),
+
+        # ----------------------------------------------------
+        # AUDITORÍA
+        # ----------------------------------------------------
 
         "auditoria": auditoria,
     }

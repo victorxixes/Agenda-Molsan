@@ -25,7 +25,9 @@ export const listarEmpleados = async () => {
 
 
 export const obtenerEmpleado = async (id) => {
-  const res = await axios.get(`/empleados/${id}`);
+  const res = await axios.get(
+    `/empleados/${id}`
+  );
 
   return {
     data: res.data || null,
@@ -98,7 +100,7 @@ export const subirFotoEmpleado = async (
 
 
 /* =========================================================
-   FICHA
+   FICHA BÁSICA EMPLEADO
 ========================================================= */
 
 export const obtenerFichaEmpleado = async (
@@ -114,11 +116,38 @@ export const obtenerFichaEmpleado = async (
 };
 
 
-/* Alias
+/* =========================================================
+   FICHA COMPLETA DE SEGURIDAD
+   ========================================================
+
+   Esta es la ficha que contiene:
+
+   - empleado
+   - rol
+   - modulos_visibles
+   - permisos_modulo
+   - auditoria
+========================================================= */
+
+export const obtenerFichaSeguridad = async (
+  id
+) => {
+  const res = await axios.get(
+    `/seguridad/empleado/${id}/ficha-completa`
+  );
+
+  return {
+    data: res.data || null,
+  };
+};
+
+
+/* =========================================================
+   ALIAS COMPATIBILIDAD
 ========================================================= */
 
 export const obtenerFichaCompleta =
-  obtenerFichaEmpleado;
+  obtenerFichaSeguridad;
 
 
 /* =========================================================
@@ -129,10 +158,16 @@ export const actualizarModulosVisibles = async (
   id,
   modulos_visibles_list
 ) => {
+  const modulos = Array.isArray(
+    modulos_visibles_list
+  )
+    ? modulos_visibles_list
+    : [];
+
   const res = await axios.put(
     `/empleados/${id}/modulos`,
     {
-      modulos_visibles_list,
+      modulos_visibles_list: modulos,
     }
   );
 
@@ -150,10 +185,17 @@ export const actualizarPermisosModulo = async (
   id,
   permisos_modulo_dict
 ) => {
+  const permisos =
+    permisos_modulo_dict &&
+    typeof permisos_modulo_dict === "object" &&
+    !Array.isArray(permisos_modulo_dict)
+      ? permisos_modulo_dict
+      : {};
+
   const res = await axios.put(
     `/empleados/${id}/permisos`,
     {
-      permisos_modulo_dict,
+      permisos_modulo_dict: permisos,
     }
   );
 
@@ -187,16 +229,17 @@ export const resetPasswordEmpleado = async (
 export const listarApoderados = async () => {
   const res = await listarEmpleados();
 
-  const lista = Array.isArray(res.data)
-    ? res.data.filter(
-        (empleado) =>
-          empleado.apoderado === true ||
-          empleado.es_apoderado === true ||
-          empleado.rol === "apoderado" ||
-          empleado.rol?.nombre
-            ?.toLowerCase() === "apoderado"
-      )
-    : [];
+  const lista =
+    Array.isArray(res.data)
+      ? res.data.filter(
+          (empleado) =>
+            empleado.apoderado === true ||
+            empleado.es_apoderado === true ||
+            empleado.rol === "apoderado" ||
+            empleado.rol?.nombre
+              ?.toLowerCase() === "apoderado"
+        )
+      : [];
 
   return {
     data: lista,

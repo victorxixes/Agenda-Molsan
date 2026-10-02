@@ -9,11 +9,15 @@ import {
 } from "../../api/config";
 
 import {
-  obtenerFichaCompleta,
+  obtenerFichaEmpleado,
   editarEmpleado,
   subirFotoEmpleado,
 } from "../../api/empleados";
 
+
+/* ============================================================
+   EMPLEADO PERFIL
+   ============================================================ */
 
 export default function EmpleadoPerfil({
   id,
@@ -27,6 +31,10 @@ export default function EmpleadoPerfil({
     idNum > 0;
 
 
+  /* ==========================================================
+     ESTADO
+  ========================================================== */
+
   const [
     data,
     setData,
@@ -35,6 +43,11 @@ export default function EmpleadoPerfil({
   const [
     empleadoEdit,
     setEmpleadoEdit,
+  ] = useState({});
+
+  const [
+    empleadoOriginal,
+    setEmpleadoOriginal,
   ] = useState({});
 
   const [
@@ -80,52 +93,61 @@ export default function EmpleadoPerfil({
           return;
         }
 
-        setLoading(
-          true
-        );
+        setLoading(true);
 
         setError("");
+
+        setMensaje("");
 
         try {
 
           const res =
-            await obtenerFichaCompleta(
+            await obtenerFichaEmpleado(
               idNum
             );
 
           const d =
             res?.data || {};
 
+          const empleado =
+            d?.empleado || {};
+
           setData(
             d
           );
 
           setEmpleadoEdit(
-            d.empleado || {}
+            empleado
+          );
+
+          setEmpleadoOriginal(
+            empleado
           );
 
         } catch (err) {
 
           console.error(
-            "Error cargando perfil:",
+            "Error cargando perfil del empleado:",
             err
           );
 
           setError(
             err?.response?.data?.detail ||
             err?.message ||
-            "No se ha podido cargar el perfil."
+            "No se ha podido cargar el perfil del empleado."
           );
 
         } finally {
 
-          setLoading(
-            false
-          );
+          setLoading(false);
+
         }
 
       },
-      [idNum, idValido]
+      [
+        idNum,
+        idValido,
+      ]
     );
 
 
@@ -137,11 +159,13 @@ export default function EmpleadoPerfil({
 
     cargar();
 
-  }, [cargar]);
+  }, [
+    cargar,
+  ]);
 
 
   /* ==========================================================
-     CAMBIO
+     CAMBIO DE CAMPO
   ========================================================== */
 
   const handleChange =
@@ -160,13 +184,15 @@ export default function EmpleadoPerfil({
 
         setMensaje("");
 
+        setError("");
+
       },
       []
     );
 
 
   /* ==========================================================
-     GUARDAR
+     GUARDAR CAMBIOS
   ========================================================== */
 
   const guardarCambios =
@@ -177,9 +203,7 @@ export default function EmpleadoPerfil({
           return;
         }
 
-        setGuardando(
-          true
-        );
+        setGuardando(true);
 
         setError("");
 
@@ -187,24 +211,155 @@ export default function EmpleadoPerfil({
 
         try {
 
-          await editarEmpleado(
-            idNum,
-            empleadoEdit
+          /*
+           * Solo enviamos campos editables que hayan cambiado.
+           *
+           * Esto evita mandar información innecesaria
+           * y evita modificar accidentalmente otros campos.
+           */
+
+          const camposEditables = [
+            "nombre",
+            "apellidos",
+            "dni",
+            "telefono",
+            "email_personal",
+            "email_empresa",
+            "extension",
+            "usuario",
+
+            "direccion",
+            "codigo_postal",
+            "poblacion",
+            "provincia",
+            "fecha_nacimiento",
+            "alergias",
+            "persona_contacto",
+            "telefono_contacto",
+            "observaciones",
+
+            "departamento_id",
+            "seccion_id",
+            "cargo_id",
+            "fecha_alta",
+            "fecha_baja",
+          ];
+
+
+          const cambios = {};
+
+
+          camposEditables.forEach(
+            (campo) => {
+
+              const nuevo =
+                empleadoEdit?.[campo];
+
+              const anterior =
+                empleadoOriginal?.[campo];
+
+              if (
+                String(nuevo ?? "") !==
+                String(anterior ?? "")
+              ) {
+
+                cambios[campo] =
+                  nuevo === ""
+                    ? null
+                    : nuevo;
+
+              }
+
+            }
           );
 
-          const res =
-            await obtenerFichaCompleta(
-              idNum
+
+          /*
+           * Si no hay cambios no hacemos
+           * ninguna petición innecesaria.
+           */
+
+          if (
+            Object.keys(cambios).length === 0
+          ) {
+
+            setMensaje(
+              "No hay cambios pendientes de guardar."
             );
 
-          setData(
-            res.data
-          );
+            setGuardando(false);
+
+            return;
+
+          }
+
+
+          const res =
+            await editarEmpleado(
+              idNum,
+              cambios
+            );
+
+
+          const empleadoActualizado =
+            res?.data || empleadoEdit;
+
+
+          /*
+           * Actualizamos inmediatamente el estado
+           * con la respuesta del backend.
+           */
 
           setEmpleadoEdit(
-            res.data?.empleado ||
-            {}
+            empleadoActualizado
           );
+
+          setEmpleadoOriginal(
+            empleadoActualizado
+          );
+
+
+          /*
+           * Volvemos a cargar la ficha para asegurarnos
+           * de que los nombres maestros y auditoría
+           * están actualizados.
+           */
+
+          try {
+
+            const ficha =
+              await obtenerFichaEmpleado(
+                idNum
+              );
+
+            const fichaData =
+              ficha?.data || {};
+
+            const fichaEmpleado =
+              fichaData?.empleado ||
+              empleadoActualizado;
+
+            setData(
+              fichaData
+            );
+
+            setEmpleadoEdit(
+              fichaEmpleado
+            );
+
+            setEmpleadoOriginal(
+              fichaEmpleado
+            );
+
+          } catch (refreshError) {
+
+            console.warn(
+              "No se pudo refrescar la ficha después de guardar:",
+              refreshError
+            );
+
+          }
+
 
           setMensaje(
             "Cambios guardados correctamente."
@@ -213,6 +368,7 @@ export default function EmpleadoPerfil({
         } catch (err) {
 
           console.error(
+            "Error guardando empleado:",
             err
           );
 
@@ -224,9 +380,8 @@ export default function EmpleadoPerfil({
 
         } finally {
 
-          setGuardando(
-            false
-          );
+          setGuardando(false);
+
         }
 
       },
@@ -234,6 +389,7 @@ export default function EmpleadoPerfil({
         idNum,
         idValido,
         empleadoEdit,
+        empleadoOriginal,
       ]
     );
 
@@ -251,7 +407,10 @@ export default function EmpleadoPerfil({
         const file =
           event?.target?.files?.[0];
 
-        if (!file || !idValido) {
+        if (
+          !file ||
+          !idValido
+        ) {
           return;
         }
 
@@ -275,19 +434,36 @@ export default function EmpleadoPerfil({
             file
           );
 
+
+          /*
+           * Recargar ficha después de subir
+           * la fotografía.
+           */
+
           const res =
-            await obtenerFichaCompleta(
+            await obtenerFichaEmpleado(
               idNum
             );
 
+          const fichaData =
+            res?.data || {};
+
+          const empleadoActualizado =
+            fichaData?.empleado || {};
+
+
           setData(
-            res.data
+            fichaData
           );
 
           setEmpleadoEdit(
-            res.data?.empleado ||
-            {}
+            empleadoActualizado
           );
+
+          setEmpleadoOriginal(
+            empleadoActualizado
+          );
+
 
           setMensaje(
             "Foto actualizada correctamente."
@@ -296,6 +472,7 @@ export default function EmpleadoPerfil({
         } catch (err) {
 
           console.error(
+            "Error subiendo fotografía:",
             err
           );
 
@@ -323,9 +500,7 @@ export default function EmpleadoPerfil({
 
     return (
 
-      <div className="
-        erp-page
-      ">
+      <div className="erp-page">
 
         <div className="
           erp-card
@@ -352,16 +527,18 @@ export default function EmpleadoPerfil({
       </div>
 
     );
+
   }
 
 
-  if (loading && !data) {
+  if (
+    loading &&
+    !data
+  ) {
 
     return (
 
-      <div className="
-        erp-page
-      ">
+      <div className="erp-page">
 
         <div className="
           erp-card
@@ -376,16 +553,18 @@ export default function EmpleadoPerfil({
       </div>
 
     );
+
   }
 
 
-  if (error && !data) {
+  if (
+    error &&
+    !data
+  ) {
 
     return (
 
-      <div className="
-        erp-page
-      ">
+      <div className="erp-page">
 
         <div className="
           erp-card
@@ -409,6 +588,7 @@ export default function EmpleadoPerfil({
       </div>
 
     );
+
   }
 
 
@@ -421,6 +601,10 @@ export default function EmpleadoPerfil({
     empleadoEdit || {};
 
 
+  /* ==========================================================
+     FOTO URL
+  ========================================================== */
+
   const fotoURL =
     empleado.foto
       ? empleado.foto.replace(
@@ -430,6 +614,32 @@ export default function EmpleadoPerfil({
       : null;
 
 
+  /* ==========================================================
+     NOMBRES MAESTROS
+  ========================================================== */
+
+  const departamentoNombre =
+    empleado.departamento_nombre ||
+    empleado.departamento_id ||
+    "Sin departamento";
+
+
+  const seccionNombre =
+    empleado.seccion_nombre ||
+    empleado.seccion_id ||
+    "Sin sección";
+
+
+  const cargoNombre =
+    empleado.cargo_nombre ||
+    empleado.cargo_id ||
+    "Sin cargo";
+
+
+  /* ==========================================================
+     RENDER
+  ========================================================== */
+
   return (
 
     <div className="
@@ -438,9 +648,10 @@ export default function EmpleadoPerfil({
       animate-fade-in
     ">
 
-      {/* =====================================================
+
+      {/* ======================================================
           CABECERA
-      ===================================================== */}
+      ====================================================== */}
 
       <section className="
         erp-card
@@ -455,6 +666,11 @@ export default function EmpleadoPerfil({
           lg:justify-between
           gap-6
         ">
+
+
+          {/* --------------------------------------------------
+              IDENTIDAD
+          -------------------------------------------------- */}
 
           <div className="
             flex
@@ -473,8 +689,10 @@ export default function EmpleadoPerfil({
               shrink-0
             ">
 
-              {(fotoPreview ||
-                empleado.foto) ? (
+              {(
+                fotoPreview ||
+                empleado.foto
+              ) ? (
 
                 <img
                   src={
@@ -519,21 +737,27 @@ export default function EmpleadoPerfil({
                 Perfil de empleado
               </div>
 
+
               <h1 className="
                 text-2xl
                 font-semibold
                 text-[var(--erp-text)]
                 mt-1
               ">
-                {empleado.nombre}{" "}
-                {empleado.apellidos}
+
+                {empleado.nombre || ""}{" "}
+
+                {empleado.apellidos || ""}
+
               </h1>
+
 
               <div className="
                 flex
                 flex-wrap
                 gap-2
                 mt-2
+                items-center
               ">
 
                 <span className="
@@ -543,12 +767,14 @@ export default function EmpleadoPerfil({
                   ID #{empleado.id}
                 </span>
 
+
                 <span className="
                   text-sm
                   text-[var(--erp-text-soft)]
                 ">
                   ·
                 </span>
+
 
                 <span className="
                   text-sm
@@ -557,6 +783,7 @@ export default function EmpleadoPerfil({
                   {empleado.usuario ||
                     "Sin usuario"}
                 </span>
+
 
                 <span
                   className={`
@@ -584,14 +811,50 @@ export default function EmpleadoPerfil({
 
           </div>
 
+
+          {/* --------------------------------------------------
+              INFORMACIÓN LABORAL RESUMIDA
+          -------------------------------------------------- */}
+
+          <div className="
+            grid
+            grid-cols-1
+            sm:grid-cols-3
+            gap-3
+            min-w-0
+          ">
+
+            <ResumenCabecera
+              label="Departamento"
+              value={
+                departamentoNombre
+              }
+            />
+
+            <ResumenCabecera
+              label="Sección"
+              value={
+                seccionNombre
+              }
+            />
+
+            <ResumenCabecera
+              label="Cargo"
+              value={
+                cargoNombre
+              }
+            />
+
+          </div>
+
         </div>
 
       </section>
 
 
-      {/* =====================================================
+      {/* ======================================================
           MENSAJES
-      ===================================================== */}
+      ====================================================== */}
 
       {error && (
 
@@ -605,7 +868,9 @@ export default function EmpleadoPerfil({
           py-3
           text-sm
         ">
+
           {error}
+
         </div>
 
       )}
@@ -623,15 +888,17 @@ export default function EmpleadoPerfil({
           py-3
           text-sm
         ">
+
           ✓ {mensaje}
+
         </div>
 
       )}
 
 
-      {/* =====================================================
+      {/* ======================================================
           TABS
-      ===================================================== */}
+      ====================================================== */}
 
       <div className="
         erp-card
@@ -645,10 +912,26 @@ export default function EmpleadoPerfil({
         ">
 
           {[
-            ["basicos", "Datos básicos", "👤"],
-            ["personales", "Datos personales", "🏠"],
-            ["laborales", "Datos laborales", "💼"],
-            ["auditoria", "Auditoría", "🛡️"],
+            [
+              "basicos",
+              "Datos básicos",
+              "👤",
+            ],
+            [
+              "personales",
+              "Datos personales",
+              "🏠",
+            ],
+            [
+              "laborales",
+              "Datos laborales",
+              "💼",
+            ],
+            [
+              "auditoria",
+              "Auditoría",
+              "🛡️",
+            ],
           ].map(
             ([
               key,
@@ -679,6 +962,7 @@ export default function EmpleadoPerfil({
                   }
                 `}
               >
+
                 <span>
                   {icon}
                 </span>
@@ -695,9 +979,9 @@ export default function EmpleadoPerfil({
       </div>
 
 
-      {/* =====================================================
+      {/* ======================================================
           DATOS BÁSICOS
-      ===================================================== */}
+      ====================================================== */}
 
       {tab === "basicos" && (
 
@@ -733,6 +1017,7 @@ export default function EmpleadoPerfil({
               }
             />
 
+
             <Campo
               label="Apellidos"
               value={
@@ -745,6 +1030,7 @@ export default function EmpleadoPerfil({
                 )
               }
             />
+
 
             <Campo
               label="DNI"
@@ -759,6 +1045,7 @@ export default function EmpleadoPerfil({
               }
             />
 
+
             <Campo
               label="Teléfono"
               value={
@@ -771,6 +1058,7 @@ export default function EmpleadoPerfil({
                 )
               }
             />
+
 
             <Campo
               label="Email personal"
@@ -785,6 +1073,7 @@ export default function EmpleadoPerfil({
               }
             />
 
+
             <Campo
               label="Email empresa"
               value={
@@ -797,6 +1086,21 @@ export default function EmpleadoPerfil({
                 )
               }
             />
+
+
+            <Campo
+              label="Extensión"
+              value={
+                empleado.extension
+              }
+              onChange={(value) =>
+                handleChange(
+                  "extension",
+                  value
+                )
+              }
+            />
+
 
             <Campo
               label="Usuario"
@@ -814,7 +1118,9 @@ export default function EmpleadoPerfil({
           </div>
 
 
-          {/* FOTO */}
+          {/* --------------------------------------------------
+              FOTO
+          -------------------------------------------------- */}
 
           <div className="
             rounded-2xl
@@ -832,6 +1138,7 @@ export default function EmpleadoPerfil({
               gap-5
             ">
 
+
               <div className="
                 w-24
                 h-24
@@ -843,8 +1150,10 @@ export default function EmpleadoPerfil({
                 shrink-0
               ">
 
-                {(fotoPreview ||
-                  empleado.foto) ? (
+                {(
+                  fotoPreview ||
+                  empleado.foto
+                ) ? (
 
                   <img
                     src={
@@ -887,6 +1196,7 @@ export default function EmpleadoPerfil({
                   Fotografía
                 </div>
 
+
                 <div className="
                   text-xs
                   text-[var(--erp-text-soft)]
@@ -895,6 +1205,7 @@ export default function EmpleadoPerfil({
                 ">
                   Selecciona una nueva fotografía del empleado.
                 </div>
+
 
                 <input
                   type="file"
@@ -930,9 +1241,9 @@ export default function EmpleadoPerfil({
       )}
 
 
-      {/* =====================================================
-          PERSONALES
-      ===================================================== */}
+      {/* ======================================================
+          DATOS PERSONALES
+      ====================================================== */}
 
       {tab === "personales" && (
 
@@ -968,6 +1279,7 @@ export default function EmpleadoPerfil({
               }
             />
 
+
             <Campo
               label="Código postal"
               value={
@@ -980,6 +1292,7 @@ export default function EmpleadoPerfil({
                 )
               }
             />
+
 
             <Campo
               label="Población"
@@ -994,6 +1307,7 @@ export default function EmpleadoPerfil({
               }
             />
 
+
             <Campo
               label="Provincia"
               value={
@@ -1006,6 +1320,7 @@ export default function EmpleadoPerfil({
                 )
               }
             />
+
 
             <Campo
               label="Fecha nacimiento"
@@ -1022,6 +1337,7 @@ export default function EmpleadoPerfil({
               }
             />
 
+
             <Campo
               label="Alergias"
               value={
@@ -1035,6 +1351,7 @@ export default function EmpleadoPerfil({
               }
             />
 
+
             <Campo
               label="Persona de contacto"
               value={
@@ -1047,6 +1364,7 @@ export default function EmpleadoPerfil({
                 )
               }
             />
+
 
             <Campo
               label="Teléfono contacto"
@@ -1064,6 +1382,10 @@ export default function EmpleadoPerfil({
           </div>
 
 
+          {/* --------------------------------------------------
+              OBSERVACIONES
+          -------------------------------------------------- */}
+
           <div>
 
             <label className="
@@ -1075,6 +1397,7 @@ export default function EmpleadoPerfil({
             ">
               Observaciones
             </label>
+
 
             <textarea
               rows={5}
@@ -1123,9 +1446,9 @@ export default function EmpleadoPerfil({
       )}
 
 
-      {/* =====================================================
-          LABORALES
-      ===================================================== */}
+      {/* ======================================================
+          DATOS LABORALES
+      ====================================================== */}
 
       {tab === "laborales" && (
 
@@ -1140,6 +1463,10 @@ export default function EmpleadoPerfil({
           </SectionTitle>
 
 
+          {/* --------------------------------------------------
+              MAESTROS
+          -------------------------------------------------- */}
+
           <div className="
             grid
             grid-cols-1
@@ -1153,39 +1480,51 @@ export default function EmpleadoPerfil({
               value={
                 empleado.departamento_id
               }
+              type="number"
               onChange={(value) =>
                 handleChange(
                   "departamento_id",
-                  value
+                  value === ""
+                    ? null
+                    : Number(value)
                 )
               }
             />
+
 
             <Campo
               label="Sección ID"
               value={
                 empleado.seccion_id
               }
+              type="number"
               onChange={(value) =>
                 handleChange(
                   "seccion_id",
-                  value
+                  value === ""
+                    ? null
+                    : Number(value)
                 )
               }
             />
+
 
             <Campo
               label="Cargo ID"
               value={
                 empleado.cargo_id
               }
+              type="number"
               onChange={(value) =>
                 handleChange(
                   "cargo_id",
-                  value
+                  value === ""
+                    ? null
+                    : Number(value)
                 )
               }
             />
+
 
             <Campo
               label="Fecha alta"
@@ -1201,6 +1540,7 @@ export default function EmpleadoPerfil({
                 )
               }
             />
+
 
             <Campo
               label="Fecha baja"
@@ -1220,6 +1560,47 @@ export default function EmpleadoPerfil({
           </div>
 
 
+          {/* --------------------------------------------------
+              INFORMACIÓN MAESTRA
+          -------------------------------------------------- */}
+
+          <div className="
+            grid
+            grid-cols-1
+            md:grid-cols-3
+            gap-4
+          ">
+
+            <Dato
+              label="Departamento actual"
+              value={
+                empleado.departamento_nombre
+              }
+            />
+
+
+            <Dato
+              label="Sección actual"
+              value={
+                empleado.seccion_nombre
+              }
+            />
+
+
+            <Dato
+              label="Cargo actual"
+              value={
+                empleado.cargo_nombre
+              }
+            />
+
+          </div>
+
+
+          {/* --------------------------------------------------
+              ESTADO
+          -------------------------------------------------- */}
+
           <div className="
             rounded-2xl
             border
@@ -1229,6 +1610,7 @@ export default function EmpleadoPerfil({
             flex
             items-center
             justify-between
+            gap-4
           ">
 
             <div>
@@ -1240,6 +1622,7 @@ export default function EmpleadoPerfil({
               ">
                 Estado
               </div>
+
 
               <div className="
                 text-xs
@@ -1289,9 +1672,9 @@ export default function EmpleadoPerfil({
       )}
 
 
-      {/* =====================================================
+      {/* ======================================================
           AUDITORÍA
-      ===================================================== */}
+      ====================================================== */}
 
       {tab === "auditoria" && (
 
@@ -1307,6 +1690,7 @@ export default function EmpleadoPerfil({
 
           <div className="
             space-y-3
+            mt-6
           ">
 
             {(
@@ -1315,64 +1699,95 @@ export default function EmpleadoPerfil({
               )
                 ? data.auditoria
                 : []
-            ).map(
-              (item, index) => (
+            ).length === 0 ? (
 
-                <div
-                  key={
-                    item.id ||
-                    `audit-${index}`
-                  }
-                  className="
-                    rounded-2xl
-                    border
-                    border-[var(--erp-border)]
-                    bg-[var(--erp-surface-soft)]
-                    p-5
-                  "
-                >
+              <div className="
+                rounded-2xl
+                border
+                border-[var(--erp-border)]
+                bg-[var(--erp-surface-soft)]
+                p-6
+                text-center
+                text-sm
+                text-[var(--erp-text-soft)]
+              ">
+                No hay registros de auditoría para este empleado.
+              </div>
 
-                  <div className="
-                    grid
-                    grid-cols-1
-                    md:grid-cols-2
-                    gap-3
-                    text-sm
-                  ">
+            ) : (
 
-                    <DatoSimple
-                      label="Fecha"
-                      value={
-                        item.fecha
-                      }
-                    />
+              (
+                Array.isArray(
+                  data.auditoria
+                )
+                  ? data.auditoria
+                  : []
+              ).map(
+                (
+                  item,
+                  index
+                ) => (
 
-                    <DatoSimple
-                      label="Módulo"
-                      value={
-                        item.modulo
-                      }
-                    />
+                  <div
+                    key={
+                      item.id ||
+                      `audit-${index}`
+                    }
+                    className="
+                      rounded-2xl
+                      border
+                      border-[var(--erp-border)]
+                      bg-[var(--erp-surface-soft)]
+                      p-5
+                    "
+                  >
 
-                    <DatoSimple
-                      label="Acción"
-                      value={
-                        item.accion
-                      }
-                    />
+                    <div className="
+                      grid
+                      grid-cols-1
+                      md:grid-cols-2
+                      gap-4
+                      text-sm
+                    ">
 
-                    <DatoSimple
-                      label="Descripción"
-                      value={
-                        item.descripcion
-                      }
-                    />
+                      <DatoSimple
+                        label="Fecha"
+                        value={
+                          item.fecha
+                        }
+                      />
+
+
+                      <DatoSimple
+                        label="Módulo"
+                        value={
+                          item.modulo
+                        }
+                      />
+
+
+                      <DatoSimple
+                        label="Acción"
+                        value={
+                          item.accion
+                        }
+                      />
+
+
+                      <DatoSimple
+                        label="Descripción"
+                        value={
+                          item.descripcion
+                        }
+                      />
+
+                    </div>
 
                   </div>
 
-                </div>
-
+                )
               )
+
             )}
 
           </div>
@@ -1382,12 +1797,18 @@ export default function EmpleadoPerfil({
       )}
 
     </div>
+
   );
 }
 
 
 /* ============================================================
    COMPONENTES AUXILIARES
+============================================================ */
+
+
+/* ============================================================
+   TÍTULO DE SECCIÓN
 ============================================================ */
 
 function SectionTitle({
@@ -1407,20 +1828,29 @@ function SectionTitle({
         h-7
         rounded-full
         bg-[var(--erp-primary)]
-      />
+      " />
+
 
       <h2 className="
         text-xl
         font-semibold
         text-[var(--erp-text)]
       ">
+
         {children}
+
       </h2>
 
     </div>
+
   );
+
 }
 
+
+/* ============================================================
+   CAMPO EDITABLE
+============================================================ */
 
 function Campo({
   label,
@@ -1431,7 +1861,7 @@ function Campo({
 
   return (
 
-    <label>
+    <label className="block">
 
       <span className="
         block
@@ -1440,8 +1870,11 @@ function Campo({
         text-[var(--erp-text-soft)]
         mb-2
       ">
+
         {label}
+
       </span>
+
 
       <input
         type={type}
@@ -1471,9 +1904,15 @@ function Campo({
       />
 
     </label>
+
   );
+
 }
 
+
+/* ============================================================
+   DATO SOLO LECTURA
+============================================================ */
 
 function Dato({
   label,
@@ -1500,8 +1939,11 @@ function Dato({
         text-[var(--erp-text-soft)]
         mb-1
       ">
+
         {label}
+
       </div>
+
 
       <div
         className={`
@@ -1515,14 +1957,22 @@ function Dato({
           }
         `}
       >
+
         {value ||
           "—"}
+
       </div>
 
     </div>
+
   );
+
 }
 
+
+/* ============================================================
+   DATO SIMPLE
+============================================================ */
 
 function DatoSimple({
   label,
@@ -1541,21 +1991,86 @@ function DatoSimple({
         text-[var(--erp-text-soft)]
         mb-1
       ">
+
         {label}
+
       </div>
+
 
       <div className="
         text-sm
         text-[var(--erp-text)]
       ">
+
         {value ||
           "—"}
+
       </div>
 
     </div>
+
   );
+
 }
 
+
+/* ============================================================
+   RESUMEN CABECERA
+============================================================ */
+
+function ResumenCabecera({
+  label,
+  value,
+}) {
+
+  return (
+
+    <div className="
+      rounded-xl
+      border
+      border-[var(--erp-border)]
+      bg-[var(--erp-surface-soft)]
+      px-4
+      py-3
+      min-w-0
+    ">
+
+      <div className="
+        text-[10px]
+        uppercase
+        tracking-[0.12em]
+        font-semibold
+        text-[var(--erp-text-soft)]
+        mb-1
+      ">
+
+        {label}
+
+      </div>
+
+
+      <div className="
+        text-sm
+        font-semibold
+        text-[var(--erp-text)]
+        truncate
+      ">
+
+        {value ||
+          "—"}
+
+      </div>
+
+    </div>
+
+  );
+
+}
+
+
+/* ============================================================
+   BOTÓN GUARDAR
+============================================================ */
 
 function GuardarButton({
   onClick,
@@ -1591,11 +2106,15 @@ function GuardarButton({
           transition
         "
       >
+
         {loading
           ? "Guardando…"
           : "Guardar cambios"}
+
       </button>
 
     </div>
+
   );
+
 }

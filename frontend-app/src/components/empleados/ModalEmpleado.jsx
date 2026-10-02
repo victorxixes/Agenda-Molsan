@@ -19,23 +19,19 @@ import {
  * MODAL EMPLEADO — MOLSAN ERP SAAS PREMIUM 2027
  * ============================================================
  *
- * Fuente única de Seguridad:
+ * PESTAÑAS:
+ *
+ * - Datos básicos
+ * - Datos personales
+ * - Datos laborales
+ * - Accesos
+ * - Seguridad
+ * - Auditoría
+ *
+ * FUENTE DE SEGURIDAD:
  *
  * useSeguridadStore
  *
- * Gestiona:
- *
- * - Ficha completa
- * - Rol
- * - Módulos visibles
- * - Permisos
- * - Auditoría
- * - Logs
- *
- * API empleados:
- *
- * - Foto
- * - Reset password
  * ============================================================
  */
 
@@ -45,7 +41,7 @@ export default function ModalEmpleado({
   onClose,
 }) {
   /* ==========================================================
-     STORE SEGURIDAD
+     STORE
   ========================================================== */
 
   const {
@@ -58,7 +54,7 @@ export default function ModalEmpleado({
 
 
   /* ==========================================================
-     ESTADO LOCAL
+     ESTADO
   ========================================================== */
 
   const [cargando, setCargando] =
@@ -80,7 +76,7 @@ export default function ModalEmpleado({
     useState(null);
 
   const [pestana, setPestana] =
-    useState("datos");
+    useState("basicos");
 
   const [confirmReset, setConfirmReset] =
     useState(false);
@@ -153,7 +149,7 @@ export default function ModalEmpleado({
 
 
   /* ==========================================================
-     SINCRONIZAR FICHA → ESTADO LOCAL
+     SINCRONIZAR FICHA
   ========================================================== */
 
   useEffect(() => {
@@ -181,6 +177,7 @@ export default function ModalEmpleado({
       )
     );
 
+
     const permisos =
       ficha.permisos_modulo &&
       typeof ficha.permisos_modulo ===
@@ -203,6 +200,7 @@ export default function ModalEmpleado({
         permisos
       )
     );
+
   }, [ficha]);
 
 
@@ -273,7 +271,9 @@ export default function ModalEmpleado({
     typeof ficha.empleado ===
       "object"
       ? ficha.empleado
-      : null;
+      : ficha && typeof ficha === "object"
+        ? ficha
+        : null;
 
 
   /* ==========================================================
@@ -286,22 +286,25 @@ export default function ModalEmpleado({
         return "Empleado";
       }
 
-      const nombre = [
-        empleado.nombre,
-        empleado.apellidos,
-      ]
-        .filter(Boolean)
-        .join(" ")
-        .trim();
+      const nombre =
+        [
+          empleado.nombre,
+          empleado.apellidos,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .trim();
 
       return (
         nombre ||
         empleado.nombre_completo ||
+        ficha?.nombre_completo ||
         empleado.usuario ||
         "Empleado"
       );
     }, [
       empleado,
+      ficha,
     ]);
 
 
@@ -336,6 +339,7 @@ export default function ModalEmpleado({
           partes.length - 1
         ][0]
       ).toUpperCase();
+
     }, [
       nombreEmpleado,
     ]);
@@ -442,7 +446,7 @@ export default function ModalEmpleado({
 
 
   /* ==========================================================
-     PERMISOS GLOBALES
+     PERMISOS DISPONIBLES
   ========================================================== */
 
   const permisosDisponibles =
@@ -487,10 +491,13 @@ export default function ModalEmpleado({
           }
 
           if (
-            !resultado[modulo]
+            !resultado[
+              modulo
+            ]
           ) {
-            resultado[modulo] =
-              [];
+            resultado[
+              modulo
+            ] = [];
           }
 
           if (
@@ -587,53 +594,22 @@ export default function ModalEmpleado({
 
 
   /* ==========================================================
-     CAMPOS DE INFORMACIÓN DEL EMPLEADO
-     
-     IMPORTANTE:
-     Se prepara fuera del JSX para evitar errores de
-     paréntesis durante la transformación de Vite/esbuild.
+     AUDITORÍA
   ========================================================== */
 
-  const camposEmpleado =
+  const auditoria =
     useMemo(() => {
       if (
-        !empleado ||
-        typeof empleado !==
-          "object"
+        Array.isArray(
+          ficha?.auditoria
+        )
       ) {
-        return [];
+        return ficha.auditoria;
       }
 
-      const camposExcluidos = [
-        "foto",
-        "foto_url",
-        "fotoUrl",
-        "avatar",
-        "avatar_url",
-        "rol",
-        "modulos",
-        "modulos_visibles",
-        "modulos_visibles_list",
-        "permisos",
-        "permisos_modulo",
-        "permisos_modulo_dict",
-      ];
-
-      return Object.entries(
-        empleado
-      )
-        .filter(
-          ([clave]) =>
-            !camposExcluidos.includes(
-              clave
-            )
-        )
-        .slice(
-          0,
-          40
-        );
+      return [];
     }, [
-      empleado,
+      ficha,
     ]);
 
 
@@ -687,6 +663,80 @@ export default function ModalEmpleado({
           letra.toUpperCase()
       );
   };
+
+
+  /* ==========================================================
+     OBTENER CAMPO
+  ========================================================== */
+
+  const obtenerCampo = (
+    ...claves
+  ) => {
+    for (
+      const clave of claves
+    ) {
+      const valor =
+        empleado?.[clave] ??
+        ficha?.[clave];
+
+      if (
+        valor !== null &&
+        valor !== undefined &&
+        valor !== ""
+      ) {
+        return valor;
+      }
+    }
+
+    return null;
+  };
+
+
+  /* ==========================================================
+     CAMPO VISUAL
+  ========================================================== */
+
+  const Campo = ({
+    etiqueta,
+    valor,
+  }) => (
+    <div
+      className="
+        rounded-xl
+        border
+        border-slate-100
+        bg-slate-50/70
+        px-4
+        py-3
+      "
+    >
+      <p
+        className="
+          text-[11px]
+          font-semibold
+          uppercase
+          tracking-wide
+          text-slate-400
+        "
+      >
+        {etiqueta}
+      </p>
+
+      <p
+        className="
+          mt-1
+          break-words
+          text-sm
+          font-medium
+          text-slate-800
+        "
+      >
+        {mostrarValor(
+          valor
+        )}
+      </p>
+    </div>
+  );
 
 
   /* ==========================================================
@@ -771,7 +821,8 @@ export default function ModalEmpleado({
   const guardarConfiguracion =
     async () => {
       if (
-        !empleadoId
+        empleadoId === null ||
+        empleadoId === undefined
       ) {
         return;
       }
@@ -935,33 +986,8 @@ export default function ModalEmpleado({
       if (
         nuevaFoto
       ) {
-        useSeguridadStore.setState(
-          (estado) => ({
-            ficha:
-              estado.ficha
-                ? {
-                    ...estado.ficha,
-
-                    empleado:
-                      estado.ficha.empleado
-                        ? {
-                            ...estado.ficha
-                              .empleado,
-
-                            foto:
-                              nuevaFoto,
-
-                            foto_url:
-                              nuevaFoto,
-
-                            fotoUrl:
-                              nuevaFoto,
-                          }
-                        : estado.ficha
-                            .empleado,
-                  }
-                : estado.ficha,
-          })
+        await cargarFicha(
+          empleadoId
         );
       }
 
@@ -1016,7 +1042,9 @@ export default function ModalEmpleado({
       "
     >
 
-      {/* BACKDROP */}
+      {/* =====================================================
+          BACKDROP
+      ===================================================== */}
 
       <div
         className="
@@ -1031,7 +1059,9 @@ export default function ModalEmpleado({
       />
 
 
-      {/* MODAL */}
+      {/* =====================================================
+          MODAL
+      ===================================================== */}
 
       <div
         className="
@@ -1039,7 +1069,7 @@ export default function ModalEmpleado({
           z-10
           flex
           w-full
-          max-w-5xl
+          max-w-6xl
           max-h-[94vh]
           flex-col
           overflow-hidden
@@ -1057,9 +1087,9 @@ export default function ModalEmpleado({
         }
       >
 
-        {/* ==================================================
+        {/* =================================================
             CABECERA
-        ================================================== */}
+        ================================================= */}
 
         <div
           className="
@@ -1111,7 +1141,12 @@ export default function ModalEmpleado({
               "
             >
 
-              <div className="relative shrink-0">
+              <div
+                className="
+                  relative
+                  shrink-0
+                "
+              >
 
                 {foto ? (
                   <img
@@ -1154,7 +1189,11 @@ export default function ModalEmpleado({
               </div>
 
 
-              <div className="min-w-0">
+              <div
+                className="
+                  min-w-0
+                "
+              >
 
                 <div
                   className="
@@ -1248,9 +1287,9 @@ export default function ModalEmpleado({
         </div>
 
 
-        {/* ==================================================
+        {/* =================================================
             PESTAÑAS
-        ================================================== */}
+        ================================================= */}
 
         <div
           className="
@@ -1268,28 +1307,34 @@ export default function ModalEmpleado({
 
           {[
             {
-              id:
-                "datos",
-              label:
-                "Datos",
-              icon:
-                "👤",
+              id: "basicos",
+              label: "Datos básicos",
+              icon: "👤",
             },
             {
-              id:
-                "accesos",
-              label:
-                "Accesos",
-              icon:
-                "🔐",
+              id: "personales",
+              label: "Datos personales",
+              icon: "🏠",
             },
             {
-              id:
-                "seguridad",
-              label:
-                "Seguridad",
-              icon:
-                "🛡️",
+              id: "laborales",
+              label: "Datos laborales",
+              icon: "💼",
+            },
+            {
+              id: "accesos",
+              label: "Accesos",
+              icon: "🔐",
+            },
+            {
+              id: "seguridad",
+              label: "Seguridad",
+              icon: "🛡️",
+            },
+            {
+              id: "auditoria",
+              label: "Auditoría",
+              icon: "📋",
             },
           ].map(
             (item) => (
@@ -1320,7 +1365,11 @@ export default function ModalEmpleado({
                 `}
               >
 
-                <span className="mr-2">
+                <span
+                  className="
+                    mr-2
+                  "
+                >
                   {item.icon}
                 </span>
 
@@ -1348,9 +1397,9 @@ export default function ModalEmpleado({
         </div>
 
 
-        {/* ==================================================
+        {/* =================================================
             CONTENIDO
-        ================================================== */}
+        ================================================= */}
 
         <div
           className="
@@ -1363,7 +1412,9 @@ export default function ModalEmpleado({
           "
         >
 
-          {/* LOADING */}
+          {/* =================================================
+              LOADING
+          ================================================= */}
 
           {cargando && (
             <div
@@ -1374,7 +1425,12 @@ export default function ModalEmpleado({
                 justify-center
               "
             >
-              <div className="text-center">
+
+              <div
+                className="
+                  text-center
+                "
+              >
 
                 <div
                   className="
@@ -1401,11 +1457,14 @@ export default function ModalEmpleado({
                 </p>
 
               </div>
+
             </div>
           )}
 
 
-          {/* ERROR */}
+          {/* =================================================
+              ERROR
+          ================================================= */}
 
           {!cargando &&
             error && (
@@ -1427,7 +1486,9 @@ export default function ModalEmpleado({
             )}
 
 
-          {/* MENSAJE */}
+          {/* =================================================
+              MENSAJE
+          ================================================= */}
 
           {!cargando &&
             mensaje && (
@@ -1455,13 +1516,17 @@ export default function ModalEmpleado({
             empleado && (
               <>
 
-                {/* ==================================================
-                    DATOS
-                ================================================== */}
+                {/* =================================================
+                    DATOS BÁSICOS
+                ================================================= */}
 
                 {pestana ===
-                  "datos" && (
-                  <div className="space-y-5">
+                  "basicos" && (
+                  <div
+                    className="
+                      space-y-5
+                    "
+                  >
 
                     {/* FOTO */}
 
@@ -1486,7 +1551,11 @@ export default function ModalEmpleado({
                         "
                       >
 
-                        <div className="shrink-0">
+                        <div
+                          className="
+                            shrink-0
+                          "
+                        >
 
                           {foto ? (
                             <img
@@ -1529,7 +1598,11 @@ export default function ModalEmpleado({
                         </div>
 
 
-                        <div className="flex-1">
+                        <div
+                          className="
+                            flex-1
+                          "
+                        >
 
                           <h3
                             className="
@@ -1601,7 +1674,7 @@ export default function ModalEmpleado({
                     </section>
 
 
-                    {/* INFORMACIÓN */}
+                    {/* IDENTIDAD */}
 
                     <section
                       className="
@@ -1614,7 +1687,11 @@ export default function ModalEmpleado({
                       "
                     >
 
-                      <div className="mb-5">
+                      <div
+                        className="
+                          mb-5
+                        "
+                      >
 
                         <h3
                           className="
@@ -1623,7 +1700,7 @@ export default function ModalEmpleado({
                             text-slate-900
                           "
                         >
-                          Información del empleado
+                          Datos básicos
                         </h3>
 
                         <p
@@ -1633,8 +1710,8 @@ export default function ModalEmpleado({
                             text-slate-500
                           "
                         >
-                          Información disponible
-                          en el sistema.
+                          Identificación principal
+                          del empleado.
                         </p>
 
                       </div>
@@ -1650,53 +1727,97 @@ export default function ModalEmpleado({
                         "
                       >
 
-                        {camposEmpleado.map(
-                          ([clave, valor]) => (
-                            <div
-                              key={
-                                clave
-                              }
-                              className="
-                                rounded-xl
-                                border
-                                border-slate-100
-                                bg-slate-50/70
-                                px-4
-                                py-3
-                              "
-                            >
+                        <Campo
+                          etiqueta="ID"
+                          valor={
+                            obtenerCampo(
+                              "id"
+                            )
+                          }
+                        />
 
-                              <p
-                                className="
-                                  text-[11px]
-                                  font-semibold
-                                  uppercase
-                                  tracking-wide
-                                  text-slate-400
-                                "
-                              >
-                                {capitalizar(
-                                  clave
-                                )}
-                              </p>
+                        <Campo
+                          etiqueta="Usuario"
+                          valor={
+                            obtenerCampo(
+                              "usuario",
+                              "username"
+                            )
+                          }
+                        />
 
-                              <p
-                                className="
-                                  mt-1
-                                  break-words
-                                  text-sm
-                                  font-medium
-                                  text-slate-800
-                                "
-                              >
-                                {mostrarValor(
-                                  valor
-                                )}
-                              </p>
+                        <Campo
+                          etiqueta="Nombre"
+                          valor={
+                            obtenerCampo(
+                              "nombre"
+                            )
+                          }
+                        />
 
-                            </div>
-                          )
-                        )}
+                        <Campo
+                          etiqueta="Apellidos"
+                          valor={
+                            obtenerCampo(
+                              "apellidos"
+                            )
+                          }
+                        />
+
+                        <Campo
+                          etiqueta="Nombre completo"
+                          valor={
+                            obtenerCampo(
+                              "nombre_completo",
+                              "nombreCompleto"
+                            ) ||
+                            nombreEmpleado
+                          }
+                        />
+
+                        <Campo
+                          etiqueta="DNI"
+                          valor={
+                            obtenerCampo(
+                              "dni",
+                              "nif"
+                            )
+                          }
+                        />
+
+                        <Campo
+                          etiqueta="Rol"
+                          valor={
+                            rol
+                          }
+                        />
+
+                        <Campo
+                          etiqueta="Activo"
+                          valor={
+                            obtenerCampo(
+                              "activo"
+                            )
+                          }
+                        />
+
+                        <Campo
+                          etiqueta="Fecha de alta"
+                          valor={
+                            obtenerCampo(
+                              "fecha_alta"
+                            )
+                          }
+                        />
+
+                        <Campo
+                          etiqueta="Fecha de baja"
+                          valor={
+                            obtenerCampo(
+                              "fecha_baja"
+                            )
+                          }
+                        />
 
                       </div>
 
@@ -1706,13 +1827,528 @@ export default function ModalEmpleado({
                 )}
 
 
-                {/* ==================================================
+                {/* =================================================
+                    DATOS PERSONALES
+                ================================================= */}
+
+                {pestana ===
+                  "personales" && (
+                  <div
+                    className="
+                      space-y-5
+                    "
+                  >
+
+                    <section
+                      className="
+                        rounded-2xl
+                        border
+                        border-slate-200
+                        bg-white
+                        p-5
+                        shadow-sm
+                      "
+                    >
+
+                      <div
+                        className="
+                          mb-5
+                        "
+                      >
+
+                        <h3
+                          className="
+                            text-base
+                            font-bold
+                            text-slate-900
+                          "
+                        >
+                          Datos personales
+                        </h3>
+
+                        <p
+                          className="
+                            mt-1
+                            text-sm
+                            text-slate-500
+                          "
+                        >
+                          Información personal
+                          y de contacto.
+                        </p>
+
+                      </div>
+
+
+                      <div
+                        className="
+                          grid
+                          grid-cols-1
+                          gap-4
+                          sm:grid-cols-2
+                          lg:grid-cols-3
+                        "
+                      >
+
+                        <Campo
+                          etiqueta="Teléfono"
+                          valor={
+                            obtenerCampo(
+                              "telefono",
+                              "telefono_personal"
+                            )
+                          }
+                        />
+
+                        <Campo
+                          etiqueta="Email personal"
+                          valor={
+                            obtenerCampo(
+                              "email_personal"
+                            )
+                          }
+                        />
+
+                        <Campo
+                          etiqueta="Fecha de nacimiento"
+                          valor={
+                            obtenerCampo(
+                              "fecha_nacimiento"
+                            )
+                          }
+                        />
+
+                        <Campo
+                          etiqueta="Dirección"
+                          valor={
+                            obtenerCampo(
+                              "direccion"
+                            )
+                          }
+                        />
+
+                        <Campo
+                          etiqueta="Código postal"
+                          valor={
+                            obtenerCampo(
+                              "codigo_postal"
+                            )
+                          }
+                        />
+
+                        <Campo
+                          etiqueta="Población"
+                          valor={
+                            obtenerCampo(
+                              "poblacion"
+                            )
+                          }
+                        />
+
+                        <Campo
+                          etiqueta="Provincia"
+                          valor={
+                            obtenerCampo(
+                              "provincia"
+                            )
+                          }
+                        />
+
+                        <Campo
+                          etiqueta="Alergias"
+                          valor={
+                            obtenerCampo(
+                              "alergias"
+                            )
+                          }
+                        />
+
+                        <Campo
+                          etiqueta="Persona de contacto"
+                          valor={
+                            obtenerCampo(
+                              "persona_contacto"
+                            )
+                          }
+                        />
+
+                        <Campo
+                          etiqueta="Teléfono de contacto"
+                          valor={
+                            obtenerCampo(
+                              "telefono_contacto"
+                            )
+                          }
+                        />
+
+                        <Campo
+                          etiqueta="Observaciones"
+                          valor={
+                            obtenerCampo(
+                              "observaciones"
+                            )
+                          }
+                        />
+
+                      </div>
+
+                    </section>
+
+                  </div>
+                )}
+
+
+                {/* =================================================
+                    DATOS LABORALES
+                ================================================= */}
+
+                {pestana ===
+                  "laborales" && (
+                  <div
+                    className="
+                      space-y-5
+                    "
+                  >
+
+                    <section
+                      className="
+                        rounded-2xl
+                        border
+                        border-slate-200
+                        bg-white
+                        p-5
+                        shadow-sm
+                      "
+                    >
+
+                      <div
+                        className="
+                          mb-5
+                        "
+                      >
+
+                        <h3
+                          className="
+                            text-base
+                            font-bold
+                            text-slate-900
+                          "
+                        >
+                          Datos laborales
+                        </h3>
+
+                        <p
+                          className="
+                            mt-1
+                            text-sm
+                            text-slate-500
+                          "
+                        >
+                          Organización y situación
+                          laboral del empleado.
+                        </p>
+
+                      </div>
+
+
+                      <div
+                        className="
+                          grid
+                          grid-cols-1
+                          gap-4
+                          sm:grid-cols-2
+                          lg:grid-cols-3
+                        "
+                      >
+
+                        <Campo
+                          etiqueta="Departamento"
+                          valor={
+                            obtenerCampo(
+                              "departamento_nombre"
+                            )
+                          }
+                        />
+
+                        <Campo
+                          etiqueta="Departamento ID"
+                          valor={
+                            obtenerCampo(
+                              "departamento_id"
+                            )
+                          }
+                        />
+
+                        <Campo
+                          etiqueta="Sección"
+                          valor={
+                            obtenerCampo(
+                              "seccion_nombre"
+                            )
+                          }
+                        />
+
+                        <Campo
+                          etiqueta="Sección ID"
+                          valor={
+                            obtenerCampo(
+                              "seccion_id"
+                            )
+                          }
+                        />
+
+                        <Campo
+                          etiqueta="Cargo"
+                          valor={
+                            obtenerCampo(
+                              "cargo_nombre"
+                            )
+                          }
+                        />
+
+                        <Campo
+                          etiqueta="Cargo ID"
+                          valor={
+                            obtenerCampo(
+                              "cargo_id"
+                            )
+                          }
+                        />
+
+                        <Campo
+                          etiqueta="Email empresa"
+                          valor={
+                            obtenerCampo(
+                              "email_empresa"
+                            )
+                          }
+                        />
+
+                        <Campo
+                          etiqueta="Extensión"
+                          valor={
+                            obtenerCampo(
+                              "extension"
+                            )
+                          }
+                        />
+
+                        <Campo
+                          etiqueta="Usuario"
+                          valor={
+                            obtenerCampo(
+                              "usuario"
+                            )
+                          }
+                        />
+
+                        <Campo
+                          etiqueta="Rol"
+                          valor={
+                            rol
+                          }
+                        />
+
+                        <Campo
+                          etiqueta="Rol ID"
+                          valor={
+                            obtenerCampo(
+                              "rol_id"
+                            )
+                          }
+                        />
+
+                        <Campo
+                          etiqueta="Fecha de alta"
+                          valor={
+                            obtenerCampo(
+                              "fecha_alta"
+                            )
+                          }
+                        />
+
+                        <Campo
+                          etiqueta="Fecha de baja"
+                          valor={
+                            obtenerCampo(
+                              "fecha_baja"
+                            )
+                          }
+                        />
+
+                        <Campo
+                          etiqueta="Activo"
+                          valor={
+                            obtenerCampo(
+                              "activo"
+                            )
+                          }
+                        />
+
+                      </div>
+
+                    </section>
+
+
+                    {/* RESUMEN */}
+
+                    <section
+                      className="
+                        rounded-2xl
+                        border
+                        border-slate-200
+                        bg-white
+                        p-5
+                        shadow-sm
+                      "
+                    >
+
+                      <h3
+                        className="
+                          text-base
+                          font-bold
+                          text-slate-900
+                        "
+                      >
+                        Resumen laboral
+                      </h3>
+
+                      <div
+                        className="
+                          mt-4
+                          grid
+                          grid-cols-1
+                          gap-4
+                          sm:grid-cols-3
+                        "
+                      >
+
+                        <div
+                          className="
+                            rounded-2xl
+                            border
+                            border-blue-100
+                            bg-blue-50
+                            p-4
+                          "
+                        >
+                          <p
+                            className="
+                              text-xs
+                              font-semibold
+                              text-blue-500
+                            "
+                          >
+                            Departamento
+                          </p>
+
+                          <p
+                            className="
+                              mt-1
+                              text-sm
+                              font-bold
+                              text-blue-800
+                            "
+                          >
+                            {mostrarValor(
+                              obtenerCampo(
+                                "departamento_nombre"
+                              )
+                            )}
+                          </p>
+                        </div>
+
+
+                        <div
+                          className="
+                            rounded-2xl
+                            border
+                            border-cyan-100
+                            bg-cyan-50
+                            p-4
+                          "
+                        >
+                          <p
+                            className="
+                              text-xs
+                              font-semibold
+                              text-cyan-600
+                            "
+                          >
+                            Sección
+                          </p>
+
+                          <p
+                            className="
+                              mt-1
+                              text-sm
+                              font-bold
+                              text-cyan-800
+                            "
+                          >
+                            {mostrarValor(
+                              obtenerCampo(
+                                "seccion_nombre"
+                              )
+                            )}
+                          </p>
+                        </div>
+
+
+                        <div
+                          className="
+                            rounded-2xl
+                            border
+                            border-violet-100
+                            bg-violet-50
+                            p-4
+                          "
+                        >
+                          <p
+                            className="
+                              text-xs
+                              font-semibold
+                              text-violet-600
+                            "
+                          >
+                            Cargo
+                          </p>
+
+                          <p
+                            className="
+                              mt-1
+                              text-sm
+                              font-bold
+                              text-violet-800
+                            "
+                          >
+                            {mostrarValor(
+                              obtenerCampo(
+                                "cargo_nombre"
+                              )
+                            )}
+                          </p>
+                        </div>
+
+                      </div>
+
+                    </section>
+
+                  </div>
+                )}
+
+
+                {/* =================================================
                     ACCESOS
-                ================================================== */}
+                ================================================= */}
 
                 {pestana ===
                   "accesos" && (
-                  <div className="space-y-5">
+                  <div
+                    className="
+                      space-y-5
+                    "
+                  >
 
                     {/* MÓDULOS */}
 
@@ -1908,7 +2544,11 @@ export default function ModalEmpleado({
                       "
                     >
 
-                      <div className="mb-5">
+                      <div
+                        className="
+                          mb-5
+                        "
+                      >
 
                         <h3
                           className="
@@ -1936,7 +2576,11 @@ export default function ModalEmpleado({
 
                       {modulosDisponibles.length >
                       0 ? (
-                        <div className="space-y-3">
+                        <div
+                          className="
+                            space-y-3
+                          "
+                        >
 
                           {modulosDisponibles.map(
                             (
@@ -2135,13 +2779,17 @@ export default function ModalEmpleado({
                 )}
 
 
-                {/* ==================================================
+                {/* =================================================
                     SEGURIDAD
-                ================================================== */}
+                ================================================= */}
 
                 {pestana ===
                   "seguridad" && (
-                  <div className="space-y-5">
+                  <div
+                    className="
+                      space-y-5
+                    "
+                  >
 
                     <section
                       className="
@@ -2154,7 +2802,11 @@ export default function ModalEmpleado({
                       "
                     >
 
-                      <div className="mb-5">
+                      <div
+                        className="
+                          mb-5
+                        "
+                      >
 
                         <h3
                           className="
@@ -2174,11 +2826,13 @@ export default function ModalEmpleado({
                           "
                         >
                           Gestiona las credenciales
-                          del empleado.
+                          y el acceso del empleado.
                         </p>
 
                       </div>
 
+
+                      {/* RESET PASSWORD */}
 
                       <div
                         className="
@@ -2321,6 +2975,392 @@ export default function ModalEmpleado({
 
                       </div>
 
+
+                      {/* ESTADO */}
+
+                      <div
+                        className="
+                          mt-5
+                          grid
+                          grid-cols-1
+                          gap-4
+                          sm:grid-cols-2
+                        "
+                      >
+
+                        <Campo
+                          etiqueta="Usuario"
+                          valor={
+                            obtenerCampo(
+                              "usuario"
+                            )
+                          }
+                        />
+
+                        <Campo
+                          etiqueta="Estado"
+                          valor={
+                            obtenerCampo(
+                              "activo"
+                            )
+                            ? "Activo"
+                            : "Inactivo"
+                          }
+                        />
+
+                        <Campo
+                          etiqueta="Fecha de alta"
+                          valor={
+                            obtenerCampo(
+                              "fecha_alta"
+                            )
+                          }
+                        />
+
+                        <Campo
+                          etiqueta="Fecha de baja"
+                          valor={
+                            obtenerCampo(
+                              "fecha_baja"
+                            )
+                          }
+                        />
+
+                      </div>
+
+                    </section>
+
+                  </div>
+                )}
+
+
+                {/* =================================================
+                    AUDITORÍA
+                ================================================= */}
+
+                {pestana ===
+                  "auditoria" && (
+                  <div
+                    className="
+                      space-y-5
+                    "
+                  >
+
+                    <section
+                      className="
+                        rounded-2xl
+                        border
+                        border-slate-200
+                        bg-white
+                        p-5
+                        shadow-sm
+                      "
+                    >
+
+                      <div
+                        className="
+                          mb-5
+                          flex
+                          flex-col
+                          gap-2
+                          sm:flex-row
+                          sm:items-center
+                          sm:justify-between
+                        "
+                      >
+
+                        <div>
+
+                          <h3
+                            className="
+                              text-base
+                              font-bold
+                              text-slate-900
+                            "
+                          >
+                            Auditoría
+                          </h3>
+
+                          <p
+                            className="
+                              mt-1
+                              text-sm
+                              text-slate-500
+                            "
+                          >
+                            Historial de actividad
+                            relacionada con el empleado.
+                          </p>
+
+                        </div>
+
+                        <span
+                          className="
+                            inline-flex
+                            w-fit
+                            rounded-full
+                            bg-slate-100
+                            px-3
+                            py-1
+                            text-xs
+                            font-semibold
+                            text-slate-600
+                          "
+                        >
+                          {
+                            auditoria.length
+                          } registros
+                        </span>
+
+                      </div>
+
+
+                      {auditoria.length >
+                      0 ? (
+                        <div
+                          className="
+                            overflow-x-auto
+                          "
+                        >
+
+                          <table
+                            className="
+                              min-w-full
+                              text-left
+                            "
+                          >
+
+                            <thead>
+
+                              <tr
+                                className="
+                                  border-b
+                                  border-slate-200
+                                "
+                              >
+
+                                <th
+                                  className="
+                                    px-4
+                                    py-3
+                                    text-[11px]
+                                    font-bold
+                                    uppercase
+                                    tracking-wide
+                                    text-slate-400
+                                  "
+                                >
+                                  Fecha
+                                </th>
+
+                                <th
+                                  className="
+                                    px-4
+                                    py-3
+                                    text-[11px]
+                                    font-bold
+                                    uppercase
+                                    tracking-wide
+                                    text-slate-400
+                                  "
+                                >
+                                  Usuario
+                                </th>
+
+                                <th
+                                  className="
+                                    px-4
+                                    py-3
+                                    text-[11px]
+                                    font-bold
+                                    uppercase
+                                    tracking-wide
+                                    text-slate-400
+                                  "
+                                >
+                                  Módulo
+                                </th>
+
+                                <th
+                                  className="
+                                    px-4
+                                    py-3
+                                    text-[11px]
+                                    font-bold
+                                    uppercase
+                                    tracking-wide
+                                    text-slate-400
+                                  "
+                                >
+                                  Acción
+                                </th>
+
+                                <th
+                                  className="
+                                    px-4
+                                    py-3
+                                    text-[11px]
+                                    font-bold
+                                    uppercase
+                                    tracking-wide
+                                    text-slate-400
+                                  "
+                                >
+                                  Descripción
+                                </th>
+
+                              </tr>
+
+                            </thead>
+
+
+                            <tbody>
+
+                              {auditoria.map(
+                                (
+                                  registro,
+                                  indice
+                                ) => (
+                                  <tr
+                                    key={
+                                      registro?.id ??
+                                      indice
+                                    }
+                                    className="
+                                      border-b
+                                      border-slate-100
+                                      last:border-0
+                                    "
+                                  >
+
+                                    <td
+                                      className="
+                                        whitespace-nowrap
+                                        px-4
+                                        py-3
+                                        text-sm
+                                        text-slate-600
+                                      "
+                                    >
+                                      {mostrarValor(
+                                        registro?.fecha
+                                      )}
+                                    </td>
+
+                                    <td
+                                      className="
+                                        whitespace-nowrap
+                                        px-4
+                                        py-3
+                                        text-sm
+                                        font-medium
+                                        text-slate-700
+                                      "
+                                    >
+                                      {mostrarValor(
+                                        registro?.usuario
+                                      )}
+                                    </td>
+
+                                    <td
+                                      className="
+                                        whitespace-nowrap
+                                        px-4
+                                        py-3
+                                        text-sm
+                                        text-slate-600
+                                      "
+                                    >
+                                      {mostrarValor(
+                                        registro?.modulo
+                                      )}
+                                    </td>
+
+                                    <td
+                                      className="
+                                        whitespace-nowrap
+                                        px-4
+                                        py-3
+                                        text-sm
+                                        font-semibold
+                                        text-slate-700
+                                      "
+                                    >
+                                      {mostrarValor(
+                                        registro?.accion
+                                      )}
+                                    </td>
+
+                                    <td
+                                      className="
+                                        min-w-[280px]
+                                        px-4
+                                        py-3
+                                        text-sm
+                                        text-slate-600
+                                      "
+                                    >
+                                      {mostrarValor(
+                                        registro?.descripcion
+                                      )}
+                                    </td>
+
+                                  </tr>
+                                )
+                              )}
+
+                            </tbody>
+
+                          </table>
+
+                        </div>
+                      ) : (
+                        <div
+                          className="
+                            rounded-xl
+                            border
+                            border-dashed
+                            border-slate-300
+                            bg-slate-50
+                            p-8
+                            text-center
+                          "
+                        >
+
+                          <div
+                            className="
+                              text-3xl
+                            "
+                          >
+                            📋
+                          </div>
+
+                          <p
+                            className="
+                              mt-3
+                              text-sm
+                              font-semibold
+                              text-slate-600
+                            "
+                          >
+                            No hay registros
+                            de auditoría.
+                          </p>
+
+                          <p
+                            className="
+                              mt-1
+                              text-xs
+                              text-slate-400
+                            "
+                          >
+                            La actividad aparecerá
+                            aquí cuando exista.
+                          </p>
+
+                        </div>
+                      )}
+
                     </section>
 
                   </div>
@@ -2332,9 +3372,9 @@ export default function ModalEmpleado({
         </div>
 
 
-        {/* ====================================================
+        {/* =====================================================
             FOOTER
-        ==================================================== */}
+        ===================================================== */}
 
         <div
           className="

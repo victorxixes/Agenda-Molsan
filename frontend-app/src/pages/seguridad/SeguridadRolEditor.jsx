@@ -1,35 +1,57 @@
+```jsx
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useSeguridad } from "../../hooks/useSeguridad";
 
 export default function SeguridadRolEditor() {
   const { roles = [], cargarTodo } = useSeguridad();
 
-  // Filtrar SOLO roles válidos
-  const rolesSeguros = useMemo(() => {
-    if (!Array.isArray(roles)) return [];
-
-    return roles.filter((r) => {
-      return (
-        r &&
-        typeof r === "object" &&
-        typeof r.id !== "undefined" &&
-        typeof r.nombre === "string"
-      );
-    });
-  }, [roles]);
-
   const [modo, setModo] = useState("lista");
   const [rolEditando, setRolEditando] = useState(null);
   const [nombreRol, setNombreRol] = useState("");
+  const [guardando, setGuardando] = useState(false);
+  const [eliminandoId, setEliminandoId] = useState(null);
+  const [mensaje, setMensaje] = useState("");
+  const [error, setError] = useState("");
+
+  // ============================================================
+  // ROLES SEGUROS
+  // ============================================================
+
+  const rolesSeguros = useMemo(() => {
+    if (!Array.isArray(roles)) return [];
+
+    return roles.filter(
+      (rol) =>
+        rol &&
+        typeof rol === "object" &&
+        typeof rol.id !== "undefined" &&
+        typeof rol.nombre === "string"
+    );
+  }, [roles]);
+
+  // ============================================================
+  // CARGA INICIAL
+  // ============================================================
 
   useEffect(() => {
     cargarTodo();
   }, [cargarTodo]);
 
+  // ============================================================
+  // CREAR
+  // ============================================================
+
   const iniciarCrear = useCallback(() => {
     setModo("crear");
+    setRolEditando(null);
     setNombreRol("");
+    setMensaje("");
+    setError("");
   }, []);
+
+  // ============================================================
+  // EDITAR
+  // ============================================================
 
   const iniciarEditar = useCallback((rol) => {
     if (!rol || typeof rol.nombre !== "string") return;
@@ -37,183 +59,672 @@ export default function SeguridadRolEditor() {
     setModo("editar");
     setRolEditando(rol);
     setNombreRol(rol.nombre);
+    setMensaje("");
+    setError("");
   }, []);
+
+  // ============================================================
+  // CANCELAR
+  // ============================================================
 
   const cancelar = useCallback(() => {
     setModo("lista");
     setRolEditando(null);
     setNombreRol("");
+    setMensaje("");
+    setError("");
   }, []);
 
+  // ============================================================
+  // GUARDAR
+  // ============================================================
+
   const guardarRol = useCallback(async () => {
-    if (!nombreRol.trim()) return;
+    const nombre = nombreRol.trim();
 
-    const url = "https://agenda-intranet-b.onrender.com/api/seguridad/roles";
-
-    if (modo === "crear") {
-      await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nombre: nombreRol }),
-      });
+    if (!nombre) {
+      setError("Introduce un nombre para el rol.");
+      return;
     }
 
-    if (modo === "editar" && rolEditando?.id) {
-      await fetch(`${url}/${rolEditando.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nombre: nombreRol }),
-      });
-    }
+    setGuardando(true);
+    setMensaje("");
+    setError("");
 
-    await cargarTodo();
-    cancelar();
-  }, [nombreRol, modo, rolEditando, cargarTodo, cancelar]);
+    const url =
+      "https://agenda-intranet-b.onrender.com/api/seguridad/roles";
+
+    try {
+      let respuesta;
+
+      if (modo === "crear") {
+        respuesta = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            nombre,
+          }),
+        });
+      }
+
+      if (modo === "editar" && rolEditando?.id) {
+        respuesta = await fetch(`${url}/${rolEditando.id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            nombre,
+          }),
+        });
+      }
+
+      if (!respuesta?.ok) {
+        throw new Error("No se pudo guardar el rol.");
+      }
+
+      await cargarTodo();
+
+      setMensaje(
+        modo === "crear"
+          ? "Rol creado correctamente."
+          : "Rol actualizado correctamente."
+      );
+
+      setModo("lista");
+      setRolEditando(null);
+      setNombreRol("");
+    } catch (err) {
+      console.error("Error guardando rol:", err);
+      setError("No se ha podido guardar el rol.");
+    } finally {
+      setGuardando(false);
+    }
+  }, [nombreRol, modo, rolEditando, cargarTodo]);
+
+  // ============================================================
+  // ELIMINAR
+  // ============================================================
 
   const eliminarRol = useCallback(
     async (id) => {
-      if (!confirm("¿Eliminar este rol?")) return;
+      if (id === null || id === undefined) return;
 
-      await fetch(
-        `https://agenda-intranet-b.onrender.com/api/seguridad/roles/${id}`,
-        { method: "DELETE" }
+      const confirmado = window.confirm(
+        "¿Seguro que quieres eliminar este rol?"
       );
 
-      await cargarTodo();
+      if (!confirmado) return;
+
+      setEliminandoId(id);
+      setMensaje("");
+      setError("");
+
+      try {
+        const respuesta = await fetch(
+          `https://agenda-intranet-b.onrender.com/api/seguridad/roles/${id}`,
+          {
+            method: "DELETE",
+          }
+        );
+
+        if (!respuesta.ok) {
+          throw new Error("No se pudo eliminar el rol.");
+        }
+
+        await cargarTodo();
+
+        setMensaje("Rol eliminado correctamente.");
+      } catch (err) {
+        console.error("Error eliminando rol:", err);
+        setError("No se ha podido eliminar el rol.");
+      } finally {
+        setEliminandoId(null);
+      }
     },
     [cargarTodo]
   );
 
+  // ============================================================
+  // ENTER EN FORMULARIO
+  // ============================================================
+
+  const manejarKeyDown = useCallback(
+    (event) => {
+      if (event.key === "Enter" && !guardando) {
+        event.preventDefault();
+        guardarRol();
+      }
+
+      if (event.key === "Escape" && !guardando) {
+        event.preventDefault();
+        cancelar();
+      }
+    },
+    [guardarRol, cancelar, guardando]
+  );
+
+  // ============================================================
+  // RENDER
+  // ============================================================
+
   return (
-    <div className="p-6 space-y-6 text-white animate-fade-in">
+    <div className="space-y-6 animate-fade-in">
 
-      <h1 className="text-3xl font-bold drop-shadow mb-4">
-        Editor de Roles — SJ‑2026
-      </h1>
+      {/* ======================================================
+          CABECERA
+      ====================================================== */}
 
-      {/* LISTA DE ROLES */}
-      {modo === "lista" && (
-        <div
-          className="
-            bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
-            shadow-xl p-6
-          "
-        >
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold drop-shadow">
-              Roles existentes
-            </h2>
+      <div className="erp-page-header">
 
-            <button
-              className="
-                px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700
-                text-white shadow-lg transition text-sm active:scale-[0.97]
-              "
-              onClick={iniciarCrear}
-            >
-              Crear rol
-            </button>
+        <div>
+          <div className="erp-eyebrow">
+            SEGURIDAD · ADMINISTRACIÓN
           </div>
 
-          <table className="w-full text-sm text-white">
-            <thead className="bg-white/10 border-b border-white/20">
-              <tr>
-                <th className="p-3 text-left">ID</th>
-                <th className="p-3 text-left">Nombre</th>
-                <th className="p-3 text-left">Acciones</th>
-              </tr>
-            </thead>
+          <h1 className="erp-page-title">
+            Editor de roles
+          </h1>
 
-            <tbody>
-              {rolesSeguros.map((r) => (
+          <p className="erp-page-subtitle">
+            Gestiona los roles disponibles en Molsan ERP.
+          </p>
+        </div>
+
+        {modo === "lista" && (
+          <button
+            type="button"
+            onClick={iniciarCrear}
+            className="
+              inline-flex items-center gap-2
+              px-4 py-2.5
+              rounded-xl
+              bg-[var(--erp-accent)]
+              text-white
+              font-semibold
+              text-sm
+              shadow-sm
+              hover:brightness-105
+              active:scale-[0.98]
+              transition
+            "
+          >
+            <span className="text-base">+</span>
+            Crear rol
+          </button>
+        )}
+      </div>
+
+      {/* ======================================================
+          MENSAJES
+      ====================================================== */}
+
+      {mensaje && (
+        <div
+          className="
+            flex items-center gap-3
+            rounded-xl
+            border border-emerald-200
+            bg-emerald-50
+            px-4 py-3
+            text-sm text-emerald-700
+          "
+        >
+          <span className="font-bold">✓</span>
+          <span>{mensaje}</span>
+        </div>
+      )}
+
+      {error && (
+        <div
+          className="
+            flex items-center gap-3
+            rounded-xl
+            border border-red-200
+            bg-red-50
+            px-4 py-3
+            text-sm text-red-700
+          "
+        >
+          <span className="font-bold">!</span>
+          <span>{error}</span>
+        </div>
+      )}
+
+      {/* ======================================================
+          LISTADO
+      ====================================================== */}
+
+      {modo === "lista" && (
+        <section className="erp-card overflow-hidden">
+
+          <div
+            className="
+              flex flex-col
+              sm:flex-row
+              sm:items-center
+              sm:justify-between
+              gap-3
+              px-6 py-5
+              border-b border-[var(--erp-border)]
+            "
+          >
+            <div>
+              <h2 className="text-lg font-bold text-[var(--erp-text)]">
+                Roles existentes
+              </h2>
+
+              <p className="text-sm text-[var(--erp-muted)] mt-1">
+                {rolesSeguros.length}{" "}
+                {rolesSeguros.length === 1 ? "rol disponible" : "roles disponibles"}
+              </p>
+            </div>
+
+            <div
+              className="
+                inline-flex items-center
+                px-3 py-1.5
+                rounded-full
+                bg-[var(--erp-accent-soft)]
+                text-[var(--erp-accent)]
+                text-xs
+                font-semibold
+              "
+            >
+              Gestión de seguridad
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+
+            <table className="w-full min-w-[620px] text-sm">
+
+              <thead>
                 <tr
-                  key={String(r.id)}
                   className="
-                    border-b border-white/10 hover:bg-white/5 transition
+                    bg-[var(--erp-surface-soft)]
+                    border-b border-[var(--erp-border)]
                   "
                 >
-                  <td className="p-3">{String(r.id)}</td>
-                  <td className="p-3">{r.nombre}</td>
+                  <th
+                    className="
+                      px-6 py-3
+                      text-left
+                      text-xs
+                      font-bold
+                      uppercase
+                      tracking-wide
+                      text-[var(--erp-muted)]
+                    "
+                  >
+                    ID
+                  </th>
 
-                  <td className="p-3 space-x-2">
-                    <button
-                      className="
-                        px-3 py-1 text-xs rounded-xl bg-purple-600/20 text-purple-200
-                        hover:bg-purple-600/30 transition active:scale-[0.97]
-                      "
-                      onClick={() => iniciarEditar(r)}
-                    >
-                      Editar
-                    </button>
+                  <th
+                    className="
+                      px-6 py-3
+                      text-left
+                      text-xs
+                      font-bold
+                      uppercase
+                      tracking-wide
+                      text-[var(--erp-muted)]
+                    "
+                  >
+                    Nombre
+                  </th>
 
-                    <button
-                      className="
-                        px-3 py-1 text-xs rounded-xl bg-red-600/20 text-red-200
-                        hover:bg-red-600/30 transition active:scale-[0.97]
-                      "
-                      onClick={() => eliminarRol(r.id)}
-                    >
-                      Eliminar
-                    </button>
-                  </td>
+                  <th
+                    className="
+                      px-6 py-3
+                      text-right
+                      text-xs
+                      font-bold
+                      uppercase
+                      tracking-wide
+                      text-[var(--erp-muted)]
+                    "
+                  >
+                    Acciones
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+              </thead>
 
-      {/* FORMULARIO CREAR / EDITAR */}
-      {(modo === "crear" || modo === "editar") && (
-        <div
-          className="
-            bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl
-            shadow-xl p-6 space-y-4 animate-fade-in
-          "
-        >
-          <h2 className="text-xl font-semibold drop-shadow mb-2">
-            {modo === "crear"
-              ? "Crear nuevo rol"
-              : `Editar rol #${rolEditando?.id}`}
-          </h2>
+              <tbody>
+                {rolesSeguros.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={3}
+                      className="
+                        px-6 py-12
+                        text-center
+                        text-sm
+                        text-[var(--erp-muted)]
+                      "
+                    >
+                      No hay roles disponibles.
+                    </td>
+                  </tr>
+                ) : (
+                  rolesSeguros.map((rol) => {
 
-          <label className="block text-sm text-white/80 mb-1">
-            Nombre del rol
-          </label>
+                    const eliminando =
+                      String(eliminandoId) === String(rol.id);
 
-          <input
-            type="text"
-            className="
-              w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2
-              text-white placeholder-white/40 focus:ring-2 focus:ring-blue-400
-            "
-            value={nombreRol}
-            onChange={(e) => setNombreRol(e.target.value)}
-          />
+                    return (
+                      <tr
+                        key={String(rol.id)}
+                        className="
+                          border-b border-[var(--erp-border)]
+                          last:border-b-0
+                          hover:bg-[var(--erp-surface-soft)]
+                          transition
+                        "
+                      >
 
-          <div className="flex gap-3 mt-4">
-            <button
-              className="
-                px-4 py-2 rounded-xl bg-green-600 hover:bg-green-700
-                text-white shadow-lg transition text-sm active:scale-[0.97]
-              "
-              onClick={guardarRol}
-            >
-              Guardar
-            </button>
+                        <td className="px-6 py-4">
+                          <span
+                            className="
+                              inline-flex
+                              items-center justify-center
+                              min-w-9
+                              px-2.5 py-1
+                              rounded-lg
+                              bg-[var(--erp-surface-soft)]
+                              border border-[var(--erp-border)]
+                              text-xs
+                              font-bold
+                              text-[var(--erp-muted)]
+                            "
+                          >
+                            {String(rol.id)}
+                          </span>
+                        </td>
 
-            <button
-              className="
-                px-4 py-2 rounded-xl bg-gray-600/30 hover:bg-gray-600/40
-                text-white shadow-lg transition text-sm active:scale-[0.97]
-              "
-              onClick={cancelar}
-            >
-              Cancelar
-            </button>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+
+                            <div
+                              className="
+                                w-9 h-9
+                                rounded-xl
+                                flex items-center justify-center
+                                bg-[var(--erp-accent-soft)]
+                                text-[var(--erp-accent)]
+                                font-bold
+                              "
+                            >
+                              {rol.nombre.charAt(0).toUpperCase()}
+                            </div>
+
+                            <div>
+                              <div
+                                className="
+                                  font-semibold
+                                  text-[var(--erp-text)]
+                                "
+                              >
+                                {rol.nombre}
+                              </div>
+
+                              <div
+                                className="
+                                  text-xs
+                                  text-[var(--erp-muted)]
+                                  mt-0.5
+                                "
+                              >
+                                Rol de seguridad
+                              </div>
+                            </div>
+
+                          </div>
+                        </td>
+
+                        <td className="px-6 py-4">
+
+                          <div className="flex justify-end gap-2">
+
+                            <button
+                              type="button"
+                              onClick={() => iniciarEditar(rol)}
+                              className="
+                                inline-flex items-center gap-1.5
+                                px-3 py-2
+                                rounded-lg
+                                border border-[var(--erp-border)]
+                                bg-white
+                                text-[var(--erp-text)]
+                                text-xs
+                                font-semibold
+                                hover:bg-[var(--erp-surface-soft)]
+                                transition
+                              "
+                            >
+                              Editar
+                            </button>
+
+                            <button
+                              type="button"
+                              disabled={eliminando}
+                              onClick={() => eliminarRol(rol.id)}
+                              className="
+                                inline-flex items-center gap-1.5
+                                px-3 py-2
+                                rounded-lg
+                                border border-red-200
+                                bg-red-50
+                                text-red-600
+                                text-xs
+                                font-semibold
+                                hover:bg-red-100
+                                disabled:opacity-50
+                                disabled:cursor-not-allowed
+                                transition
+                              "
+                            >
+                              {eliminando
+                                ? "Eliminando..."
+                                : "Eliminar"}
+                            </button>
+
+                          </div>
+
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+
+            </table>
+
           </div>
-        </div>
+
+        </section>
       )}
+
+      {/* ======================================================
+          FORMULARIO CREAR / EDITAR
+      ====================================================== */}
+
+      {(modo === "crear" || modo === "editar") && (
+        <section className="erp-card">
+
+          <div
+            className="
+              px-6 py-5
+              border-b border-[var(--erp-border)]
+            "
+          >
+
+            <div className="flex items-center gap-3">
+
+              <div
+                className="
+                  w-10 h-10
+                  rounded-xl
+                  bg-[var(--erp-accent-soft)]
+                  text-[var(--erp-accent)]
+                  flex items-center justify-center
+                  font-bold
+                "
+              >
+                {modo === "crear" ? "+" : "✎"}
+              </div>
+
+              <div>
+
+                <h2 className="text-lg font-bold text-[var(--erp-text)]">
+                  {modo === "crear"
+                    ? "Crear nuevo rol"
+                    : "Editar rol"}
+                </h2>
+
+                <p className="text-sm text-[var(--erp-muted)] mt-0.5">
+                  {modo === "crear"
+                    ? "Añade un nuevo rol al sistema."
+                    : `Modifica la información del rol #${rolEditando?.id ?? "-"}.`}
+                </p>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <div className="p-6">
+
+            <div className="max-w-2xl">
+
+              <label
+                htmlFor="seguridad-nombre-rol"
+                className="
+                  block
+                  text-sm
+                  font-semibold
+                  text-[var(--erp-text)]
+                  mb-2
+                "
+              >
+                Nombre del rol
+              </label>
+
+              <input
+                id="seguridad-nombre-rol"
+                type="text"
+                autoFocus
+                value={nombreRol}
+                disabled={guardando}
+                onChange={(event) => {
+                  setNombreRol(event.target.value);
+                  setError("");
+                }}
+                onKeyDown={manejarKeyDown}
+                placeholder="Ej. Administrador"
+                className="
+                  w-full
+                  px-4 py-3
+                  rounded-xl
+                  border border-[var(--erp-border)]
+                  bg-[var(--erp-input-bg)]
+                  text-[var(--erp-text)]
+                  placeholder:text-[var(--erp-muted)]
+                  outline-none
+                  focus:border-[var(--erp-accent)]
+                  focus:ring-2
+                  focus:ring-[var(--erp-accent-soft)]
+                  disabled:opacity-60
+                  transition
+                "
+              />
+
+              <p className="mt-2 text-xs text-[var(--erp-muted)]">
+                Utiliza un nombre claro y descriptivo para identificar
+                fácilmente las funciones asociadas al rol.
+              </p>
+
+            </div>
+
+            <div
+              className="
+                flex flex-wrap
+                gap-3
+                mt-6
+                pt-5
+                border-t border-[var(--erp-border)]
+              "
+            >
+
+              <button
+                type="button"
+                disabled={guardando || !nombreRol.trim()}
+                onClick={guardarRol}
+                className="
+                  inline-flex items-center justify-center gap-2
+                  px-5 py-2.5
+                  rounded-xl
+                  bg-[var(--erp-accent)]
+                  text-white
+                  text-sm
+                  font-semibold
+                  shadow-sm
+                  hover:brightness-105
+                  active:scale-[0.98]
+                  disabled:opacity-50
+                  disabled:cursor-not-allowed
+                  transition
+                "
+              >
+                {guardando ? (
+                  <>
+                    <span
+                      className="
+                        w-4 h-4
+                        rounded-full
+                        border-2
+                        border-white/40
+                        border-t-white
+                        animate-spin
+                      "
+                    />
+                    Guardando...
+                  </>
+                ) : (
+                  "Guardar rol"
+                )}
+              </button>
+
+              <button
+                type="button"
+                disabled={guardando}
+                onClick={cancelar}
+                className="
+                  px-5 py-2.5
+                  rounded-xl
+                  border border-[var(--erp-border)]
+                  bg-white
+                  text-[var(--erp-text)]
+                  text-sm
+                  font-semibold
+                  hover:bg-[var(--erp-surface-soft)]
+                  disabled:opacity-50
+                  transition
+                "
+              >
+                Cancelar
+              </button>
+
+            </div>
+
+          </div>
+
+        </section>
+      )}
+
     </div>
   );
 }
+```

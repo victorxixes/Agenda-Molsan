@@ -5,6 +5,7 @@ import {
 } from "react";
 
 import {
+  editarEmpleado,
   subirFotoEmpleado,
   resetPasswordEmpleado,
 } from "../../api/empleados";
@@ -28,20 +29,105 @@ import {
  * - Seguridad
  * - Auditoría
  *
- * FUENTE DE SEGURIDAD:
+ * DATOS EDITABLES:
  *
- * useSeguridadStore
+ * - Datos básicos
+ * - Datos personales
+ * - Datos laborales
  *
- * ============================================================
+ * SEGURIDAD:
+ *
+ * - Módulos visibles
+ * - Permisos por módulo
+ * - Reset password
+ *
+ * API EMPLEADOS:
+ *
+ * - editarEmpleado()
+ * - subirFotoEmpleado()
+ * - resetPasswordEmpleado()
+ *
+ * STORE SEGURIDAD:
+ *
+ * - cargarFicha()
+ * - asignarModulos()
+ * - asignarPermisos()
  */
+
+
+/* ============================================================
+   HELPERS
+============================================================ */
+
+function normalizarPermisos(valor) {
+
+  if (
+    !valor ||
+    typeof valor !== "object" ||
+    Array.isArray(valor)
+  ) {
+    return {};
+  }
+
+  const resultado = {};
+
+  Object.entries(valor).forEach(
+    ([modulo, permisos]) => {
+
+      if (
+        typeof modulo !== "string"
+      ) {
+        return;
+      }
+
+      if (
+        Array.isArray(permisos)
+      ) {
+
+        resultado[modulo] =
+          permisos.filter(
+            (permiso) =>
+              typeof permiso === "string"
+          );
+
+        return;
+      }
+
+      if (
+        permisos &&
+        typeof permisos === "object"
+      ) {
+
+        resultado[modulo] =
+          Object.entries(permisos)
+            .filter(
+              ([, activo]) =>
+                Boolean(activo)
+            )
+            .map(
+              ([permiso]) =>
+                permiso
+            );
+      }
+    }
+  );
+
+  return resultado;
+}
+
+
+/* ============================================================
+   COMPONENTE
+============================================================ */
 
 export default function ModalEmpleado({
   open = false,
   empleadoId = null,
   onClose,
 }) {
+
   /* ==========================================================
-     STORE
+     STORE SEGURIDAD
   ========================================================== */
 
   const {
@@ -54,32 +140,53 @@ export default function ModalEmpleado({
 
 
   /* ==========================================================
-     ESTADO
+     ESTADOS
   ========================================================== */
 
-  const [cargando, setCargando] =
-    useState(false);
+  const [
+    cargando,
+    setCargando,
+  ] = useState(false);
 
-  const [guardando, setGuardando] =
-    useState(false);
+  const [
+    guardando,
+    setGuardando,
+  ] = useState(false);
 
-  const [subiendoFoto, setSubiendoFoto] =
-    useState(false);
+  const [
+    subiendoFoto,
+    setSubiendoFoto,
+  ] = useState(false);
 
-  const [resettingPassword, setResettingPassword] =
-    useState(false);
+  const [
+    resettingPassword,
+    setResettingPassword,
+  ] = useState(false);
 
-  const [error, setError] =
-    useState(null);
+  const [
+    error,
+    setError,
+  ] = useState(null);
 
-  const [mensaje, setMensaje] =
-    useState(null);
+  const [
+    mensaje,
+    setMensaje,
+  ] = useState(null);
 
-  const [pestana, setPestana] =
-    useState("basicos");
+  const [
+    pestana,
+    setPestana,
+  ] = useState("basicos");
 
-  const [confirmReset, setConfirmReset] =
-    useState(false);
+  const [
+    confirmReset,
+    setConfirmReset,
+  ] = useState(false);
+
+  const [
+    empleadoEdit,
+    setEmpleadoEdit,
+  ] = useState({});
 
   const [
     modulosVisibles,
@@ -97,6 +204,7 @@ export default function ModalEmpleado({
   ========================================================== */
 
   useEffect(() => {
+
     if (
       !open ||
       empleadoId === null ||
@@ -109,27 +217,35 @@ export default function ModalEmpleado({
     let activo = true;
 
     const cargar = async () => {
+
       try {
+
         setCargando(true);
         setError(null);
         setMensaje(null);
+        setPestana("basicos");
 
         await cargarFicha(
           empleadoId
         );
 
       } catch (err) {
+
         console.error(
           "MODAL EMPLEADO — ERROR CARGANDO FICHA:",
           err
         );
 
         if (activo) {
+
           setError(
+            err?.response?.data?.detail ||
             "No se ha podido cargar la ficha del empleado."
           );
         }
+
       } finally {
+
         if (activo) {
           setCargando(false);
         }
@@ -141,6 +257,7 @@ export default function ModalEmpleado({
     return () => {
       activo = false;
     };
+
   }, [
     open,
     empleadoId,
@@ -153,22 +270,56 @@ export default function ModalEmpleado({
   ========================================================== */
 
   useEffect(() => {
+
     if (!ficha) {
+
+      setEmpleadoEdit({});
       setModulosVisibles([]);
       setPermisosModulo({});
+
       return;
     }
 
+
+    /* --------------------------------------------------------
+       EMPLEADO
+    -------------------------------------------------------- */
+
+    const empleadoFicha =
+      ficha?.empleado &&
+      typeof ficha.empleado === "object"
+        ? ficha.empleado
+        : {};
+
+    setEmpleadoEdit(
+      {
+        ...empleadoFicha,
+      }
+    );
+
+
+    /* --------------------------------------------------------
+       MÓDULOS
+    -------------------------------------------------------- */
+
     const modulos =
       Array.isArray(
-        ficha.modulos_visibles
+        empleadoFicha.modulos_visibles_list
       )
-        ? ficha.modulos_visibles
+        ? empleadoFicha.modulos_visibles_list
         : Array.isArray(
-            ficha.modulos_visibles_list
+            empleadoFicha.modulos_visibles
           )
-          ? ficha.modulos_visibles_list
-          : [];
+          ? empleadoFicha.modulos_visibles
+          : Array.isArray(
+              ficha.modulos_visibles_list
+            )
+            ? ficha.modulos_visibles_list
+            : Array.isArray(
+                ficha.modulos_visibles
+              )
+              ? ficha.modulos_visibles
+              : [];
 
     setModulosVisibles(
       modulos.filter(
@@ -178,22 +329,36 @@ export default function ModalEmpleado({
     );
 
 
+    /* --------------------------------------------------------
+       PERMISOS
+    -------------------------------------------------------- */
+
     const permisos =
-      ficha.permisos_modulo &&
-      typeof ficha.permisos_modulo ===
-        "object" &&
+      empleadoFicha.permisos_modulo_dict &&
+      typeof empleadoFicha.permisos_modulo_dict === "object" &&
       !Array.isArray(
-        ficha.permisos_modulo
+        empleadoFicha.permisos_modulo_dict
       )
-        ? ficha.permisos_modulo
-        : ficha.permisos_modulo_dict &&
-          typeof ficha.permisos_modulo_dict ===
-            "object" &&
+        ? empleadoFicha.permisos_modulo_dict
+        : empleadoFicha.permisos_modulo &&
+          typeof empleadoFicha.permisos_modulo === "object" &&
           !Array.isArray(
-            ficha.permisos_modulo_dict
+            empleadoFicha.permisos_modulo
           )
-          ? ficha.permisos_modulo_dict
-          : {};
+          ? empleadoFicha.permisos_modulo
+          : ficha.permisos_modulo_dict &&
+            typeof ficha.permisos_modulo_dict === "object" &&
+            !Array.isArray(
+              ficha.permisos_modulo_dict
+            )
+            ? ficha.permisos_modulo_dict
+            : ficha.permisos_modulo &&
+              typeof ficha.permisos_modulo === "object" &&
+              !Array.isArray(
+                ficha.permisos_modulo
+              )
+              ? ficha.permisos_modulo
+              : {};
 
     setPermisosModulo(
       normalizarPermisos(
@@ -209,6 +374,7 @@ export default function ModalEmpleado({
   ========================================================== */
 
   useEffect(() => {
+
     if (!open) {
       return;
     }
@@ -220,9 +386,12 @@ export default function ModalEmpleado({
       "hidden";
 
     return () => {
+
       document.body.style.overflow =
         overflowOriginal;
+
     };
+
   }, [open]);
 
 
@@ -231,6 +400,7 @@ export default function ModalEmpleado({
   ========================================================== */
 
   useEffect(() => {
+
     if (!open) {
       return;
     }
@@ -238,11 +408,13 @@ export default function ModalEmpleado({
     const handleKeyDown = (
       event
     ) => {
+
       if (
         event.key === "Escape"
       ) {
         onClose?.();
       }
+
     };
 
     window.addEventListener(
@@ -251,11 +423,14 @@ export default function ModalEmpleado({
     );
 
     return () => {
+
       window.removeEventListener(
         "keydown",
         handleKeyDown
       );
+
     };
+
   }, [
     open,
     onClose,
@@ -268,12 +443,18 @@ export default function ModalEmpleado({
 
   const empleado =
     ficha?.empleado &&
-    typeof ficha.empleado ===
-      "object"
+    typeof ficha.empleado === "object"
       ? ficha.empleado
-      : ficha && typeof ficha === "object"
-        ? ficha
-        : null;
+      : null;
+
+
+  /*
+   * Para edición usamos siempre
+   * empleadoEdit.
+   */
+
+  const empleadoFormulario =
+    empleadoEdit || empleado || {};
 
 
   /* ==========================================================
@@ -282,14 +463,15 @@ export default function ModalEmpleado({
 
   const nombreEmpleado =
     useMemo(() => {
-      if (!empleado) {
+
+      if (!empleadoFormulario) {
         return "Empleado";
       }
 
       const nombre =
         [
-          empleado.nombre,
-          empleado.apellidos,
+          empleadoFormulario.nombre,
+          empleadoFormulario.apellidos,
         ]
           .filter(Boolean)
           .join(" ")
@@ -297,14 +479,13 @@ export default function ModalEmpleado({
 
       return (
         nombre ||
-        empleado.nombre_completo ||
-        ficha?.nombre_completo ||
-        empleado.usuario ||
+        empleadoFormulario.nombre_completo ||
+        empleadoFormulario.usuario ||
         "Empleado"
       );
+
     }, [
-      empleado,
-      ficha,
+      empleadoFormulario,
     ]);
 
 
@@ -314,6 +495,7 @@ export default function ModalEmpleado({
 
   const iniciales =
     useMemo(() => {
+
       const partes =
         String(
           nombreEmpleado ||
@@ -328,9 +510,11 @@ export default function ModalEmpleado({
       }
 
       if (partes.length === 1) {
+
         return partes[0]
           .substring(0, 2)
           .toUpperCase();
+
       }
 
       return (
@@ -350,9 +534,9 @@ export default function ModalEmpleado({
   ========================================================== */
 
   const foto =
-    empleado?.foto_url ||
-    empleado?.fotoUrl ||
-    empleado?.foto ||
+    empleadoFormulario?.foto_url ||
+    empleadoFormulario?.fotoUrl ||
+    empleadoFormulario?.foto ||
     ficha?.foto_url ||
     ficha?.fotoUrl ||
     ficha?.foto ||
@@ -364,85 +548,11 @@ export default function ModalEmpleado({
   ========================================================== */
 
   const rol =
-    empleado?.rol?.nombre ||
-    empleado?.rol_nombre ||
+    empleadoFormulario?.rol?.nombre ||
+    empleadoFormulario?.rol_nombre ||
     ficha?.rol?.nombre ||
     ficha?.rol_nombre ||
     "Empleado";
-
-
-  /* ==========================================================
-     NORMALIZAR PERMISOS
-  ========================================================== */
-
-  function normalizarPermisos(
-    valor
-  ) {
-    if (
-      !valor ||
-      typeof valor !==
-        "object" ||
-      Array.isArray(valor)
-    ) {
-      return {};
-    }
-
-    const resultado = {};
-
-    Object.entries(
-      valor
-    ).forEach(
-      ([
-        modulo,
-        permisos,
-      ]) => {
-        if (
-          typeof modulo !==
-          "string"
-        ) {
-          return;
-        }
-
-        if (
-          Array.isArray(
-            permisos
-          )
-        ) {
-          resultado[
-            modulo
-          ] = permisos.filter(
-            (permiso) =>
-              typeof permiso ===
-              "string"
-          );
-
-          return;
-        }
-
-        if (
-          permisos &&
-          typeof permisos ===
-            "object"
-        ) {
-          resultado[
-            modulo
-          ] = Object.entries(
-            permisos
-          )
-            .filter(
-              ([, activo]) =>
-                Boolean(activo)
-            )
-            .map(
-              ([permiso]) =>
-                permiso
-            );
-        }
-      }
-    );
-
-    return resultado;
-  }
 
 
   /* ==========================================================
@@ -451,6 +561,7 @@ export default function ModalEmpleado({
 
   const permisosDisponibles =
     useMemo(() => {
+
       const resultado = {};
 
       if (
@@ -463,23 +574,21 @@ export default function ModalEmpleado({
 
       permisosGlobales.forEach(
         (permiso) => {
+
           if (
             !permiso ||
-            typeof permiso !==
-              "object"
+            typeof permiso !== "object"
           ) {
             return;
           }
 
           const modulo =
-            typeof permiso.modulo ===
-            "string"
+            typeof permiso.modulo === "string"
               ? permiso.modulo.trim()
               : "";
 
           const nombrePermiso =
-            typeof permiso.permiso ===
-            "string"
+            typeof permiso.permiso === "string"
               ? permiso.permiso.trim()
               : "";
 
@@ -491,13 +600,9 @@ export default function ModalEmpleado({
           }
 
           if (
-            !resultado[
-              modulo
-            ]
+            !resultado[modulo]
           ) {
-            resultado[
-              modulo
-            ] = [];
+            resultado[modulo] = [];
           }
 
           if (
@@ -516,10 +621,12 @@ export default function ModalEmpleado({
         }
       );
 
+
       Object.keys(
         resultado
       ).forEach(
         (modulo) => {
+
           resultado[
             modulo
           ].sort(
@@ -533,10 +640,12 @@ export default function ModalEmpleado({
                 }
               )
           );
+
         }
       );
 
       return resultado;
+
     }, [
       permisosGlobales,
     ]);
@@ -548,6 +657,7 @@ export default function ModalEmpleado({
 
   const modulosDisponibles =
     useMemo(() => {
+
       const conjunto =
         new Set();
 
@@ -563,14 +673,15 @@ export default function ModalEmpleado({
 
       modulosVisibles.forEach(
         (modulo) => {
+
           if (
-            typeof modulo ===
-            "string"
+            typeof modulo === "string"
           ) {
             conjunto.add(
               modulo
             );
           }
+
         }
       );
 
@@ -587,29 +698,10 @@ export default function ModalEmpleado({
             }
           )
       );
+
     }, [
       permisosDisponibles,
       modulosVisibles,
-    ]);
-
-
-  /* ==========================================================
-     AUDITORÍA
-  ========================================================== */
-
-  const auditoria =
-    useMemo(() => {
-      if (
-        Array.isArray(
-          ficha?.auditoria
-        )
-      ) {
-        return ficha.auditoria;
-      }
-
-      return [];
-    }, [
-      ficha,
     ]);
 
 
@@ -620,6 +712,7 @@ export default function ModalEmpleado({
   const mostrarValor = (
     valor
   ) => {
+
     if (
       valor === null ||
       valor === undefined ||
@@ -629,8 +722,7 @@ export default function ModalEmpleado({
     }
 
     if (
-      typeof valor ===
-      "boolean"
+      typeof valor === "boolean"
     ) {
       return valor
         ? "Sí"
@@ -646,6 +738,7 @@ export default function ModalEmpleado({
   const capitalizar = (
     valor
   ) => {
+
     if (!valor) {
       return "";
     }
@@ -666,77 +759,201 @@ export default function ModalEmpleado({
 
 
   /* ==========================================================
-     OBTENER CAMPO
+     CAMBIO CAMPO
   ========================================================== */
 
-  const obtenerCampo = (
-    ...claves
+  const cambiarCampo = (
+    campo,
+    valor
   ) => {
-    for (
-      const clave of claves
-    ) {
-      const valor =
-        empleado?.[clave] ??
-        ficha?.[clave];
 
-      if (
-        valor !== null &&
-        valor !== undefined &&
-        valor !== ""
-      ) {
-        return valor;
-      }
-    }
+    setEmpleadoEdit(
+      (actual) => ({
+        ...actual,
+        [campo]: valor,
+      })
+    );
 
-    return null;
+    setError(null);
+    setMensaje(null);
   };
 
 
   /* ==========================================================
-     CAMPO VISUAL
+     GUARDAR DATOS EMPLEADO
   ========================================================== */
 
-  const Campo = ({
-    etiqueta,
-    valor,
-  }) => (
-    <div
-      className="
-        rounded-xl
-        border
-        border-slate-100
-        bg-slate-50/70
-        px-4
-        py-3
-      "
-    >
-      <p
-        className="
-          text-[11px]
-          font-semibold
-          uppercase
-          tracking-wide
-          text-slate-400
-        "
-      >
-        {etiqueta}
-      </p>
+  const guardarDatosEmpleado =
+    async () => {
 
-      <p
-        className="
-          mt-1
-          break-words
-          text-sm
-          font-medium
-          text-slate-800
-        "
-      >
-        {mostrarValor(
-          valor
-        )}
-      </p>
-    </div>
-  );
+      if (
+        !empleadoId
+      ) {
+        return;
+      }
+
+      try {
+
+        setGuardando(true);
+        setError(null);
+        setMensaje(null);
+
+        /*
+         * Solo enviamos campos que existen
+         * en EmpleadoUpdate.
+         *
+         * No enviamos:
+         * - id
+         * - foto
+         * - rol
+         * - nombres maestros
+         */
+
+        const payload = {
+
+          nombre:
+            empleadoFormulario.nombre ??
+            null,
+
+          apellidos:
+            empleadoFormulario.apellidos ??
+            null,
+
+          dni:
+            empleadoFormulario.dni ??
+            null,
+
+          telefono:
+            empleadoFormulario.telefono ??
+            null,
+
+          email_personal:
+            empleadoFormulario.email_personal ??
+            null,
+
+          email_empresa:
+            empleadoFormulario.email_empresa ??
+            null,
+
+          extension:
+            empleadoFormulario.extension ??
+            null,
+
+          usuario:
+            empleadoFormulario.usuario ??
+            null,
+
+          direccion:
+            empleadoFormulario.direccion ??
+            null,
+
+          codigo_postal:
+            empleadoFormulario.codigo_postal ??
+            null,
+
+          poblacion:
+            empleadoFormulario.poblacion ??
+            null,
+
+          provincia:
+            empleadoFormulario.provincia ??
+            null,
+
+          fecha_nacimiento:
+            empleadoFormulario.fecha_nacimiento ??
+            null,
+
+          alergias:
+            empleadoFormulario.alergias ??
+            null,
+
+          persona_contacto:
+            empleadoFormulario.persona_contacto ??
+            null,
+
+          telefono_contacto:
+            empleadoFormulario.telefono_contacto ??
+            null,
+
+          observaciones:
+            empleadoFormulario.observaciones ??
+            null,
+
+          departamento_id:
+            convertirNumeroONull(
+              empleadoFormulario.departamento_id
+            ),
+
+          seccion_id:
+            convertirNumeroONull(
+              empleadoFormulario.seccion_id
+            ),
+
+          cargo_id:
+            convertirNumeroONull(
+              empleadoFormulario.cargo_id
+            ),
+
+          fecha_alta:
+            empleadoFormulario.fecha_alta ??
+            null,
+
+          fecha_baja:
+            empleadoFormulario.fecha_baja ??
+            null,
+
+          activo:
+            typeof empleadoFormulario.activo ===
+            "boolean"
+              ? empleadoFormulario.activo
+              : null,
+
+          rol_id:
+            convertirNumeroONull(
+              empleadoFormulario.rol_id
+            ),
+        };
+
+
+        await editarEmpleado(
+          empleadoId,
+          payload
+        );
+
+
+        /*
+         * Volvemos a cargar la ficha
+         * real desde backend.
+         */
+
+        await cargarFicha(
+          empleadoId
+        );
+
+
+        setMensaje(
+          "Datos del empleado actualizados correctamente."
+        );
+
+      } catch (err) {
+
+        console.error(
+          "MODAL EMPLEADO — ERROR GUARDANDO DATOS:",
+          err
+        );
+
+        setError(
+          err?.response?.data?.detail ||
+          err?.message ||
+          "No se han podido guardar los cambios."
+        );
+
+      } finally {
+
+        setGuardando(false);
+
+      }
+    };
 
 
   /* ==========================================================
@@ -746,17 +963,21 @@ export default function ModalEmpleado({
   const toggleModulo = (
     modulo
   ) => {
+
     setModulosVisibles(
       (actuales) => {
+
         if (
           actuales.includes(
             modulo
           )
         ) {
+
           return actuales.filter(
             (item) =>
               item !== modulo
           );
+
         }
 
         return [
@@ -765,6 +986,9 @@ export default function ModalEmpleado({
         ];
       }
     );
+
+    setError(null);
+    setMensaje(null);
   };
 
 
@@ -776,8 +1000,10 @@ export default function ModalEmpleado({
     modulo,
     permiso
   ) => {
+
     setPermisosModulo(
       (actuales) => {
+
         const actualesModulo =
           Array.isArray(
             actuales[
@@ -795,6 +1021,7 @@ export default function ModalEmpleado({
           );
 
         return {
+
           ...actuales,
 
           [modulo]:
@@ -811,66 +1038,70 @@ export default function ModalEmpleado({
         };
       }
     );
+
+    setError(null);
+    setMensaje(null);
   };
 
 
   /* ==========================================================
-     GUARDAR CONFIGURACIÓN
+     GUARDAR ACCESOS
   ========================================================== */
 
   const guardarConfiguracion =
     async () => {
+
       if (
-        empleadoId === null ||
-        empleadoId === undefined
+        !empleadoId
       ) {
         return;
       }
 
       try {
-        setGuardando(
-          true
-        );
 
-        setError(
-          null
-        );
+        setGuardando(true);
+        setError(null);
+        setMensaje(null);
 
-        setMensaje(
-          null
-        );
 
         await asignarModulos(
           empleadoId,
           modulosVisibles
         );
 
+
         await asignarPermisos(
           empleadoId,
           permisosModulo
         );
 
+
         await cargarFicha(
           empleadoId
         );
 
+
         setMensaje(
-          "Configuración actualizada correctamente."
+          "Configuración de accesos actualizada correctamente."
         );
 
       } catch (err) {
+
         console.error(
-          "MODAL EMPLEADO — ERROR GUARDANDO CONFIGURACIÓN:",
+          "MODAL EMPLEADO — ERROR GUARDANDO ACCESOS:",
           err
         );
 
         setError(
+          err?.response?.data?.detail ||
+          err?.message ||
           "No se ha podido guardar la configuración."
         );
+
       } finally {
-        setGuardando(
-          false
-        );
+
+        setGuardando(false);
+
       }
     };
 
@@ -881,6 +1112,7 @@ export default function ModalEmpleado({
 
   const ejecutarResetPassword =
     async () => {
+
       if (
         !empleadoId
       ) {
@@ -888,58 +1120,70 @@ export default function ModalEmpleado({
       }
 
       try {
-        setResettingPassword(
-          true
-        );
 
-        setError(
-          null
-        );
+        setResettingPassword(true);
+        setError(null);
+        setMensaje(null);
 
-        setMensaje(
-          null
-        );
 
         const respuesta =
           await resetPasswordEmpleado(
             empleadoId
           );
 
+
+        /*
+         * TU BACKEND DEVUELVE:
+         *
+         * {
+         *   status: "ok",
+         *   password_temporal: "SJ12026"
+         * }
+         */
+
         const nuevaPassword =
+          respuesta?.data?.password_temporal ||
           respuesta?.data?.password ||
           respuesta?.data?.nueva_password ||
           respuesta?.data?.temporary_password ||
           null;
 
+
         if (
           nuevaPassword
         ) {
+
           setMensaje(
             `Contraseña temporal: ${nuevaPassword}`
           );
+
         } else {
+
           setMensaje(
             "La contraseña se ha restablecido correctamente."
           );
         }
 
-        setConfirmReset(
-          false
-        );
+
+        setConfirmReset(false);
 
       } catch (err) {
+
         console.error(
           "MODAL EMPLEADO — ERROR RESETEANDO PASSWORD:",
           err
         );
 
         setError(
+          err?.response?.data?.detail ||
+          err?.message ||
           "No se ha podido restablecer la contraseña."
         );
+
       } finally {
-        setResettingPassword(
-          false
-        );
+
+        setResettingPassword(false);
+
       }
     };
 
@@ -951,25 +1195,23 @@ export default function ModalEmpleado({
   const handleFoto = async (
     event
   ) => {
-    const archivo =
-      event.target.files?.[0];
 
-    if (!archivo) {
+    const archivo =
+      event?.target?.files?.[0];
+
+    if (
+      !archivo ||
+      !empleadoId
+    ) {
       return;
     }
 
     try {
-      setSubiendoFoto(
-        true
-      );
 
-      setError(
-        null
-      );
+      setSubiendoFoto(true);
+      setError(null);
+      setMensaje(null);
 
-      setMensaje(
-        null
-      );
 
       const respuesta =
         await subirFotoEmpleado(
@@ -977,40 +1219,96 @@ export default function ModalEmpleado({
           archivo
         );
 
+
       const nuevaFoto =
         respuesta?.data?.foto_url ||
         respuesta?.data?.fotoUrl ||
         respuesta?.data?.foto ||
         null;
 
+
       if (
         nuevaFoto
       ) {
-        await cargarFicha(
-          empleadoId
+
+        setEmpleadoEdit(
+          (actual) => ({
+            ...actual,
+            foto:
+              nuevaFoto,
+            foto_url:
+              nuevaFoto,
+            fotoUrl:
+              nuevaFoto,
+          })
+        );
+
+
+        /*
+         * También actualizamos el store
+         * para que el cambio sea inmediato.
+         */
+
+        useSeguridadStore.setState(
+          (estado) => ({
+
+            ficha:
+              estado.ficha
+                ? {
+
+                    ...estado.ficha,
+
+                    empleado:
+                      estado.ficha.empleado
+                        ? {
+
+                            ...estado.ficha.empleado,
+
+                            foto:
+                              nuevaFoto,
+
+                            foto_url:
+                              nuevaFoto,
+
+                            fotoUrl:
+                              nuevaFoto,
+                          }
+
+                        : estado.ficha.empleado,
+                  }
+
+                : estado.ficha,
+          })
         );
       }
+
 
       setMensaje(
         "Fotografía actualizada correctamente."
       );
 
     } catch (err) {
+
       console.error(
         "MODAL EMPLEADO — ERROR SUBIENDO FOTO:",
         err
       );
 
       setError(
+        err?.response?.data?.detail ||
+        err?.message ||
         "No se ha podido actualizar la fotografía."
       );
-    } finally {
-      setSubiendoFoto(
-        false
-      );
 
-      event.target.value =
-        "";
+    } finally {
+
+      setSubiendoFoto(false);
+
+      if (
+        event?.target
+      ) {
+        event.target.value = "";
+      }
     }
   };
 
@@ -1029,6 +1327,7 @@ export default function ModalEmpleado({
   ========================================================== */
 
   return (
+
     <div
       className="
         fixed
@@ -1042,9 +1341,9 @@ export default function ModalEmpleado({
       "
     >
 
-      {/* =====================================================
+      {/* ======================================================
           BACKDROP
-      ===================================================== */}
+      ====================================================== */}
 
       <div
         className="
@@ -1059,9 +1358,9 @@ export default function ModalEmpleado({
       />
 
 
-      {/* =====================================================
+      {/* ======================================================
           MODAL
-      ===================================================== */}
+      ====================================================== */}
 
       <div
         className="
@@ -1087,9 +1386,10 @@ export default function ModalEmpleado({
         }
       >
 
-        {/* =================================================
+
+        {/* ====================================================
             CABECERA
-        ================================================= */}
+        ==================================================== */}
 
         <div
           className="
@@ -1122,6 +1422,7 @@ export default function ModalEmpleado({
             "
           />
 
+
           <div
             className="
               relative
@@ -1141,14 +1442,10 @@ export default function ModalEmpleado({
               "
             >
 
-              <div
-                className="
-                  relative
-                  shrink-0
-                "
-              >
+              <div className="relative shrink-0">
 
                 {foto ? (
+
                   <img
                     src={foto}
                     alt={
@@ -1164,7 +1461,9 @@ export default function ModalEmpleado({
                       shadow-lg
                     "
                   />
+
                 ) : (
+
                   <div
                     className="
                       flex
@@ -1184,16 +1483,13 @@ export default function ModalEmpleado({
                   >
                     {iniciales}
                   </div>
+
                 )}
 
               </div>
 
 
-              <div
-                className="
-                  min-w-0
-                "
-              >
+              <div className="min-w-0">
 
                 <div
                   className="
@@ -1217,6 +1513,7 @@ export default function ModalEmpleado({
                     {nombreEmpleado}
                   </h2>
 
+
                   <span
                     className="
                       rounded-full
@@ -1234,6 +1531,7 @@ export default function ModalEmpleado({
                   </span>
 
                 </div>
+
 
                 <p
                   className="
@@ -1287,9 +1585,9 @@ export default function ModalEmpleado({
         </div>
 
 
-        {/* =================================================
+        {/* ====================================================
             PESTAÑAS
-        ================================================= */}
+        ==================================================== */}
 
         <div
           className="
@@ -1338,6 +1636,7 @@ export default function ModalEmpleado({
             },
           ].map(
             (item) => (
+
               <button
                 key={
                   item.id
@@ -1351,11 +1650,12 @@ export default function ModalEmpleado({
                 className={`
                   relative
                   shrink-0
-                  px-4
+                  px-3
                   py-3.5
                   text-sm
                   font-semibold
                   transition
+                  sm:px-4
                   ${
                     pestana ===
                     item.id
@@ -1365,41 +1665,41 @@ export default function ModalEmpleado({
                 `}
               >
 
-                <span
-                  className="
-                    mr-2
-                  "
-                >
+                <span className="mr-2">
                   {item.icon}
                 </span>
 
                 {item.label}
 
+
                 {pestana ===
                   item.id && (
+
                   <span
                     className="
                       absolute
                       bottom-0
-                      left-3
-                      right-3
+                      left-2
+                      right-2
                       h-0.5
                       rounded-full
                       bg-blue-600
                     "
                   />
+
                 )}
 
               </button>
+
             )
           )}
 
         </div>
 
 
-        {/* =================================================
+        {/* ====================================================
             CONTENIDO
-        ================================================= */}
+        ==================================================== */}
 
         <div
           className="
@@ -1412,11 +1712,12 @@ export default function ModalEmpleado({
           "
         >
 
-          {/* =================================================
+          {/* ==================================================
               LOADING
-          ================================================= */}
+          ================================================== */}
 
           {cargando && (
+
             <div
               className="
                 flex
@@ -1426,11 +1727,7 @@ export default function ModalEmpleado({
               "
             >
 
-              <div
-                className="
-                  text-center
-                "
-              >
+              <div className="text-center">
 
                 <div
                   className="
@@ -1462,12 +1759,13 @@ export default function ModalEmpleado({
           )}
 
 
-          {/* =================================================
+          {/* ==================================================
               ERROR
-          ================================================= */}
+          ================================================== */}
 
           {!cargando &&
             error && (
+
               <div
                 className="
                   mb-5
@@ -1483,15 +1781,17 @@ export default function ModalEmpleado({
               >
                 {error}
               </div>
+
             )}
 
 
-          {/* =================================================
+          {/* ==================================================
               MENSAJE
-          ================================================= */}
+          ================================================== */}
 
           {!cargando &&
             mensaje && (
+
               <div
                 className="
                   mb-5
@@ -1508,13 +1808,16 @@ export default function ModalEmpleado({
               >
                 {mensaje}
               </div>
+
             )}
 
 
           {!cargando &&
             ficha &&
-            empleado && (
+            empleadoFormulario && (
+
               <>
+
 
                 {/* =================================================
                     DATOS BÁSICOS
@@ -1522,11 +1825,174 @@ export default function ModalEmpleado({
 
                 {pestana ===
                   "basicos" && (
-                  <div
-                    className="
-                      space-y-5
-                    "
-                  >
+
+                  <div className="space-y-5">
+
+
+                    <section
+                      className="
+                        rounded-2xl
+                        border
+                        border-slate-200
+                        bg-white
+                        p-5
+                        shadow-sm
+                      "
+                    >
+
+                      <div className="mb-5">
+
+                        <h3
+                          className="
+                            text-base
+                            font-bold
+                            text-slate-900
+                          "
+                        >
+                          Datos básicos
+                        </h3>
+
+                        <p
+                          className="
+                            mt-1
+                            text-sm
+                            text-slate-500
+                          "
+                        >
+                          Información principal y datos
+                          de identificación del empleado.
+                        </p>
+
+                      </div>
+
+
+                      <div
+                        className="
+                          grid
+                          grid-cols-1
+                          gap-4
+                          md:grid-cols-2
+                          lg:grid-cols-3
+                        "
+                      >
+
+                        <CampoEditable
+                          label="Nombre"
+                          value={
+                            empleadoFormulario.nombre
+                          }
+                          onChange={(value) =>
+                            cambiarCampo(
+                              "nombre",
+                              value
+                            )
+                          }
+                        />
+
+
+                        <CampoEditable
+                          label="Apellidos"
+                          value={
+                            empleadoFormulario.apellidos
+                          }
+                          onChange={(value) =>
+                            cambiarCampo(
+                              "apellidos",
+                              value
+                            )
+                          }
+                        />
+
+
+                        <CampoEditable
+                          label="DNI"
+                          value={
+                            empleadoFormulario.dni
+                          }
+                          onChange={(value) =>
+                            cambiarCampo(
+                              "dni",
+                              value
+                            )
+                          }
+                        />
+
+
+                        <CampoEditable
+                          label="Teléfono"
+                          value={
+                            empleadoFormulario.telefono
+                          }
+                          onChange={(value) =>
+                            cambiarCampo(
+                              "telefono",
+                              value
+                            )
+                          }
+                        />
+
+
+                        <CampoEditable
+                          label="Email personal"
+                          value={
+                            empleadoFormulario.email_personal
+                          }
+                          onChange={(value) =>
+                            cambiarCampo(
+                              "email_personal",
+                              value
+                            )
+                          }
+                          type="email"
+                        />
+
+
+                        <CampoEditable
+                          label="Email empresa"
+                          value={
+                            empleadoFormulario.email_empresa
+                          }
+                          onChange={(value) =>
+                            cambiarCampo(
+                              "email_empresa",
+                              value
+                            )
+                          }
+                          type="email"
+                        />
+
+
+                        <CampoEditable
+                          label="Extensión"
+                          value={
+                            empleadoFormulario.extension
+                          }
+                          onChange={(value) =>
+                            cambiarCampo(
+                              "extension",
+                              value
+                            )
+                          }
+                        />
+
+
+                        <CampoEditable
+                          label="Usuario"
+                          value={
+                            empleadoFormulario.usuario
+                          }
+                          onChange={(value) =>
+                            cambiarCampo(
+                              "usuario",
+                              value
+                            )
+                          }
+                        />
+
+                      </div>
+
+                    </section>
+
 
                     {/* FOTO */}
 
@@ -1551,13 +2017,10 @@ export default function ModalEmpleado({
                         "
                       >
 
-                        <div
-                          className="
-                            shrink-0
-                          "
-                        >
+                        <div className="shrink-0">
 
                           {foto ? (
+
                             <img
                               src={foto}
                               alt={
@@ -1573,7 +2036,9 @@ export default function ModalEmpleado({
                                 shadow-md
                               "
                             />
+
                           ) : (
+
                             <div
                               className="
                                 flex
@@ -1593,16 +2058,13 @@ export default function ModalEmpleado({
                             >
                               {iniciales}
                             </div>
+
                           )}
 
                         </div>
 
 
-                        <div
-                          className="
-                            flex-1
-                          "
-                        >
+                        <div className="flex-1">
 
                           <h3
                             className="
@@ -1624,6 +2086,7 @@ export default function ModalEmpleado({
                             Actualiza la fotografía
                             del empleado.
                           </p>
+
 
                           <label
                             className="
@@ -1674,156 +2137,17 @@ export default function ModalEmpleado({
                     </section>
 
 
-                    {/* IDENTIDAD */}
-
-                    <section
-                      className="
-                        rounded-2xl
-                        border
-                        border-slate-200
-                        bg-white
-                        p-5
-                        shadow-sm
-                      "
-                    >
-
-                      <div
-                        className="
-                          mb-5
-                        "
-                      >
-
-                        <h3
-                          className="
-                            text-base
-                            font-bold
-                            text-slate-900
-                          "
-                        >
-                          Datos básicos
-                        </h3>
-
-                        <p
-                          className="
-                            mt-1
-                            text-sm
-                            text-slate-500
-                          "
-                        >
-                          Identificación principal
-                          del empleado.
-                        </p>
-
-                      </div>
-
-
-                      <div
-                        className="
-                          grid
-                          grid-cols-1
-                          gap-4
-                          sm:grid-cols-2
-                          lg:grid-cols-3
-                        "
-                      >
-
-                        <Campo
-                          etiqueta="ID"
-                          valor={
-                            obtenerCampo(
-                              "id"
-                            )
-                          }
-                        />
-
-                        <Campo
-                          etiqueta="Usuario"
-                          valor={
-                            obtenerCampo(
-                              "usuario",
-                              "username"
-                            )
-                          }
-                        />
-
-                        <Campo
-                          etiqueta="Nombre"
-                          valor={
-                            obtenerCampo(
-                              "nombre"
-                            )
-                          }
-                        />
-
-                        <Campo
-                          etiqueta="Apellidos"
-                          valor={
-                            obtenerCampo(
-                              "apellidos"
-                            )
-                          }
-                        />
-
-                        <Campo
-                          etiqueta="Nombre completo"
-                          valor={
-                            obtenerCampo(
-                              "nombre_completo",
-                              "nombreCompleto"
-                            ) ||
-                            nombreEmpleado
-                          }
-                        />
-
-                        <Campo
-                          etiqueta="DNI"
-                          valor={
-                            obtenerCampo(
-                              "dni",
-                              "nif"
-                            )
-                          }
-                        />
-
-                        <Campo
-                          etiqueta="Rol"
-                          valor={
-                            rol
-                          }
-                        />
-
-                        <Campo
-                          etiqueta="Activo"
-                          valor={
-                            obtenerCampo(
-                              "activo"
-                            )
-                          }
-                        />
-
-                        <Campo
-                          etiqueta="Fecha de alta"
-                          valor={
-                            obtenerCampo(
-                              "fecha_alta"
-                            )
-                          }
-                        />
-
-                        <Campo
-                          etiqueta="Fecha de baja"
-                          valor={
-                            obtenerCampo(
-                              "fecha_baja"
-                            )
-                          }
-                        />
-
-                      </div>
-
-                    </section>
+                    <GuardarButton
+                      onClick={
+                        guardarDatosEmpleado
+                      }
+                      loading={
+                        guardando
+                      }
+                    />
 
                   </div>
+
                 )}
 
 
@@ -1833,11 +2157,8 @@ export default function ModalEmpleado({
 
                 {pestana ===
                   "personales" && (
-                  <div
-                    className="
-                      space-y-5
-                    "
-                  >
+
+                  <div className="space-y-5">
 
                     <section
                       className="
@@ -1850,11 +2171,7 @@ export default function ModalEmpleado({
                       "
                     >
 
-                      <div
-                        className="
-                          mb-5
-                        "
-                      >
+                      <div className="mb-5">
 
                         <h3
                           className="
@@ -1873,8 +2190,8 @@ export default function ModalEmpleado({
                             text-slate-500
                           "
                         >
-                          Información personal
-                          y de contacto.
+                          Información personal y de
+                          contacto del empleado.
                         </p>
 
                       </div>
@@ -1885,107 +2202,139 @@ export default function ModalEmpleado({
                           grid
                           grid-cols-1
                           gap-4
-                          sm:grid-cols-2
+                          md:grid-cols-2
                           lg:grid-cols-3
                         "
                       >
 
-                        <Campo
-                          etiqueta="Teléfono"
-                          valor={
-                            obtenerCampo(
-                              "telefono",
-                              "telefono_personal"
+                        <CampoEditable
+                          label="Dirección"
+                          value={
+                            empleadoFormulario.direccion
+                          }
+                          onChange={(value) =>
+                            cambiarCampo(
+                              "direccion",
+                              value
                             )
                           }
                         />
 
-                        <Campo
-                          etiqueta="Email personal"
-                          valor={
-                            obtenerCampo(
-                              "email_personal"
+
+                        <CampoEditable
+                          label="Código postal"
+                          value={
+                            empleadoFormulario.codigo_postal
+                          }
+                          onChange={(value) =>
+                            cambiarCampo(
+                              "codigo_postal",
+                              value
                             )
                           }
                         />
 
-                        <Campo
-                          etiqueta="Fecha de nacimiento"
-                          valor={
-                            obtenerCampo(
-                              "fecha_nacimiento"
+
+                        <CampoEditable
+                          label="Población"
+                          value={
+                            empleadoFormulario.poblacion
+                          }
+                          onChange={(value) =>
+                            cambiarCampo(
+                              "poblacion",
+                              value
                             )
                           }
                         />
 
-                        <Campo
-                          etiqueta="Dirección"
-                          valor={
-                            obtenerCampo(
-                              "direccion"
+
+                        <CampoEditable
+                          label="Provincia"
+                          value={
+                            empleadoFormulario.provincia
+                          }
+                          onChange={(value) =>
+                            cambiarCampo(
+                              "provincia",
+                              value
                             )
                           }
                         />
 
-                        <Campo
-                          etiqueta="Código postal"
-                          valor={
-                            obtenerCampo(
-                              "codigo_postal"
+
+                        <CampoEditable
+                          label="Fecha de nacimiento"
+                          type="date"
+                          value={
+                            normalizarFechaInput(
+                              empleadoFormulario.fecha_nacimiento
+                            )
+                          }
+                          onChange={(value) =>
+                            cambiarCampo(
+                              "fecha_nacimiento",
+                              value
                             )
                           }
                         />
 
-                        <Campo
-                          etiqueta="Población"
-                          valor={
-                            obtenerCampo(
-                              "poblacion"
+
+                        <CampoEditable
+                          label="Alergias"
+                          value={
+                            empleadoFormulario.alergias
+                          }
+                          onChange={(value) =>
+                            cambiarCampo(
+                              "alergias",
+                              value
                             )
                           }
                         />
 
-                        <Campo
-                          etiqueta="Provincia"
-                          valor={
-                            obtenerCampo(
-                              "provincia"
+
+                        <CampoEditable
+                          label="Persona de contacto"
+                          value={
+                            empleadoFormulario.persona_contacto
+                          }
+                          onChange={(value) =>
+                            cambiarCampo(
+                              "persona_contacto",
+                              value
                             )
                           }
                         />
 
-                        <Campo
-                          etiqueta="Alergias"
-                          valor={
-                            obtenerCampo(
-                              "alergias"
+
+                        <CampoEditable
+                          label="Teléfono contacto"
+                          value={
+                            empleadoFormulario.telefono_contacto
+                          }
+                          onChange={(value) =>
+                            cambiarCampo(
+                              "telefono_contacto",
+                              value
                             )
                           }
                         />
 
-                        <Campo
-                          etiqueta="Persona de contacto"
-                          valor={
-                            obtenerCampo(
-                              "persona_contacto"
-                            )
-                          }
-                        />
+                      </div>
 
-                        <Campo
-                          etiqueta="Teléfono de contacto"
-                          valor={
-                            obtenerCampo(
-                              "telefono_contacto"
-                            )
-                          }
-                        />
 
-                        <Campo
-                          etiqueta="Observaciones"
-                          valor={
-                            obtenerCampo(
-                              "observaciones"
+                      <div className="mt-5">
+
+                        <CampoTextarea
+                          label="Observaciones"
+                          value={
+                            empleadoFormulario.observaciones
+                          }
+                          onChange={(value) =>
+                            cambiarCampo(
+                              "observaciones",
+                              value
                             )
                           }
                         />
@@ -1994,7 +2343,18 @@ export default function ModalEmpleado({
 
                     </section>
 
+
+                    <GuardarButton
+                      onClick={
+                        guardarDatosEmpleado
+                      }
+                      loading={
+                        guardando
+                      }
+                    />
+
                   </div>
+
                 )}
 
 
@@ -2004,11 +2364,8 @@ export default function ModalEmpleado({
 
                 {pestana ===
                   "laborales" && (
-                  <div
-                    className="
-                      space-y-5
-                    "
-                  >
+
+                  <div className="space-y-5">
 
                     <section
                       className="
@@ -2021,11 +2378,7 @@ export default function ModalEmpleado({
                       "
                     >
 
-                      <div
-                        className="
-                          mb-5
-                        "
-                      >
+                      <div className="mb-5">
 
                         <h3
                           className="
@@ -2044,8 +2397,8 @@ export default function ModalEmpleado({
                             text-slate-500
                           "
                         >
-                          Organización y situación
-                          laboral del empleado.
+                          Información profesional y
+                          situación laboral.
                         </p>
 
                       </div>
@@ -2056,131 +2409,85 @@ export default function ModalEmpleado({
                           grid
                           grid-cols-1
                           gap-4
-                          sm:grid-cols-2
+                          md:grid-cols-2
                           lg:grid-cols-3
                         "
                       >
 
-                        <Campo
-                          etiqueta="Departamento"
-                          valor={
-                            obtenerCampo(
-                              "departamento_nombre"
+                        <CampoEditable
+                          label="Departamento ID"
+                          type="number"
+                          value={
+                            empleadoFormulario.departamento_id
+                          }
+                          onChange={(value) =>
+                            cambiarCampo(
+                              "departamento_id",
+                              value
                             )
                           }
                         />
 
-                        <Campo
-                          etiqueta="Departamento ID"
-                          valor={
-                            obtenerCampo(
-                              "departamento_id"
+
+                        <CampoEditable
+                          label="Sección ID"
+                          type="number"
+                          value={
+                            empleadoFormulario.seccion_id
+                          }
+                          onChange={(value) =>
+                            cambiarCampo(
+                              "seccion_id",
+                              value
                             )
                           }
                         />
 
-                        <Campo
-                          etiqueta="Sección"
-                          valor={
-                            obtenerCampo(
-                              "seccion_nombre"
+
+                        <CampoEditable
+                          label="Cargo ID"
+                          type="number"
+                          value={
+                            empleadoFormulario.cargo_id
+                          }
+                          onChange={(value) =>
+                            cambiarCampo(
+                              "cargo_id",
+                              value
                             )
                           }
                         />
 
-                        <Campo
-                          etiqueta="Sección ID"
-                          valor={
-                            obtenerCampo(
-                              "seccion_id"
+
+                        <CampoEditable
+                          label="Fecha de alta"
+                          type="date"
+                          value={
+                            normalizarFechaInput(
+                              empleadoFormulario.fecha_alta
+                            )
+                          }
+                          onChange={(value) =>
+                            cambiarCampo(
+                              "fecha_alta",
+                              value
                             )
                           }
                         />
 
-                        <Campo
-                          etiqueta="Cargo"
-                          valor={
-                            obtenerCampo(
-                              "cargo_nombre"
+
+                        <CampoEditable
+                          label="Fecha de baja"
+                          type="date"
+                          value={
+                            normalizarFechaInput(
+                              empleadoFormulario.fecha_baja
                             )
                           }
-                        />
-
-                        <Campo
-                          etiqueta="Cargo ID"
-                          valor={
-                            obtenerCampo(
-                              "cargo_id"
-                            )
-                          }
-                        />
-
-                        <Campo
-                          etiqueta="Email empresa"
-                          valor={
-                            obtenerCampo(
-                              "email_empresa"
-                            )
-                          }
-                        />
-
-                        <Campo
-                          etiqueta="Extensión"
-                          valor={
-                            obtenerCampo(
-                              "extension"
-                            )
-                          }
-                        />
-
-                        <Campo
-                          etiqueta="Usuario"
-                          valor={
-                            obtenerCampo(
-                              "usuario"
-                            )
-                          }
-                        />
-
-                        <Campo
-                          etiqueta="Rol"
-                          valor={
-                            rol
-                          }
-                        />
-
-                        <Campo
-                          etiqueta="Rol ID"
-                          valor={
-                            obtenerCampo(
-                              "rol_id"
-                            )
-                          }
-                        />
-
-                        <Campo
-                          etiqueta="Fecha de alta"
-                          valor={
-                            obtenerCampo(
-                              "fecha_alta"
-                            )
-                          }
-                        />
-
-                        <Campo
-                          etiqueta="Fecha de baja"
-                          valor={
-                            obtenerCampo(
-                              "fecha_baja"
-                            )
-                          }
-                        />
-
-                        <Campo
-                          etiqueta="Activo"
-                          valor={
-                            obtenerCampo(
-                              "activo"
+                          onChange={(value) =>
+                            cambiarCampo(
+                              "fecha_baja",
+                              value
                             )
                           }
                         />
@@ -2190,7 +2497,7 @@ export default function ModalEmpleado({
                     </section>
 
 
-                    {/* RESUMEN */}
+                    {/* ESTADO */}
 
                     <section
                       className="
@@ -2203,138 +2510,109 @@ export default function ModalEmpleado({
                       "
                     >
 
-                      <h3
-                        className="
-                          text-base
-                          font-bold
-                          text-slate-900
-                        "
-                      >
-                        Resumen laboral
-                      </h3>
-
                       <div
                         className="
-                          mt-4
-                          grid
-                          grid-cols-1
+                          flex
+                          flex-col
                           gap-4
-                          sm:grid-cols-3
+                          sm:flex-row
+                          sm:items-center
+                          sm:justify-between
                         "
                       >
 
-                        <div
-                          className="
-                            rounded-2xl
-                            border
-                            border-blue-100
-                            bg-blue-50
-                            p-4
-                          "
-                        >
-                          <p
+                        <div>
+
+                          <h3
                             className="
-                              text-xs
-                              font-semibold
-                              text-blue-500
+                              text-base
+                              font-bold
+                              text-slate-900
                             "
                           >
-                            Departamento
-                          </p>
+                            Estado del empleado
+                          </h3>
 
                           <p
                             className="
                               mt-1
                               text-sm
-                              font-bold
-                              text-blue-800
+                              text-slate-500
                             "
                           >
-                            {mostrarValor(
-                              obtenerCampo(
-                                "departamento_nombre"
-                              )
-                            )}
+                            Puedes activar o desactivar
+                            el empleado.
                           </p>
+
                         </div>
 
 
-                        <div
+                        <label
                           className="
-                            rounded-2xl
-                            border
-                            border-cyan-100
-                            bg-cyan-50
-                            p-4
+                            inline-flex
+                            cursor-pointer
+                            items-center
+                            gap-3
                           "
                         >
-                          <p
+
+                          <input
+                            type="checkbox"
+                            checked={
+                              Boolean(
+                                empleadoFormulario.activo
+                              )
+                            }
+                            onChange={(event) =>
+                              cambiarCampo(
+                                "activo",
+                                event.target.checked
+                              )
+                            }
                             className="
+                              h-5
+                              w-5
+                              accent-blue-600
+                            "
+                          />
+
+                          <span
+                            className={`
+                              rounded-full
+                              px-3
+                              py-1
                               text-xs
                               font-semibold
-                              text-cyan-600
-                            "
+                              ${
+                                empleadoFormulario.activo
+                                  ? "bg-emerald-50 text-emerald-700"
+                                  : "bg-red-50 text-red-700"
+                              }
+                            `}
                           >
-                            Sección
-                          </p>
+                            {empleadoFormulario.activo
+                              ? "Activo"
+                              : "Inactivo"}
+                          </span>
 
-                          <p
-                            className="
-                              mt-1
-                              text-sm
-                              font-bold
-                              text-cyan-800
-                            "
-                          >
-                            {mostrarValor(
-                              obtenerCampo(
-                                "seccion_nombre"
-                              )
-                            )}
-                          </p>
-                        </div>
-
-
-                        <div
-                          className="
-                            rounded-2xl
-                            border
-                            border-violet-100
-                            bg-violet-50
-                            p-4
-                          "
-                        >
-                          <p
-                            className="
-                              text-xs
-                              font-semibold
-                              text-violet-600
-                            "
-                          >
-                            Cargo
-                          </p>
-
-                          <p
-                            className="
-                              mt-1
-                              text-sm
-                              font-bold
-                              text-violet-800
-                            "
-                          >
-                            {mostrarValor(
-                              obtenerCampo(
-                                "cargo_nombre"
-                              )
-                            )}
-                          </p>
-                        </div>
+                        </label>
 
                       </div>
 
                     </section>
 
+
+                    <GuardarButton
+                      onClick={
+                        guardarDatosEmpleado
+                      }
+                      loading={
+                        guardando
+                      }
+                    />
+
                   </div>
+
                 )}
 
 
@@ -2344,11 +2622,9 @@ export default function ModalEmpleado({
 
                 {pestana ===
                   "accesos" && (
-                  <div
-                    className="
-                      space-y-5
-                    "
-                  >
+
+                  <div className="space-y-5">
+
 
                     {/* MÓDULOS */}
 
@@ -2394,11 +2670,12 @@ export default function ModalEmpleado({
                               text-slate-500
                             "
                           >
-                            Selecciona los módulos
-                            que puede visualizar.
+                            Selecciona los módulos que
+                            puede visualizar el empleado.
                           </p>
 
                         </div>
+
 
                         <span
                           className="
@@ -2413,9 +2690,9 @@ export default function ModalEmpleado({
                             text-blue-700
                           "
                         >
-                          {
-                            modulosVisibles.length
-                          } módulos
+                          {modulosVisibles.length}
+                          {" "}
+                          módulos
                         </span>
 
                       </div>
@@ -2423,6 +2700,7 @@ export default function ModalEmpleado({
 
                       {modulosDisponibles.length >
                       0 ? (
+
                         <div
                           className="
                             grid
@@ -2437,12 +2715,14 @@ export default function ModalEmpleado({
                             (
                               modulo
                             ) => {
+
                               const activo =
                                 modulosVisibles.includes(
                                   modulo
                                 );
 
                               return (
+
                                 <label
                                   key={
                                     modulo
@@ -2482,6 +2762,7 @@ export default function ModalEmpleado({
                                     "
                                   />
 
+
                                   <span
                                     className={`
                                       text-sm
@@ -2499,12 +2780,15 @@ export default function ModalEmpleado({
                                   </span>
 
                                 </label>
+
                               );
                             }
                           )}
 
                         </div>
+
                       ) : (
+
                         <div
                           className="
                             rounded-xl
@@ -2516,16 +2800,18 @@ export default function ModalEmpleado({
                             text-center
                           "
                         >
+
                           <p
                             className="
                               text-sm
                               text-slate-500
                             "
                           >
-                            No hay módulos
-                            disponibles.
+                            No hay módulos disponibles.
                           </p>
+
                         </div>
+
                       )}
 
                     </section>
@@ -2544,11 +2830,7 @@ export default function ModalEmpleado({
                       "
                     >
 
-                      <div
-                        className="
-                          mb-5
-                        "
-                      >
+                      <div className="mb-5">
 
                         <h3
                           className="
@@ -2576,16 +2858,14 @@ export default function ModalEmpleado({
 
                       {modulosDisponibles.length >
                       0 ? (
-                        <div
-                          className="
-                            space-y-3
-                          "
-                        >
+
+                        <div className="space-y-3">
 
                           {modulosDisponibles.map(
                             (
                               modulo
                             ) => {
+
                               const disponibles =
                                 permisosDisponibles[
                                   modulo
@@ -2603,6 +2883,7 @@ export default function ModalEmpleado({
                                   : [];
 
                               return (
+
                                 <div
                                   key={
                                     modulo
@@ -2638,6 +2919,7 @@ export default function ModalEmpleado({
                                       )}
                                     </span>
 
+
                                     <span
                                       className="
                                         rounded-full
@@ -2649,9 +2931,9 @@ export default function ModalEmpleado({
                                         text-slate-500
                                       "
                                     >
-                                      {
-                                        activos.length
-                                      } activos
+                                      {activos.length}
+                                      {" "}
+                                      activos
                                     </span>
 
                                   </div>
@@ -2659,6 +2941,7 @@ export default function ModalEmpleado({
 
                                   {disponibles.length >
                                   0 ? (
+
                                     <div
                                       className="
                                         flex
@@ -2671,12 +2954,14 @@ export default function ModalEmpleado({
                                         (
                                           permiso
                                         ) => {
+
                                           const activo =
                                             activos.includes(
                                               permiso
                                             );
 
                                           return (
+
                                             <label
                                               key={
                                                 permiso
@@ -2724,12 +3009,15 @@ export default function ModalEmpleado({
                                               )}
 
                                             </label>
+
                                           );
                                         }
                                       )}
 
                                     </div>
+
                                   ) : (
+
                                     <span
                                       className="
                                         text-xs
@@ -2740,15 +3028,19 @@ export default function ModalEmpleado({
                                       definidos para
                                       este módulo.
                                     </span>
+
                                   )}
 
                                 </div>
+
                               );
                             }
                           )}
 
                         </div>
+
                       ) : (
+
                         <div
                           className="
                             rounded-xl
@@ -2760,22 +3052,35 @@ export default function ModalEmpleado({
                             text-center
                           "
                         >
+
                           <p
                             className="
                               text-sm
                               text-slate-500
                             "
                           >
-                            No hay módulos
-                            disponibles para
-                            configurar permisos.
+                            No hay módulos disponibles
+                            para configurar permisos.
                           </p>
+
                         </div>
+
                       )}
 
                     </section>
 
+
+                    <GuardarButton
+                      onClick={
+                        guardarConfiguracion
+                      }
+                      loading={
+                        guardando
+                      }
+                    />
+
                   </div>
+
                 )}
 
 
@@ -2785,11 +3090,8 @@ export default function ModalEmpleado({
 
                 {pestana ===
                   "seguridad" && (
-                  <div
-                    className="
-                      space-y-5
-                    "
-                  >
+
+                  <div className="space-y-5">
 
                     <section
                       className="
@@ -2802,11 +3104,7 @@ export default function ModalEmpleado({
                       "
                     >
 
-                      <div
-                        className="
-                          mb-5
-                        "
-                      >
+                      <div className="mb-5">
 
                         <h3
                           className="
@@ -2826,13 +3124,11 @@ export default function ModalEmpleado({
                           "
                         >
                           Gestiona las credenciales
-                          y el acceso del empleado.
+                          del empleado.
                         </p>
 
                       </div>
 
-
-                      {/* RESET PASSWORD */}
 
                       <div
                         className="
@@ -2874,14 +3170,15 @@ export default function ModalEmpleado({
                               "
                             >
                               Genera una nueva
-                              contraseña para este
-                              empleado.
+                              contraseña temporal
+                              para este empleado.
                             </p>
 
                           </div>
 
 
                           {!confirmReset ? (
+
                             <button
                               type="button"
                               onClick={() =>
@@ -2904,7 +3201,9 @@ export default function ModalEmpleado({
                             >
                               Restablecer
                             </button>
+
                           ) : (
+
                             <div
                               className="
                                 flex
@@ -2969,68 +3268,17 @@ export default function ModalEmpleado({
                               </button>
 
                             </div>
+
                           )}
 
                         </div>
 
                       </div>
 
-
-                      {/* ESTADO */}
-
-                      <div
-                        className="
-                          mt-5
-                          grid
-                          grid-cols-1
-                          gap-4
-                          sm:grid-cols-2
-                        "
-                      >
-
-                        <Campo
-                          etiqueta="Usuario"
-                          valor={
-                            obtenerCampo(
-                              "usuario"
-                            )
-                          }
-                        />
-
-                        <Campo
-                          etiqueta="Estado"
-                          valor={
-                            obtenerCampo(
-                              "activo"
-                            )
-                            ? "Activo"
-                            : "Inactivo"
-                          }
-                        />
-
-                        <Campo
-                          etiqueta="Fecha de alta"
-                          valor={
-                            obtenerCampo(
-                              "fecha_alta"
-                            )
-                          }
-                        />
-
-                        <Campo
-                          etiqueta="Fecha de baja"
-                          valor={
-                            obtenerCampo(
-                              "fecha_baja"
-                            )
-                          }
-                        />
-
-                      </div>
-
                     </section>
 
                   </div>
+
                 )}
 
 
@@ -3040,11 +3288,8 @@ export default function ModalEmpleado({
 
                 {pestana ===
                   "auditoria" && (
-                  <div
-                    className="
-                      space-y-5
-                    "
-                  >
+
+                  <div className="space-y-5">
 
                     <section
                       className="
@@ -3057,324 +3302,158 @@ export default function ModalEmpleado({
                       "
                     >
 
-                      <div
-                        className="
-                          mb-5
-                          flex
-                          flex-col
-                          gap-2
-                          sm:flex-row
-                          sm:items-center
-                          sm:justify-between
-                        "
-                      >
+                      <div className="mb-5">
 
-                        <div>
-
-                          <h3
-                            className="
-                              text-base
-                              font-bold
-                              text-slate-900
-                            "
-                          >
-                            Auditoría
-                          </h3>
-
-                          <p
-                            className="
-                              mt-1
-                              text-sm
-                              text-slate-500
-                            "
-                          >
-                            Historial de actividad
-                            relacionada con el empleado.
-                          </p>
-
-                        </div>
-
-                        <span
+                        <h3
                           className="
-                            inline-flex
-                            w-fit
-                            rounded-full
-                            bg-slate-100
-                            px-3
-                            py-1
-                            text-xs
-                            font-semibold
-                            text-slate-600
+                            text-base
+                            font-bold
+                            text-slate-900
                           "
                         >
-                          {
-                            auditoria.length
-                          } registros
-                        </span>
+                          Auditoría
+                        </h3>
+
+                        <p
+                          className="
+                            mt-1
+                            text-sm
+                            text-slate-500
+                          "
+                        >
+                          Historial de acciones
+                          relacionadas con el empleado.
+                        </p>
 
                       </div>
 
 
-                      {auditoria.length >
-                      0 ? (
-                        <div
-                          className="
-                            overflow-x-auto
-                          "
-                        >
+                      <div className="space-y-3">
 
-                          <table
-                            className="
-                              min-w-full
-                              text-left
-                            "
-                          >
+                        {(
+                          Array.isArray(
+                            ficha?.auditoria
+                          )
+                            ? ficha.auditoria
+                            : []
+                        ).length > 0 ? (
 
-                            <thead>
+                          ficha.auditoria.map(
+                            (
+                              item,
+                              index
+                            ) => (
 
-                              <tr
+                              <div
+                                key={
+                                  item.id ||
+                                  `audit-${index}`
+                                }
                                 className="
-                                  border-b
+                                  rounded-2xl
+                                  border
                                   border-slate-200
+                                  bg-slate-50/60
+                                  p-5
                                 "
                               >
 
-                                <th
+                                <div
                                   className="
-                                    px-4
-                                    py-3
-                                    text-[11px]
-                                    font-bold
-                                    uppercase
-                                    tracking-wide
-                                    text-slate-400
+                                    grid
+                                    grid-cols-1
+                                    gap-4
+                                    md:grid-cols-2
                                   "
                                 >
-                                  Fecha
-                                </th>
 
-                                <th
-                                  className="
-                                    px-4
-                                    py-3
-                                    text-[11px]
-                                    font-bold
-                                    uppercase
-                                    tracking-wide
-                                    text-slate-400
-                                  "
-                                >
-                                  Usuario
-                                </th>
-
-                                <th
-                                  className="
-                                    px-4
-                                    py-3
-                                    text-[11px]
-                                    font-bold
-                                    uppercase
-                                    tracking-wide
-                                    text-slate-400
-                                  "
-                                >
-                                  Módulo
-                                </th>
-
-                                <th
-                                  className="
-                                    px-4
-                                    py-3
-                                    text-[11px]
-                                    font-bold
-                                    uppercase
-                                    tracking-wide
-                                    text-slate-400
-                                  "
-                                >
-                                  Acción
-                                </th>
-
-                                <th
-                                  className="
-                                    px-4
-                                    py-3
-                                    text-[11px]
-                                    font-bold
-                                    uppercase
-                                    tracking-wide
-                                    text-slate-400
-                                  "
-                                >
-                                  Descripción
-                                </th>
-
-                              </tr>
-
-                            </thead>
-
-
-                            <tbody>
-
-                              {auditoria.map(
-                                (
-                                  registro,
-                                  indice
-                                ) => (
-                                  <tr
-                                    key={
-                                      registro?.id ??
-                                      indice
+                                  <DatoSimple
+                                    label="Fecha"
+                                    value={
+                                      item.fecha
                                     }
-                                    className="
-                                      border-b
-                                      border-slate-100
-                                      last:border-0
-                                    "
-                                  >
+                                  />
 
-                                    <td
-                                      className="
-                                        whitespace-nowrap
-                                        px-4
-                                        py-3
-                                        text-sm
-                                        text-slate-600
-                                      "
-                                    >
-                                      {mostrarValor(
-                                        registro?.fecha
-                                      )}
-                                    </td>
+                                  <DatoSimple
+                                    label="Módulo"
+                                    value={
+                                      item.modulo
+                                    }
+                                  />
 
-                                    <td
-                                      className="
-                                        whitespace-nowrap
-                                        px-4
-                                        py-3
-                                        text-sm
-                                        font-medium
-                                        text-slate-700
-                                      "
-                                    >
-                                      {mostrarValor(
-                                        registro?.usuario
-                                      )}
-                                    </td>
+                                  <DatoSimple
+                                    label="Acción"
+                                    value={
+                                      item.accion
+                                    }
+                                  />
 
-                                    <td
-                                      className="
-                                        whitespace-nowrap
-                                        px-4
-                                        py-3
-                                        text-sm
-                                        text-slate-600
-                                      "
-                                    >
-                                      {mostrarValor(
-                                        registro?.modulo
-                                      )}
-                                    </td>
+                                  <DatoSimple
+                                    label="Descripción"
+                                    value={
+                                      item.descripcion
+                                    }
+                                  />
 
-                                    <td
-                                      className="
-                                        whitespace-nowrap
-                                        px-4
-                                        py-3
-                                        text-sm
-                                        font-semibold
-                                        text-slate-700
-                                      "
-                                    >
-                                      {mostrarValor(
-                                        registro?.accion
-                                      )}
-                                    </td>
+                                </div>
 
-                                    <td
-                                      className="
-                                        min-w-[280px]
-                                        px-4
-                                        py-3
-                                        text-sm
-                                        text-slate-600
-                                      "
-                                    >
-                                      {mostrarValor(
-                                        registro?.descripcion
-                                      )}
-                                    </td>
+                              </div>
 
-                                  </tr>
-                                )
-                              )}
+                            )
+                          )
 
-                            </tbody>
-
-                          </table>
-
-                        </div>
-                      ) : (
-                        <div
-                          className="
-                            rounded-xl
-                            border
-                            border-dashed
-                            border-slate-300
-                            bg-slate-50
-                            p-8
-                            text-center
-                          "
-                        >
+                        ) : (
 
                           <div
                             className="
-                              text-3xl
+                              rounded-2xl
+                              border
+                              border-dashed
+                              border-slate-300
+                              bg-slate-50
+                              p-8
+                              text-center
                             "
                           >
-                            📋
+
+                            <div className="text-3xl">
+                              📋
+                            </div>
+
+                            <p
+                              className="
+                                mt-3
+                                text-sm
+                                font-medium
+                                text-slate-500
+                              "
+                            >
+                              No hay registros de
+                              auditoría disponibles.
+                            </p>
+
                           </div>
 
-                          <p
-                            className="
-                              mt-3
-                              text-sm
-                              font-semibold
-                              text-slate-600
-                            "
-                          >
-                            No hay registros
-                            de auditoría.
-                          </p>
+                        )}
 
-                          <p
-                            className="
-                              mt-1
-                              text-xs
-                              text-slate-400
-                            "
-                          >
-                            La actividad aparecerá
-                            aquí cuando exista.
-                          </p>
-
-                        </div>
-                      )}
+                      </div>
 
                     </section>
 
                   </div>
+
                 )}
 
               </>
+
             )}
 
         </div>
 
 
-        {/* =====================================================
+        {/* ====================================================
             FOOTER
-        ===================================================== */}
+        ==================================================== */}
 
         <div
           className="
@@ -3413,41 +3492,6 @@ export default function ModalEmpleado({
             "
           >
 
-            {pestana ===
-              "accesos" && (
-              <button
-                type="button"
-                onClick={
-                  guardarConfiguracion
-                }
-                disabled={
-                  guardando ||
-                  cargando ||
-                  !empleado
-                }
-                className="
-                  rounded-xl
-                  border
-                  border-blue-200
-                  bg-blue-50
-                  px-4
-                  py-2.5
-                  text-sm
-                  font-semibold
-                  text-blue-700
-                  transition
-                  hover:bg-blue-100
-                  disabled:cursor-not-allowed
-                  disabled:opacity-50
-                "
-              >
-                {guardando
-                  ? "Guardando..."
-                  : "Guardar cambios"}
-              </button>
-            )}
-
-
             <button
               type="button"
               onClick={
@@ -3477,4 +3521,338 @@ export default function ModalEmpleado({
 
     </div>
   );
+}
+
+
+/* ============================================================
+   CAMPO EDITABLE
+============================================================ */
+
+function CampoEditable({
+  label,
+  value,
+  onChange,
+  type = "text",
+  disabled = false,
+}) {
+
+  return (
+
+    <label className="block">
+
+      <span
+        className="
+          mb-2
+          block
+          text-[11px]
+          font-semibold
+          uppercase
+          tracking-wide
+          text-slate-400
+        "
+      >
+        {label}
+      </span>
+
+
+      <input
+        type={type}
+        value={
+          value === null ||
+          value === undefined
+            ? ""
+            : value
+        }
+        onChange={(event) =>
+          onChange(
+            event.target.value
+          )
+        }
+        disabled={disabled}
+        className="
+          h-11
+          w-full
+          rounded-xl
+          border
+          border-slate-200
+          bg-white
+          px-4
+          text-sm
+          font-medium
+          text-slate-800
+          outline-none
+          transition
+          placeholder:text-slate-300
+          focus:border-blue-400
+          focus:ring-2
+          focus:ring-blue-100
+          disabled:cursor-not-allowed
+          disabled:bg-slate-100
+          disabled:text-slate-400
+        "
+      />
+
+    </label>
+  );
+}
+
+
+/* ============================================================
+   TEXTAREA
+============================================================ */
+
+function CampoTextarea({
+  label,
+  value,
+  onChange,
+}) {
+
+  return (
+
+    <label className="block">
+
+      <span
+        className="
+          mb-2
+          block
+          text-[11px]
+          font-semibold
+          uppercase
+          tracking-wide
+          text-slate-400
+        "
+      >
+        {label}
+      </span>
+
+
+      <textarea
+        rows={5}
+        value={
+          value === null ||
+          value === undefined
+            ? ""
+            : value
+        }
+        onChange={(event) =>
+          onChange(
+            event.target.value
+          )
+        }
+        className="
+          w-full
+          resize-y
+          rounded-xl
+          border
+          border-slate-200
+          bg-white
+          px-4
+          py-3
+          text-sm
+          font-medium
+          text-slate-800
+          outline-none
+          transition
+          placeholder:text-slate-300
+          focus:border-blue-400
+          focus:ring-2
+          focus:ring-blue-100
+        "
+      />
+
+    </label>
+  );
+}
+
+
+/* ============================================================
+   DATO SIMPLE
+============================================================ */
+
+function DatoSimple({
+  label,
+  value,
+}) {
+
+  return (
+
+    <div>
+
+      <div
+        className="
+          mb-1
+          text-[11px]
+          font-semibold
+          uppercase
+          tracking-wide
+          text-slate-400
+        "
+      >
+        {label}
+      </div>
+
+
+      <div
+        className="
+          break-words
+          text-sm
+          text-slate-800
+        "
+      >
+        {value ||
+          "—"}
+      </div>
+
+    </div>
+  );
+}
+
+
+/* ============================================================
+   BOTÓN GUARDAR
+============================================================ */
+
+function GuardarButton({
+  onClick,
+  loading,
+}) {
+
+  return (
+
+    <div
+      className="
+        flex
+        justify-end
+        pt-1
+      "
+    >
+
+      <button
+        type="button"
+        disabled={loading}
+        onClick={onClick}
+        className="
+          inline-flex
+          items-center
+          justify-center
+          rounded-xl
+          bg-blue-600
+          px-5
+          py-2.5
+          text-sm
+          font-semibold
+          text-white
+          shadow-sm
+          transition
+          hover:bg-blue-700
+          disabled:cursor-not-allowed
+          disabled:opacity-50
+        "
+      >
+
+        {loading
+          ? "Guardando..."
+          : "Guardar cambios"}
+
+      </button>
+
+    </div>
+  );
+}
+
+
+/* ============================================================
+   CONVERTIR NÚMERO
+============================================================ */
+
+function convertirNumeroONull(
+  valor
+) {
+
+  if (
+    valor === null ||
+    valor === undefined ||
+    valor === ""
+  ) {
+    return null;
+  }
+
+  const numero =
+    Number(valor);
+
+  return Number.isFinite(
+    numero
+  )
+    ? numero
+    : null;
+}
+
+
+/* ============================================================
+   FECHA PARA INPUT DATE
+============================================================ */
+
+function normalizarFechaInput(
+  valor
+) {
+
+  if (
+    !valor
+  ) {
+    return "";
+  }
+
+  const texto =
+    String(valor);
+
+  /*
+   * Ya viene YYYY-MM-DD.
+   */
+
+  if (
+    /^\d{4}-\d{2}-\d{2}$/.test(
+      texto
+    )
+  ) {
+    return texto;
+  }
+
+  /*
+   * Compatibilidad con:
+   *
+   * DD/MM/YYYY
+   */
+
+  const match =
+    texto.match(
+      /^(\d{2})\/(\d{2})\/(\d{4})$/
+    );
+
+  if (match) {
+
+    return (
+      `${match[3]}-` +
+      `${match[2]}-` +
+      `${match[1]}`
+    );
+  }
+
+  /*
+   * Compatibilidad con ISO
+   * con hora.
+   */
+
+  if (
+    texto.length >= 10 &&
+    /^\d{4}-\d{2}-\d{2}/.test(
+      texto
+    )
+  ) {
+    return texto.substring(
+      0,
+      10
+    );
+  }
+
+  return "";
 }

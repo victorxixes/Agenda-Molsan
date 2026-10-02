@@ -1,89 +1,116 @@
 import { Link } from "react-router-dom";
 
 /**
- * HERRAMIENTAS — MOLSAN ERP SAAS PREMIUM 2027
+ * HERRAMIENTAS — MOLSAN ERP PREMIUM 2027
  *
- * - Glass Luxe
- * - Tarjetas corporativas
+ * Panel principal de herramientas.
+ * Diseño coherente con el resto del ERP:
+ * - Glass Luxe claro
+ * - Cards premium
+ * - Iconos
+ * - Hover suave
  * - Responsive
- * - Sin cambiar navegación
  */
 
 export default function Herramientas() {
   return (
-    <div className="min-h-full p-4 sm:p-6 lg:p-8 animate-fadeIn">
+    <div className="min-h-full p-4 sm:p-6 lg:p-8 space-y-6 animate-fadeIn">
 
       {/* =====================================================
           CABECERA
       ===================================================== */}
 
-      <div className="mb-7">
+      <div
+        className="
+          relative overflow-hidden
+          rounded-[24px]
+          border border-slate-200/80
+          bg-white/80
+          backdrop-blur-xl
+          shadow-[0_18px_50px_rgba(15,23,42,0.08)]
+          p-6 sm:p-7
+        "
+      >
+        <div
+          className="
+            absolute inset-x-0 top-0 h-px
+            bg-gradient-to-r
+            from-transparent
+            via-blue-400/60
+            to-transparent
+          "
+        />
 
-        <div className="flex items-center gap-3">
+        <div className="relative flex items-center gap-4">
 
           <div
             className="
-              flex
-              items-center
-              justify-center
-              w-11
-              h-11
+              flex h-12 w-12 shrink-0
+              items-center justify-center
               rounded-2xl
               bg-blue-50
-              border
-              border-blue-100
+              border border-blue-100
+              text-2xl
               shadow-sm
-              text-xl
             "
           >
             🛠️
           </div>
 
           <div>
-
-            <h1
-              className="
-                text-2xl
-                sm:text-3xl
-                font-bold
-                tracking-tight
-                text-slate-800
-              "
-            >
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-800">
               Herramientas
             </h1>
 
             <p className="mt-1 text-sm text-slate-500">
-              Utilidades y herramientas de gestión del ERP.
+              Herramientas y procesos auxiliares del sistema.
             </p>
-
           </div>
 
         </div>
-
       </div>
 
 
       {/* =====================================================
-          GRID
+          TARJETAS
       ===================================================== */}
 
-      <div
-        className="
-          grid
-          grid-cols-1
-          sm:grid-cols-2
-          xl:grid-cols-3
-          gap-5
-          max-w-6xl
-        "
-      >
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
 
         <Card
+          icon="📥"
           titulo="Importar CTN"
-          descripcion="Importa información CTN desde un archivo Excel."
-          icono="📥"
+          descripcion="Importar fichero Excel con información de notarías."
           link="/herramientas/importar-ctn"
+        />
+
+        <Card
+          icon="📰"
+          titulo="Crear noticia"
+          descripcion="Publicar una nueva noticia en la intranet."
+          link="/herramientas/utilidades/crear-noticia"
+        />
+
+        <Card
+          icon="📄"
+          titulo="Subir documento"
+          descripcion="Subir documentos y archivos a la intranet."
+          link="/herramientas/utilidades/subir-documento"
+        />
+
+        <Card
+          icon="📊"
+          titulo="Informes"
+          descripcion="Consultar listados y estadísticas de apoderados."
+          link="/herramientas/informes"
+        />
+
+        <Card
+          icon="📦"
+          titulo="Importador ABSIS"
+          descripcion="Importar expedientes desde el Excel matriz ABSIS."
+          link="/herramientas/importador-absis"
+          destacado
         />
 
       </div>
@@ -98,143 +125,102 @@ export default function Herramientas() {
 ========================================================= */
 
 function Card({
+  icon,
   titulo,
   descripcion,
-  icono,
   link,
+  destacado = false,
 }) {
   return (
     <Link
       to={link}
-      className="
-        group
-        relative
-        overflow-hidden
-        block
+      className={`
+        group relative overflow-hidden
         rounded-[22px]
         border
-        border-slate-200/80
         bg-white/80
         backdrop-blur-xl
         p-5
-        shadow-[0_12px_35px_rgba(15,23,42,0.06)]
-        transition-all
-        duration-200
+        shadow-[0_12px_35px_rgba(15,23,42,0.07)]
+        transition-all duration-300
         hover:-translate-y-1
-        hover:border-blue-200
-        hover:shadow-[0_18px_45px_rgba(15,23,42,0.10)]
+        hover:shadow-[0_20px_45px_rgba(15,23,42,0.11)]
         active:scale-[0.98]
-      "
+
+        ${
+          destacado
+            ? "border-blue-200/80 bg-blue-50/50"
+            : "border-slate-200/80"
+        }
+      `}
     >
 
-      {/* Brillo superior */}
+      {/* Línea superior */}
 
       <div
-        className="
-          absolute
-          top-0
-          left-0
-          right-0
-          h-px
-          bg-gradient-to-r
-          from-transparent
-          via-blue-400/50
-          to-transparent
-          opacity-0
-          group-hover:opacity-100
+        className={`
+          absolute inset-x-0 top-0 h-px
           transition-opacity
-        "
+          ${
+            destacado
+              ? "bg-gradient-to-r from-transparent via-blue-500/70 to-transparent opacity-100"
+              : "bg-gradient-to-r from-transparent via-blue-400/40 to-transparent opacity-0 group-hover:opacity-100"
+          }
+        `}
       />
-
 
       <div className="flex items-start gap-4">
 
         {/* ICONO */}
 
         <div
-          className="
-            flex
-            items-center
-            justify-center
-            w-12
-            h-12
-            shrink-0
+          className={`
+            flex h-12 w-12 shrink-0
+            items-center justify-center
             rounded-2xl
-            bg-blue-50
             border
-            border-blue-100
             text-xl
-            shadow-sm
-            transition-transform
-            duration-200
+            transition-all duration-300
             group-hover:scale-105
-          "
+            ${
+              destacado
+                ? "bg-blue-100 border-blue-200 text-blue-700"
+                : "bg-slate-50 border-slate-200 text-slate-600"
+            }
+          `}
         >
-          {icono}
+          {icon}
         </div>
 
 
-        {/* TEXTO */}
+        {/* CONTENIDO */}
 
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
 
-          <h2
-            className="
-              text-base
-              sm:text-lg
-              font-semibold
-              text-slate-800
-            "
-          >
+          <h2 className="text-base font-semibold text-slate-800">
             {titulo}
           </h2>
 
-          <p
-            className="
-              mt-1
-              text-sm
-              leading-relaxed
-              text-slate-500
-            "
-          >
+          <p className="mt-1.5 text-sm leading-5 text-slate-500">
             {descripcion}
           </p>
 
         </div>
 
-      </div>
 
+        {/* FLECHA */}
 
-      {/* ACCESO */}
-
-      <div
-        className="
-          flex
-          items-center
-          justify-between
-          mt-5
-          pt-4
-          border-t
-          border-slate-100
-        "
-      >
-
-        <span className="text-xs font-medium text-slate-400">
-          Herramienta
-        </span>
-
-        <span
+        <div
           className="
-            text-sm
-            font-semibold
-            text-blue-600
-            transition-transform
-            duration-200
+            mt-1
+            text-slate-300
+            transition-all duration-300
             group-hover:translate-x-1
+            group-hover:text-blue-500
           "
         >
-          Abrir →
-        </span>
+          →
+        </div>
 
       </div>
 

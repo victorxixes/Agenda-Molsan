@@ -1,13 +1,220 @@
 import {
-  useEffect,
-  useState,
-  useMemo,
   useCallback,
+  useEffect,
+  useMemo,
+  useState,
 } from "react";
 
 import { useSeguridad } from "../../hooks/useSeguridad";
 
-export default function SeguridadFicha({ empleadoId }) {
+
+function arraySeguro(valor) {
+  return Array.isArray(valor) ? valor : [];
+}
+
+
+function textoSeguro(valor) {
+  if (
+    valor === null ||
+    typeof valor === "undefined"
+  ) {
+    return "";
+  }
+
+  return String(valor);
+}
+
+
+function Chip({
+  children,
+  tone = "neutral",
+}) {
+
+  const estilos = {
+    neutral:
+      "border-[var(--erp-border)] bg-[var(--erp-bg)] text-[var(--erp-text-soft)]",
+
+    primary:
+      "border-blue-200 bg-blue-50 text-blue-700",
+
+    success:
+      "border-emerald-200 bg-emerald-50 text-emerald-700",
+
+    warning:
+      "border-amber-200 bg-amber-50 text-amber-700",
+
+    danger:
+      "border-red-200 bg-red-50 text-red-700",
+
+    purple:
+      "border-purple-200 bg-purple-50 text-purple-700",
+  };
+
+  return (
+    <span
+      className={`
+        inline-flex
+        items-center
+        rounded-full
+        border
+        px-2.5
+        py-1
+        text-[11px]
+        font-semibold
+        ${estilos[tone] || estilos.neutral}
+      `}
+    >
+      {children}
+    </span>
+  );
+}
+
+
+function SeccionAcordeon({
+  titulo,
+  descripcion,
+  icono,
+  abierto,
+  onToggle,
+  contador,
+  children,
+}) {
+
+  return (
+    <section
+      className="
+        overflow-hidden
+        rounded-2xl
+        border
+        border-[var(--erp-border)]
+        bg-[var(--erp-surface)]
+        shadow-sm
+      "
+    >
+
+      <button
+        type="button"
+        onClick={onToggle}
+        className="
+          flex
+          w-full
+          items-center
+          justify-between
+          gap-4
+          px-5
+          py-4
+          text-left
+          transition
+          hover:bg-[var(--erp-bg)]
+        "
+      >
+
+        <div
+          className="
+            flex
+            min-w-0
+            items-center
+            gap-3
+          "
+        >
+
+          <div
+            className="
+              flex
+              h-10
+              w-10
+              shrink-0
+              items-center
+              justify-center
+              rounded-xl
+              bg-[var(--erp-primary-soft)]
+              text-lg
+            "
+          >
+            {icono}
+          </div>
+
+          <div className="min-w-0">
+
+            <h2
+              className="
+                truncate
+                text-base
+                font-semibold
+                text-[var(--erp-text)]
+              "
+            >
+              {titulo}
+            </h2>
+
+            <p
+              className="
+                mt-0.5
+                truncate
+                text-xs
+                text-[var(--erp-text-soft)]
+              "
+            >
+              {descripcion}
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div
+          className="
+            flex
+            shrink-0
+            items-center
+            gap-2
+          "
+        >
+
+          {typeof contador !==
+            "undefined" && (
+            <Chip>
+              {contador}
+            </Chip>
+          )}
+
+          <span
+            className="
+              text-xs
+              text-[var(--erp-text-soft)]
+            "
+          >
+            {abierto ? "▲" : "▼"}
+          </span>
+
+        </div>
+
+      </button>
+
+
+      {abierto && (
+        <div
+          className="
+            border-t
+            border-[var(--erp-border)]
+            bg-[var(--erp-bg)]
+            p-4
+          "
+        >
+          {children}
+        </div>
+      )}
+
+    </section>
+  );
+}
+
+
+export default function SeguridadFicha({
+  empleadoId,
+}) {
+
   const {
     ficha,
     cargarFicha,
@@ -22,1424 +229,1550 @@ export default function SeguridadFicha({ empleadoId }) {
     auditoria,
   } = useSeguridad();
 
-  // ============================================================
-  // ESTADOS
-  // ============================================================
 
-  const [nuevaPassword, setNuevaPassword] = useState("");
-  const [nuevoRol, setNuevoRol] = useState("");
+  /**
+   * ============================================================
+   * ESTADOS
+   * ============================================================
+   */
 
-  const [showModulos, setShowModulos] = useState(true);
-  const [showPermisos, setShowPermisos] = useState(true);
-  const [showAuditoria, setShowAuditoria] = useState(false);
-  const [showLogs, setShowLogs] = useState(false);
+  const [
+    nuevaPassword,
+    setNuevaPassword,
+  ] = useState("");
 
-  // ============================================================
-  // AUDITORÍA
-  // ============================================================
 
-  const [busquedaAud, setBusquedaAud] = useState("");
-  const [filtroFechaAud, setFiltroFechaAud] = useState("");
-  const [paginaAud, setPaginaAud] = useState(0);
+  const [
+    nuevoRol,
+    setNuevoRol,
+  ] = useState("");
 
-  const [ordenAud, setOrdenAud] = useState({
-    campo: "fecha",
-    asc: false,
-  });
 
-  const pageSizeAud = 20;
+  const [
+    showModulos,
+    setShowModulos,
+  ] = useState(false);
 
-  // ============================================================
-  // LOGS
-  // ============================================================
 
-  const [busquedaLog, setBusquedaLog] = useState("");
-  const [filtroFechaLog, setFiltroFechaLog] = useState("");
-  const [paginaLog, setPaginaLog] = useState(0);
+  const [
+    showPermisos,
+    setShowPermisos,
+  ] = useState(false);
 
-  const [ordenLog, setOrdenLog] = useState({
-    campo: "fecha",
-    asc: false,
-  });
 
-  const pageSizeLog = 20;
+  const [
+    showAuditoria,
+    setShowAuditoria,
+  ] = useState(false);
 
-  // ============================================================
-  // CARGAR FICHA
-  // ============================================================
+
+  const [
+    showLogs,
+    setShowLogs,
+  ] = useState(false);
+
+
+  const [
+    busquedaAud,
+    setBusquedaAud,
+  ] = useState("");
+
+
+  const [
+    filtroFechaAud,
+    setFiltroFechaAud,
+  ] = useState("");
+
+
+  const [
+    paginaAud,
+    setPaginaAud,
+  ] = useState(0);
+
+
+  const [
+    busquedaLog,
+    setBusquedaLog,
+  ] = useState("");
+
+
+  const [
+    filtroFechaLog,
+    setFiltroFechaLog,
+  ] = useState("");
+
+
+  const [
+    paginaLog,
+    setPaginaLog,
+  ] = useState(0);
+
+
+  const [
+    modulosAbiertos,
+    setModulosAbiertos,
+  ] = useState(
+    () => new Set()
+  );
+
+
+  const pageSize = 10;
+
+
+  /**
+   * ============================================================
+   * CARGAR FICHA
+   * ============================================================
+   */
 
   useEffect(() => {
-    if (empleadoId) {
-      cargarFicha(empleadoId);
-    }
-  }, [empleadoId, cargarFicha]);
-
-  // ============================================================
-  // FICHA SEGURA
-  // ============================================================
-
-  const fichaSegura = useMemo(() => {
-    if (!ficha || typeof ficha !== "object") {
-      return null;
-    }
 
     if (
-      !ficha.empleado ||
-      typeof ficha.empleado !== "object"
+      empleadoId
     ) {
-      return null;
+      cargarFicha(
+        empleadoId
+      );
     }
 
-    return ficha;
-  }, [ficha]);
+  }, [
+    empleadoId,
+    cargarFicha,
+  ]);
 
-  // ============================================================
-  // EMPLEADO
-  // ============================================================
 
-  const empleado = fichaSegura?.empleado || null;
+  /**
+   * ============================================================
+   * EMPLEADO
+   * ============================================================
+   */
+
+  const empleado =
+    ficha &&
+    typeof ficha === "object" &&
+    ficha.empleado &&
+    typeof ficha.empleado === "object"
+      ? ficha.empleado
+      : null;
+
 
   const empleadoValido =
     empleado &&
-    typeof empleado === "object" &&
     typeof empleado.id === "number" &&
     typeof empleado.nombre === "string";
 
-  // ============================================================
-  // ROL
-  // ============================================================
 
-  const nombreRol = useMemo(() => {
-    if (!empleadoValido) {
-      return "-";
-    }
+  const nombreRol =
+    empleadoValido &&
+    empleado.rol &&
+    typeof empleado.rol === "object" &&
+    typeof empleado.rol.nombre === "string"
+      ? empleado.rol.nombre
+      : "-";
 
-    if (
-      empleado.rol &&
-      typeof empleado.rol === "object" &&
-      typeof empleado.rol.nombre === "string"
-    ) {
-      return empleado.rol.nombre;
-    }
 
-    return "-";
-  }, [empleadoValido, empleado]);
+  /**
+   * ============================================================
+   * MÓDULOS VISIBLES
+   * ============================================================
+   */
 
-  // ============================================================
-  // MÓDULOS VISIBLES
-  // ============================================================
+  const modulosVisibles =
+    useMemo(() => {
 
-  const modulosVisibles = useMemo(() => {
-    if (!fichaSegura) {
-      return [];
-    }
-
-    if (!Array.isArray(fichaSegura.modulos_visibles)) {
-      return [];
-    }
-
-    return fichaSegura.modulos_visibles.filter(
-      (modulo) => typeof modulo === "string"
-    );
-  }, [fichaSegura]);
-
-  // ============================================================
-  // PERMISOS DEL EMPLEADO
-  // ============================================================
-
-  const permisosEmpleado = useMemo(() => {
-    if (
-      !fichaSegura ||
-      !fichaSegura.permisos_modulo ||
-      typeof fichaSegura.permisos_modulo !== "object" ||
-      Array.isArray(fichaSegura.permisos_modulo)
-    ) {
-      return {};
-    }
-
-    return fichaSegura.permisos_modulo;
-  }, [fichaSegura]);
-
-  // ============================================================
-  // PERMISOS GLOBALES
-  // ============================================================
-
-  const permisosGlobales = useMemo(() => {
-    if (!Array.isArray(permisos)) {
-      return {};
-    }
-
-    return permisos.reduce((acc, p) => {
-      if (!p || typeof p !== "object") {
-        return acc;
+      if (!ficha) {
+        return [];
       }
+
+
+      const lista =
+        Array.isArray(
+          ficha.modulos_visibles
+        )
+          ? ficha.modulos_visibles
+          : Array.isArray(
+              empleado?.modulos_visibles_list
+            )
+            ? empleado.modulos_visibles_list
+            : [];
+
+
+      return lista.filter(
+        (modulo) =>
+          typeof modulo === "string"
+      );
+
+    }, [
+      ficha,
+      empleado,
+    ]);
+
+
+  /**
+   * ============================================================
+   * PERMISOS EMPLEADO
+   * ============================================================
+   */
+
+  const permisosEmpleado =
+    useMemo(() => {
 
       if (
-        typeof p.modulo !== "string" ||
-        typeof p.permiso !== "string"
+        !ficha ||
+        typeof ficha.permisos_modulo !==
+          "object" ||
+        Array.isArray(
+          ficha.permisos_modulo
+        )
       ) {
-        return acc;
+        return {};
       }
 
-      if (!acc[p.modulo]) {
-        acc[p.modulo] = [];
-      }
+      return ficha.permisos_modulo;
 
-      if (!acc[p.modulo].includes(p.permiso)) {
-        acc[p.modulo].push(p.permiso);
-      }
+    }, [
+      ficha,
+    ]);
 
-      return acc;
-    }, {});
-  }, [permisos]);
 
-  // ============================================================
-  // MÓDULOS DISPONIBLES
-  // ============================================================
+  /**
+   * ============================================================
+   * PERMISOS GLOBALES
+   * ============================================================
+   */
 
-  const modulosDisponibles = useMemo(() => {
-    const conjunto = new Set();
+  const permisosGlobales =
+    useMemo(() => {
 
-    Object.keys(permisosGlobales || {}).forEach(
-      (modulo) => {
-        if (typeof modulo === "string") {
-          conjunto.add(modulo);
+      const resultado = {};
+
+      arraySeguro(
+        permisos
+      ).forEach(
+        (permiso) => {
+
+          if (
+            !permiso ||
+            typeof permiso !== "object" ||
+            typeof permiso.modulo !== "string" ||
+            typeof permiso.permiso !== "string"
+          ) {
+            return;
+          }
+
+
+          const modulo =
+            permiso.modulo.trim();
+
+          const nombre =
+            permiso.permiso.trim();
+
+
+          if (
+            !modulo ||
+            !nombre
+          ) {
+            return;
+          }
+
+
+          if (!resultado[modulo]) {
+            resultado[modulo] = [];
+          }
+
+
+          if (
+            !resultado[modulo].includes(
+              nombre
+            )
+          ) {
+            resultado[modulo].push(
+              nombre
+            );
+          }
+
         }
-      }
-    );
+      );
 
-    modulosVisibles.forEach((modulo) => {
-      if (typeof modulo === "string") {
-        conjunto.add(modulo);
-      }
-    });
 
-    return Array.from(conjunto).sort(
-      (a, b) =>
-        a.localeCompare(b, "es", {
-          sensitivity: "base",
-        })
-    );
-  }, [
-    permisosGlobales,
-    modulosVisibles,
-  ]);
+      Object.keys(
+        resultado
+      ).forEach(
+        (modulo) => {
 
-  // ============================================================
-  // CAMBIAR PERMISO
-  // ============================================================
+          resultado[modulo].sort(
+            (a, b) =>
+              a.localeCompare(
+                b,
+                "es",
+                {
+                  sensitivity: "base",
+                }
+              )
+          );
 
-  const cambiarPermiso = useCallback(
-    async (modulo, permiso) => {
-      if (
-        !empleadoValido ||
-        typeof modulo !== "string" ||
-        typeof permiso !== "string"
-      ) {
-        return;
-      }
+        }
+      );
 
-      const nuevo = {
-        ...permisosEmpleado,
-      };
 
-      if (!Array.isArray(nuevo[modulo])) {
-        nuevo[modulo] = [];
-      }
+      return resultado;
 
-      if (nuevo[modulo].includes(permiso)) {
-        nuevo[modulo] = nuevo[modulo].filter(
-          (p) => p !== permiso
-        );
-      } else {
-        nuevo[modulo] = [
-          ...nuevo[modulo],
-          permiso,
-        ];
-      }
+    }, [
+      permisos,
+    ]);
 
-      try {
-        await asignarPermisos(
-          empleado.id,
-          nuevo
-        );
 
-        await cargarFicha(empleado.id);
-      } catch (error) {
-        console.error(
-          "Error asignando permiso:",
-          error
-        );
-      }
-    },
-    [
-      empleadoValido,
-      empleado,
-      permisosEmpleado,
-      asignarPermisos,
-      cargarFicha,
-    ]
-  );
+  /**
+   * ============================================================
+   * MÓDULOS DISPONIBLES
+   * ============================================================
+   */
 
-  // ============================================================
-  // CAMBIAR MÓDULO
-  // ============================================================
+  const modulosDisponibles =
+    useMemo(() => {
 
-  const cambiarModulo = useCallback(
-    async (modulo) => {
-      if (
-        !empleadoValido ||
-        typeof modulo !== "string"
-      ) {
-        return;
-      }
+      const conjunto =
+        new Set();
 
-      let nuevo;
 
-      if (modulosVisibles.includes(modulo)) {
-        nuevo = modulosVisibles.filter(
-          (m) => m !== modulo
-        );
-      } else {
-        nuevo = [
-          ...modulosVisibles,
-          modulo,
-        ];
-      }
+      Object.keys(
+        permisosGlobales
+      ).forEach(
+        (modulo) =>
+          conjunto.add(
+            modulo
+          )
+      );
 
-      try {
-        await asignarModulos(
-          empleado.id,
-          nuevo
-        );
 
-        await cargarFicha(empleado.id);
-      } catch (error) {
-        console.error(
-          "Error asignando módulo:",
-          error
-        );
-      }
-    },
-    [
-      empleadoValido,
-      empleado,
+      modulosVisibles.forEach(
+        (modulo) =>
+          conjunto.add(
+            modulo
+          )
+      );
+
+
+      return Array.from(
+        conjunto
+      ).sort(
+        (a, b) =>
+          a.localeCompare(
+            b,
+            "es",
+            {
+              sensitivity: "base",
+            }
+          )
+      );
+
+    }, [
+      permisosGlobales,
       modulosVisibles,
-      asignarModulos,
-      cargarFicha,
-    ]
-  );
+    ]);
 
-  // ============================================================
-  // AUDITORÍA SEGURA
-  // ============================================================
 
-  const auditoriaSegura = useMemo(() => {
-    if (!Array.isArray(auditoria)) {
-      return [];
-    }
+  /**
+   * ============================================================
+   * CAMBIAR MÓDULO
+   * ============================================================
+   */
 
-    return auditoria.filter((a) => {
-      if (!a || typeof a !== "object") {
-        return false;
-      }
+  const cambiarModulo =
+    useCallback(
+      async (
+        modulo
+      ) => {
 
-      return (
-        typeof a.fecha === "string" &&
-        typeof a.accion === "string" &&
-        typeof a.descripcion === "string"
-      );
-    });
-  }, [auditoria]);
-
-  // ============================================================
-  // FILTRAR AUDITORÍA
-  // ============================================================
-
-  const auditoriaFiltrada = useMemo(() => {
-    const texto = busquedaAud
-      .trim()
-      .toLowerCase();
-
-    return auditoriaSegura.filter((a) => {
-      const coincideBusqueda =
-        !texto ||
-        String(a.usuario || "")
-          .toLowerCase()
-          .includes(texto) ||
-        String(a.modulo || "")
-          .toLowerCase()
-          .includes(texto) ||
-        a.accion
-          .toLowerCase()
-          .includes(texto) ||
-        a.descripcion
-          .toLowerCase()
-          .includes(texto) ||
-        a.fecha
-          .toLowerCase()
-          .includes(texto);
-
-      const coincideFecha = filtroFechaAud
-        ? a.fecha.startsWith(filtroFechaAud)
-        : true;
-
-      return (
-        coincideBusqueda &&
-        coincideFecha
-      );
-    });
-  }, [
-    auditoriaSegura,
-    busquedaAud,
-    filtroFechaAud,
-  ]);
-
-  // ============================================================
-  // ORDENAR AUDITORÍA
-  // ============================================================
-
-  const ordenarAud = useCallback(
-    (campo) => {
-      setOrdenAud((prev) => ({
-        campo,
-        asc:
-          prev.campo === campo
-            ? !prev.asc
-            : true,
-      }));
-    },
-    []
-  );
-
-  const auditoriaOrdenada = useMemo(() => {
-    const {
-      campo,
-      asc,
-    } = ordenAud;
-
-    const direccion = asc ? 1 : -1;
-
-    return [...auditoriaFiltrada].sort(
-      (a, b) => {
-        const va = String(
-          a?.[campo] ?? ""
-        ).toLowerCase();
-
-        const vb = String(
-          b?.[campo] ?? ""
-        ).toLowerCase();
-
-        if (va < vb) {
-          return -1 * direccion;
+        if (
+          !empleadoValido ||
+          typeof modulo !==
+            "string"
+        ) {
+          return;
         }
 
-        if (va > vb) {
-          return 1 * direccion;
+
+        const nuevo =
+          modulosVisibles.includes(
+            modulo
+          )
+            ? modulosVisibles.filter(
+                (item) =>
+                  item !== modulo
+              )
+            : [
+                ...modulosVisibles,
+                modulo,
+              ];
+
+
+        try {
+
+          await asignarModulos(
+            empleado.id,
+            nuevo
+          );
+
+          await cargarFicha(
+            empleado.id
+          );
+
+        } catch (error) {
+
+          console.error(
+            "Error asignando módulo:",
+            error
+          );
+
         }
 
-        return 0;
-      }
-    );
-  }, [
-    auditoriaFiltrada,
-    ordenAud,
-  ]);
-
-  // ============================================================
-  // PAGINAR AUDITORÍA
-  // ============================================================
-
-  const auditoriaPaginada = useMemo(() => {
-    const inicio =
-      paginaAud * pageSizeAud;
-
-    return auditoriaOrdenada.slice(
-      inicio,
-      inicio + pageSizeAud
-    );
-  }, [
-    auditoriaOrdenada,
-    paginaAud,
-  ]);
-
-  // ============================================================
-  // LOGS SEGUROS
-  // ============================================================
-
-  const logsSeguros = useMemo(() => {
-    if (!Array.isArray(logs)) {
-      return [];
-    }
-
-    return logs.filter((l) => {
-      if (!l || typeof l !== "object") {
-        return false;
-      }
-
-      return (
-        typeof l.fecha === "string" &&
-        typeof l.evento === "string" &&
-        typeof l.detalle === "string"
-      );
-    });
-  }, [logs]);
-
-  // ============================================================
-  // FILTRAR LOGS
-  // ============================================================
-
-  const logsFiltrados = useMemo(() => {
-    const texto = busquedaLog
-      .trim()
-      .toLowerCase();
-
-    return logsSeguros.filter((l) => {
-      const coincideBusqueda =
-        !texto ||
-        l.evento
-          .toLowerCase()
-          .includes(texto) ||
-        l.detalle
-          .toLowerCase()
-          .includes(texto) ||
-        String(l.ip || "")
-          .toLowerCase()
-          .includes(texto) ||
-        l.fecha
-          .toLowerCase()
-          .includes(texto);
-
-      const coincideFecha = filtroFechaLog
-        ? l.fecha.startsWith(filtroFechaLog)
-        : true;
-
-      return (
-        coincideBusqueda &&
-        coincideFecha
-      );
-    });
-  }, [
-    logsSeguros,
-    busquedaLog,
-    filtroFechaLog,
-  ]);
-
-  // ============================================================
-  // ORDENAR LOGS
-  // ============================================================
-
-  const ordenarLog = useCallback(
-    (campo) => {
-      setOrdenLog((prev) => ({
-        campo,
-        asc:
-          prev.campo === campo
-            ? !prev.asc
-            : true,
-      }));
-    },
-    []
-  );
-
-  const logsOrdenados = useMemo(() => {
-    const {
-      campo,
-      asc,
-    } = ordenLog;
-
-    const direccion = asc ? 1 : -1;
-
-    return [...logsFiltrados].sort(
-      (a, b) => {
-        const va = String(
-          a?.[campo] ?? ""
-        ).toLowerCase();
-
-        const vb = String(
-          b?.[campo] ?? ""
-        ).toLowerCase();
-
-        if (va < vb) {
-          return -1 * direccion;
-        }
-
-        if (va > vb) {
-          return 1 * direccion;
-        }
-
-        return 0;
-      }
-    );
-  }, [
-    logsFiltrados,
-    ordenLog,
-  ]);
-
-  // ============================================================
-  // PAGINAR LOGS
-  // ============================================================
-
-  const logsPaginados = useMemo(() => {
-    const inicio =
-      paginaLog * pageSizeLog;
-
-    return logsOrdenados.slice(
-      inicio,
-      inicio + pageSizeLog
-    );
-  }, [
-    logsOrdenados,
-    paginaLog,
-  ]);
-
-  // ============================================================
-  // ICONOS
-  // ============================================================
-
-  const iconosAccion = useMemo(
-    () => ({
-      login: "🔐",
-      login_error: "⚠️",
-      acceso: "📥",
-      update: "✏️",
-      delete: "🗑️",
-      permiso: "🔧",
-      modulo: "📦",
-      create: "➕",
-      logout: "🚪",
-      default: "📄",
-    }),
-    []
-  );
-
-  const iconosEvento = useMemo(
-    () => ({
-      login: "🔐",
-      login_error: "⚠️",
-      logout: "🚪",
-      acceso: "📥",
-      error: "❌",
-      warning: "⚠️",
-      info: "ℹ️",
-      update: "✏️",
-      delete: "🗑️",
-      create: "➕",
-      default: "📄",
-    }),
-    []
-  );
-
-  // ============================================================
-  // EXPORTAR AUDITORÍA
-  // ============================================================
-
-  const descargarExcelAuditoria =
-    useCallback(() => {
-      const encabezados = [
-        "ID",
-        "Usuario",
-        "Módulo",
-        "Acción",
-        "Descripción",
-        "Fecha",
-      ];
-
-      const filas =
-        auditoriaOrdenada.map((a) => [
-          a.id ?? "",
-          a.usuario ?? "",
-          a.modulo ?? "",
-          a.accion ?? "",
-          a.descripcion ?? "",
-          a.fecha ?? "",
-        ]);
-
-      const contenido = [
-        encabezados,
-        ...filas,
+      },
+      [
+        empleadoValido,
+        empleado,
+        modulosVisibles,
+        asignarModulos,
+        cargarFicha,
       ]
-        .map((fila) =>
-          fila
+    );
+
+
+  /**
+   * ============================================================
+   * CAMBIAR PERMISO
+   * ============================================================
+   */
+
+  const cambiarPermiso =
+    useCallback(
+      async (
+        modulo,
+        permiso
+      ) => {
+
+        if (
+          !empleadoValido ||
+          typeof modulo !==
+            "string" ||
+          typeof permiso !==
+            "string"
+        ) {
+          return;
+        }
+
+
+        const nuevo = {
+          ...(permisosEmpleado || {}),
+        };
+
+
+        const actuales =
+          arraySeguro(
+            nuevo[modulo]
+          );
+
+
+        nuevo[modulo] =
+          actuales.includes(
+            permiso
+          )
+            ? actuales.filter(
+                (item) =>
+                  item !== permiso
+              )
+            : [
+                ...actuales,
+                permiso,
+              ];
+
+
+        try {
+
+          await asignarPermisos(
+            empleado.id,
+            nuevo
+          );
+
+          await cargarFicha(
+            empleado.id
+          );
+
+        } catch (error) {
+
+          console.error(
+            "Error asignando permiso:",
+            error
+          );
+
+        }
+
+      },
+      [
+        empleadoValido,
+        empleado,
+        permisosEmpleado,
+        asignarPermisos,
+        cargarFicha,
+      ]
+    );
+
+
+  /**
+   * ============================================================
+   * AUDITORÍA
+   * ============================================================
+   */
+
+  const auditoriaSegura =
+    useMemo(
+      () =>
+        arraySeguro(
+          auditoria
+        ).filter(
+          (item) =>
+            item &&
+            typeof item === "object"
+        ),
+      [auditoria]
+    );
+
+
+  const auditoriaFiltrada =
+    useMemo(() => {
+
+      const texto =
+        busquedaAud
+          .trim()
+          .toLowerCase();
+
+
+      return auditoriaSegura.filter(
+        (item) => {
+
+          const contenido = [
+            item.usuario,
+            item.modulo,
+            item.accion,
+            item.descripcion,
+            item.fecha,
+          ]
             .map(
               (valor) =>
-                `"${String(valor).replaceAll(
-                  '"',
-                  '""'
-                )}"`
+                textoSeguro(
+                  valor
+                ).toLowerCase()
             )
-            .join(";")
-        )
-        .join("\n");
+            .join(" ");
 
-      const blob = new Blob(
-        ["\ufeff", contenido],
-        {
-          type: "text/csv;charset=utf-8;",
+
+          const coincideTexto =
+            !texto ||
+            contenido.includes(
+              texto
+            );
+
+
+          const fecha =
+            textoSeguro(
+              item.fecha
+            );
+
+
+          const coincideFecha =
+            !filtroFechaAud ||
+            fecha.startsWith(
+              filtroFechaAud
+            );
+
+
+          return (
+            coincideTexto &&
+            coincideFecha
+          );
+
         }
       );
 
-      const url =
-        URL.createObjectURL(blob);
-
-      const enlace =
-        document.createElement("a");
-
-      enlace.href = url;
-      enlace.download = `auditoria_${
-        empleado?.usuario ||
-        empleado?.id ||
-        "empleado"
-      }.csv`;
-
-      document.body.appendChild(enlace);
-      enlace.click();
-      enlace.remove();
-
-      URL.revokeObjectURL(url);
     }, [
-      auditoriaOrdenada,
+      auditoriaSegura,
+      busquedaAud,
+      filtroFechaAud,
+    ]);
+
+
+  const auditoriaPaginada =
+    useMemo(() => {
+
+      const inicio =
+        paginaAud *
+        pageSize;
+
+      return auditoriaFiltrada.slice(
+        inicio,
+        inicio + pageSize
+      );
+
+    }, [
+      auditoriaFiltrada,
+      paginaAud,
+    ]);
+
+
+  /**
+   * ============================================================
+   * LOGS
+   * ============================================================
+   */
+
+  const logsSeguros =
+    useMemo(
+      () =>
+        arraySeguro(
+          logs
+        ).filter(
+          (item) =>
+            item &&
+            typeof item === "object"
+        ),
+      [logs]
+    );
+
+
+  const logsFiltrados =
+    useMemo(() => {
+
+      const texto =
+        busquedaLog
+          .trim()
+          .toLowerCase();
+
+
+      return logsSeguros.filter(
+        (item) => {
+
+          const contenido = [
+            item.evento,
+            item.detalle,
+            item.ip,
+            item.fecha,
+          ]
+            .map(
+              (valor) =>
+                textoSeguro(
+                  valor
+                ).toLowerCase()
+            )
+            .join(" ");
+
+
+          const coincideTexto =
+            !texto ||
+            contenido.includes(
+              texto
+            );
+
+
+          const fecha =
+            textoSeguro(
+              item.fecha
+            );
+
+
+          const coincideFecha =
+            !filtroFechaLog ||
+            fecha.startsWith(
+              filtroFechaLog
+            );
+
+
+          return (
+            coincideTexto &&
+            coincideFecha
+          );
+
+        }
+      );
+
+    }, [
+      logsSeguros,
+      busquedaLog,
+      filtroFechaLog,
+    ]);
+
+
+  const logsPaginados =
+    useMemo(() => {
+
+      const inicio =
+        paginaLog *
+        pageSize;
+
+      return logsFiltrados.slice(
+        inicio,
+        inicio + pageSize
+      );
+
+    }, [
+      logsFiltrados,
+      paginaLog,
+    ]);
+
+
+  /**
+   * ============================================================
+   * EXPORTAR CSV
+   * ============================================================
+   */
+
+  const descargarCsv =
+    useCallback(
+      (
+        filas,
+        nombre
+      ) => {
+
+        const contenido =
+          filas
+            .map(
+              (fila) =>
+                fila
+                  .map(
+                    (valor) =>
+                      `"${String(
+                        valor ?? ""
+                      ).replaceAll(
+                        '"',
+                        '""'
+                      )}"`
+                  )
+                  .join(";")
+            )
+            .join("\n");
+
+
+        const blob =
+          new Blob(
+            [
+              "\ufeff",
+              contenido,
+            ],
+            {
+              type:
+                "text/csv;charset=utf-8;",
+            }
+          );
+
+
+        const url =
+          URL.createObjectURL(
+            blob
+          );
+
+
+        const enlace =
+          document.createElement(
+            "a"
+          );
+
+
+        enlace.href = url;
+        enlace.download =
+          nombre;
+
+
+        document.body.appendChild(
+          enlace
+        );
+
+        enlace.click();
+
+        enlace.remove();
+
+        URL.revokeObjectURL(
+          url
+        );
+
+      },
+      []
+    );
+
+
+  const descargarAuditoria =
+    useCallback(() => {
+
+      descargarCsv(
+        [
+          [
+            "ID",
+            "Usuario",
+            "Módulo",
+            "Acción",
+            "Descripción",
+            "Fecha",
+          ],
+          ...auditoriaFiltrada.map(
+            (item) => [
+              item.id ?? "",
+              item.usuario ?? "",
+              item.modulo ?? "",
+              item.accion ?? "",
+              item.descripcion ?? "",
+              item.fecha ?? "",
+            ]
+          ),
+        ],
+        `auditoria_${empleado?.usuario || empleado?.id || "empleado"}.csv`
+      );
+
+    }, [
+      auditoriaFiltrada,
+      descargarCsv,
       empleado,
     ]);
 
-  // ============================================================
-  // EXPORTAR LOGS
-  // ============================================================
 
-  const descargarExcelLogs =
+  const descargarLogs =
     useCallback(() => {
-      const encabezados = [
-        "ID",
-        "Fecha",
-        "Evento",
-        "Detalle",
-        "IP",
-      ];
 
-      const filas =
-        logsOrdenados.map((l) => [
-          l.id ?? "",
-          l.fecha ?? "",
-          l.evento ?? "",
-          l.detalle ?? "",
-          l.ip ?? "",
-        ]);
-
-      const contenido = [
-        encabezados,
-        ...filas,
-      ]
-        .map((fila) =>
-          fila
-            .map(
-              (valor) =>
-                `"${String(valor).replaceAll(
-                  '"',
-                  '""'
-                )}"`
-            )
-            .join(";")
-        )
-        .join("\n");
-
-      const blob = new Blob(
-        ["\ufeff", contenido],
-        {
-          type: "text/csv;charset=utf-8;",
-        }
+      descargarCsv(
+        [
+          [
+            "ID",
+            "Fecha",
+            "Evento",
+            "Detalle",
+            "IP",
+          ],
+          ...logsFiltrados.map(
+            (item) => [
+              item.id ?? "",
+              item.fecha ?? "",
+              item.evento ?? "",
+              item.detalle ?? "",
+              item.ip ?? "",
+            ]
+          ),
+        ],
+        `logs_${empleado?.usuario || empleado?.id || "empleado"}.csv`
       );
 
-      const url =
-        URL.createObjectURL(blob);
-
-      const enlace =
-        document.createElement("a");
-
-      enlace.href = url;
-      enlace.download = `logs_${
-        empleado?.usuario ||
-        empleado?.id ||
-        "empleado"
-      }.csv`;
-
-      document.body.appendChild(enlace);
-      enlace.click();
-      enlace.remove();
-
-      URL.revokeObjectURL(url);
     }, [
-      logsOrdenados,
+      logsFiltrados,
+      descargarCsv,
       empleado,
     ]);
 
-  // ============================================================
-  // RESET PASSWORD
-  // ============================================================
+
+  /**
+   * ============================================================
+   * RESET PASSWORD
+   * ============================================================
+   */
 
   const ejecutarResetPassword =
-    useCallback(async () => {
-      const password =
-        nuevaPassword.trim();
+    useCallback(
+      async () => {
 
-      if (
-        !empleadoValido ||
-        !password
-      ) {
-        return;
-      }
+        const password =
+          nuevaPassword.trim();
 
-      try {
-        await resetPassword(
-          empleado.id,
-          password
-        );
 
-        setNuevaPassword("");
-      } catch (error) {
-        console.error(
-          "Error reseteando contraseña:",
-          error
-        );
-      }
-    }, [
-      empleadoValido,
-      empleado,
-      nuevaPassword,
-      resetPassword,
-    ]);
+        if (
+          !empleadoValido ||
+          !password
+        ) {
+          return;
+        }
 
-  // ============================================================
-  // ASIGNAR ROL
-  // ============================================================
+
+        try {
+
+          await resetPassword(
+            empleado.id,
+            password
+          );
+
+          setNuevaPassword("");
+
+        } catch (error) {
+
+          console.error(
+            "Error reseteando contraseña:",
+            error
+          );
+
+        }
+
+      },
+      [
+        empleadoValido,
+        empleado,
+        nuevaPassword,
+        resetPassword,
+      ]
+    );
+
+
+  /**
+   * ============================================================
+   * ASIGNAR ROL
+   * ============================================================
+   */
 
   const ejecutarAsignarRol =
-    useCallback(async () => {
-      const rolNum =
-        Number(nuevoRol);
+    useCallback(
+      async () => {
 
-      if (
-        !Number.isFinite(rolNum) ||
-        !empleadoValido
-      ) {
-        return;
-      }
+        const rolId =
+          Number(
+            nuevoRol
+          );
 
-      try {
-        await asignarRol(
-          empleado.id,
-          rolNum
-        );
 
-        setNuevoRol("");
+        if (
+          !empleadoValido ||
+          !Number.isFinite(
+            rolId
+          )
+        ) {
+          return;
+        }
 
-        await cargarFicha(empleado.id);
-      } catch (error) {
-        console.error(
-          "Error asignando rol:",
-          error
-        );
-      }
-    }, [
-      empleadoValido,
-      empleado,
-      nuevoRol,
-      asignarRol,
-      cargarFicha,
-    ]);
 
-  // ============================================================
-  // CARGANDO
-  // ============================================================
+        try {
 
-  if (!fichaSegura) {
+          await asignarRol(
+            empleado.id,
+            rolId
+          );
+
+          setNuevoRol("");
+
+          await cargarFicha(
+            empleado.id
+          );
+
+        } catch (error) {
+
+          console.error(
+            "Error asignando rol:",
+            error
+          );
+
+        }
+
+      },
+      [
+        empleadoValido,
+        empleado,
+        nuevoRol,
+        asignarRol,
+        cargarFicha,
+      ]
+    );
+
+
+  /**
+   * ============================================================
+   * CARGANDO
+   * ============================================================
+   */
+
+  if (!ficha) {
+
     return (
-      <div className="w-full p-6 text-white">
-        <div
-          className="
-            rounded-3xl
-            border border-white/10
-            bg-white/[0.05]
-            backdrop-blur-2xl
-            p-8
-            shadow-[0_20px_70px_rgba(0,0,0,0.25)]
-          "
-        >
-          <div className="animate-pulse">
-            <div className="h-8 w-72 rounded-lg bg-white/10" />
-            <div className="mt-4 h-4 w-96 max-w-full rounded bg-white/10" />
-            <div className="mt-8 h-32 rounded-2xl bg-white/5" />
-          </div>
+      <div
+        className="
+          rounded-2xl
+          border
+          border-[var(--erp-border)]
+          bg-[var(--erp-surface)]
+          p-10
+          text-center
+        "
+      >
+        <div className="animate-pulse">
+
+          <div
+            className="
+              mx-auto
+              h-10
+              w-10
+              rounded-xl
+              bg-[var(--erp-bg)]
+            "
+          />
+
+          <div
+            className="
+              mx-auto
+              mt-4
+              h-4
+              w-56
+              rounded
+              bg-[var(--erp-bg)]
+            "
+          />
+
         </div>
       </div>
     );
+
   }
 
-  // ============================================================
-  // EMPLEADO INVÁLIDO
-  // ============================================================
 
   if (!empleadoValido) {
+
     return (
-      <div className="w-full p-6 text-white">
-        <div
-          className="
-            rounded-3xl
-            border border-red-400/20
-            bg-red-500/10
-            p-8
-            text-red-200
-          "
-        >
-          No se han podido cargar los datos de seguridad del empleado.
-        </div>
+      <div
+        className="
+          rounded-2xl
+          border
+          border-red-200
+          bg-red-50
+          p-8
+          text-center
+          text-sm
+          text-red-700
+        "
+      >
+        No se han podido cargar los datos de seguridad del empleado.
       </div>
     );
+
   }
 
-  // ============================================================
-  // MÉTRICAS
-  // ============================================================
 
-  const totalPermisos = Object.values(
-    permisosEmpleado || {}
-  ).reduce(
-    (total, lista) =>
-      total +
-      (Array.isArray(lista)
-        ? lista.length
-        : 0),
-    0
-  );
+  /**
+   * ============================================================
+   * MÉTRICAS
+   * ============================================================
+   */
 
-  const totalAuditoria =
-    auditoriaOrdenada.length;
+  const totalPermisos =
+    Object.values(
+      permisosEmpleado || {}
+    ).reduce(
+      (
+        total,
+        lista
+      ) =>
+        total +
+        arraySeguro(
+          lista
+        ).length,
+      0
+    );
 
-  const totalLogs =
-    logsOrdenados.length;
-
-  // ============================================================
-  // RENDER
-  // ============================================================
 
   return (
     <div
       className="
         w-full
-        space-y-6
-        text-white
-        animate-fade-in
+        space-y-4
       "
     >
 
-      {/* ======================================================
-          CABECERA PRINCIPAL
-      ====================================================== */}
+      {/* CABECERA */}
 
       <section
         className="
-          relative
-          overflow-hidden
-          rounded-3xl
-          border border-white/15
-          bg-white/[0.06]
-          backdrop-blur-2xl
-          shadow-[0_20px_70px_rgba(0,0,0,0.28)]
-          p-6
+          rounded-2xl
+          border
+          border-[var(--erp-border)]
+          bg-[var(--erp-surface)]
+          p-5
+          shadow-sm
         "
       >
 
         <div
           className="
-            pointer-events-none
-            absolute
-            -right-24
-            -top-24
-            h-72
-            w-72
-            rounded-full
-            bg-blue-500/10
-            blur-3xl
+            flex
+            flex-col
+            gap-5
+            xl:flex-row
+            xl:items-center
+            xl:justify-between
           "
-        />
-
-        <div
-          className="
-            pointer-events-none
-            absolute
-            -bottom-24
-            left-1/3
-            h-56
-            w-56
-            rounded-full
-            bg-purple-500/10
-            blur-3xl
-          "
-        />
-
-        <div className="relative">
+        >
 
           <div
             className="
               flex
-              flex-col
-              gap-5
-              xl:flex-row
-              xl:items-center
-              xl:justify-between
+              min-w-0
+              items-center
+              gap-4
             "
           >
 
-            <div className="flex items-center gap-4">
-
-              <div
-                className="
-                  flex
-                  h-14
-                  w-14
-                  shrink-0
-                  items-center
-                  justify-center
-                  rounded-2xl
-                  border border-white/15
-                  bg-white/10
-                  text-2xl
-                  shadow-lg
-                "
-              >
-                🛡️
-              </div>
-
-              <div>
-                <div className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-300/80">
-                  Centro de seguridad
-                </div>
-
-                <h1 className="mt-1 text-2xl font-bold tracking-tight text-white md:text-3xl">
-                  Ficha de seguridad
-                </h1>
-
-                <p className="mt-1 text-sm text-white/50">
-                  Control de acceso, credenciales, permisos y trazabilidad del empleado.
-                </p>
-              </div>
-
-            </div>
-
             <div
-              className={`
-                inline-flex
-                w-fit
-                items-center
-                gap-2
-                rounded-full
-                border
-                px-4
-                py-2
-                text-xs
-                font-semibold
-                ${
-                  empleado.activo
-                    ? "border-emerald-400/20 bg-emerald-400/10 text-emerald-300"
-                    : "border-red-400/20 bg-red-400/10 text-red-300"
-                }
-              `}
+              className="
+                relative
+                shrink-0
+              "
             >
+
+              <img
+                src={
+                  typeof empleado.foto === "string" &&
+                  empleado.foto !== "-"
+                    ? empleado.foto
+                    : "/no-foto.png"
+                }
+                alt="Foto del empleado"
+                onError={(event) => {
+                  event.currentTarget.src =
+                    "/no-foto.png";
+                }}
+                className="
+                  h-20
+                  w-20
+                  rounded-2xl
+                  border
+                  border-[var(--erp-border)]
+                  bg-[var(--erp-bg)]
+                  object-cover
+                  shadow-sm
+                "
+              />
 
               <span
                 className={`
-                  h-2
-                  w-2
+                  absolute
+                  -bottom-2
+                  -right-2
                   rounded-full
+                  border-2
+                  border-[var(--erp-surface)]
+                  px-2
+                  py-0.5
+                  text-[9px]
+                  font-bold
                   ${
                     empleado.activo
-                      ? "bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.8)]"
-                      : "bg-red-400 shadow-[0_0_10px_rgba(248,113,113,0.8)]"
+                      ? "bg-emerald-500 text-white"
+                      : "bg-red-500 text-white"
                   }
                 `}
-              />
-
-              {empleado.activo
-                ? "CUENTA ACTIVA"
-                : "CUENTA BLOQUEADA"}
-
-            </div>
-
-          </div>
-
-          {/* PERFIL */}
-
-          <div
-            className="
-              mt-7
-              grid
-              grid-cols-1
-              gap-6
-              xl:grid-cols-[auto_1fr]
-            "
-          >
-
-            <div className="flex justify-center xl:justify-start">
-
-              <div className="relative">
-
-                <img
-                  src={
-                    typeof empleado.foto === "string" &&
-                    empleado.foto !== "-"
-                      ? empleado.foto
-                      : "/no-foto.png"
-                  }
-                  alt="Foto empleado"
-                  className="
-                    h-32
-                    w-32
-                    rounded-3xl
-                    border
-                    border-white/15
-                    object-cover
-                    bg-white/10
-                    shadow-2xl
-                  "
-                />
-
-                <span
-                  className={`
-                    absolute
-                    -bottom-2
-                    -right-2
-                    rounded-full
-                    border-4
-                    border-slate-900/70
-                    px-3
-                    py-1
-                    text-[10px]
-                    font-bold
-                    ${
-                      empleado.activo
-                        ? "bg-emerald-400 text-emerald-950"
-                        : "bg-red-400 text-red-950"
-                    }
-                  `}
-                >
-                  {empleado.activo
-                    ? "ACTIVO"
-                    : "BLOQUEADO"}
-                </span>
-
-              </div>
+              >
+                {empleado.activo
+                  ? "ACTIVO"
+                  : "BLOQUEADO"}
+              </span>
 
             </div>
 
-            <div>
 
-              <div className="flex flex-col gap-1">
+            <div className="min-w-0">
 
-                <h2 className="text-2xl font-bold text-white">
-                  {empleado.nombre}
-                  {empleado.apellidos
-                    ? ` ${empleado.apellidos}`
-                    : ""}
-                </h2>
+              <p
+                className="
+                  text-[11px]
+                  font-semibold
+                  uppercase
+                  tracking-[0.14em]
+                  text-[var(--erp-primary)]
+                "
+              >
+                Centro de seguridad
+              </p>
 
-                <div className="text-sm text-white/50">
-                  @{empleado.usuario || "-"}
-                </div>
+              <h1
+                className="
+                  mt-1
+                  truncate
+                  text-2xl
+                  font-bold
+                  tracking-tight
+                  text-[var(--erp-text)]
+                "
+              >
+                {empleado.nombre}
+                {empleado.apellidos
+                  ? ` ${empleado.apellidos}`
+                  : ""}
+              </h1>
 
-              </div>
+              <p
+                className="
+                  mt-0.5
+                  text-sm
+                  text-[var(--erp-text-soft)]
+                "
+              >
+                @{empleado.usuario || "-"}
+              </p>
 
               <div
                 className="
-                  mt-5
-                  grid
-                  grid-cols-1
-                  gap-3
-                  sm:grid-cols-2
-                  lg:grid-cols-4
+                  mt-2
+                  flex
+                  flex-wrap
+                  gap-2
                 "
               >
 
-                <div className="rounded-2xl border border-white/10 bg-white/[0.045] p-4">
-                  <div className="text-[11px] uppercase tracking-wider text-white/40">
-                    ID empleado
-                  </div>
-                  <div className="mt-1 font-semibold text-white">
-                    {empleado.id}
-                  </div>
-                </div>
+                <Chip tone="primary">
+                  ID #{empleado.id}
+                </Chip>
 
-                <div className="rounded-2xl border border-white/10 bg-white/[0.045] p-4">
-                  <div className="text-[11px] uppercase tracking-wider text-white/40">
-                    DNI
-                  </div>
-                  <div className="mt-1 font-semibold text-white">
-                    {empleado.dni || "-"}
-                  </div>
-                </div>
+                <Chip tone="purple">
+                  {nombreRol}
+                </Chip>
 
-                <div className="rounded-2xl border border-white/10 bg-white/[0.045] p-4">
-                  <div className="text-[11px] uppercase tracking-wider text-white/40">
-                    Rol
-                  </div>
-                  <div className="mt-1 font-semibold text-blue-300">
-                    {nombreRol}
-                  </div>
-                </div>
+                <Chip
+                  tone={
+                    empleado.activo
+                      ? "success"
+                      : "danger"
+                  }
+                >
+                  {empleado.activo
+                    ? "Cuenta activa"
+                    : "Cuenta bloqueada"}
+                </Chip>
 
-                <div className="rounded-2xl border border-white/10 bg-white/[0.045] p-4">
-                  <div className="text-[11px] uppercase tracking-wider text-white/40">
-                    Estado
-                  </div>
-                  <div
-                    className={`
-                      mt-1
-                      font-semibold
-                      ${
-                        empleado.activo
-                          ? "text-emerald-300"
-                          : "text-red-300"
-                      }
-                    `}
-                  >
-                    {empleado.activo
-                      ? "Operativo"
-                      : "Bloqueado"}
-                  </div>
-                </div>
-
-              </div>
-
-              <div className="mt-4 text-sm text-white/60">
-                <span className="text-white/40">
-                  Email:
-                </span>{" "}
-                {empleado.email_empresa || "-"}
               </div>
 
             </div>
 
           </div>
 
-          {/* ACCIONES */}
 
           <div
             className="
-              relative
-              mt-7
-              flex
-              flex-wrap
-              gap-3
-              border-t
-              border-white/10
-              pt-5
+              grid
+              grid-cols-2
+              gap-2
+              sm:grid-cols-4
+              xl:w-[520px]
             "
           >
 
-            {empleado.activo ? (
-              <button
-                type="button"
-                className="
-                  inline-flex
-                  items-center
-                  gap-2
-                  rounded-xl
-                  border
-                  border-red-400/20
-                  bg-red-500/10
-                  px-4
-                  py-2.5
-                  text-sm
-                  font-semibold
-                  text-red-300
-                  transition
-                  hover:bg-red-500/20
-                  active:scale-[0.97]
-                "
-                onClick={() =>
-                  bloquear(empleado.id)
-                }
-              >
-                🔒 Bloquear usuario
-              </button>
-            ) : (
-              <button
-                type="button"
-                className="
-                  inline-flex
-                  items-center
-                  gap-2
-                  rounded-xl
-                  border
-                  border-emerald-400/20
-                  bg-emerald-500/10
-                  px-4
-                  py-2.5
-                  text-sm
-                  font-semibold
-                  text-emerald-300
-                  transition
-                  hover:bg-emerald-500/20
-                  active:scale-[0.97]
-                "
-                onClick={() =>
-                  desbloquear(empleado.id)
-                }
-              >
-                🔓 Desbloquear usuario
-              </button>
-            )}
+            <div
+              className="
+                rounded-xl
+                border
+                border-[var(--erp-border)]
+                bg-[var(--erp-bg)]
+                p-3
+              "
+            >
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--erp-text-soft)]">
+                Módulos
+              </p>
+              <p className="mt-1 text-xl font-bold text-[var(--erp-text)]">
+                {modulosVisibles.length}
+              </p>
+            </div>
+
+            <div
+              className="
+                rounded-xl
+                border
+                border-[var(--erp-border)]
+                bg-[var(--erp-bg)]
+                p-3
+              "
+            >
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--erp-text-soft)]">
+                Permisos
+              </p>
+              <p className="mt-1 text-xl font-bold text-[var(--erp-text)]">
+                {totalPermisos}
+              </p>
+            </div>
+
+            <div
+              className="
+                rounded-xl
+                border
+                border-[var(--erp-border)]
+                bg-[var(--erp-bg)]
+                p-3
+              "
+            >
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--erp-text-soft)]">
+                Auditoría
+              </p>
+              <p className="mt-1 text-xl font-bold text-[var(--erp-text)]">
+                {auditoriaFiltrada.length}
+              </p>
+            </div>
+
+            <div
+              className="
+                rounded-xl
+                border
+                border-[var(--erp-border)]
+                bg-[var(--erp-bg)]
+                p-3
+              "
+            >
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--erp-text-soft)]">
+                Logs
+              </p>
+              <p className="mt-1 text-xl font-bold text-[var(--erp-text)]">
+                {logsFiltrados.length}
+              </p>
+            </div>
 
           </div>
+
+        </div>
+
+
+        <div
+          className="
+            mt-5
+            flex
+            flex-wrap
+            gap-2
+            border-t
+            border-[var(--erp-border)]
+            pt-4
+          "
+        >
+
+          {empleado.activo ? (
+            <button
+              type="button"
+              onClick={() =>
+                bloquear(
+                  empleado.id
+                )
+              }
+              className="
+                rounded-xl
+                border
+                border-red-200
+                bg-red-50
+                px-4
+                py-2.5
+                text-sm
+                font-semibold
+                text-red-700
+                hover:bg-red-100
+              "
+            >
+              🔒 Bloquear usuario
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() =>
+                desbloquear(
+                  empleado.id
+                )
+              }
+              className="
+                rounded-xl
+                border
+                border-emerald-200
+                bg-emerald-50
+                px-4
+                py-2.5
+                text-sm
+                font-semibold
+                text-emerald-700
+                hover:bg-emerald-100
+              "
+            >
+              🔓 Desbloquear usuario
+            </button>
+          )}
 
         </div>
 
       </section>
 
-      {/* ======================================================
-          RESUMEN DE SEGURIDAD
-      ====================================================== */}
+
+      {/* DATOS */}
 
       <section
         className="
-          grid
-          grid-cols-1
-          gap-4
-          sm:grid-cols-2
-          xl:grid-cols-4
+          rounded-2xl
+          border
+          border-[var(--erp-border)]
+          bg-[var(--erp-surface)]
+          p-4
+          shadow-sm
         "
       >
 
-        <div className="rounded-3xl border border-white/10 bg-white/[0.05] p-5 backdrop-blur-2xl shadow-lg">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-white/40">
-              Módulos
-            </span>
-            <span className="text-xl">📦</span>
-          </div>
+        <div
+          className="
+            grid
+            grid-cols-1
+            gap-2
+            sm:grid-cols-2
+            lg:grid-cols-4
+          "
+        >
 
-          <div className="mt-3 text-3xl font-bold text-white">
-            {modulosVisibles.length}
-          </div>
+          {[
+            [
+              "DNI",
+              empleado.dni || "-",
+            ],
+            [
+              "Email",
+              empleado.email_empresa || "-",
+            ],
+            [
+              "Rol",
+              nombreRol,
+            ],
+            [
+              "Estado",
+              empleado.activo
+                ? "Operativo"
+                : "Bloqueado",
+            ],
+          ].map(
+            (item) => (
+              <div
+                key={item[0]}
+                className="
+                  rounded-xl
+                  border
+                  border-[var(--erp-border)]
+                  bg-[var(--erp-bg)]
+                  px-3
+                  py-2.5
+                "
+              >
 
-          <div className="mt-1 text-xs text-white/40">
-            módulos visibles
-          </div>
-        </div>
+                <p
+                  className="
+                    text-[10px]
+                    font-semibold
+                    uppercase
+                    tracking-wide
+                    text-[var(--erp-text-soft)]
+                  "
+                >
+                  {item[0]}
+                </p>
 
-        <div className="rounded-3xl border border-white/10 bg-white/[0.05] p-5 backdrop-blur-2xl shadow-lg">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-white/40">
-              Permisos
-            </span>
-            <span className="text-xl">🔧</span>
-          </div>
+                <p
+                  className="
+                    mt-1
+                    truncate
+                    text-sm
+                    font-semibold
+                    text-[var(--erp-text)]
+                  "
+                  title={String(item[1])}
+                >
+                  {item[1]}
+                </p>
 
-          <div className="mt-3 text-3xl font-bold text-white">
-            {totalPermisos}
-          </div>
+              </div>
+            )
+          )}
 
-          <div className="mt-1 text-xs text-white/40">
-            permisos asignados
-          </div>
-        </div>
-
-        <div className="rounded-3xl border border-white/10 bg-white/[0.05] p-5 backdrop-blur-2xl shadow-lg">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-white/40">
-              Auditoría
-            </span>
-            <span className="text-xl">📊</span>
-          </div>
-
-          <div className="mt-3 text-3xl font-bold text-white">
-            {totalAuditoria}
-          </div>
-
-          <div className="mt-1 text-xs text-white/40">
-            eventos registrados
-          </div>
-        </div>
-
-        <div className="rounded-3xl border border-white/10 bg-white/[0.05] p-5 backdrop-blur-2xl shadow-lg">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-white/40">
-              Logs
-            </span>
-            <span className="text-xl">📝</span>
-          </div>
-
-          <div className="mt-3 text-3xl font-bold text-white">
-            {totalLogs}
-          </div>
-
-          <div className="mt-1 text-xs text-white/40">
-            registros técnicos
-          </div>
         </div>
 
       </section>
 
-      {/* ======================================================
-          CREDENCIALES
-      ====================================================== */}
+
+      {/* CREDENCIALES */}
 
       <section
         className="
-          rounded-3xl
-          border border-white/10
-          bg-white/[0.05]
-          p-6
-          backdrop-blur-2xl
-          shadow-[0_20px_70px_rgba(0,0,0,0.22)]
+          rounded-2xl
+          border
+          border-[var(--erp-border)]
+          bg-[var(--erp-surface)]
+          p-4
+          shadow-sm
         "
       >
 
-        <div className="flex items-center gap-3">
+        <div className="mb-3">
 
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-blue-400/20 bg-blue-400/10 text-xl">
-            🔐
-          </div>
+          <h2
+            className="
+              text-base
+              font-semibold
+              text-[var(--erp-text)]
+            "
+          >
+            🔐 Credenciales y acceso
+          </h2>
 
-          <div>
-            <h2 className="text-xl font-semibold text-white">
-              Credenciales y acceso
-            </h2>
-
-            <p className="mt-1 text-sm text-white/45">
-              Operaciones sensibles sobre la cuenta del empleado.
-            </p>
-          </div>
+          <p
+            className="
+              mt-0.5
+              text-xs
+              text-[var(--erp-text-soft)]
+            "
+          >
+            Operaciones sensibles sobre la cuenta.
+          </p>
 
         </div>
 
-        <div className="mt-6 grid grid-cols-1 gap-5 xl:grid-cols-2">
 
-          {/* PASSWORD */}
+        <div
+          className="
+            grid
+            grid-cols-1
+            gap-3
+            xl:grid-cols-2
+          "
+        >
 
           <div
             className="
-              rounded-2xl
-              border border-white/10
-              bg-black/10
-              p-5
+              rounded-xl
+              border
+              border-[var(--erp-border)]
+              bg-[var(--erp-bg)]
+              p-4
             "
           >
 
-            <div className="text-sm font-semibold text-white">
+            <h3
+              className="
+                text-sm
+                font-semibold
+                text-[var(--erp-text)]
+              "
+            >
               🔑 Restablecer contraseña
-            </div>
+            </h3>
 
-            <p className="mt-1 text-xs text-white/40">
-              Establece una nueva contraseña para la cuenta.
+            <p
+              className="
+                mt-0.5
+                text-xs
+                text-[var(--erp-text-soft)]
+              "
+            >
+              Establece una nueva contraseña.
             </p>
 
-            <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+
+            <div
+              className="
+                mt-3
+                flex
+                flex-col
+                gap-2
+                sm:flex-row
+              "
+            >
 
               <input
                 type="password"
                 value={nuevaPassword}
-                onChange={(e) =>
+                onChange={(event) =>
                   setNuevaPassword(
-                    e.target.value
+                    event.target.value
                   )
                 }
                 placeholder="Nueva contraseña"
@@ -1447,18 +1780,16 @@ export default function SeguridadFicha({ empleadoId }) {
                   min-w-0
                   flex-1
                   rounded-xl
-                  border border-white/10
-                  bg-white/[0.06]
-                  px-4
+                  border
+                  border-[var(--erp-border)]
+                  bg-[var(--erp-surface)]
+                  px-3
                   py-2.5
                   text-sm
-                  text-white
+                  text-[var(--erp-text)]
                   outline-none
-                  placeholder:text-white/30
-                  transition
-                  focus:border-blue-400/40
-                  focus:ring-2
-                  focus:ring-blue-400/10
+                  placeholder:text-[var(--erp-text-soft)]
+                  focus:border-[var(--erp-primary)]
                 "
               />
 
@@ -1472,15 +1803,14 @@ export default function SeguridadFicha({ empleadoId }) {
                 }
                 className="
                   rounded-xl
-                  border border-blue-400/20
-                  bg-blue-500/10
+                  border
+                  border-blue-200
+                  bg-blue-50
                   px-4
                   py-2.5
                   text-sm
                   font-semibold
-                  text-blue-300
-                  transition
-                  hover:bg-blue-500/20
+                  text-blue-700
                   disabled:cursor-not-allowed
                   disabled:opacity-40
                 "
@@ -1492,36 +1822,57 @@ export default function SeguridadFicha({ empleadoId }) {
 
           </div>
 
-          {/* ROL */}
 
           <div
             className="
-              rounded-2xl
-              border border-white/10
-              bg-black/10
-              p-5
+              rounded-xl
+              border
+              border-[var(--erp-border)]
+              bg-[var(--erp-bg)]
+              p-4
             "
           >
 
-            <div className="text-sm font-semibold text-white">
+            <h3
+              className="
+                text-sm
+                font-semibold
+                text-[var(--erp-text)]
+              "
+            >
               👤 Asignar rol
-            </div>
+            </h3>
 
-            <p className="mt-1 text-xs text-white/40">
-              Rol actualmente asignado:{" "}
-              <span className="text-purple-300">
+            <p
+              className="
+                mt-0.5
+                text-xs
+                text-[var(--erp-text-soft)]
+              "
+            >
+              Rol actual:{" "}
+              <span className="font-semibold text-purple-700">
                 {nombreRol}
               </span>
             </p>
 
-            <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+
+            <div
+              className="
+                mt-3
+                flex
+                flex-col
+                gap-2
+                sm:flex-row
+              "
+            >
 
               <input
                 type="number"
                 value={nuevoRol}
-                onChange={(e) =>
+                onChange={(event) =>
                   setNuevoRol(
-                    e.target.value
+                    event.target.value
                   )
                 }
                 placeholder="ID del nuevo rol"
@@ -1529,18 +1880,16 @@ export default function SeguridadFicha({ empleadoId }) {
                   min-w-0
                   flex-1
                   rounded-xl
-                  border border-white/10
-                  bg-white/[0.06]
-                  px-4
+                  border
+                  border-[var(--erp-border)]
+                  bg-[var(--erp-surface)]
+                  px-3
                   py-2.5
                   text-sm
-                  text-white
+                  text-[var(--erp-text)]
                   outline-none
-                  placeholder:text-white/30
-                  transition
-                  focus:border-purple-400/40
-                  focus:ring-2
-                  focus:ring-purple-400/10
+                  placeholder:text-[var(--erp-text-soft)]
+                  focus:border-[var(--erp-primary)]
                 "
               />
 
@@ -1549,20 +1898,17 @@ export default function SeguridadFicha({ empleadoId }) {
                 onClick={
                   ejecutarAsignarRol
                 }
-                disabled={
-                  !nuevoRol
-                }
+                disabled={!nuevoRol}
                 className="
                   rounded-xl
-                  border border-purple-400/20
-                  bg-purple-500/10
+                  border
+                  border-purple-200
+                  bg-purple-50
                   px-4
                   py-2.5
                   text-sm
                   font-semibold
-                  text-purple-300
-                  transition
-                  hover:bg-purple-500/20
+                  text-purple-700
                   disabled:cursor-not-allowed
                   disabled:opacity-40
                 "
@@ -1578,1112 +1924,994 @@ export default function SeguridadFicha({ empleadoId }) {
 
       </section>
 
-      {/* ======================================================
-          MÓDULOS VISIBLES
-      ====================================================== */}
 
-      <section
-        className="
-          overflow-hidden
-          rounded-3xl
-          border border-white/10
-          bg-white/[0.05]
-          backdrop-blur-2xl
-          shadow-[0_20px_70px_rgba(0,0,0,0.22)]
-        "
+      {/* MÓDULOS */}
+
+      <SeccionAcordeon
+        titulo="Módulos visibles"
+        descripcion="Control de los módulos disponibles para este empleado."
+        icono="📦"
+        contador={
+          modulosVisibles.length
+        }
+        abierto={showModulos}
+        onToggle={() =>
+          setShowModulos(
+            (actual) =>
+              !actual
+          )
+        }
       >
 
-        <button
-          type="button"
+        <div
           className="
-            flex
-            w-full
-            items-center
-            justify-between
-            p-6
-            text-left
-            transition
-            hover:bg-white/[0.025]
+            grid
+            grid-cols-1
+            gap-2
+            md:grid-cols-2
+            xl:grid-cols-3
           "
-          onClick={() =>
-            setShowModulos(
-              (prev) => !prev
-            )
-          }
         >
 
-          <div className="flex items-center gap-3">
+          {modulosDisponibles.map(
+            (modulo) => {
 
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-cyan-400/20 bg-cyan-400/10 text-xl">
-              📦
-            </div>
+              const visible =
+                modulosVisibles.includes(
+                  modulo
+                );
 
-            <div>
-              <h2 className="text-xl font-semibold text-white">
-                Módulos visibles
-              </h2>
 
-              <p className="mt-1 text-xs text-white/40">
-                Control de los módulos disponibles para este empleado.
-              </p>
-            </div>
+              return (
+                <label
+                  key={modulo}
+                  className={`
+                    flex
+                    cursor-pointer
+                    items-center
+                    justify-between
+                    gap-3
+                    rounded-xl
+                    border
+                    px-3
+                    py-2.5
+                    ${
+                      visible
+                        ? "border-blue-200 bg-blue-50"
+                        : "border-[var(--erp-border)] bg-[var(--erp-surface)]"
+                    }
+                  `}
+                >
 
-          </div>
+                  <span
+                    className={`
+                      truncate
+                      text-sm
+                      font-medium
+                      ${
+                        visible
+                          ? "text-blue-800"
+                          : "text-[var(--erp-text)]"
+                      }
+                    `}
+                  >
+                    {modulo}
+                  </span>
 
-          <div className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    checked={visible}
+                    onChange={() =>
+                      cambiarModulo(
+                        modulo
+                      )
+                    }
+                    className="
+                      h-4
+                      w-4
+                      cursor-pointer
+                      accent-blue-500
+                    "
+                  />
 
-            <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold text-white/60">
-              {modulosVisibles.length}
-            </span>
+                </label>
+              );
 
-            <span className="text-white/40">
-              {showModulos
-                ? "▼"
-                : "▶"}
-            </span>
+            }
+          )}
 
-          </div>
+        </div>
 
-        </button>
 
-        {showModulos && (
-          <div className="border-t border-white/10 p-6">
-
-            <div
-              className="
-                grid
-                grid-cols-1
-                gap-3
-                md:grid-cols-2
-                xl:grid-cols-3
-              "
-            >
-
-              {modulosDisponibles.map(
-                (modulo) => {
-
-                  const visible =
-                    modulosVisibles.includes(
-                      modulo
-                    );
-
-                  return (
-                    <label
-                      key={modulo}
-                      className={`
-                        flex
-                        cursor-pointer
-                        items-center
-                        justify-between
-                        gap-4
-                        rounded-2xl
-                        border
-                        px-4
-                        py-4
-                        transition
-                        ${
-                          visible
-                            ? "border-blue-400/20 bg-blue-400/10"
-                            : "border-white/10 bg-white/[0.03] hover:bg-white/[0.06]"
-                        }
-                      `}
-                    >
-
-                      <div className="flex min-w-0 items-center gap-3">
-
-                        <span className="text-lg">
-                          {visible
-                            ? "🟢"
-                            : "⚪"}
-                        </span>
-
-                        <span className="truncate text-sm font-medium text-white">
-                          {modulo}
-                        </span>
-
-                      </div>
-
-                      <input
-                        type="checkbox"
-                        checked={visible}
-                        onChange={() =>
-                          cambiarModulo(
-                            modulo
-                          )
-                        }
-                        className="
-                          h-5
-                          w-5
-                          shrink-0
-                          cursor-pointer
-                          accent-blue-500
-                        "
-                      />
-
-                    </label>
-                  );
-                }
-              )}
-
-            </div>
-
-            {modulosDisponibles.length ===
-              0 && (
-              <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 text-center text-sm text-white/40">
-                No hay módulos disponibles.
-              </div>
-            )}
-
+        {modulosDisponibles.length ===
+          0 && (
+          <div
+            className="
+              rounded-xl
+              border
+              border-dashed
+              border-[var(--erp-border)]
+              p-6
+              text-center
+              text-sm
+              text-[var(--erp-text-soft)]
+            "
+          >
+            No hay módulos disponibles.
           </div>
         )}
 
-      </section>
+      </SeccionAcordeon>
 
-      {/* ======================================================
-          PERMISOS
-      ====================================================== */}
 
-      <section
-        className="
-          overflow-hidden
-          rounded-3xl
-          border border-white/10
-          bg-white/[0.05]
-          backdrop-blur-2xl
-          shadow-[0_20px_70px_rgba(0,0,0,0.22)]
-        "
+      {/* PERMISOS */}
+
+      <SeccionAcordeon
+        titulo="Permisos por módulo"
+        descripcion="Control granular de las capacidades del empleado."
+        icono="🔧"
+        abierto={showPermisos}
+        onToggle={() =>
+          setShowPermisos(
+            (actual) =>
+              !actual
+          )
+        }
       >
 
-        <button
-          type="button"
-          className="
-            flex
-            w-full
-            items-center
-            justify-between
-            p-6
-            text-left
-            transition
-            hover:bg-white/[0.025]
-          "
-          onClick={() =>
-            setShowPermisos(
-              (prev) => !prev
-            )
-          }
-        >
+        <div className="space-y-2">
 
-          <div className="flex items-center gap-3">
+          {Object.entries(
+            permisosGlobales
+          ).map(
+            ([
+              modulo,
+              disponibles,
+            ]) => {
 
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-purple-400/20 bg-purple-400/10 text-xl">
-              🔧
-            </div>
+              const actuales =
+                arraySeguro(
+                  permisosEmpleado[
+                    modulo
+                  ]
+                );
 
-            <div>
-              <h2 className="text-xl font-semibold text-white">
-                Permisos por módulo
-              </h2>
 
-              <p className="mt-1 text-xs text-white/40">
-                Control granular de las capacidades del empleado.
-              </p>
-            </div>
-
-          </div>
-
-          <span className="text-white/40">
-            {showPermisos
-              ? "▼"
-              : "▶"}
-          </span>
-
-        </button>
-
-        {showPermisos && (
-          <div className="border-t border-white/10 p-6">
-
-            <div className="space-y-6">
-
-              {Object.entries(
-                permisosGlobales || {}
-              ).map(
-                ([
-                  modulo,
-                  permsDisponibles,
-                ]) => {
-
-                  const listaPerms =
-                    Array.isArray(
-                      permsDisponibles
+              const activos =
+                disponibles.filter(
+                  (permiso) =>
+                    actuales.includes(
+                      permiso
                     )
-                      ? permsDisponibles
-                      : [];
+                ).length;
 
-                  return (
+
+              const abierto =
+                modulosAbiertos.has(
+                  modulo
+                );
+
+
+              return (
+                <div
+                  key={modulo}
+                  className="
+                    overflow-hidden
+                    rounded-xl
+                    border
+                    border-[var(--erp-border)]
+                    bg-[var(--erp-surface)]
+                  "
+                >
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setModulosAbiertos(
+                        (actual) => {
+
+                          const siguiente =
+                            new Set(
+                              actual
+                            );
+
+                          if (
+                            siguiente.has(
+                              modulo
+                            )
+                          ) {
+                            siguiente.delete(
+                              modulo
+                            );
+                          } else {
+                            siguiente.add(
+                              modulo
+                            );
+                          }
+
+                          return siguiente;
+
+                        }
+                      )
+                    }
+                    className="
+                      flex
+                      w-full
+                      items-center
+                      justify-between
+                      gap-3
+                      px-4
+                      py-3
+                      text-left
+                      hover:bg-[var(--erp-bg)]
+                    "
+                  >
+
+                    <div className="min-w-0">
+
+                      <p
+                        className="
+                          truncate
+                          text-sm
+                          font-semibold
+                          text-[var(--erp-text)]
+                        "
+                      >
+                        {modulo}
+                      </p>
+
+                      <p
+                        className="
+                          mt-0.5
+                          text-xs
+                          text-[var(--erp-text-soft)]
+                        "
+                      >
+                        {activos} de{" "}
+                        {disponibles.length}{" "}
+                        activos
+                      </p>
+
+                    </div>
+
+
                     <div
-                      key={modulo}
                       className="
-                        rounded-2xl
-                        border border-white/10
-                        bg-black/10
-                        p-5
+                        flex
+                        items-center
+                        gap-2
                       "
                     >
 
-                      <div className="flex items-center justify-between">
+                      <Chip
+                        tone={
+                          activos ===
+                          disponibles.length
+                            ? "success"
+                            : "purple"
+                        }
+                      >
+                        {activos}
+                      </Chip>
 
-                        <div>
-                          <div className="font-semibold text-white">
-                            {modulo}
-                          </div>
+                      <span className="text-xs text-[var(--erp-text-soft)]">
+                        {abierto
+                          ? "▲"
+                          : "▼"}
+                      </span>
 
-                          <div className="mt-1 text-xs text-white/40">
-                            {listaPerms.length} permisos disponibles
-                          </div>
-                        </div>
+                    </div>
 
-                        <span className="rounded-full border border-purple-400/20 bg-purple-400/10 px-3 py-1 text-xs font-semibold text-purple-300">
-                          {Array.isArray(
-                            permisosEmpleado[
-                              modulo
-                            ]
-                          )
-                            ? permisosEmpleado[
-                                modulo
-                              ].length
-                            : 0}
+                  </button>
+
+
+                  {abierto && (
+                    <div
+                      className="
+                        grid
+                        grid-cols-1
+                        gap-2
+                        border-t
+                        border-[var(--erp-border)]
+                        bg-[var(--erp-bg)]
+                        p-3
+                        sm:grid-cols-2
+                        lg:grid-cols-4
+                      "
+                    >
+
+                      {disponibles.map(
+                        (permiso) => {
+
+                          const checked =
+                            actuales.includes(
+                              permiso
+                            );
+
+
+                          return (
+                            <label
+                              key={`${modulo}-${permiso}`}
+                              className={`
+                                flex
+                                cursor-pointer
+                                items-center
+                                gap-2
+                                rounded-lg
+                                border
+                                px-3
+                                py-2.5
+                                text-sm
+                                ${
+                                  checked
+                                    ? "border-purple-200 bg-purple-50 text-purple-700"
+                                    : "border-[var(--erp-border)] bg-[var(--erp-surface)] text-[var(--erp-text)]"
+                                }
+                              `}
+                            >
+
+                              <input
+                                type="checkbox"
+                                checked={checked}
+                                onChange={() =>
+                                  cambiarPermiso(
+                                    modulo,
+                                    permiso
+                                  )
+                                }
+                                className="
+                                  h-4
+                                  w-4
+                                  cursor-pointer
+                                  accent-purple-500
+                                "
+                              />
+
+                              <span className="truncate">
+                                {permiso}
+                              </span>
+
+                            </label>
+                          );
+
+                        }
+                      )}
+
+                    </div>
+                  )}
+
+                </div>
+              );
+
+            }
+          )}
+
+          {Object.keys(
+            permisosGlobales
+          ).length === 0 && (
+            <div
+              className="
+                rounded-xl
+                border
+                border-dashed
+                border-[var(--erp-border)]
+                p-6
+                text-center
+                text-sm
+                text-[var(--erp-text-soft)]
+              "
+            >
+              No hay permisos disponibles.
+            </div>
+          )}
+
+        </div>
+
+      </SeccionAcordeon>
+
+
+      {/* AUDITORÍA */}
+
+      <SeccionAcordeon
+        titulo="Auditoría del usuario"
+        descripcion="Trazabilidad de las acciones realizadas por este empleado."
+        icono="📊"
+        contador={
+          auditoriaFiltrada.length
+        }
+        abierto={showAuditoria}
+        onToggle={() =>
+          setShowAuditoria(
+            (actual) =>
+              !actual
+          )
+        }
+      >
+
+        <div className="space-y-3">
+
+          <div
+            className="
+              flex
+              flex-col
+              gap-2
+              lg:flex-row
+            "
+          >
+
+            <input
+              type="text"
+              value={busquedaAud}
+              onChange={(event) => {
+                setBusquedaAud(
+                  event.target.value
+                );
+                setPaginaAud(0);
+              }}
+              placeholder="Buscar módulo, acción o descripción..."
+              className="
+                min-w-0
+                flex-1
+                rounded-xl
+                border
+                border-[var(--erp-border)]
+                bg-[var(--erp-surface)]
+                px-3
+                py-2.5
+                text-sm
+                text-[var(--erp-text)]
+                outline-none
+                placeholder:text-[var(--erp-text-soft)]
+                focus:border-[var(--erp-primary)]
+              "
+            />
+
+            <input
+              type="date"
+              value={filtroFechaAud}
+              onChange={(event) => {
+                setFiltroFechaAud(
+                  event.target.value
+                );
+                setPaginaAud(0);
+              }}
+              className="
+                rounded-xl
+                border
+                border-[var(--erp-border)]
+                bg-[var(--erp-surface)]
+                px-3
+                py-2.5
+                text-sm
+                text-[var(--erp-text)]
+                outline-none
+              "
+            />
+
+            <button
+              type="button"
+              onClick={
+                descargarAuditoria
+              }
+              className="
+                rounded-xl
+                border
+                border-emerald-200
+                bg-emerald-50
+                px-4
+                py-2.5
+                text-sm
+                font-semibold
+                text-emerald-700
+              "
+            >
+              📊 Exportar
+            </button>
+
+          </div>
+
+
+          {auditoriaPaginada.length ===
+          0 ? (
+            <div
+              className="
+                rounded-xl
+                border
+                border-dashed
+                border-[var(--erp-border)]
+                p-8
+                text-center
+                text-sm
+                text-[var(--erp-text-soft)]
+              "
+            >
+              No hay registros de auditoría.
+            </div>
+          ) : (
+            <div className="space-y-2">
+
+              {auditoriaPaginada.map(
+                (item, index) => (
+                  <div
+                    key={
+                      item.id ??
+                      `aud-${index}`
+                    }
+                    className="
+                      rounded-xl
+                      border
+                      border-[var(--erp-border)]
+                      bg-[var(--erp-surface)]
+                      p-3
+                    "
+                  >
+
+                    <div
+                      className="
+                        flex
+                        flex-col
+                        gap-1
+                        sm:flex-row
+                        sm:items-center
+                        sm:justify-between
+                      "
+                    >
+
+                      <div
+                        className="
+                          flex
+                          min-w-0
+                          flex-wrap
+                          items-center
+                          gap-2
+                        "
+                      >
+
+                        <Chip tone="primary">
+                          {item.accion ||
+                            "Actividad"}
+                        </Chip>
+
+                        <span
+                          className="
+                            text-xs
+                            text-[var(--erp-text-soft)]
+                          "
+                        >
+                          {item.modulo ||
+                            "Sistema"}
                         </span>
 
                       </div>
 
+                      <span
+                        className="
+                          text-xs
+                          text-[var(--erp-text-soft)]
+                        "
+                      >
+                        {item.fecha || "-"}
+                      </span>
+
+                    </div>
+
+
+                    <p
+                      className="
+                        mt-2
+                        text-sm
+                        text-[var(--erp-text)]
+                      "
+                    >
+                      {item.descripcion ||
+                        "Sin descripción"}
+                    </p>
+
+                  </div>
+                )
+              )}
+
+            </div>
+          )}
+
+
+          <div
+            className="
+              flex
+              items-center
+              justify-between
+              gap-3
+              pt-1
+            "
+          >
+
+            <span
+              className="
+                text-xs
+                text-[var(--erp-text-soft)]
+              "
+            >
+              Página{" "}
+              {paginaAud + 1}
+            </span>
+
+            <div className="flex gap-2">
+
+              <button
+                type="button"
+                disabled={
+                  paginaAud === 0
+                }
+                onClick={() =>
+                  setPaginaAud(
+                    (actual) =>
+                      Math.max(
+                        0,
+                        actual - 1
+                      )
+                  )
+                }
+                className="
+                  rounded-lg
+                  border
+                  border-[var(--erp-border)]
+                  px-3
+                  py-1.5
+                  text-xs
+                  disabled:opacity-40
+                "
+              >
+                Anterior
+              </button>
+
+              <button
+                type="button"
+                disabled={
+                  (
+                    paginaAud + 1
+                  ) *
+                    pageSize >=
+                  auditoriaFiltrada.length
+                }
+                onClick={() =>
+                  setPaginaAud(
+                    (actual) =>
+                      actual + 1
+                  )
+                }
+                className="
+                  rounded-lg
+                  border
+                  border-[var(--erp-border)]
+                  px-3
+                  py-1.5
+                  text-xs
+                  disabled:opacity-40
+                "
+              >
+                Siguiente
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </SeccionAcordeon>
+
+
+      {/* LOGS */}
+
+      <SeccionAcordeon
+        titulo="Logs técnicos del usuario"
+        descripcion="Eventos técnicos, errores e incidencias."
+        icono="📝"
+        contador={
+          logsFiltrados.length
+        }
+        abierto={showLogs}
+        onToggle={() =>
+          setShowLogs(
+            (actual) =>
+              !actual
+          )
+        }
+      >
+
+        <div className="space-y-3">
+
+          <div
+            className="
+              flex
+              flex-col
+              gap-2
+              lg:flex-row
+            "
+          >
+
+            <input
+              type="text"
+              value={busquedaLog}
+              onChange={(event) => {
+                setBusquedaLog(
+                  event.target.value
+                );
+                setPaginaLog(0);
+              }}
+              placeholder="Buscar evento, detalle o IP..."
+              className="
+                min-w-0
+                flex-1
+                rounded-xl
+                border
+                border-[var(--erp-border)]
+                bg-[var(--erp-surface)]
+                px-3
+                py-2.5
+                text-sm
+                text-[var(--erp-text)]
+                outline-none
+                placeholder:text-[var(--erp-text-soft)]
+                focus:border-[var(--erp-primary)]
+              "
+            />
+
+            <input
+              type="date"
+              value={filtroFechaLog}
+              onChange={(event) => {
+                setFiltroFechaLog(
+                  event.target.value
+                );
+                setPaginaLog(0);
+              }}
+              className="
+                rounded-xl
+                border
+                border-[var(--erp-border)]
+                bg-[var(--erp-surface)]
+                px-3
+                py-2.5
+                text-sm
+                text-[var(--erp-text)]
+                outline-none
+              "
+            />
+
+            <button
+              type="button"
+              onClick={
+                descargarLogs
+              }
+              className="
+                rounded-xl
+                border
+                border-amber-200
+                bg-amber-50
+                px-4
+                py-2.5
+                text-sm
+                font-semibold
+                text-amber-700
+              "
+            >
+              📝 Exportar
+            </button>
+
+          </div>
+
+
+          {logsPaginados.length ===
+          0 ? (
+            <div
+              className="
+                rounded-xl
+                border
+                border-dashed
+                border-[var(--erp-border)]
+                p-8
+                text-center
+                text-sm
+                text-[var(--erp-text-soft)]
+              "
+            >
+              No hay logs técnicos.
+            </div>
+          ) : (
+            <div className="space-y-2">
+
+              {logsPaginados.map(
+                (item, index) => {
+
+                  const evento =
+                    textoSeguro(
+                      item.evento
+                    ).toLowerCase();
+
+
+                  const tono =
+                    evento ===
+                    "error"
+                      ? "danger"
+                      : evento ===
+                          "warning" ||
+                        evento ===
+                          "login_error"
+                        ? "warning"
+                        : "neutral";
+
+
+                  return (
+                    <div
+                      key={
+                        item.id ??
+                        `log-${index}`
+                      }
+                      className="
+                        rounded-xl
+                        border
+                        border-[var(--erp-border)]
+                        bg-[var(--erp-surface)]
+                        p-3
+                      "
+                    >
+
                       <div
                         className="
-                          mt-4
-                          grid
-                          grid-cols-1
-                          gap-3
-                          sm:grid-cols-2
-                          lg:grid-cols-4
+                          flex
+                          flex-col
+                          gap-1
+                          sm:flex-row
+                          sm:items-center
+                          sm:justify-between
                         "
                       >
 
-                        {listaPerms.map(
-                          (perm) => {
+                        <div
+                          className="
+                            flex
+                            flex-wrap
+                            items-center
+                            gap-2
+                          "
+                        >
 
-                            const checked =
-                              Array.isArray(
-                                permisosEmpleado[
-                                  modulo
-                                ]
-                              )
-                                ? permisosEmpleado[
-                                    modulo
-                                  ].includes(
-                                    perm
-                                  )
-                                : false;
+                          <Chip tone={tono}>
+                            {item.evento ||
+                              "Evento"}
+                          </Chip>
 
-                            return (
-                              <label
-                                key={`${modulo}-${perm}`}
-                                className={`
-                                  flex
-                                  cursor-pointer
-                                  items-center
-                                  gap-3
-                                  rounded-xl
-                                  border
-                                  px-3
-                                  py-3
-                                  text-sm
-                                  transition
-                                  ${
-                                    checked
-                                      ? "border-purple-400/20 bg-purple-400/10 text-purple-200"
-                                      : "border-white/10 bg-white/[0.03] text-white/60 hover:bg-white/[0.06]"
-                                  }
-                                `}
-                              >
+                          {item.ip && (
+                            <span
+                              className="
+                                text-xs
+                                text-[var(--erp-text-soft)]
+                              "
+                            >
+                              IP {item.ip}
+                            </span>
+                          )}
 
-                                <input
-                                  type="checkbox"
-                                  checked={checked}
-                                  onChange={() =>
-                                    cambiarPermiso(
-                                      modulo,
-                                      perm
-                                    )
-                                  }
-                                  className="
-                                    h-4
-                                    w-4
-                                    cursor-pointer
-                                    accent-purple-500
-                                  "
-                                />
+                        </div>
 
-                                <span className="truncate">
-                                  {perm}
-                                </span>
-
-                              </label>
-                            );
-                          }
-                        )}
+                        <span
+                          className="
+                            text-xs
+                            text-[var(--erp-text-soft)]
+                          "
+                        >
+                          {item.fecha || "-"}
+                        </span>
 
                       </div>
 
+
+                      <p
+                        className="
+                          mt-2
+                          text-sm
+                          text-[var(--erp-text)]
+                        "
+                      >
+                        {item.detalle ||
+                          "Sin detalle"}
+                      </p>
+
                     </div>
                   );
+
                 }
               )}
 
-              {Object.keys(
-                permisosGlobales || {}
-              ).length === 0 && (
-                <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 text-center text-sm text-white/40">
-                  No hay permisos disponibles.
-                </div>
-              )}
-
             </div>
+          )}
 
-          </div>
-        )}
 
-      </section>
+          <div
+            className="
+              flex
+              items-center
+              justify-between
+              gap-3
+              pt-1
+            "
+          >
 
-      {/* ======================================================
-          AUDITORÍA
-      ====================================================== */}
-
-      <section
-        className="
-          overflow-hidden
-          rounded-3xl
-          border border-white/10
-          bg-white/[0.05]
-          backdrop-blur-2xl
-          shadow-[0_20px_70px_rgba(0,0,0,0.22)]
-        "
-      >
-
-        <button
-          type="button"
-          className="
-            flex
-            w-full
-            items-center
-            justify-between
-            p-6
-            text-left
-            transition
-            hover:bg-white/[0.025]
-          "
-          onClick={() =>
-            setShowAuditoria(
-              (prev) => !prev
-            )
-          }
-        >
-
-          <div className="flex items-center gap-3">
-
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-emerald-400/20 bg-emerald-400/10 text-xl">
-              📊
-            </div>
-
-            <div>
-              <h2 className="text-xl font-semibold text-white">
-                Auditoría del usuario
-              </h2>
-
-              <p className="mt-1 text-xs text-white/40">
-                Trazabilidad de las acciones realizadas por este empleado.
-              </p>
-            </div>
-
-          </div>
-
-          <div className="flex items-center gap-3">
-
-            <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold text-white/60">
-              {auditoriaOrdenada.length}
+            <span
+              className="
+                text-xs
+                text-[var(--erp-text-soft)]
+              "
+            >
+              Página{" "}
+              {paginaLog + 1}
             </span>
 
-            <span className="text-white/40">
-              {showAuditoria
-                ? "▼"
-                : "▶"}
-            </span>
-
-          </div>
-
-        </button>
-
-        {showAuditoria && (
-          <div className="space-y-5 border-t border-white/10 p-6">
-
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-
-              <div className="flex flex-col gap-3 md:flex-row">
-
-                <input
-                  type="text"
-                  value={busquedaAud}
-                  onChange={(e) => {
-                    setBusquedaAud(
-                      e.target.value
-                    );
-                    setPaginaAud(0);
-                  }}
-                  placeholder="Buscar módulo, acción o descripción..."
-                  className="
-                    w-full
-                    rounded-xl
-                    border border-white/10
-                    bg-white/[0.05]
-                    px-4
-                    py-2.5
-                    text-sm
-                    text-white
-                    outline-none
-                    placeholder:text-white/30
-                    focus:border-blue-400/30
-                    focus:ring-2
-                    focus:ring-blue-400/10
-                    md:w-80
-                  "
-                />
-
-                <input
-                  type="date"
-                  value={filtroFechaAud}
-                  onChange={(e) => {
-                    setFiltroFechaAud(
-                      e.target.value
-                    );
-                    setPaginaAud(0);
-                  }}
-                  className="
-                    rounded-xl
-                    border border-white/10
-                    bg-white/[0.05]
-                    px-4
-                    py-2.5
-                    text-sm
-                    text-white
-                    outline-none
-                    focus:border-blue-400/30
-                  "
-                />
-
-              </div>
+            <div className="flex gap-2">
 
               <button
                 type="button"
-                onClick={
-                  descargarExcelAuditoria
+                disabled={
+                  paginaLog === 0
+                }
+                onClick={() =>
+                  setPaginaLog(
+                    (actual) =>
+                      Math.max(
+                        0,
+                        actual - 1
+                      )
+                  )
                 }
                 className="
-                  inline-flex
-                  w-fit
-                  items-center
-                  gap-2
-                  rounded-xl
-                  border border-emerald-400/20
-                  bg-emerald-500/10
-                  px-4
-                  py-2.5
-                  text-sm
-                  font-semibold
-                  text-emerald-300
-                  transition
-                  hover:bg-emerald-500/20
+                  rounded-lg
+                  border
+                  border-[var(--erp-border)]
+                  px-3
+                  py-1.5
+                  text-xs
+                  disabled:opacity-40
                 "
               >
-                📊 Exportar auditoría
+                Anterior
+              </button>
+
+              <button
+                type="button"
+                disabled={
+                  (
+                    paginaLog + 1
+                  ) *
+                    pageSize >=
+                  logsFiltrados.length
+                }
+                onClick={() =>
+                  setPaginaLog(
+                    (actual) =>
+                      actual + 1
+                  )
+                }
+                className="
+                  rounded-lg
+                  border
+                  border-[var(--erp-border)]
+                  px-3
+                  py-1.5
+                  text-xs
+                  disabled:opacity-40
+                "
+              >
+                Siguiente
               </button>
 
             </div>
 
-            <div className="overflow-x-auto rounded-2xl border border-white/10">
-
-              <table className="w-full min-w-[760px] text-sm">
-
-                <thead className="bg-white/[0.06]">
-
-                  <tr>
-
-                    <th
-                      className="cursor-pointer whitespace-nowrap px-4 py-3 text-left font-semibold text-white/70 hover:text-white"
-                      onClick={() =>
-                        ordenarAud("fecha")
-                      }
-                    >
-                      Fecha{" "}
-                      {ordenAud.campo ===
-                      "fecha"
-                        ? ordenAud.asc
-                          ? "▲"
-                          : "▼"
-                        : ""}
-                    </th>
-
-                    <th
-                      className="cursor-pointer whitespace-nowrap px-4 py-3 text-left font-semibold text-white/70 hover:text-white"
-                      onClick={() =>
-                        ordenarAud("modulo")
-                      }
-                    >
-                      Módulo{" "}
-                      {ordenAud.campo ===
-                      "modulo"
-                        ? ordenAud.asc
-                          ? "▲"
-                          : "▼"
-                        : ""}
-                    </th>
-
-                    <th
-                      className="cursor-pointer whitespace-nowrap px-4 py-3 text-left font-semibold text-white/70 hover:text-white"
-                      onClick={() =>
-                        ordenarAud("accion")
-                      }
-                    >
-                      Acción{" "}
-                      {ordenAud.campo ===
-                      "accion"
-                        ? ordenAud.asc
-                          ? "▲"
-                          : "▼"
-                        : ""}
-                    </th>
-
-                    <th className="px-4 py-3 text-left font-semibold text-white/70">
-                      Descripción
-                    </th>
-
-                  </tr>
-
-                </thead>
-
-                <tbody>
-
-                  {auditoriaPaginada.map(
-                    (a, index) => {
-
-                      const key =
-                        a.id ??
-                        `${a.fecha}-${a.modulo}-${a.accion}-${index}`;
-
-                      return (
-                        <tr
-                          key={String(key)}
-                          className="
-                            border-t
-                            border-white/10
-                            transition
-                            hover:bg-white/[0.035]
-                          "
-                        >
-
-                          <td className="whitespace-nowrap px-4 py-3 text-white/65">
-                            {a.fecha || "-"}
-                          </td>
-
-                          <td className="px-4 py-3 text-white/80">
-                            {a.modulo || "-"}
-                          </td>
-
-                          <td className="px-4 py-3">
-
-                            <span className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-2.5 py-1 text-xs font-semibold text-white/70">
-
-                              {iconosAccion[
-                                a.accion
-                              ] ||
-                                iconosAccion.default}
-
-                              {a.accion || "-"}
-
-                            </span>
-
-                          </td>
-
-                          <td className="px-4 py-3 text-white/65">
-                            {a.descripcion ||
-                              "-"}
-                          </td>
-
-                        </tr>
-                      );
-                    }
-                  )}
-
-                  {auditoriaPaginada.length ===
-                    0 && (
-                    <tr>
-                      <td
-                        colSpan={4}
-                        className="px-6 py-10 text-center text-sm text-white/35"
-                      >
-                        No hay registros de auditoría.
-                      </td>
-                    </tr>
-                  )}
-
-                </tbody>
-
-              </table>
-
-            </div>
-
-            <div className="flex flex-wrap items-center justify-between gap-3">
-
-              <span className="text-xs text-white/40">
-                Mostrando{" "}
-                {auditoriaPaginada.length}{" "}
-                de{" "}
-                {auditoriaOrdenada.length}{" "}
-                registros
-              </span>
-
-              <div className="flex items-center gap-2">
-
-                <button
-                  type="button"
-                  disabled={
-                    paginaAud === 0
-                  }
-                  onClick={() =>
-                    setPaginaAud(
-                      (prev) =>
-                        Math.max(
-                          prev - 1,
-                          0
-                        )
-                    )
-                  }
-                  className="
-                    rounded-xl
-                    border border-white/10
-                    bg-white/[0.05]
-                    px-3
-                    py-2
-                    text-xs
-                    text-white/70
-                    transition
-                    hover:bg-white/10
-                    disabled:cursor-not-allowed
-                    disabled:opacity-30
-                  "
-                >
-                  ← Anterior
-                </button>
-
-                <span className="rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-xs text-white/60">
-                  Página {paginaAud + 1}
-                </span>
-
-                <button
-                  type="button"
-                  disabled={
-                    (paginaAud + 1) *
-                      pageSizeAud >=
-                    auditoriaOrdenada.length
-                  }
-                  onClick={() =>
-                    setPaginaAud(
-                      (prev) =>
-                        prev + 1
-                    )
-                  }
-                  className="
-                    rounded-xl
-                    border border-white/10
-                    bg-white/[0.05]
-                    px-3
-                    py-2
-                    text-xs
-                    text-white/70
-                    transition
-                    hover:bg-white/10
-                    disabled:cursor-not-allowed
-                    disabled:opacity-30
-                  "
-                >
-                  Siguiente →
-                </button>
-
-              </div>
-
-            </div>
-
-          </div>
-        )}
-
-      </section>
-
-      {/* ======================================================
-          LOGS
-      ====================================================== */}
-
-      <section
-        className="
-          overflow-hidden
-          rounded-3xl
-          border border-white/10
-          bg-white/[0.05]
-          backdrop-blur-2xl
-          shadow-[0_20px_70px_rgba(0,0,0,0.22)]
-        "
-      >
-
-        <button
-          type="button"
-          className="
-            flex
-            w-full
-            items-center
-            justify-between
-            p-6
-            text-left
-            transition
-            hover:bg-white/[0.025]
-          "
-          onClick={() =>
-            setShowLogs(
-              (prev) => !prev
-            )
-          }
-        >
-
-          <div className="flex items-center gap-3">
-
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-orange-400/20 bg-orange-400/10 text-xl">
-              📝
-            </div>
-
-            <div>
-              <h2 className="text-xl font-semibold text-white">
-                Logs técnicos del usuario
-              </h2>
-
-              <p className="mt-1 text-xs text-white/40">
-                Eventos técnicos, autenticación, errores y actividad sensible.
-              </p>
-            </div>
-
           </div>
 
-          <div className="flex items-center gap-3">
+        </div>
 
-            <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold text-white/60">
-              {logsOrdenados.length}
-            </span>
-
-            <span className="text-white/40">
-              {showLogs
-                ? "▼"
-                : "▶"}
-            </span>
-
-          </div>
-
-        </button>
-
-        {showLogs && (
-          <div className="space-y-5 border-t border-white/10 p-6">
-
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-
-              <div className="flex flex-col gap-3 md:flex-row">
-
-                <input
-                  type="text"
-                  value={busquedaLog}
-                  onChange={(e) => {
-                    setBusquedaLog(
-                      e.target.value
-                    );
-                    setPaginaLog(0);
-                  }}
-                  placeholder="Buscar evento, detalle, IP o fecha..."
-                  className="
-                    w-full
-                    rounded-xl
-                    border border-white/10
-                    bg-white/[0.05]
-                    px-4
-                    py-2.5
-                    text-sm
-                    text-white
-                    outline-none
-                    placeholder:text-white/30
-                    focus:border-purple-400/30
-                    focus:ring-2
-                    focus:ring-purple-400/10
-                    md:w-80
-                  "
-                />
-
-                <input
-                  type="date"
-                  value={filtroFechaLog}
-                  onChange={(e) => {
-                    setFiltroFechaLog(
-                      e.target.value
-                    );
-                    setPaginaLog(0);
-                  }}
-                  className="
-                    rounded-xl
-                    border border-white/10
-                    bg-white/[0.05]
-                    px-4
-                    py-2.5
-                    text-sm
-                    text-white
-                    outline-none
-                    focus:border-purple-400/30
-                  "
-                />
-
-              </div>
-
-              <button
-                type="button"
-                onClick={
-                  descargarExcelLogs
-                }
-                className="
-                  inline-flex
-                  w-fit
-                  items-center
-                  gap-2
-                  rounded-xl
-                  border border-orange-400/20
-                  bg-orange-500/10
-                  px-4
-                  py-2.5
-                  text-sm
-                  font-semibold
-                  text-orange-300
-                  transition
-                  hover:bg-orange-500/20
-                "
-              >
-                📊 Exportar logs
-              </button>
-
-            </div>
-
-            <div className="overflow-x-auto rounded-2xl border border-white/10">
-
-              <table className="w-full min-w-[820px] text-sm">
-
-                <thead className="bg-white/[0.06]">
-
-                  <tr>
-
-                    <th
-                      className="cursor-pointer whitespace-nowrap px-4 py-3 text-left font-semibold text-white/70 hover:text-white"
-                      onClick={() =>
-                        ordenarLog("fecha")
-                      }
-                    >
-                      Fecha{" "}
-                      {ordenLog.campo ===
-                      "fecha"
-                        ? ordenLog.asc
-                          ? "▲"
-                          : "▼"
-                        : ""}
-                    </th>
-
-                    <th
-                      className="cursor-pointer whitespace-nowrap px-4 py-3 text-left font-semibold text-white/70 hover:text-white"
-                      onClick={() =>
-                        ordenarLog("evento")
-                      }
-                    >
-                      Evento{" "}
-                      {ordenLog.campo ===
-                      "evento"
-                        ? ordenLog.asc
-                          ? "▲"
-                          : "▼"
-                        : ""}
-                    </th>
-
-                    <th className="px-4 py-3 text-left font-semibold text-white/70">
-                      Detalle
-                    </th>
-
-                    <th className="px-4 py-3 text-left font-semibold text-white/70">
-                      IP
-                    </th>
-
-                  </tr>
-
-                </thead>
-
-                <tbody>
-
-                  {logsPaginados.map(
-                    (l, index) => {
-
-                      const key =
-                        l.id ??
-                        `${l.fecha}-${l.evento}-${l.detalle}-${index}`;
-
-                      return (
-                        <tr
-                          key={String(key)}
-                          className="
-                            border-t
-                            border-white/10
-                            transition
-                            hover:bg-white/[0.035]
-                          "
-                        >
-
-                          <td className="whitespace-nowrap px-4 py-3 text-white/65">
-                            {l.fecha || "-"}
-                          </td>
-
-                          <td className="px-4 py-3">
-
-                            <span className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-2.5 py-1 text-xs font-semibold text-white/70">
-
-                              {iconosEvento[
-                                l.evento
-                              ] ||
-                                iconosEvento.default}
-
-                              {l.evento || "-"}
-
-                            </span>
-
-                          </td>
-
-                          <td className="px-4 py-3 text-white/65">
-                            {l.detalle || "-"}
-                          </td>
-
-                          <td className="px-4 py-3 font-mono text-xs text-white/50">
-                            {l.ip || "-"}
-                          </td>
-
-                        </tr>
-                      );
-                    }
-                  )}
-
-                  {logsPaginados.length ===
-                    0 && (
-                    <tr>
-                      <td
-                        colSpan={4}
-                        className="px-6 py-10 text-center text-sm text-white/35"
-                      >
-                        No hay registros de logs.
-                      </td>
-                    </tr>
-                  )}
-
-                </tbody>
-
-              </table>
-
-            </div>
-
-            <div className="flex flex-wrap items-center justify-between gap-3">
-
-              <span className="text-xs text-white/40">
-                Mostrando{" "}
-                {logsPaginados.length}{" "}
-                de{" "}
-                {logsOrdenados.length}{" "}
-                registros
-              </span>
-
-              <div className="flex items-center gap-2">
-
-                <button
-                  type="button"
-                  disabled={
-                    paginaLog === 0
-                  }
-                  onClick={() =>
-                    setPaginaLog(
-                      (prev) =>
-                        Math.max(
-                          prev - 1,
-                          0
-                        )
-                    )
-                  }
-                  className="
-                    rounded-xl
-                    border border-white/10
-                    bg-white/[0.05]
-                    px-3
-                    py-2
-                    text-xs
-                    text-white/70
-                    transition
-                    hover:bg-white/10
-                    disabled:cursor-not-allowed
-                    disabled:opacity-30
-                  "
-                >
-                  ← Anterior
-                </button>
-
-                <span className="rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-xs text-white/60">
-                  Página {paginaLog + 1}
-                </span>
-
-                <button
-                  type="button"
-                  disabled={
-                    (paginaLog + 1) *
-                      pageSizeLog >=
-                    logsOrdenados.length
-                  }
-                  onClick={() =>
-                    setPaginaLog(
-                      (prev) =>
-                        prev + 1
-                    )
-                  }
-                  className="
-                    rounded-xl
-                    border border-white/10
-                    bg-white/[0.05]
-                    px-3
-                    py-2
-                    text-xs
-                    text-white/70
-                    transition
-                    hover:bg-white/10
-                    disabled:cursor-not-allowed
-                    disabled:opacity-30
-                  "
-                >
-                  Siguiente →
-                </button>
-
-              </div>
-
-            </div>
-
-          </div>
-        )}
-
-      </section>
+      </SeccionAcordeon>
 
     </div>
   );

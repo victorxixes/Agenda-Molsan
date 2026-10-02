@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from backend.app.database import get_db
-from backend.app.empleados.models import Empleado
+
 from backend.app.seguridad.roles.models import Rol
 from backend.app.seguridad.roles.schemas import (
     RolCreate,
@@ -21,130 +22,77 @@ router = APIRouter(
 
 
 # ============================================================
-# ROLES BASE DEL SISTEMA
-# ============================================================
-
-ROLES_BASE = [
-    {
-        "id": 1,
-        "nombre": "admin",
-        "descripcion": "Administrador del sistema",
-    },
-    {
-        "id": 2,
-        "nombre": "empleado",
-        "descripcion": "Empleado estándar",
-    },
-    {
-        "id": 3,
-        "nombre": "rrhh",
-        "descripcion": "Recursos Humanos",
-    },
-    {
-        "id": 4,
-        "nombre": "direccion",
-        "descripcion": "Dirección",
-    },
-    {
-        "id": 5,
-        "nombre": "apoderado",
-        "descripcion": "Apoderado",
-    },
-]
-
-
-# ============================================================
 # CREAR ROLES BASE
 # ============================================================
 
-@router.post("/crear-base")
+@router.post(
+    "/crear-base",
+    response_model=list[RolOut],
+)
 def crear_roles_base(
     db: Session = Depends(get_db),
 ):
     """
     Crea los roles base del sistema si todavía no existen.
 
-    Es seguro ejecutar este endpoint varias veces:
-    no duplica los roles existentes.
+    Los roles que ya existen no se duplican.
     """
 
-    creados = []
-    existentes = []
+    roles_base = [
+        {
+            "nombre": "Administrador",
+            "descripcion": "Administrador del sistema.",
+        },
+        {
+            "nombre": "Responsable",
+            "descripcion": "Responsable de gestión.",
+        },
+        {
+            "nombre": "Usuario",
+            "descripcion": "Usuario estándar del sistema.",
+        },
+    ]
 
-    try:
+    resultado = []
 
-        for datos in ROLES_BASE:
+    for datos in roles_base:
 
-            # ------------------------------------------------
-            # BUSCAR POR ID
-            # ------------------------------------------------
-
-            rol = db.get(
-                Rol,
-                datos["id"],
+        rol = (
+            db.query(Rol)
+            .filter(
+                Rol.nombre == datos["nombre"]
             )
+            .first()
+        )
 
-            if rol:
-
-                existentes.append(
-                    rol.nombre
-                )
-
-                continue
-
-            # ------------------------------------------------
-            # COMPROBAR TAMBIÉN EL NOMBRE
-            # ------------------------------------------------
-
-            rol_por_nombre = (
-                db.query(Rol)
-                .filter(
-                    Rol.nombre == datos["nombre"]
-                )
-                .first()
-            )
-
-            if rol_por_nombre:
-
-                existentes.append(
-                    rol_por_nombre.nombre
-                )
-
-                continue
-
-            # ------------------------------------------------
-            # CREAR ROL
-            # ------------------------------------------------
+        if not rol:
 
             rol = Rol(
-                id=datos["id"],
                 nombre=datos["nombre"],
                 descripcion=datos["descripcion"],
             )
 
             db.add(rol)
 
-            creados.append(
-                datos["nombre"]
-            )
+        resultado.append(rol)
+
+    try:
 
         db.commit()
 
-    except Exception:
+    except IntegrityError:
 
         db.rollback()
 
-        raise
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="No se pudieron crear los roles base.",
+        )
 
-    return {
-        "estado": "OK",
-        "roles_creados": creados,
-        "roles_existentes": existentes,
-        "total_roles": (
-            len(creados)
-            + len(existentes)
-        ),
-    }
+    for rol in resultado:
+        db.refresh(rol)
+
+    return resultado
 
 
 # ============================================================
@@ -152,17 +100,17 @@ def crear_roles_base(
 # ============================================================
 
 @router.get(
-    "/",
+    "",
     response_model=list[RolOut],
 )
 def listar_roles(
     db: Session = Depends(get_db),
 ):
     """
-    Devuelve todos los roles ordenados por ID.
+    Devuelve todos los roles disponibles.
     """
 
-    return (
+    roles = (
         db.query(Rol)
         .order_by(
             Rol.id.asc()
@@ -170,44 +118,40 @@ def listar_roles(
         .all()
     )
 
+    return roles
+
 
 # ============================================================
 # CREAR ROL
 # ============================================================
 
 @router.post(
-    "/",
+    "",
     response_model=RolOut,
+    status_code=status.HTTP_201_CREATED,
 )
 def crear_rol(
-    data: RolCreate,
+    datos: RolCreate,
     db: Session = Depends(get_db),
 ):
     """
     Crea un nuevo rol.
     """
 
-    nombre = (
-        data.nombre.strip()
-        if data.nombre
-        else ""
-    )
+    nombre = datos.nombre.strip()
 
     if not nombre:
 
         raise HTTPException(
-            status_code=400,
-            detail=(
-                "El nombre del rol "
-                "es obligatorio."
-            ),
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="El nombre del rol es obligatorio.",
         )
 
     # --------------------------------------------------------
-    # COMPROBAR NOMBRE
+    # COMPROBAR DUPLICADO
     # --------------------------------------------------------
 
-    existente = (
+    rol_existente = (
         db.query(Rol)
         .filter(
             Rol.nombre == nombre
@@ -215,13 +159,11 @@ def crear_rol(
         .first()
     )
 
-    if existente:
+    if rol_existente:
 
         raise HTTPException(
-            status_code=400,
-            detail=(
-                "El rol ya existe."
-            ),
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Ya existe un rol con ese nombre.",
         )
 
     # --------------------------------------------------------
@@ -230,26 +172,25 @@ def crear_rol(
 
     rol = Rol(
         nombre=nombre,
-        descripcion=(
-            data.descripcion.strip()
-            if data.descripcion
-            else None
-        ),
+        descripcion=datos.descripcion,
     )
+
+    db.add(rol)
 
     try:
 
-        db.add(rol)
-
         db.commit()
 
-        db.refresh(rol)
-
-    except Exception:
+    except IntegrityError:
 
         db.rollback()
 
-        raise
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Ya existe un rol con ese nombre.",
+        )
+
+    db.refresh(rol)
 
     return rol
 
@@ -264,18 +205,19 @@ def crear_rol(
 )
 def editar_rol(
     rol_id: int,
-    data: RolCreate,
+    datos: RolCreate,
     db: Session = Depends(get_db),
 ):
     """
-    Modifica un rol existente.
+    Actualiza un rol existente.
 
-    El frontend actualmente envía:
+    El frontend actualmente envía únicamente:
         {
-            "nombre": "..."
+            "nombre": "Nuevo nombre"
         }
 
-    La descripción también queda soportada si se envía.
+    Por eso la descripción existente se conserva cuando
+    no se envía una nueva descripción.
     """
 
     # --------------------------------------------------------
@@ -293,37 +235,35 @@ def editar_rol(
     if not rol:
 
         raise HTTPException(
-            status_code=404,
-            detail="Rol no encontrado.",
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="El rol no existe.",
         )
 
     # --------------------------------------------------------
     # VALIDAR NOMBRE
     # --------------------------------------------------------
 
-    nombre = (
-        data.nombre.strip()
-        if data.nombre
-        else ""
-    )
+    nombre = datos.nombre.strip()
 
     if not nombre:
 
         raise HTTPException(
-            status_code=400,
-            detail=(
-                "El nombre del rol "
-                "es obligatorio."
-            ),
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="El nombre del rol es obligatorio.",
         )
 
     # --------------------------------------------------------
     # COMPROBAR DUPLICADO
     #
-    # Permitimos mantener el mismo nombre del propio rol.
+    # No podemos permitir:
+    #
+    # Rol 1 -> Administrador
+    # Rol 2 -> Usuario
+    #
+    # y convertir Rol 2 en Administrador.
     # --------------------------------------------------------
 
-    existente = (
+    otro_rol = (
         db.query(Rol)
         .filter(
             Rol.nombre == nombre,
@@ -332,39 +272,53 @@ def editar_rol(
         .first()
     )
 
-    if existente:
+    if otro_rol:
 
         raise HTTPException(
-            status_code=400,
-            detail=(
-                "Ya existe otro rol "
-                "con ese nombre."
-            ),
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Ya existe otro rol con ese nombre.",
         )
 
     # --------------------------------------------------------
-    # ACTUALIZAR
+    # ACTUALIZAR NOMBRE
     # --------------------------------------------------------
 
     rol.nombre = nombre
 
-    if data.descripcion is not None:
+    # --------------------------------------------------------
+    # DESCRIPCIÓN
+    #
+    # El frontend actual no la envía.
+    #
+    # Por tanto:
+    #
+    # datos.descripcion is None
+    #
+    # significa "conservar la actual".
+    # --------------------------------------------------------
 
-        rol.descripcion = (
-            data.descripcion.strip()
-        )
+    if datos.descripcion is not None:
+
+        rol.descripcion = datos.descripcion
+
+    # --------------------------------------------------------
+    # GUARDAR
+    # --------------------------------------------------------
 
     try:
 
         db.commit()
 
-        db.refresh(rol)
-
-    except Exception:
+    except IntegrityError:
 
         db.rollback()
 
-        raise
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="No se pudo actualizar el rol porque el nombre ya existe.",
+        )
+
+    db.refresh(rol)
 
     return rol
 
@@ -375,6 +329,7 @@ def editar_rol(
 
 @router.delete(
     "/{rol_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
 )
 def eliminar_rol(
     rol_id: int,
@@ -384,9 +339,10 @@ def eliminar_rol(
     Elimina un rol.
 
     IMPORTANTE:
-    No permite eliminar un rol que tenga empleados
-    asignados para evitar problemas de integridad
-    referencial en la base de datos.
+    No se permite eliminar un rol que todavía esté asignado
+    a empleados.
+
+    Primero habrá que reasignar esos empleados a otro rol.
     """
 
     # --------------------------------------------------------
@@ -404,33 +360,30 @@ def eliminar_rol(
     if not rol:
 
         raise HTTPException(
-            status_code=404,
-            detail="Rol no encontrado.",
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="El rol no existe.",
         )
 
     # --------------------------------------------------------
     # COMPROBAR EMPLEADOS ASIGNADOS
+    #
+    # El modelo Rol ya tiene:
+    #
+    # empleados = relationship(
+    #     "Empleado",
+    #     back_populates="rol"
+    # )
+    #
+    # Por tanto podemos utilizar directamente la relación.
     # --------------------------------------------------------
 
-    empleados_asignados = (
-        db.query(Empleado)
-        .filter(
-            Empleado.rol_id == rol_id
-        )
-        .count()
-    )
-
-    if empleados_asignados > 0:
+    if rol.empleados:
 
         raise HTTPException(
-            status_code=400,
+            status_code=status.HTTP_409_CONFLICT,
             detail=(
-                "No se puede eliminar el rol "
-                f"'{rol.nombre}' porque tiene "
-                f"{empleados_asignados} empleado"
-                f"{'s' if empleados_asignados != 1 else ''} "
-                "asignado"
-                f"{'s' if empleados_asignados != 1 else ''}."
+                "No se puede eliminar el rol porque "
+                "está asignado a uno o varios empleados."
             ),
         )
 
@@ -438,23 +391,22 @@ def eliminar_rol(
     # ELIMINAR
     # --------------------------------------------------------
 
-    nombre = rol.nombre
+    db.delete(rol)
 
     try:
 
-        db.delete(rol)
-
         db.commit()
 
-    except Exception:
+    except IntegrityError:
 
         db.rollback()
 
-        raise
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=(
+                "No se puede eliminar el rol porque "
+                "está siendo utilizado."
+            ),
+        )
 
-    return {
-        "estado": "OK",
-        "mensaje": "Rol eliminado correctamente.",
-        "rol_id": rol_id,
-        "nombre": nombre,
-    }
+    return None

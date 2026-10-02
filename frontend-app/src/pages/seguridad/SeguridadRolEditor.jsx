@@ -32,9 +32,10 @@ export default function SeguridadRolEditor() {
   // CARGA INICIAL
   // ============================================================
 
-  useEffect(() => {
-    cargarTodo();
-  }, [cargarTodo]);
+useEffect(() => {
+  cargarTodo();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, []);
 
   // ============================================================
   // CREAR

@@ -14,17 +14,17 @@ import SeguridadModulos from "./SeguridadModulos";
  * CENTRO DE CONTROL DE SEGURIDAD
  * ============================================================
  *
- * Centro principal de seguridad del ERP.
+ * IMPORTANTE:
  *
- * - Monitor general
- * - Estado del sistema
- * - Indicadores
- * - Actividad reciente
- * - Auditoría
- * - Logs técnicos
- * - Roles
- * - Permisos
- * - Módulos
+ * La carga global de datos se realiza ÚNICAMENTE aquí.
+ *
+ * Los módulos hijos:
+ *
+ * - SeguridadRoles
+ * - SeguridadPermisos
+ * - SeguridadModulos
+ *
+ * no deben ejecutar cargarTodo().
  *
  * ============================================================
  */
@@ -343,103 +343,6 @@ function TarjetaAcceso({
       </div>
 
     </Link>
-  );
-}
-
-
-/**
- * ============================================================
- * PANEL
- * ============================================================
- */
-
-function PanelSeguridad({
-  icon,
-  titulo,
-  descripcion,
-  children,
-  className = "",
-}) {
-
-  return (
-    <section
-      className={`
-        bg-[var(--erp-surface)]
-        border
-        border-[var(--erp-border)]
-        rounded-2xl
-        shadow-sm
-        overflow-hidden
-        ${className}
-      `}
-    >
-
-      <div
-        className="
-          px-5
-          py-4
-          border-b
-          border-[var(--erp-border)]
-          flex
-          items-center
-          gap-3
-        "
-      >
-
-        <div
-          className="
-            w-9
-            h-9
-            rounded-xl
-            bg-[var(--erp-primary-soft)]
-            text-[var(--erp-primary)]
-            flex
-            items-center
-            justify-center
-            flex-shrink-0
-          "
-        >
-          <Icono
-            name={icon}
-            className="w-4 h-4"
-          />
-        </div>
-
-
-        <div className="min-w-0">
-
-          <h3
-            className="
-              text-base
-              font-semibold
-              text-[var(--erp-text)]
-            "
-          >
-            {titulo}
-          </h3>
-
-          {descripcion && (
-            <p
-              className="
-                text-xs
-                mt-0.5
-                text-[var(--erp-text-soft)]
-              "
-            >
-              {descripcion}
-            </p>
-          )}
-
-        </div>
-
-      </div>
-
-
-      <div className="p-5">
-        {children}
-      </div>
-
-    </section>
   );
 }
 
@@ -985,12 +888,20 @@ export default function Seguridad() {
 
   /**
    * ==========================================================
-   * CARGA
+   * CARGA GLOBAL
+   * ==========================================================
+   *
+   * SOLO SEGURIDAD PADRE CARGA.
+   *
+   * Los hijos NO llaman cargarTodo().
+   *
    * ==========================================================
    */
 
   useEffect(() => {
+
     cargarTodo();
+
   }, [cargarTodo]);
 
 
@@ -1057,6 +968,7 @@ export default function Seguridad() {
    */
 
   if (loading) {
+
     return (
       <div
         className="
@@ -1116,7 +1028,7 @@ export default function Seguridad() {
 
       {/* ======================================================
           CABECERA
-          ====================================================== */}
+      ====================================================== */}
 
       <section
         className="
@@ -1273,7 +1185,7 @@ export default function Seguridad() {
 
       {/* ======================================================
           RESUMEN
-          ====================================================== */}
+      ====================================================== */}
 
       <section>
 
@@ -1364,7 +1276,7 @@ export default function Seguridad() {
 
       {/* ======================================================
           MONITOR
-          ====================================================== */}
+      ====================================================== */}
 
       <section>
 
@@ -1419,7 +1331,7 @@ export default function Seguridad() {
 
       {/* ======================================================
           CONTROL Y SUPERVISIÓN
-          ====================================================== */}
+      ====================================================== */}
 
       <section>
 
@@ -1481,7 +1393,7 @@ export default function Seguridad() {
 
       {/* ======================================================
           CONFIGURACIÓN DE ACCESO
-          ====================================================== */}
+      ====================================================== */}
 
       <section>
 
@@ -1512,39 +1424,251 @@ export default function Seguridad() {
 
         <div
           className="
-            grid
-            grid-cols-1
-            xl:grid-cols-2
-            gap-5
+            space-y-5
           "
         >
 
-          <PanelSeguridad
-            icon="user-group"
-            titulo="Roles del sistema"
-            descripcion="Perfiles y niveles de acceso"
+          {/* ==================================================
+              ROLES
+          ================================================== */}
+
+          <div
+            className="
+              bg-[var(--erp-surface)]
+              border
+              border-[var(--erp-border)]
+              rounded-2xl
+              shadow-sm
+              overflow-hidden
+            "
           >
-            <SeguridadRoles />
-          </PanelSeguridad>
+
+            <div
+              className="
+                px-5
+                py-4
+                border-b
+                border-[var(--erp-border)]
+                flex
+                items-center
+                gap-3
+              "
+            >
+
+              <div
+                className="
+                  w-9
+                  h-9
+                  rounded-xl
+                  bg-[var(--erp-primary-soft)]
+                  text-[var(--erp-primary)]
+                  flex
+                  items-center
+                  justify-center
+                  flex-shrink-0
+                "
+              >
+                <Icono
+                  name="user-group"
+                  className="w-4 h-4"
+                />
+              </div>
 
 
-          <PanelSeguridad
-            icon="shield"
-            titulo="Permisos globales"
-            descripcion="Autorizaciones disponibles"
+              <div className="min-w-0">
+
+                <h3
+                  className="
+                    text-base
+                    font-semibold
+                    text-[var(--erp-text)]
+                  "
+                >
+                  Roles del sistema
+                </h3>
+
+                <p
+                  className="
+                    text-xs
+                    mt-0.5
+                    text-[var(--erp-text-soft)]
+                  "
+                >
+                  Perfiles y niveles de acceso
+                </p>
+
+              </div>
+
+            </div>
+
+
+            <div className="p-5">
+              <SeguridadRoles />
+            </div>
+
+          </div>
+
+
+          {/* ==================================================
+              PERMISOS
+          ================================================== */}
+
+          <div
+            className="
+              bg-[var(--erp-surface)]
+              border
+              border-[var(--erp-border)]
+              rounded-2xl
+              shadow-sm
+              overflow-hidden
+            "
           >
-            <SeguridadPermisos />
-          </PanelSeguridad>
+
+            <div
+              className="
+                px-5
+                py-4
+                border-b
+                border-[var(--erp-border)]
+                flex
+                items-center
+                gap-3
+              "
+            >
+
+              <div
+                className="
+                  w-9
+                  h-9
+                  rounded-xl
+                  bg-[var(--erp-primary-soft)]
+                  text-[var(--erp-primary)]
+                  flex
+                  items-center
+                  justify-center
+                  flex-shrink-0
+                "
+              >
+                <Icono
+                  name="shield"
+                  className="w-4 h-4"
+                />
+              </div>
 
 
-          <PanelSeguridad
-            icon="folder"
-            titulo="Módulos visibles"
-            descripcion="Control de acceso a las diferentes áreas del ERP"
-            className="xl:col-span-2"
+              <div className="min-w-0">
+
+                <h3
+                  className="
+                    text-base
+                    font-semibold
+                    text-[var(--erp-text)]
+                  "
+                >
+                  Permisos globales
+                </h3>
+
+                <p
+                  className="
+                    text-xs
+                    mt-0.5
+                    text-[var(--erp-text-soft)]
+                  "
+                >
+                  Autorizaciones disponibles
+                </p>
+
+              </div>
+
+            </div>
+
+
+            <div className="p-5">
+              <SeguridadPermisos />
+            </div>
+
+          </div>
+
+
+          {/* ==================================================
+              MÓDULOS
+          ================================================== */}
+
+          <div
+            className="
+              bg-[var(--erp-surface)]
+              border
+              border-[var(--erp-border)]
+              rounded-2xl
+              shadow-sm
+              overflow-hidden
+            "
           >
-            <SeguridadModulos />
-          </PanelSeguridad>
+
+            <div
+              className="
+                px-5
+                py-4
+                border-b
+                border-[var(--erp-border)]
+                flex
+                items-center
+                gap-3
+              "
+            >
+
+              <div
+                className="
+                  w-9
+                  h-9
+                  rounded-xl
+                  bg-[var(--erp-primary-soft)]
+                  text-[var(--erp-primary)]
+                  flex
+                  items-center
+                  justify-center
+                  flex-shrink-0
+                "
+              >
+                <Icono
+                  name="folder"
+                  className="w-4 h-4"
+                />
+              </div>
+
+
+              <div className="min-w-0">
+
+                <h3
+                  className="
+                    text-base
+                    font-semibold
+                    text-[var(--erp-text)]
+                  "
+                >
+                  Módulos visibles
+                </h3>
+
+                <p
+                  className="
+                    text-xs
+                    mt-0.5
+                    text-[var(--erp-text-soft)]
+                  "
+                >
+                  Control de acceso a las diferentes áreas del ERP
+                </p>
+
+              </div>
+
+            </div>
+
+
+            <div className="p-5">
+              <SeguridadModulos />
+            </div>
+
+          </div>
 
         </div>
 
@@ -1553,7 +1677,7 @@ export default function Seguridad() {
 
       {/* ======================================================
           PIE INFORMATIVO
-          ====================================================== */}
+      ====================================================== */}
 
       <section
         className="

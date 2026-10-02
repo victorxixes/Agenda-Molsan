@@ -1,5 +1,4 @@
 import {
-  useEffect,
   useMemo,
   useState,
   useCallback,
@@ -7,94 +6,105 @@ import {
 
 import { useSeguridad } from "../../hooks/useSeguridad";
 
+
 /**
  * ============================================================
  * LOGS TÉCNICOS — MOLSAN ERP SAAS PREMIUM 2027
  * ============================================================
  *
- * Monitor técnico y de seguridad del ERP.
- *
- * - Búsqueda
- * - Filtro por fecha
- * - Filtro por nivel
- * - Filtro por evento
- * - Ordenación
- * - Paginación
- * - Exportación Excel
- * - Protección frente a datos corruptos
- * - Diseño ERP Premium
- *
  * IMPORTANTE:
- * Se mantiene como fuente de datos el hook useSeguridad().
- * No se modifica el contrato existente del backend.
+ *
+ * Este componente NO ejecuta cargarTodo().
+ *
+ * La carga general de Seguridad debe realizarse únicamente
+ * desde el componente padre de Seguridad.
  * ============================================================
  */
 
 
-/**
- * ============================================================
- * ICONO
- * ============================================================
- */
+// ============================================================
+// ICONO
+// ============================================================
 
 const Icono = ({
   name,
   className = "w-5 h-5",
 }) => (
+
   <svg
     className={`${className} flex-shrink-0`}
     aria-hidden="true"
   >
+
     <use
       href={`/icons/icons.svg#${name}`}
     />
+
   </svg>
+
 );
 
 
-/**
- * ============================================================
- * ICONOS DE EVENTO
- * ============================================================
- */
+// ============================================================
+// ICONOS EVENTO
+// ============================================================
 
 const ICONOS_EVENTO = {
+
   login: "lock",
+
   login_error: "shield",
+
   acceso: "folder",
+
   update: "edit",
+
   delete: "trash",
+
   permiso: "shield",
+
   modulo: "folder",
+
   error: "shield",
+
   warning: "shield",
+
+  create: "clipboard",
+
+  logout: "lock",
+
   default: "clipboard",
+
 };
 
 
-/**
- * ============================================================
- * NORMALIZAR NIVEL
- * ============================================================
- */
+// ============================================================
+// NIVEL
+// ============================================================
 
 function obtenerNivel(log) {
 
-  if (!log || typeof log !== "object") {
+  if (
+    !log ||
+    typeof log !== "object"
+  ) {
     return "INFO";
   }
+
 
   const nivel =
     log.nivel ??
     log.level ??
     log.severidad ??
     log.tipo ??
-    "";
+    "INFO";
+
 
   const valor =
     String(nivel)
       .trim()
       .toUpperCase();
+
 
   if (
     valor === "CRITICAL" ||
@@ -104,12 +114,14 @@ function obtenerNivel(log) {
     return "CRITICAL";
   }
 
+
   if (
     valor === "ERROR" ||
     valor === "ERR"
   ) {
     return "ERROR";
   }
+
 
   if (
     valor === "WARNING" ||
@@ -119,70 +131,91 @@ function obtenerNivel(log) {
     return "WARNING";
   }
 
+
   return "INFO";
+
 }
 
 
-/**
- * ============================================================
- * ESTILOS DE NIVEL
- * ============================================================
- */
+// ============================================================
+// NIVELES
+// ============================================================
 
 const NIVELES = {
 
   INFO: {
+
     label: "INFO",
+
     icon: "clipboard",
+
     classes:
       "bg-[var(--erp-primary-soft)] " +
       "text-[var(--erp-primary)] " +
       "border-[var(--erp-border)]",
+
   },
 
+
   WARNING: {
+
     label: "WARNING",
+
     icon: "shield",
+
     classes:
       "bg-amber-50 " +
       "text-amber-700 " +
       "border-amber-100",
+
   },
 
+
   ERROR: {
+
     label: "ERROR",
+
     icon: "shield",
+
     classes:
       "bg-red-50 " +
       "text-red-700 " +
       "border-red-100",
+
   },
 
+
   CRITICAL: {
+
     label: "CRITICAL",
+
     icon: "shield",
+
     classes:
       "bg-red-100 " +
       "text-red-800 " +
       "border-red-200",
+
   },
 
 };
 
 
-/**
- * ============================================================
- * BADGE DE NIVEL
- * ============================================================
- */
+// ============================================================
+// BADGE NIVEL
+// ============================================================
 
-function NivelBadge({ nivel }) {
+function NivelBadge({
+  nivel,
+}) {
 
   const configuracion =
     NIVELES[nivel] ||
     NIVELES.INFO;
 
+
   return (
+
     <span
       className={`
         inline-flex
@@ -207,17 +240,19 @@ function NivelBadge({ nivel }) {
       {configuracion.label}
 
     </span>
+
   );
+
 }
 
 
-/**
- * ============================================================
- * BADGE DE EVENTO
- * ============================================================
- */
+// ============================================================
+// BADGE EVENTO
+// ============================================================
 
-function EventoBadge({ evento }) {
+function EventoBadge({
+  evento,
+}) {
 
   const valor =
     String(
@@ -227,11 +262,14 @@ function EventoBadge({ evento }) {
       .trim()
       .toLowerCase();
 
+
   const icon =
     ICONOS_EVENTO[valor] ||
     ICONOS_EVENTO.default;
 
+
   return (
+
     <span
       className="
         inline-flex
@@ -258,15 +296,15 @@ function EventoBadge({ evento }) {
       {evento || "Evento"}
 
     </span>
+
   );
+
 }
 
 
-/**
- * ============================================================
- * CABECERA ORDENABLE
- * ============================================================
- */
+// ============================================================
+// CABECERA ORDENABLE
+// ============================================================
 
 function CabeceraOrden({
   campo,
@@ -278,7 +316,9 @@ function CabeceraOrden({
   const activa =
     orden.campo === campo;
 
+
   return (
+
     <th
       scope="col"
       className="
@@ -332,132 +372,151 @@ function CabeceraOrden({
       </button>
 
     </th>
+
   );
+
 }
 
 
-/**
- * ============================================================
- * COMPONENTE PRINCIPAL
- * ============================================================
- */
+// ============================================================
+// COMPONENTE
+// ============================================================
 
 export default function SeguridadLogs() {
 
   const {
     logs = [],
-    cargarTodo,
   } = useSeguridad();
 
 
-  /**
-   * ==========================================================
-   * ESTADO
-   * ==========================================================
-   */
+  // ==========================================================
+  // ESTADO
+  // ==========================================================
 
-  const [pagina, setPagina] =
-    useState(0);
+  const [
+    pagina,
+    setPagina,
+  ] = useState(0);
 
   const pageSize = 20;
 
-  const [busqueda, setBusqueda] =
-    useState("");
 
-  const [filtroFecha, setFiltroFecha] =
-    useState("");
-
-  const [filtroNivel, setFiltroNivel] =
-    useState("");
-
-  const [filtroEvento, setFiltroEvento] =
-    useState("");
-
-  const [orden, setOrden] =
-    useState({
-      campo: "fecha",
-      asc: false,
-    });
+  const [
+    busqueda,
+    setBusqueda,
+  ] = useState("");
 
 
-  /**
-   * ==========================================================
-   * CARGA
-   * ==========================================================
-   */
-
-  useEffect(() => {
-
-    cargarTodo();
-
-  }, [cargarTodo]);
+  const [
+    filtroFecha,
+    setFiltroFecha,
+  ] = useState("");
 
 
-  /**
-   * ==========================================================
-   * BLINDAJE DE DATOS
-   * ==========================================================
-   */
-
-  const logsSeguros = useMemo(() => {
-
-    if (!Array.isArray(logs)) {
-      return [];
-    }
-
-    return logs
-      .filter(
-        (log) =>
-          log &&
-          typeof log === "object"
-      )
-      .map((log) => ({
-
-        ...log,
-
-        fecha:
-          typeof log.fecha === "string"
-            ? log.fecha
-            : "",
-
-        evento:
-          typeof log.evento === "string"
-            ? log.evento
-            : "",
-
-        detalle:
-          typeof log.detalle === "string"
-            ? log.detalle
-            : "",
-
-        ip:
-          typeof log.ip === "string"
-            ? log.ip
-            : "",
-
-        usuario:
-          typeof log.usuario === "string"
-            ? log.usuario
-            : "",
-
-        modulo:
-          typeof log.modulo === "string"
-            ? log.modulo
-            : "",
-
-        nivel:
-          obtenerNivel(log),
-
-      }));
-
-  }, [logs]);
+  const [
+    filtroNivel,
+    setFiltroNivel,
+  ] = useState("");
 
 
-  /**
-   * ==========================================================
-   * OPCIONES DE EVENTO
-   * ==========================================================
-   */
+  const [
+    filtroEvento,
+    setFiltroEvento,
+  ] = useState("");
+
+
+  const [
+    orden,
+    setOrden,
+  ] = useState({
+    campo: "fecha",
+    asc: false,
+  });
+
+
+  // ==========================================================
+  // NORMALIZAR LOGS
+  // ==========================================================
+
+  const logsSeguros =
+    useMemo(() => {
+
+      if (!Array.isArray(logs)) {
+        return [];
+      }
+
+
+      return logs
+
+        .filter(
+          (log) =>
+            log &&
+            typeof log === "object"
+        )
+
+        .map(
+          (log) => ({
+
+            ...log,
+
+            fecha:
+              String(
+                log.fecha ??
+                log.created_at ??
+                log.fecha_creacion ??
+                ""
+              ),
+
+            evento:
+              String(
+                log.evento ??
+                log.event ??
+                log.accion ??
+                ""
+              ),
+
+            detalle:
+              String(
+                log.detalle ??
+                log.descripcion ??
+                log.message ??
+                log.mensaje ??
+                ""
+              ),
+
+            ip:
+              String(
+                log.ip ??
+                log.ip_address ??
+                ""
+              ),
+
+            usuario:
+              String(
+                log.usuario ??
+                log.username ??
+                ""
+              ),
+
+            modulo:
+              String(
+                log.modulo ??
+                log.module ??
+                ""
+              ),
+
+            nivel:
+              obtenerNivel(log),
+
+          })
+        );
+
+    }, [logs]);
+
+
+  // ==========================================================
+  // EVENTOS
+  // ==========================================================
 
   const eventosDisponibles =
     useMemo(() => {
@@ -469,6 +528,7 @@ export default function SeguridadLogs() {
               log.evento
           )
           .filter(Boolean);
+
 
       return [
         ...new Set(valores),
@@ -483,11 +543,9 @@ export default function SeguridadLogs() {
     }, [logsSeguros]);
 
 
-  /**
-   * ==========================================================
-   * FILTRADO
-   * ==========================================================
-   */
+  // ==========================================================
+  // FILTRADO
+  // ==========================================================
 
   const logsFiltrados =
     useMemo(() => {
@@ -497,29 +555,37 @@ export default function SeguridadLogs() {
           .toLowerCase()
           .trim();
 
+
       return logsSeguros.filter(
         (log) => {
 
           const coincideBusqueda =
             !texto ||
+
             log.fecha
               .toLowerCase()
               .includes(texto) ||
+
             log.evento
               .toLowerCase()
               .includes(texto) ||
+
             log.detalle
               .toLowerCase()
               .includes(texto) ||
+
             log.ip
               .toLowerCase()
               .includes(texto) ||
+
             log.usuario
               .toLowerCase()
               .includes(texto) ||
+
             log.modulo
               .toLowerCase()
               .includes(texto);
+
 
           const coincideFecha =
             filtroFecha
@@ -528,17 +594,20 @@ export default function SeguridadLogs() {
                 )
               : true;
 
+
           const coincideNivel =
             filtroNivel
               ? log.nivel ===
                 filtroNivel
               : true;
 
+
           const coincideEvento =
             filtroEvento
               ? log.evento ===
                 filtroEvento
               : true;
+
 
           return (
             coincideBusqueda &&
@@ -559,11 +628,9 @@ export default function SeguridadLogs() {
     ]);
 
 
-  /**
-   * ==========================================================
-   * ORDENACIÓN
-   * ==========================================================
-   */
+  // ==========================================================
+  // ORDENACIÓN
+  // ==========================================================
 
   const logsOrdenados =
     useMemo(() => {
@@ -573,8 +640,10 @@ export default function SeguridadLogs() {
         asc,
       } = orden;
 
-      const dir =
+
+      const direccion =
         asc ? 1 : -1;
+
 
       return [
         ...logsFiltrados,
@@ -583,23 +652,29 @@ export default function SeguridadLogs() {
 
           const va =
             String(
-              a[campo] ??
+              a?.[campo] ??
               ""
-            );
+            ).toLowerCase();
+
 
           const vb =
             String(
-              b[campo] ??
+              b?.[campo] ??
               ""
-            );
+            ).toLowerCase();
+
 
           if (va < vb) {
-            return -1 * dir;
+            return -1 *
+              direccion;
           }
 
+
           if (va > vb) {
-            return 1 * dir;
+            return 1 *
+              direccion;
           }
+
 
           return 0;
 
@@ -612,52 +687,58 @@ export default function SeguridadLogs() {
     ]);
 
 
-  /**
-   * ==========================================================
-   * PAGINACIÓN
-   * ==========================================================
-   */
-
-  const logsPaginados =
-    useMemo(() => {
-
-      return logsOrdenados.slice(
-        pagina * pageSize,
-        pagina * pageSize +
-          pageSize
-      );
-
-    }, [
-      logsOrdenados,
-      pagina,
-    ]);
-
+  // ==========================================================
+  // PAGINACIÓN
+  // ==========================================================
 
   const totalPaginas =
     Math.max(
       1,
       Math.ceil(
         logsOrdenados.length /
-          pageSize
+        pageSize
       )
     );
 
 
-  /**
-   * ==========================================================
-   * CONTADORES
-   * ==========================================================
-   */
+  const paginaSegura =
+    Math.min(
+      pagina,
+      totalPaginas - 1
+    );
+
+
+  const logsPaginados =
+    useMemo(() => {
+
+      const inicio =
+        paginaSegura *
+        pageSize;
+
+
+      return logsOrdenados.slice(
+        inicio,
+        inicio +
+        pageSize
+      );
+
+    }, [
+      logsOrdenados,
+      paginaSegura,
+    ]);
+
+
+  // ==========================================================
+  // CONTADORES
+  // ==========================================================
 
   const totalErrores =
     useMemo(
       () =>
         logsSeguros.filter(
           (log) =>
-            log.nivel ===
-              "ERROR" ||
-            log.nivel ===
-              "CRITICAL"
+            log.nivel === "ERROR" ||
+            log.nivel === "CRITICAL"
         ).length,
       [logsSeguros]
     );
@@ -675,11 +756,9 @@ export default function SeguridadLogs() {
     );
 
 
-  /**
-   * ==========================================================
-   * ORDENAR
-   * ==========================================================
-   */
+  // ==========================================================
+  // ORDENAR
+  // ==========================================================
 
   const ordenar =
     useCallback(
@@ -687,14 +766,17 @@ export default function SeguridadLogs() {
 
         setOrden(
           (prev) => ({
+
             campo,
+
             asc:
-              prev.campo ===
-              campo
+              prev.campo === campo
                 ? !prev.asc
                 : true,
+
           })
         );
+
 
         setPagina(0);
 
@@ -703,45 +785,66 @@ export default function SeguridadLogs() {
     );
 
 
-  /**
-   * ==========================================================
-   * EXPORTACIÓN
-   * ==========================================================
-   */
+  // ==========================================================
+  // EXPORTAR
+  // ==========================================================
 
   const descargarExcel =
     useCallback(() => {
 
       const encabezados = [
+
         "Fecha",
+
         "Nivel",
+
         "Evento",
+
         "Usuario",
+
         "Módulo",
+
         "Detalle",
+
         "IP",
+
       ];
+
 
       const filas =
         logsOrdenados.map(
           (log) => [
+
             log.fecha,
+
             log.nivel,
+
             log.evento,
+
             log.usuario,
+
             log.modulo,
+
             log.detalle,
+
             log.ip,
+
           ]
         );
 
+
       const contenido = [
+
         encabezados,
+
         ...filas,
+
       ]
+
         .map(
           (fila) =>
             fila
+
               .map(
                 (valor) =>
                   `"${String(
@@ -751,9 +854,12 @@ export default function SeguridadLogs() {
                     '""'
                   )}"`
               )
+
               .join("\t")
         )
+
         .join("\n");
+
 
       const blob =
         new Blob(
@@ -764,28 +870,37 @@ export default function SeguridadLogs() {
           }
         );
 
+
       const url =
         URL.createObjectURL(
           blob
         );
+
 
       const enlace =
         document.createElement(
           "a"
         );
 
-      enlace.href = url;
+
+      enlace.href =
+        url;
+
 
       enlace.download =
         "logs_seguridad.xls";
+
 
       document.body.appendChild(
         enlace
       );
 
+
       enlace.click();
 
+
       enlace.remove();
+
 
       URL.revokeObjectURL(
         url
@@ -796,11 +911,9 @@ export default function SeguridadLogs() {
     ]);
 
 
-  /**
-   * ==========================================================
-   * LIMPIAR
-   * ==========================================================
-   */
+  // ==========================================================
+  // LIMPIAR
+  // ==========================================================
 
   const limpiarFiltros =
     useCallback(() => {
@@ -823,19 +936,17 @@ export default function SeguridadLogs() {
     );
 
 
-  /**
-   * ==========================================================
-   * RENDER
-   * ==========================================================
-   */
+  // ==========================================================
+  // RENDER
+  // ==========================================================
 
   return (
-    <div
-      className="
-        space-y-6
-        animate-fade-in
-      "
-    >
+
+    <div className="
+      space-y-6
+      animate-fade-in
+    ">
+
 
       {/* ====================================================
           CABECERA
@@ -905,6 +1016,7 @@ export default function SeguridadLogs() {
               >
                 Logs técnicos
               </h1>
+
 
               <p
                 className="
@@ -982,25 +1094,22 @@ export default function SeguridadLogs() {
           "
         >
 
-          <p
-            className="
-              text-xs
-              uppercase
-              tracking-wide
-              text-[var(--erp-text-soft)]
-            "
-          >
+          <p className="
+            text-xs
+            uppercase
+            tracking-wide
+            text-[var(--erp-text-soft)]
+          ">
             Eventos
           </p>
 
-          <p
-            className="
-              text-2xl
-              font-bold
-              text-[var(--erp-text)]
-              mt-1
-            "
-          >
+
+          <p className="
+            text-2xl
+            font-bold
+            text-[var(--erp-text)]
+            mt-1
+          ">
             {logsOrdenados.length}
           </p>
 
@@ -1018,25 +1127,22 @@ export default function SeguridadLogs() {
           "
         >
 
-          <p
-            className="
-              text-xs
-              uppercase
-              tracking-wide
-              text-[var(--erp-text-soft)]
-            "
-          >
+          <p className="
+            text-xs
+            uppercase
+            tracking-wide
+            text-[var(--erp-text-soft)]
+          ">
             Errores críticos
           </p>
 
-          <p
-            className="
-              text-2xl
-              font-bold
-              text-red-600
-              mt-1
-            "
-          >
+
+          <p className="
+            text-2xl
+            font-bold
+            text-red-600
+            mt-1
+          ">
             {totalErrores}
           </p>
 
@@ -1054,25 +1160,22 @@ export default function SeguridadLogs() {
           "
         >
 
-          <p
-            className="
-              text-xs
-              uppercase
-              tracking-wide
-              text-[var(--erp-text-soft)]
-            "
-          >
+          <p className="
+            text-xs
+            uppercase
+            tracking-wide
+            text-[var(--erp-text-soft)]
+          ">
             Avisos
           </p>
 
-          <p
-            className="
-              text-2xl
-              font-bold
-              text-amber-600
-              mt-1
-            "
-          >
+
+          <p className="
+            text-2xl
+            font-bold
+            text-amber-600
+            mt-1
+          ">
             {totalWarnings}
           </p>
 
@@ -1090,25 +1193,22 @@ export default function SeguridadLogs() {
           "
         >
 
-          <p
-            className="
-              text-xs
-              uppercase
-              tracking-wide
-              text-[var(--erp-text-soft)]
-            "
-          >
+          <p className="
+            text-xs
+            uppercase
+            tracking-wide
+            text-[var(--erp-text-soft)]
+          ">
             Estado
           </p>
 
-          <p
-            className="
-              text-base
-              font-semibold
-              text-emerald-600
-              mt-1
-            "
-          >
+
+          <p className="
+            text-base
+            font-semibold
+            text-emerald-600
+            mt-1
+          ">
             Monitor activo
           </p>
 
@@ -1142,13 +1242,7 @@ export default function SeguridadLogs() {
           "
         >
 
-          {/* BUSCADOR */}
-
-          <div
-            className="
-              lg:col-span-5
-            "
-          >
+          <div className="lg:col-span-5">
 
             <label
               className="
@@ -1162,11 +1256,8 @@ export default function SeguridadLogs() {
               Buscar
             </label>
 
-            <div
-              className="
-                relative
-              "
-            >
+
+            <div className="relative">
 
               <Icono
                 name="search"
@@ -1180,6 +1271,7 @@ export default function SeguridadLogs() {
                   text-[var(--erp-text-soft)]
                 "
               />
+
 
               <input
                 type="text"
@@ -1218,13 +1310,7 @@ export default function SeguridadLogs() {
           </div>
 
 
-          {/* FECHA */}
-
-          <div
-            className="
-              lg:col-span-2
-            "
-          >
+          <div className="lg:col-span-2">
 
             <label
               className="
@@ -1237,6 +1323,7 @@ export default function SeguridadLogs() {
             >
               Fecha
             </label>
+
 
             <input
               type="date"
@@ -1270,13 +1357,7 @@ export default function SeguridadLogs() {
           </div>
 
 
-          {/* NIVEL */}
-
-          <div
-            className="
-              lg:col-span-2
-            "
-          >
+          <div className="lg:col-span-2">
 
             <label
               className="
@@ -1289,6 +1370,7 @@ export default function SeguridadLogs() {
             >
               Nivel
             </label>
+
 
             <select
               value={filtroNivel}
@@ -1343,13 +1425,7 @@ export default function SeguridadLogs() {
           </div>
 
 
-          {/* EVENTO */}
-
-          <div
-            className="
-              lg:col-span-2
-            "
-          >
+          <div className="lg:col-span-2">
 
             <label
               className="
@@ -1362,6 +1438,7 @@ export default function SeguridadLogs() {
             >
               Evento
             </label>
+
 
             <select
               value={filtroEvento}
@@ -1397,12 +1474,14 @@ export default function SeguridadLogs() {
 
               {eventosDisponibles.map(
                 (evento) => (
+
                   <option
                     key={evento}
                     value={evento}
                   >
                     {evento}
                   </option>
+
                 )
               )}
 
@@ -1411,13 +1490,7 @@ export default function SeguridadLogs() {
           </div>
 
 
-          {/* LIMPIAR */}
-
-          <div
-            className="
-              lg:col-span-1
-            "
-          >
+          <div className="lg:col-span-1">
 
             <button
               type="button"
@@ -1493,6 +1566,7 @@ export default function SeguridadLogs() {
               Eventos técnicos
             </h2>
 
+
             <p
               className="
                 text-xs
@@ -1540,8 +1614,6 @@ export default function SeguridadLogs() {
 
         </div>
 
-
-        {/* TABLA RESPONSIVE */}
 
         <div className="overflow-x-auto">
 
@@ -1614,6 +1686,7 @@ export default function SeguridadLogs() {
                   Detalle
                 </th>
 
+
                 <th
                   scope="col"
                   className="
@@ -1675,9 +1748,7 @@ export default function SeguridadLogs() {
                       "
                     >
                       <NivelBadge
-                        nivel={
-                          log.nivel
-                        }
+                        nivel={log.nivel}
                       />
                     </td>
 
@@ -1689,9 +1760,7 @@ export default function SeguridadLogs() {
                       "
                     >
                       <EventoBadge
-                        evento={
-                          log.evento
-                        }
+                        evento={log.evento}
                       />
                     </td>
 
@@ -1730,17 +1799,10 @@ export default function SeguridadLogs() {
                     >
 
                       <div
-                        className="
-                          truncate
-                        "
-                        title={
-                          log.detalle
-                        }
+                        className="truncate"
+                        title={log.detalle}
                       >
-                        {
-                          log.detalle ||
-                          "—"
-                        }
+                        {log.detalle || "—"}
                       </div>
 
                     </td>
@@ -1770,10 +1832,6 @@ export default function SeguridadLogs() {
 
         </div>
 
-
-        {/* ==================================================
-            ESTADO VACÍO
-        ================================================== */}
 
         {logsPaginados.length === 0 && (
 
@@ -1857,16 +1915,20 @@ export default function SeguridadLogs() {
             text-[var(--erp-text-soft)]
           "
         >
+
           Página{" "}
+
           <span
             className="
               font-semibold
               text-[var(--erp-text)]
             "
           >
-            {pagina + 1}
-          </span>{" "}
-          de{" "}
+            {paginaSegura + 1}
+          </span>
+
+          {" "}de{" "}
+
           <span
             className="
               font-semibold
@@ -1875,6 +1937,7 @@ export default function SeguridadLogs() {
           >
             {totalPaginas}
           </span>
+
         </p>
 
 
@@ -1888,9 +1951,7 @@ export default function SeguridadLogs() {
 
           <button
             type="button"
-            disabled={
-              pagina === 0
-            }
+            disabled={paginaSegura === 0}
             onClick={() =>
               setPagina(
                 (prev) =>
@@ -1924,7 +1985,7 @@ export default function SeguridadLogs() {
           <button
             type="button"
             disabled={
-              pagina >=
+              paginaSegura >=
               totalPaginas - 1
             }
             onClick={() =>
@@ -1961,5 +2022,7 @@ export default function SeguridadLogs() {
       </div>
 
     </div>
+
   );
+
 }

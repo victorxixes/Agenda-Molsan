@@ -694,9 +694,12 @@ export const useSeguridadStore =
         // ----------------------------------------------------
 
         const modulosVisibles =
-          safeArrayStrings(
-            data.modulos_visibles
-          );
+  safeArrayStrings(
+    data.modulos_visibles ??
+    data.modulos_visibles_list ??
+    data.empleado?.modulos_visibles_list ??
+    data.empleado?.modulos_visibles
+  );
 
 
         const empleado =

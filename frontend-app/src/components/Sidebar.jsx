@@ -292,7 +292,7 @@ export default function Sidebar() {
                 leading-tight
               "
             >
-              Agenda Molsan
+              CancelaGest
             </div>
 
             <div

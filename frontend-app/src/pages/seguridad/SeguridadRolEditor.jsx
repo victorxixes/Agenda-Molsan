@@ -1,216 +1,426 @@
-import { useEffect, useState, useCallback, useMemo } from "react";
+import {
+  useState,
+  useCallback,
+  useMemo,
+} from "react";
+
 import { useSeguridad } from "../../hooks/useSeguridad";
 
-export default function SeguridadRolEditor() {
-  const { roles = [], cargarTodo } = useSeguridad();
 
-  const [modo, setModo] = useState("lista");
-  const [rolEditando, setRolEditando] = useState(null);
-  const [nombreRol, setNombreRol] = useState("");
-  const [guardando, setGuardando] = useState(false);
-  const [eliminandoId, setEliminandoId] = useState(null);
-  const [mensaje, setMensaje] = useState("");
-  const [error, setError] = useState("");
+const API_URL =
+  "https://agenda-intranet-b.onrender.com";
+
+
+export default function SeguridadRolEditor() {
+
+  const {
+    roles = [],
+    cargarTodo,
+  } = useSeguridad();
+
+
+  const [modo, setModo] =
+    useState("lista");
+
+  const [rolEditando, setRolEditando] =
+    useState(null);
+
+  const [nombreRol, setNombreRol] =
+    useState("");
+
+  const [guardando, setGuardando] =
+    useState(false);
+
+  const [eliminandoId, setEliminandoId] =
+    useState(null);
+
+  const [mensaje, setMensaje] =
+    useState("");
+
+  const [error, setError] =
+    useState("");
+
 
   // ============================================================
-  // ROLES SEGUROS
+  // ROLES
   // ============================================================
 
   const rolesSeguros = useMemo(() => {
-    if (!Array.isArray(roles)) return [];
+
+    if (!Array.isArray(roles)) {
+      return [];
+    }
 
     return roles.filter(
       (rol) =>
         rol &&
         typeof rol === "object" &&
-        typeof rol.id !== "undefined" &&
-        typeof rol.nombre === "string"
+        rol.id !== undefined &&
+        rol.id !== null &&
+        typeof rol.nombre === "string" &&
+        rol.nombre.trim() !== ""
     );
+
   }, [roles]);
 
-  // ============================================================
-  // CARGA INICIAL
-  // ============================================================
-
-useEffect(() => {
-  cargarTodo();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, []);
 
   // ============================================================
   // CREAR
   // ============================================================
 
   const iniciarCrear = useCallback(() => {
+
     setModo("crear");
     setRolEditando(null);
     setNombreRol("");
     setMensaje("");
     setError("");
+
   }, []);
+
 
   // ============================================================
   // EDITAR
   // ============================================================
 
-  const iniciarEditar = useCallback((rol) => {
-    if (!rol || typeof rol.nombre !== "string") return;
+  const iniciarEditar = useCallback(
+    (rol) => {
 
-    setModo("editar");
-    setRolEditando(rol);
-    setNombreRol(rol.nombre);
-    setMensaje("");
-    setError("");
-  }, []);
+      if (
+        !rol ||
+        typeof rol.nombre !== "string"
+      ) {
+        return;
+      }
+
+      setModo("editar");
+      setRolEditando(rol);
+      setNombreRol(rol.nombre);
+      setMensaje("");
+      setError("");
+
+    },
+    []
+  );
+
 
   // ============================================================
   // CANCELAR
   // ============================================================
 
   const cancelar = useCallback(() => {
+
     setModo("lista");
     setRolEditando(null);
     setNombreRol("");
     setMensaje("");
     setError("");
+
   }, []);
+
 
   // ============================================================
   // GUARDAR
   // ============================================================
 
-  const guardarRol = useCallback(async () => {
-    const nombre = nombreRol.trim();
+  const guardarRol = useCallback(
+    async () => {
 
-    if (!nombre) {
-      setError("Introduce un nombre para el rol.");
-      return;
-    }
+      const nombre =
+        nombreRol.trim();
 
-    setGuardando(true);
-    setMensaje("");
-    setError("");
+      if (!nombre) {
 
-    const url =
-      "https://agenda-intranet-b.onrender.com/api/seguridad/roles";
+        setError(
+          "Introduce un nombre para el rol."
+        );
 
-    try {
-      let respuesta;
-
-      if (modo === "crear") {
-        respuesta = await fetch(url, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            nombre,
-          }),
-        });
+        return;
       }
 
-      if (modo === "editar" && rolEditando?.id) {
-        respuesta = await fetch(`${url}/${rolEditando.id}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            nombre,
-          }),
-        });
+      setGuardando(true);
+      setMensaje("");
+      setError("");
+
+      try {
+
+        let respuesta;
+
+        // ------------------------------------------------------
+        // CREAR
+        // ------------------------------------------------------
+
+        if (modo === "crear") {
+
+          respuesta =
+            await fetch(
+              `${API_URL}/api/seguridad/roles`,
+              {
+                method: "POST",
+
+                headers: {
+                  "Content-Type":
+                    "application/json",
+                },
+
+                body: JSON.stringify({
+                  nombre,
+                }),
+              }
+            );
+        }
+
+        // ------------------------------------------------------
+        // EDITAR
+        // ------------------------------------------------------
+
+        else if (
+          modo === "editar" &&
+          rolEditando?.id !== undefined
+        ) {
+
+          respuesta =
+            await fetch(
+              `${API_URL}/api/seguridad/roles/${rolEditando.id}`,
+              {
+                method: "PUT",
+
+                headers: {
+                  "Content-Type":
+                    "application/json",
+                },
+
+                body: JSON.stringify({
+                  nombre,
+                }),
+              }
+            );
+        }
+
+        else {
+
+          throw new Error(
+            "Operación de rol no válida."
+          );
+        }
+
+
+        if (!respuesta.ok) {
+
+          let detalle =
+            "";
+
+          try {
+
+            const data =
+              await respuesta.json();
+
+            detalle =
+              data?.detail ||
+              data?.message ||
+              "";
+
+          } catch {
+            // El backend puede no devolver JSON.
+          }
+
+          throw new Error(
+            detalle ||
+            "No se pudo guardar el rol."
+          );
+        }
+
+
+        // ------------------------------------------------------
+        // RECARGAR STORE
+        // ------------------------------------------------------
+
+        await cargarTodo();
+
+
+        setMensaje(
+          modo === "crear"
+            ? "Rol creado correctamente."
+            : "Rol actualizado correctamente."
+        );
+
+        setModo("lista");
+        setRolEditando(null);
+        setNombreRol("");
+
+      } catch (err) {
+
+        console.error(
+          "Error guardando rol:",
+          err
+        );
+
+        setError(
+          err?.message ||
+          "No se ha podido guardar el rol."
+        );
+
+      } finally {
+
+        setGuardando(false);
+
       }
 
-      if (!respuesta?.ok) {
-        throw new Error("No se pudo guardar el rol.");
-      }
+    },
+    [
+      nombreRol,
+      modo,
+      rolEditando,
+      cargarTodo,
+    ]
+  );
 
-      await cargarTodo();
-
-      setMensaje(
-        modo === "crear"
-          ? "Rol creado correctamente."
-          : "Rol actualizado correctamente."
-      );
-
-      setModo("lista");
-      setRolEditando(null);
-      setNombreRol("");
-    } catch (err) {
-      console.error("Error guardando rol:", err);
-      setError("No se ha podido guardar el rol.");
-    } finally {
-      setGuardando(false);
-    }
-  }, [nombreRol, modo, rolEditando, cargarTodo]);
 
   // ============================================================
   // ELIMINAR
   // ============================================================
 
-  const eliminarRol = useCallback(
-    async (id) => {
-      if (id === null || id === undefined) return;
+  const eliminarRol =
+    useCallback(
+      async (id) => {
 
-      const confirmado = window.confirm(
-        "¿Seguro que quieres eliminar este rol?"
-      );
-
-      if (!confirmado) return;
-
-      setEliminandoId(id);
-      setMensaje("");
-      setError("");
-
-      try {
-        const respuesta = await fetch(
-          `https://agenda-intranet-b.onrender.com/api/seguridad/roles/${id}`,
-          {
-            method: "DELETE",
-          }
-        );
-
-        if (!respuesta.ok) {
-          throw new Error("No se pudo eliminar el rol.");
+        if (
+          id === null ||
+          id === undefined
+        ) {
+          return;
         }
 
-        await cargarTodo();
 
-        setMensaje("Rol eliminado correctamente.");
-      } catch (err) {
-        console.error("Error eliminando rol:", err);
-        setError("No se ha podido eliminar el rol.");
-      } finally {
-        setEliminandoId(null);
-      }
-    },
-    [cargarTodo]
-  );
+        const confirmado =
+          window.confirm(
+            "¿Seguro que quieres eliminar este rol?"
+          );
+
+
+        if (!confirmado) {
+          return;
+        }
+
+
+        setEliminandoId(id);
+        setMensaje("");
+        setError("");
+
+
+        try {
+
+          const respuesta =
+            await fetch(
+              `${API_URL}/api/seguridad/roles/${id}`,
+              {
+                method: "DELETE",
+              }
+            );
+
+
+          if (!respuesta.ok) {
+
+            let detalle =
+              "";
+
+            try {
+
+              const data =
+                await respuesta.json();
+
+              detalle =
+                data?.detail ||
+                data?.message ||
+                "";
+
+            } catch {
+              // Sin cuerpo JSON.
+            }
+
+            throw new Error(
+              detalle ||
+              "No se pudo eliminar el rol."
+            );
+          }
+
+
+          await cargarTodo();
+
+
+          setMensaje(
+            "Rol eliminado correctamente."
+          );
+
+        } catch (err) {
+
+          console.error(
+            "Error eliminando rol:",
+            err
+          );
+
+          setError(
+            err?.message ||
+            "No se ha podido eliminar el rol."
+          );
+
+        } finally {
+
+          setEliminandoId(null);
+
+        }
+
+      },
+      [cargarTodo]
+    );
+
 
   // ============================================================
-  // ENTER EN FORMULARIO
+  // TECLADO
   // ============================================================
 
-  const manejarKeyDown = useCallback(
-    (event) => {
-      if (event.key === "Enter" && !guardando) {
-        event.preventDefault();
-        guardarRol();
-      }
+  const manejarKeyDown =
+    useCallback(
+      (event) => {
 
-      if (event.key === "Escape" && !guardando) {
-        event.preventDefault();
-        cancelar();
-      }
-    },
-    [guardarRol, cancelar, guardando]
-  );
+        if (
+          event.key === "Enter" &&
+          !guardando
+        ) {
+
+          event.preventDefault();
+
+          guardarRol();
+
+        }
+
+
+        if (
+          event.key === "Escape" &&
+          !guardando
+        ) {
+
+          event.preventDefault();
+
+          cancelar();
+
+        }
+
+      },
+      [
+        guardarRol,
+        cancelar,
+        guardando,
+      ]
+    );
+
 
   // ============================================================
   // RENDER
   // ============================================================
 
   return (
+
     <div className="space-y-6 animate-fade-in">
 
       {/* ======================================================
@@ -220,6 +430,7 @@ useEffect(() => {
       <div className="erp-page-header">
 
         <div>
+
           <div className="erp-eyebrow">
             SEGURIDAD · ADMINISTRACIÓN
           </div>
@@ -231,9 +442,12 @@ useEffect(() => {
           <p className="erp-page-subtitle">
             Gestiona los roles disponibles en Molsan ERP.
           </p>
+
         </div>
 
+
         {modo === "lista" && (
+
           <button
             type="button"
             onClick={iniciarCrear}
@@ -251,17 +465,26 @@ useEffect(() => {
               transition
             "
           >
-            <span className="text-base">+</span>
+
+            <span className="text-base">
+              +
+            </span>
+
             Crear rol
+
           </button>
+
         )}
+
       </div>
+
 
       {/* ======================================================
           MENSAJES
       ====================================================== */}
 
       {mensaje && (
+
         <div
           className="
             flex items-center gap-3
@@ -272,12 +495,22 @@ useEffect(() => {
             text-sm text-emerald-700
           "
         >
-          <span className="font-bold">✓</span>
-          <span>{mensaje}</span>
+
+          <span className="font-bold">
+            ✓
+          </span>
+
+          <span>
+            {mensaje}
+          </span>
+
         </div>
+
       )}
 
+
       {error && (
+
         <div
           className="
             flex items-center gap-3
@@ -288,16 +521,26 @@ useEffect(() => {
             text-sm text-red-700
           "
         >
-          <span className="font-bold">!</span>
-          <span>{error}</span>
+
+          <span className="font-bold">
+            !
+          </span>
+
+          <span>
+            {error}
+          </span>
+
         </div>
+
       )}
+
 
       {/* ======================================================
           LISTADO
       ====================================================== */}
 
       {modo === "lista" && (
+
         <section className="erp-card overflow-hidden">
 
           <div
@@ -311,16 +554,35 @@ useEffect(() => {
               border-b border-[var(--erp-border)]
             "
           >
+
             <div>
-              <h2 className="text-lg font-bold text-[var(--erp-text)]">
+
+              <h2 className="
+                text-lg
+                font-bold
+                text-[var(--erp-text)]
+              ">
                 Roles existentes
               </h2>
 
-              <p className="text-sm text-[var(--erp-muted)] mt-1">
-                {rolesSeguros.length}{" "}
-                {rolesSeguros.length === 1 ? "rol disponible" : "roles disponibles"}
+              <p className="
+                text-sm
+                text-[var(--erp-muted)]
+                mt-1
+              ">
+
+                {rolesSeguros.length}
+
+                {" "}
+
+                {rolesSeguros.length === 1
+                  ? "rol disponible"
+                  : "roles disponibles"}
+
               </p>
+
             </div>
+
 
             <div
               className="
@@ -335,19 +597,23 @@ useEffect(() => {
             >
               Gestión de seguridad
             </div>
+
           </div>
+
 
           <div className="overflow-x-auto">
 
             <table className="w-full min-w-[620px] text-sm">
 
               <thead>
+
                 <tr
                   className="
                     bg-[var(--erp-surface-soft)]
                     border-b border-[var(--erp-border)]
                   "
                 >
+
                   <th
                     className="
                       px-6 py-3
@@ -361,6 +627,7 @@ useEffect(() => {
                   >
                     ID
                   </th>
+
 
                   <th
                     className="
@@ -376,6 +643,7 @@ useEffect(() => {
                     Nombre
                   </th>
 
+
                   <th
                     className="
                       px-6 py-3
@@ -389,12 +657,18 @@ useEffect(() => {
                   >
                     Acciones
                   </th>
+
                 </tr>
+
               </thead>
 
+
               <tbody>
+
                 {rolesSeguros.length === 0 ? (
+
                   <tr>
+
                     <td
                       colSpan={3}
                       className="
@@ -406,137 +680,184 @@ useEffect(() => {
                     >
                       No hay roles disponibles.
                     </td>
+
                   </tr>
+
                 ) : (
-                  rolesSeguros.map((rol) => {
 
-                    const eliminando =
-                      String(eliminandoId) === String(rol.id);
+                  rolesSeguros.map(
+                    (rol) => {
 
-                    return (
-                      <tr
-                        key={String(rol.id)}
-                        className="
-                          border-b border-[var(--erp-border)]
-                          last:border-b-0
-                          hover:bg-[var(--erp-surface-soft)]
-                          transition
-                        "
-                      >
+                      const eliminando =
+                        String(
+                          eliminandoId
+                        ) ===
+                        String(
+                          rol.id
+                        );
 
-                        <td className="px-6 py-4">
-                          <span
-                            className="
-                              inline-flex
-                              items-center justify-center
-                              min-w-9
-                              px-2.5 py-1
-                              rounded-lg
-                              bg-[var(--erp-surface-soft)]
-                              border border-[var(--erp-border)]
-                              text-xs
-                              font-bold
-                              text-[var(--erp-muted)]
-                            "
-                          >
-                            {String(rol.id)}
-                          </span>
-                        </td>
 
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-3">
+                      return (
 
-                            <div
+                        <tr
+                          key={String(rol.id)}
+                          className="
+                            border-b border-[var(--erp-border)]
+                            last:border-b-0
+                            hover:bg-[var(--erp-surface-soft)]
+                            transition
+                          "
+                        >
+
+                          <td className="px-6 py-4">
+
+                            <span
                               className="
-                                w-9 h-9
-                                rounded-xl
-                                flex items-center justify-center
-                                bg-[var(--erp-accent-soft)]
-                                text-[var(--erp-accent)]
-                                font-bold
-                              "
-                            >
-                              {rol.nombre.charAt(0).toUpperCase()}
-                            </div>
-
-                            <div>
-                              <div
-                                className="
-                                  font-semibold
-                                  text-[var(--erp-text)]
-                                "
-                              >
-                                {rol.nombre}
-                              </div>
-
-                              <div
-                                className="
-                                  text-xs
-                                  text-[var(--erp-muted)]
-                                  mt-0.5
-                                "
-                              >
-                                Rol de seguridad
-                              </div>
-                            </div>
-
-                          </div>
-                        </td>
-
-                        <td className="px-6 py-4">
-
-                          <div className="flex justify-end gap-2">
-
-                            <button
-                              type="button"
-                              onClick={() => iniciarEditar(rol)}
-                              className="
-                                inline-flex items-center gap-1.5
-                                px-3 py-2
+                                inline-flex
+                                items-center justify-center
+                                min-w-9
+                                px-2.5 py-1
                                 rounded-lg
+                                bg-[var(--erp-surface-soft)]
                                 border border-[var(--erp-border)]
-                                bg-white
-                                text-[var(--erp-text)]
                                 text-xs
-                                font-semibold
-                                hover:bg-[var(--erp-surface-soft)]
-                                transition
+                                font-bold
+                                text-[var(--erp-muted)]
                               "
                             >
-                              Editar
-                            </button>
+                              {String(rol.id)}
+                            </span>
 
-                            <button
-                              type="button"
-                              disabled={eliminando}
-                              onClick={() => eliminarRol(rol.id)}
-                              className="
-                                inline-flex items-center gap-1.5
-                                px-3 py-2
-                                rounded-lg
-                                border border-red-200
-                                bg-red-50
-                                text-red-600
-                                text-xs
-                                font-semibold
-                                hover:bg-red-100
-                                disabled:opacity-50
-                                disabled:cursor-not-allowed
-                                transition
-                              "
-                            >
-                              {eliminando
-                                ? "Eliminando..."
-                                : "Eliminar"}
-                            </button>
+                          </td>
 
-                          </div>
 
-                        </td>
-                      </tr>
-                    );
-                  })
+                          <td className="px-6 py-4">
+
+                            <div className="
+                              flex
+                              items-center
+                              gap-3
+                            ">
+
+                              <div
+                                className="
+                                  w-9 h-9
+                                  rounded-xl
+                                  flex items-center justify-center
+                                  bg-[var(--erp-accent-soft)]
+                                  text-[var(--erp-accent)]
+                                  font-bold
+                                "
+                              >
+                                {rol.nombre
+                                  .charAt(0)
+                                  .toUpperCase()}
+                              </div>
+
+
+                              <div>
+
+                                <div
+                                  className="
+                                    font-semibold
+                                    text-[var(--erp-text)]
+                                  "
+                                >
+                                  {rol.nombre}
+                                </div>
+
+                                <div
+                                  className="
+                                    text-xs
+                                    text-[var(--erp-muted)]
+                                    mt-0.5
+                                  "
+                                >
+                                  Rol de seguridad
+                                </div>
+
+                              </div>
+
+                            </div>
+
+                          </td>
+
+
+                          <td className="px-6 py-4">
+
+                            <div className="
+                              flex
+                              justify-end
+                              gap-2
+                            ">
+
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  iniciarEditar(rol)
+                                }
+                                className="
+                                  inline-flex
+                                  items-center
+                                  gap-1.5
+                                  px-3 py-2
+                                  rounded-lg
+                                  border border-[var(--erp-border)]
+                                  bg-white
+                                  text-[var(--erp-text)]
+                                  text-xs
+                                  font-semibold
+                                  hover:bg-[var(--erp-surface-soft)]
+                                  transition
+                                "
+                              >
+                                Editar
+                              </button>
+
+
+                              <button
+                                type="button"
+                                disabled={eliminando}
+                                onClick={() =>
+                                  eliminarRol(
+                                    rol.id
+                                  )
+                                }
+                                className="
+                                  inline-flex
+                                  items-center
+                                  gap-1.5
+                                  px-3 py-2
+                                  rounded-lg
+                                  border border-red-200
+                                  bg-red-50
+                                  text-red-600
+                                  text-xs
+                                  font-semibold
+                                  hover:bg-red-100
+                                  disabled:opacity-50
+                                  disabled:cursor-not-allowed
+                                  transition
+                                "
+                              >
+                                {eliminando
+                                  ? "Eliminando..."
+                                  : "Eliminar"}
+                              </button>
+
+                            </div>
+
+                          </td>
+
+                        </tr>
+
+                      );
+
+                    }
+                  )
+
                 )}
+
               </tbody>
 
             </table>
@@ -544,13 +865,17 @@ useEffect(() => {
           </div>
 
         </section>
+
       )}
 
+
       {/* ======================================================
-          FORMULARIO CREAR / EDITAR
+          CREAR / EDITAR
       ====================================================== */}
 
-      {(modo === "crear" || modo === "editar") && (
+      {(modo === "crear" ||
+        modo === "editar") && (
+
         <section className="erp-card">
 
           <div
@@ -560,7 +885,11 @@ useEffect(() => {
             "
           >
 
-            <div className="flex items-center gap-3">
+            <div className="
+              flex
+              items-center
+              gap-3
+            ">
 
               <div
                 className="
@@ -568,22 +897,35 @@ useEffect(() => {
                   rounded-xl
                   bg-[var(--erp-accent-soft)]
                   text-[var(--erp-accent)]
-                  flex items-center justify-center
+                  flex
+                  items-center
+                  justify-center
                   font-bold
                 "
               >
-                {modo === "crear" ? "+" : "✎"}
+                {modo === "crear"
+                  ? "+"
+                  : "✎"}
               </div>
+
 
               <div>
 
-                <h2 className="text-lg font-bold text-[var(--erp-text)]">
+                <h2 className="
+                  text-lg
+                  font-bold
+                  text-[var(--erp-text)]
+                ">
                   {modo === "crear"
                     ? "Crear nuevo rol"
                     : "Editar rol"}
                 </h2>
 
-                <p className="text-sm text-[var(--erp-muted)] mt-0.5">
+                <p className="
+                  text-sm
+                  text-[var(--erp-muted)]
+                  mt-0.5
+                ">
                   {modo === "crear"
                     ? "Añade un nuevo rol al sistema."
                     : `Modifica la información del rol #${rolEditando?.id ?? "-"}.`}
@@ -594,6 +936,7 @@ useEffect(() => {
             </div>
 
           </div>
+
 
           <div className="p-6">
 
@@ -612,6 +955,7 @@ useEffect(() => {
                 Nombre del rol
               </label>
 
+
               <input
                 id="seguridad-nombre-rol"
                 type="text"
@@ -619,8 +963,13 @@ useEffect(() => {
                 value={nombreRol}
                 disabled={guardando}
                 onChange={(event) => {
-                  setNombreRol(event.target.value);
+
+                  setNombreRol(
+                    event.target.value
+                  );
+
                   setError("");
+
                 }}
                 onKeyDown={manejarKeyDown}
                 placeholder="Ej. Administrador"
@@ -641,16 +990,23 @@ useEffect(() => {
                 "
               />
 
-              <p className="mt-2 text-xs text-[var(--erp-muted)]">
+
+              <p className="
+                mt-2
+                text-xs
+                text-[var(--erp-muted)]
+              ">
                 Utiliza un nombre claro y descriptivo para identificar
                 fácilmente las funciones asociadas al rol.
               </p>
 
             </div>
 
+
             <div
               className="
-                flex flex-wrap
+                flex
+                flex-wrap
                 gap-3
                 mt-6
                 pt-5
@@ -660,10 +1016,16 @@ useEffect(() => {
 
               <button
                 type="button"
-                disabled={guardando || !nombreRol.trim()}
+                disabled={
+                  guardando ||
+                  !nombreRol.trim()
+                }
                 onClick={guardarRol}
                 className="
-                  inline-flex items-center justify-center gap-2
+                  inline-flex
+                  items-center
+                  justify-center
+                  gap-2
                   px-5 py-2.5
                   rounded-xl
                   bg-[var(--erp-accent)]
@@ -678,8 +1040,11 @@ useEffect(() => {
                   transition
                 "
               >
+
                 {guardando ? (
+
                   <>
+
                     <span
                       className="
                         w-4 h-4
@@ -690,12 +1055,19 @@ useEffect(() => {
                         animate-spin
                       "
                     />
+
                     Guardando...
+
                   </>
+
                 ) : (
+
                   "Guardar rol"
+
                 )}
+
               </button>
+
 
               <button
                 type="button"
@@ -722,9 +1094,11 @@ useEffect(() => {
           </div>
 
         </section>
+
       )}
 
     </div>
-  );
-}
 
+  );
+
+}

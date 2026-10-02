@@ -1,4 +1,3 @@
-```jsx
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { API_BASE } from "../../api/config";
@@ -1869,4 +1868,4 @@ function GraficoCard({
     </div>
   );
 }
-```
+

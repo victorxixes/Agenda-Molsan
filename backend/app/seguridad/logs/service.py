@@ -1,4 +1,5 @@
-from datetime import datetime
+from datetime import date, datetime
+from typing import Optional
 
 from sqlalchemy.orm import Session
 
@@ -12,38 +13,21 @@ from backend.app.seguridad.logs.models import Log
 def registrar_log(
     db: Session,
     evento: str,
-    detalle: str | None = None,
-    ip: str | None = None
+    detalle: Optional[str] = None,
+    ip: Optional[str] = None,
 ):
-    """
-    Registra un nuevo evento en seguridad_logs.
-
-    Se mantiene el histórico existente y se devuelve
-    el registro recién creado en formato diccionario.
-    """
-
     registro = Log(
         evento=evento,
         detalle=detalle,
         ip=ip,
-        fecha=datetime.utcnow()
+        fecha=datetime.utcnow(),
     )
 
-    try:
+    db.add(registro)
+    db.commit()
+    db.refresh(registro)
 
-        db.add(registro)
-
-        db.commit()
-
-        db.refresh(registro)
-
-        return registro.as_dict()
-
-    except Exception:
-
-        db.rollback()
-
-        raise
+    return registro.as_dict()
 
 
 # ============================================================
@@ -52,26 +36,60 @@ def registrar_log(
 
 def obtener_logs(
     db: Session,
-    limite: int = 200
+    evento: Optional[str] = None,
+    fecha_inicio: Optional[date] = None,
+    fecha_fin: Optional[date] = None,
 ):
-    """
-    Obtiene los últimos logs registrados.
+    query = db.query(Log)
 
-    Los más recientes aparecen primero.
-    """
+    # --------------------------------------------------------
+    # FILTRO EVENTO
+    # --------------------------------------------------------
 
-    limite = max(
-        1,
-        min(int(limite), 1000)
-    )
+    if evento:
+        texto = evento.strip()
+
+        if texto:
+            query = query.filter(
+                Log.evento.ilike(f"%{texto}%")
+            )
+
+    # --------------------------------------------------------
+    # FILTRO FECHA INICIO
+    # --------------------------------------------------------
+
+    if fecha_inicio:
+        inicio = datetime.combine(
+            fecha_inicio,
+            datetime.min.time(),
+        )
+
+        query = query.filter(
+            Log.fecha >= inicio
+        )
+
+    # --------------------------------------------------------
+    # FILTRO FECHA FIN
+    # --------------------------------------------------------
+
+    if fecha_fin:
+        fin = datetime.combine(
+            fecha_fin,
+            datetime.max.time(),
+        )
+
+        query = query.filter(
+            Log.fecha <= fin
+        )
+
+    # --------------------------------------------------------
+    # ORDEN MÁS RECIENTE PRIMERO
+    # --------------------------------------------------------
 
     registros = (
-        db.query(Log)
-        .order_by(
-            Log.fecha.desc(),
-            Log.id.desc()
-        )
-        .limit(limite)
+        query
+        .order_by(Log.fecha.desc())
+        .limit(500)
         .all()
     )
 

@@ -1,27 +1,57 @@
 import axios from "./axios";
 
 /**
- * API Logs — Versión SJ‑2026 Premium
+ * ============================================================
+ * API LOGS — MOLSAN ERP SAAS PREMIUM 2027
+ * ============================================================
+ *
  * Gestiona:
+ *
+ * - Listado de logs
  * - Listado con filtros
- * - Listado completo
- * - Registro de eventos
+ * - Registro de logs
+ *
+ * Backend:
+ *
+ * GET  /api/seguridad/logs/
+ * POST /api/seguridad/logs/
+ *
+ * ============================================================
  */
 
-/* ---------------------------------------------------------
-   LISTAR LOGS (con filtros)
---------------------------------------------------------- */
-export const listarLogs = (filtros = {}) =>
-  axios.get("/seguridad/logs/", { params: filtros });
 
-/* ---------------------------------------------------------
-   LISTAR LOGS (sin filtros)
---------------------------------------------------------- */
-export const getLogs = () =>
-  axios.get("/seguridad/logs/");
+/* ============================================================
+   LISTAR LOGS
+============================================================ */
 
-/* ---------------------------------------------------------
+export const listarLogs = (filtros = {}) => {
+  return axios.get(
+    "/seguridad/logs/",
+    {
+      params: filtros,
+    }
+  );
+};
+
+
+/* ============================================================
+   LISTAR LOGS SIN FILTROS
+============================================================ */
+
+export const getLogs = () => {
+  return axios.get(
+    "/seguridad/logs/"
+  );
+};
+
+
+/* ============================================================
    REGISTRAR LOG
---------------------------------------------------------- */
-export const registrarLog = (payload) =>
-  axios.post("/seguridad/logs/", payload);
+============================================================ */
+
+export const registrarLog = (payload) => {
+  return axios.post(
+    "/seguridad/logs/",
+    payload
+  );
+};

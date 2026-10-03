@@ -1,6 +1,8 @@
-from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional
+
+from pydantic import BaseModel, ConfigDict
+
 
 class AuditoriaBase(BaseModel):
     usuario: Optional[str] = None
@@ -9,11 +11,11 @@ class AuditoriaBase(BaseModel):
     descripcion: Optional[str] = None
     ip: Optional[str] = None
 
+
 class AuditoriaOut(AuditoriaBase):
     id: int
-    fecha: datetime
+    fecha: Optional[datetime] = None
 
-    model_config = {
-        "from_attributes": True
-    }
-
+    model_config = ConfigDict(
+        from_attributes=True
+    )

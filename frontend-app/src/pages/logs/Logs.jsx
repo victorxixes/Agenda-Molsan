@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 
 import { useLogs } from "../../hooks/useLogs";
 
@@ -17,6 +17,9 @@ import TablaLogs from "../../components/logs/TablaLogs";
  * - Seguridad
  * - Errores
  * - Avisos
+ * - Autenticación
+ * - Importaciones
+ * - Exportaciones
  *
  * ============================================================
  */
@@ -35,11 +38,18 @@ export default function Logs() {
      CARGAR LOGS
   ========================================================== */
 
-  useEffect(() => {
+  const cargar = useCallback(() => {
 
     cargarLogs({});
 
   }, [cargarLogs]);
+
+
+  useEffect(() => {
+
+    cargar();
+
+  }, [cargar]);
 
 
   /* ==========================================================
@@ -84,49 +94,104 @@ export default function Logs() {
 
   const iconosTipo = {
 
-    error: "⛔",
-
-    ERROR: "⛔",
-
-    security: "🔐",
-
-    SECURITY: "🔐",
-
-    warning: "⚠️",
-
-    WARNING: "⚠️",
-
-    info: "ℹ️",
-
-    INFO: "ℹ️",
+    /* --------------------------------------------------------
+       AUTENTICACIÓN
+    -------------------------------------------------------- */
 
     login: "🔑",
-
     LOGIN: "🔑",
 
-    logout: "🚪",
+    login_success: "🔓",
+    LOGIN_SUCCESS: "🔓",
 
+    login_error: "⛔",
+    LOGIN_ERROR: "⛔",
+
+    logout: "🚪",
     LOGOUT: "🚪",
 
-    create: "➕",
 
+    /* --------------------------------------------------------
+       SEGURIDAD
+    -------------------------------------------------------- */
+
+    security: "🔐",
+    SECURITY: "🔐",
+
+    security_error: "🛡️",
+    SECURITY_ERROR: "🛡️",
+
+    permission_denied: "🚫",
+    PERMISSION_DENIED: "🚫",
+
+
+    /* --------------------------------------------------------
+       ERRORES
+    -------------------------------------------------------- */
+
+    error: "⛔",
+    ERROR: "⛔",
+
+    exception: "💥",
+    EXCEPTION: "💥",
+
+
+    /* --------------------------------------------------------
+       AVISOS
+    -------------------------------------------------------- */
+
+    warning: "⚠️",
+    WARNING: "⚠️",
+
+
+    /* --------------------------------------------------------
+       INFORMACIÓN
+    -------------------------------------------------------- */
+
+    info: "ℹ️",
+    INFO: "ℹ️",
+
+
+    /* --------------------------------------------------------
+       OPERACIONES
+    -------------------------------------------------------- */
+
+    create: "➕",
     CREATE: "➕",
 
     update: "✏️",
-
     UPDATE: "✏️",
 
     delete: "🗑️",
-
     DELETE: "🗑️",
 
-    import: "📥",
 
+    /* --------------------------------------------------------
+       IMPORTACIONES / EXPORTACIONES
+    -------------------------------------------------------- */
+
+    import: "📥",
     IMPORT: "📥",
 
-    export: "📤",
+    import_success: "📥",
+    IMPORT_SUCCESS: "📥",
 
+    import_error: "⛔",
+    IMPORT_ERROR: "⛔",
+
+    export: "📤",
     EXPORT: "📤",
+
+    export_success: "📤",
+    EXPORT_SUCCESS: "📤",
+
+    export_error: "⛔",
+    EXPORT_ERROR: "⛔",
+
+
+    /* --------------------------------------------------------
+       DEFAULT
+    -------------------------------------------------------- */
 
     default: "📋",
 
@@ -168,6 +233,8 @@ export default function Logs() {
         "
       >
 
+        {/* Línea superior */}
+
         <div
           className="
             absolute
@@ -182,6 +249,9 @@ export default function Logs() {
           "
         />
 
+
+        {/* Decoración */}
+
         <div
           className="
             absolute
@@ -195,6 +265,7 @@ export default function Logs() {
             pointer-events-none
           "
         />
+
 
         <div
           className="
@@ -225,12 +296,14 @@ export default function Logs() {
                 shadow-sm
               "
             >
+
               <span
                 className="text-xl"
                 aria-hidden="true"
               >
                 📋
               </span>
+
             </div>
 
 
@@ -247,6 +320,7 @@ export default function Logs() {
               >
                 Logs del sistema
               </h1>
+
 
               <p
                 className="
@@ -361,5 +435,7 @@ export default function Logs() {
       )}
 
     </div>
+
   );
+
 }

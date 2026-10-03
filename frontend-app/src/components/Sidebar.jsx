@@ -423,7 +423,7 @@ export default function Sidebar() {
 
     {
       key: "seguridad",
-      to: "/seguridad/auditoria",
+      to: "/seguridad",
       label: "Seguridad",
       icon: "shield",
     },

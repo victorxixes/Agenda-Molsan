@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime
 
 from sqlalchemy import func
 from sqlalchemy.orm import Session
@@ -8,99 +8,24 @@ from backend.app.empleados.models import Empleado
 
 
 # ============================================================
-# SEGURIDAD — AUDITORÍA SERVICE
-# MOLSAN ERP SAAS
+# AUDITORÍA — SERVICE
+# MOLSAN ERP SAAS PREMIUM 2027
 # ============================================================
-#
-# Responsabilidades:
-#
-# - Registrar auditoría
-# - Obtener auditoría global
-# - Obtener auditoría de un empleado
-# - Obtener métricas
 #
 # IMPORTANTE:
 #
-# La auditoría GLOBAL y la auditoría POR EMPLEADO
-# utilizan el mismo modelo Auditoria.
+# La tabla seguridad_auditoria NO tiene empleado_id.
 #
-# La relación con el empleado se realiza mediante:
+# La relación con empleados se realiza mediante:
 #
-#     Auditoria.usuario
-#     Empleado.usuario
+#     empleados.id
+#          ↓
+#     empleados.usuario
+#          ↓
+#     seguridad_auditoria.usuario
 #
-# El endpoint por empleado recibe el ID numérico del empleado.
-#
+# De esta forma mantenemos intacto todo el histórico existente.
 # ============================================================
-
-
-# ============================================================
-# CONFIGURACIÓN
-# ============================================================
-
-MAX_AUDITORIA_GLOBAL = 200
-MAX_AUDITORIA_EMPLEADO = 100
-MAX_ULTIMOS_LOGINS = 10
-
-
-# ============================================================
-# HELPERS
-# ============================================================
-
-def _texto(valor, fallback=None):
-    """
-    Convierte valores a texto de forma segura.
-    """
-
-    if valor is None:
-        return fallback
-
-    if isinstance(valor, str):
-        valor = valor.strip()
-
-        return valor if valor else fallback
-
-    return str(valor)
-
-
-def _registro_dict(registro: Auditoria):
-    """
-    Convierte un registro de Auditoria en un diccionario
-    seguro para devolver desde FastAPI.
-    """
-
-    if not registro:
-        return None
-
-    return {
-        "id": registro.id,
-
-        "usuario": _texto(
-            registro.usuario
-        ),
-
-        "modulo": _texto(
-            registro.modulo
-        ),
-
-        "accion": _texto(
-            registro.accion
-        ),
-
-        "descripcion": _texto(
-            registro.descripcion
-        ),
-
-        "ip": _texto(
-            registro.ip
-        ),
-
-        "fecha": (
-            registro.fecha.isoformat()
-            if registro.fecha
-            else None
-        ),
-    }
 
 
 # ============================================================
@@ -109,48 +34,34 @@ def _registro_dict(registro: Auditoria):
 
 def registrar_auditoria(
     db: Session,
-    usuario: str | None,
-    modulo: str | None,
-    accion: str | None,
-    descripcion: str | None,
+    usuario: str,
+    modulo: str,
+    accion: str,
+    descripcion: str,
     ip: str | None = None,
 ):
     """
-    Registra una operación en la tabla de auditoría.
+    Registra una nueva entrada de auditoría.
 
-    No requiere que exista un empleado.
-    El campo usuario se conserva como texto para poder
-    registrar también eventos del sistema.
-
-    Devuelve el registro creado.
+    No modifica registros históricos.
     """
 
     registro = Auditoria(
-        usuario=_texto(usuario),
-        modulo=_texto(modulo),
-        accion=_texto(accion),
-        descripcion=_texto(descripcion),
-        ip=_texto(ip),
-        fecha=datetime.now(timezone.utc).replace(
-            tzinfo=None
-        ),
+        usuario=usuario,
+        modulo=modulo,
+        accion=accion,
+        descripcion=descripcion,
+        ip=ip,
+        fecha=datetime.utcnow(),
     )
 
-    try:
+    db.add(registro)
 
-        db.add(registro)
+    db.commit()
 
-        db.commit()
+    db.refresh(registro)
 
-        db.refresh(registro)
-
-        return registro
-
-    except Exception:
-
-        db.rollback()
-
-        raise
+    return registro.as_dict()
 
 
 # ============================================================
@@ -159,27 +70,22 @@ def registrar_auditoria(
 
 def obtener_auditoria(
     db: Session,
-    limite: int = MAX_AUDITORIA_GLOBAL,
+    limite: int = 200,
 ):
     """
     Devuelve los últimos registros de auditoría.
 
-    Orden:
-        más recientes primero.
+    Se ordenan de más recientes a más antiguos.
     """
 
     try:
         limite = int(limite)
-
     except (TypeError, ValueError):
-        limite = MAX_AUDITORIA_GLOBAL
+        limite = 200
 
     limite = max(
         1,
-        min(
-            limite,
-            1000
-        )
+        min(limite, 1000),
     )
 
     registros = (
@@ -193,9 +99,61 @@ def obtener_auditoria(
     )
 
     return [
-        _registro_dict(registro)
+        registro.as_dict()
         for registro in registros
-        if registro
+    ]
+
+
+# ============================================================
+# OBTENER AUDITORÍA POR USUARIO
+# ============================================================
+
+def obtener_auditoria_usuario(
+    db: Session,
+    usuario: str,
+    limite: int = 100,
+):
+    """
+    Obtiene la auditoría asociada directamente a un login.
+
+    Se utiliza internamente cuando ya conocemos el campo
+    empleados.usuario.
+    """
+
+    if not usuario:
+        return []
+
+    usuario = str(usuario).strip()
+
+    if not usuario:
+        return []
+
+    try:
+        limite = int(limite)
+    except (TypeError, ValueError):
+        limite = 100
+
+    limite = max(
+        1,
+        min(limite, 1000),
+    )
+
+    registros = (
+        db.query(Auditoria)
+        .filter(
+            Auditoria.usuario == usuario
+        )
+        .order_by(
+            Auditoria.fecha.desc(),
+            Auditoria.id.desc(),
+        )
+        .limit(limite)
+        .all()
+    )
+
+    return [
+        registro.as_dict()
+        for registro in registros
     ]
 
 
@@ -206,38 +164,31 @@ def obtener_auditoria(
 def obtener_auditoria_empleado(
     db: Session,
     empleado_id: int,
+    limite: int = 100,
 ):
     """
-    Devuelve la auditoría correspondiente a un empleado.
+    Obtiene la auditoría de un empleado.
 
-    El router recibe el ID del empleado.
-
-    Se busca primero:
+    La relación se resuelve mediante:
 
         empleados.id
-
-    y después se utiliza:
-
+            ↓
         empleados.usuario
+            ↓
+        seguridad_auditoria.usuario
 
-    para localizar los registros de auditoría.
-
-    Esto mantiene la tabla de auditoría desacoplada
-    de la tabla empleados.
+    NO requiere modificar la tabla de auditoría.
     """
 
-    if empleado_id is None:
+    if (
+        empleado_id is None
+        or empleado_id == ""
+    ):
         return []
 
     try:
-        empleado_id = int(
-            empleado_id
-        )
-
+        empleado_id = int(empleado_id)
     except (TypeError, ValueError):
-        return []
-
-    if empleado_id <= 0:
         return []
 
     empleado = (
@@ -251,55 +202,47 @@ def obtener_auditoria_empleado(
     if not empleado:
         return []
 
-    usuario = _texto(
-        empleado.usuario
+    usuario = (
+        str(empleado.usuario).strip()
+        if empleado.usuario
+        else ""
     )
 
     if not usuario:
         return []
 
-    registros = (
-        db.query(Auditoria)
-        .filter(
-            Auditoria.usuario == usuario
-        )
-        .order_by(
-            Auditoria.fecha.desc(),
-            Auditoria.id.desc(),
-        )
-        .limit(
-            MAX_AUDITORIA_EMPLEADO
-        )
-        .all()
+    return obtener_auditoria_usuario(
+        db=db,
+        usuario=usuario,
+        limite=limite,
     )
-
-    return [
-        _registro_dict(registro)
-        for registro in registros
-        if registro
-    ]
 
 
 # ============================================================
-# MÉTRICAS
+# MÉTRICAS DE AUDITORÍA
 # ============================================================
 
 def obtener_metricas(
     db: Session,
 ):
     """
-    Devuelve las métricas generales de auditoría.
+    Devuelve métricas generales de auditoría.
+
+    Incluye:
+
+    - total de registros
+    - registros agrupados por módulo
+    - registros agrupados por acción
+    - últimos logins
     """
 
     # --------------------------------------------------------
     # TOTAL
     # --------------------------------------------------------
 
-    total = (
+    total_registros = (
         db.query(
-            func.count(
-                Auditoria.id
-            )
+            func.count(Auditoria.id)
         )
         .scalar()
         or 0
@@ -312,17 +255,13 @@ def obtener_metricas(
     por_modulo = (
         db.query(
             Auditoria.modulo,
-            func.count(
-                Auditoria.id
-            ).label("cantidad"),
+            func.count(Auditoria.id),
         )
         .group_by(
             Auditoria.modulo
         )
         .order_by(
-            func.count(
-                Auditoria.id
-            ).desc()
+            func.count(Auditoria.id).desc()
         )
         .all()
     )
@@ -334,23 +273,27 @@ def obtener_metricas(
     por_accion = (
         db.query(
             Auditoria.accion,
-            func.count(
-                Auditoria.id
-            ).label("cantidad"),
+            func.count(Auditoria.id),
         )
         .group_by(
             Auditoria.accion
         )
         .order_by(
-            func.count(
-                Auditoria.id
-            ).desc()
+            func.count(Auditoria.id).desc()
         )
         .all()
     )
 
     # --------------------------------------------------------
     # ÚLTIMOS LOGINS
+    # --------------------------------------------------------
+    #
+    # Se aceptan ambas variantes:
+    #
+    # login
+    # LOGIN
+    #
+    # La comparación se hace en minúsculas.
     # --------------------------------------------------------
 
     ultimos_logins = (
@@ -364,9 +307,7 @@ def obtener_metricas(
             Auditoria.fecha.desc(),
             Auditoria.id.desc(),
         )
-        .limit(
-            MAX_ULTIMOS_LOGINS
-        )
+        .limit(10)
         .all()
     )
 
@@ -375,22 +316,14 @@ def obtener_metricas(
     # --------------------------------------------------------
 
     return {
-
         "total_registros": int(
-            total
+            total_registros
         ),
 
         "por_modulo": [
             {
-                "modulo": (
-                    _texto(
-                        modulo,
-                        "Sin módulo"
-                    )
-                ),
-                "cantidad": int(
-                    cantidad
-                ),
+                "modulo": modulo,
+                "cantidad": int(cantidad),
             }
             for modulo, cantidad
             in por_modulo
@@ -398,26 +331,15 @@ def obtener_metricas(
 
         "por_accion": [
             {
-                "accion": (
-                    _texto(
-                        accion,
-                        "Sin acción"
-                    )
-                ),
-                "cantidad": int(
-                    cantidad
-                ),
+                "accion": accion,
+                "cantidad": int(cantidad),
             }
             for accion, cantidad
             in por_accion
         ],
 
         "ultimos_logins": [
-            _registro_dict(
-                registro
-            )
-            for registro
-            in ultimos_logins
-            if registro
+            registro.as_dict()
+            for registro in ultimos_logins
         ],
     }

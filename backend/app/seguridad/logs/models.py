@@ -1,21 +1,12 @@
 from datetime import datetime
 
-from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import Column, DateTime, Integer, String
 
 from backend.app.database import Base
 
 
 class Log(Base):
-    """
-    Registro de logs técnicos / operativos del ERP.
-
-    IMPORTANTE:
-    Se mantiene la estructura actual de la tabla
-    `seguridad_logs` para no romper el histórico existente.
-    """
-
     __tablename__ = "seguridad_logs"
-
     __allow_unmapped__ = True
 
     id = Column(
@@ -37,7 +28,8 @@ class Log(Base):
 
     ip = Column(
         String(50),
-        nullable=True
+        nullable=True,
+        index=True
     )
 
     fecha = Column(
@@ -48,18 +40,12 @@ class Log(Base):
     )
 
     def as_dict(self):
-        """
-        Representación estándar del log para API.
-        """
-
         return {
             "id": self.id,
             "evento": self.evento,
             "detalle": self.detalle,
             "ip": self.ip,
-            "fecha": (
-                self.fecha.isoformat()
-                if self.fecha
-                else None
-            ),
+            "fecha": self.fecha.isoformat()
+            if self.fecha
+            else None,
         }

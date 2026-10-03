@@ -8,8 +8,21 @@ import {
 import { useSeguridad } from "../../hooks/useSeguridad";
 
 
+/* ============================================================
+   HELPERS
+============================================================ */
+
 function arraySeguro(valor) {
   return Array.isArray(valor) ? valor : [];
+}
+
+
+function objetoSeguro(valor) {
+  return (
+    valor !== null &&
+    typeof valor === "object" &&
+    !Array.isArray(valor)
+  );
 }
 
 
@@ -24,6 +37,27 @@ function textoSeguro(valor) {
   return String(valor);
 }
 
+
+function idSeguro(valor) {
+  if (
+    valor === null ||
+    typeof valor === "undefined" ||
+    valor === ""
+  ) {
+    return null;
+  }
+
+  const numero = Number(valor);
+
+  return Number.isFinite(numero)
+    ? numero
+    : null;
+}
+
+
+/* ============================================================
+   CHIP
+============================================================ */
 
 function Chip({
   children,
@@ -69,6 +103,10 @@ function Chip({
   );
 }
 
+
+/* ============================================================
+   SECCIÓN ACORDEÓN
+============================================================ */
 
 function SeccionAcordeon({
   titulo,
@@ -172,8 +210,7 @@ function SeccionAcordeon({
           "
         >
 
-          {typeof contador !==
-            "undefined" && (
+          {typeof contador !== "undefined" && (
             <Chip>
               {contador}
             </Chip>
@@ -184,6 +221,7 @@ function SeccionAcordeon({
               text-xs
               text-[var(--erp-text-soft)]
             "
+            aria-hidden="true"
           >
             {abierto ? "▲" : "▼"}
           </span>
@@ -211,6 +249,10 @@ function SeccionAcordeon({
 }
 
 
+/* ============================================================
+   COMPONENTE PRINCIPAL
+============================================================ */
+
 export default function SeguridadFicha({
   empleadoId,
 }) {
@@ -230,11 +272,9 @@ export default function SeguridadFicha({
   } = useSeguridad();
 
 
-  /**
-   * ============================================================
-   * ESTADOS
-   * ============================================================
-   */
+  /* ============================================================
+     ESTADOS
+  ============================================================ */
 
   const [
     nuevaPassword,
@@ -319,21 +359,23 @@ export default function SeguridadFicha({
   const pageSize = 10;
 
 
-  /**
-   * ============================================================
-   * CARGAR FICHA
-   * ============================================================
-   */
+  /* ============================================================
+     CARGAR FICHA
+  ============================================================ */
 
   useEffect(() => {
 
     if (
-      empleadoId
+      empleadoId === null ||
+      typeof empleadoId === "undefined" ||
+      empleadoId === ""
     ) {
-      cargarFicha(
-        empleadoId
-      );
+      return;
     }
+
+    cargarFicha(
+      empleadoId
+    );
 
   }, [
     empleadoId,
@@ -341,46 +383,84 @@ export default function SeguridadFicha({
   ]);
 
 
-  /**
-   * ============================================================
-   * EMPLEADO
-   * ============================================================
-   */
+  /* ============================================================
+     RESET AL CAMBIAR DE EMPLEADO
+  ============================================================ */
+
+  useEffect(() => {
+
+    setNuevaPassword("");
+    setNuevoRol("");
+
+    setBusquedaAud("");
+    setFiltroFechaAud("");
+    setPaginaAud(0);
+
+    setBusquedaLog("");
+    setFiltroFechaLog("");
+    setPaginaLog(0);
+
+    setModulosAbiertos(
+      new Set()
+    );
+
+  }, [
+    empleadoId,
+  ]);
+
+
+  /* ============================================================
+     EMPLEADO
+  ============================================================ */
 
   const empleado =
-    ficha &&
-    typeof ficha === "object" &&
-    ficha.empleado &&
-    typeof ficha.empleado === "object"
+    objetoSeguro(ficha) &&
+    objetoSeguro(ficha.empleado)
       ? ficha.empleado
       : null;
 
 
-  const empleadoValido =
-    empleado &&
-    typeof empleado.id === "number" &&
-    typeof empleado.nombre === "string";
+  const empleadoIdSeguro =
+    idSeguro(
+      empleado?.id
+    );
 
+
+  const empleadoValido =
+    empleado !== null &&
+    empleadoIdSeguro !== null &&
+    textoSeguro(
+      empleado.nombre
+    ).trim() !== "";
+
+
+  /* ============================================================
+     ROL
+  ============================================================ */
 
   const nombreRol =
-    empleadoValido &&
-    empleado.rol &&
-    typeof empleado.rol === "object" &&
-    typeof empleado.rol.nombre === "string"
-      ? empleado.rol.nombre
+    objetoSeguro(
+      empleado?.rol
+    ) &&
+    textoSeguro(
+      empleado.rol.nombre
+    ).trim() !== ""
+      ? textoSeguro(
+          empleado.rol.nombre
+        )
       : "-";
 
 
-  /**
-   * ============================================================
-   * MÓDULOS VISIBLES
-   * ============================================================
-   */
+  /* ============================================================
+     MÓDULOS VISIBLES
+  ============================================================ */
 
   const modulosVisibles =
     useMemo(() => {
 
-      if (!ficha) {
+      if (
+        !objetoSeguro(ficha)
+      ) {
         return [];
       }
 
@@ -397,9 +477,19 @@ export default function SeguridadFicha({
             : [];
 
 
-      return lista.filter(
-        (modulo) =>
-          typeof modulo === "string"
+      return Array.from(
+        new Set(
+          lista
+            .map(
+              (modulo) =>
+                textoSeguro(
+                  modulo
+                ).trim()
+            )
+            .filter(
+              Boolean
+            )
+        )
       );
 
     }, [
@@ -408,20 +498,16 @@ export default function SeguridadFicha({
     ]);
 
 
-  /**
-   * ============================================================
-   * PERMISOS EMPLEADO
-   * ============================================================
-   */
+  /* ============================================================
+     PERMISOS DEL EMPLEADO
+  ============================================================ */
 
   const permisosEmpleado =
     useMemo(() => {
 
       if (
-        !ficha ||
-        typeof ficha.permisos_modulo !==
-          "object" ||
-        Array.isArray(
+        !objetoSeguro(ficha) ||
+        !objetoSeguro(
           ficha.permisos_modulo
         )
       ) {
@@ -435,16 +521,15 @@ export default function SeguridadFicha({
     ]);
 
 
-  /**
-   * ============================================================
-   * PERMISOS GLOBALES
-   * ============================================================
-   */
+  /* ============================================================
+     PERMISOS GLOBALES
+  ============================================================ */
 
   const permisosGlobales =
     useMemo(() => {
 
       const resultado = {};
+
 
       arraySeguro(
         permisos
@@ -452,20 +537,24 @@ export default function SeguridadFicha({
         (permiso) => {
 
           if (
-            !permiso ||
-            typeof permiso !== "object" ||
-            typeof permiso.modulo !== "string" ||
-            typeof permiso.permiso !== "string"
+            !objetoSeguro(
+              permiso
+            )
           ) {
             return;
           }
 
 
           const modulo =
-            permiso.modulo.trim();
+            textoSeguro(
+              permiso.modulo
+            ).trim();
+
 
           const nombre =
-            permiso.permiso.trim();
+            textoSeguro(
+              permiso.permiso
+            ).trim();
 
 
           if (
@@ -476,7 +565,11 @@ export default function SeguridadFicha({
           }
 
 
-          if (!resultado[modulo]) {
+          if (
+            !Array.isArray(
+              resultado[modulo]
+            )
+          ) {
             resultado[modulo] = [];
           }
 
@@ -506,7 +599,8 @@ export default function SeguridadFicha({
                 b,
                 "es",
                 {
-                  sensitivity: "base",
+                  sensitivity:
+                    "base",
                 }
               )
           );
@@ -522,11 +616,9 @@ export default function SeguridadFicha({
     ]);
 
 
-  /**
-   * ============================================================
-   * MÓDULOS DISPONIBLES
-   * ============================================================
-   */
+  /* ============================================================
+     MÓDULOS DISPONIBLES
+  ============================================================ */
 
   const modulosDisponibles =
     useMemo(() => {
@@ -538,18 +630,20 @@ export default function SeguridadFicha({
       Object.keys(
         permisosGlobales
       ).forEach(
-        (modulo) =>
+        (modulo) => {
           conjunto.add(
             modulo
-          )
+          );
+        }
       );
 
 
       modulosVisibles.forEach(
-        (modulo) =>
+        (modulo) => {
           conjunto.add(
             modulo
-          )
+          );
+        }
       );
 
 
@@ -561,7 +655,8 @@ export default function SeguridadFicha({
             b,
             "es",
             {
-              sensitivity: "base",
+              sensitivity:
+                "base",
             }
           )
       );
@@ -572,11 +667,9 @@ export default function SeguridadFicha({
     ]);
 
 
-  /**
-   * ============================================================
-   * CAMBIAR MÓDULO
-   * ============================================================
-   */
+  /* ============================================================
+     CAMBIAR MÓDULO
+  ============================================================ */
 
   const cambiarModulo =
     useCallback(
@@ -586,36 +679,45 @@ export default function SeguridadFicha({
 
         if (
           !empleadoValido ||
-          typeof modulo !==
-            "string"
+          !textoSeguro(
+            modulo
+          ).trim()
         ) {
           return;
         }
 
 
+        const nombreModulo =
+          textoSeguro(
+            modulo
+          ).trim();
+
+
         const nuevo =
           modulosVisibles.includes(
-            modulo
+            nombreModulo
           )
             ? modulosVisibles.filter(
                 (item) =>
-                  item !== modulo
+                  item !==
+                  nombreModulo
               )
             : [
                 ...modulosVisibles,
-                modulo,
+                nombreModulo,
               ];
 
 
         try {
 
           await asignarModulos(
-            empleado.id,
+            empleadoIdSeguro,
             nuevo
           );
 
+
           await cargarFicha(
-            empleado.id
+            empleadoIdSeguro
           );
 
         } catch (error) {
@@ -630,7 +732,7 @@ export default function SeguridadFicha({
       },
       [
         empleadoValido,
-        empleado,
+        empleadoIdSeguro,
         modulosVisibles,
         asignarModulos,
         cargarFicha,
@@ -638,11 +740,9 @@ export default function SeguridadFicha({
     );
 
 
-  /**
-   * ============================================================
-   * CAMBIAR PERMISO
-   * ============================================================
-   */
+  /* ============================================================
+     CAMBIAR PERMISO
+  ============================================================ */
 
   const cambiarPermiso =
     useCallback(
@@ -652,50 +752,78 @@ export default function SeguridadFicha({
       ) => {
 
         if (
-          !empleadoValido ||
-          typeof modulo !==
-            "string" ||
-          typeof permiso !==
-            "string"
+          !empleadoValido
+        ) {
+          return;
+        }
+
+
+        const nombreModulo =
+          textoSeguro(
+            modulo
+          ).trim();
+
+
+        const nombrePermiso =
+          textoSeguro(
+            permiso
+          ).trim();
+
+
+        if (
+          !nombreModulo ||
+          !nombrePermiso
         ) {
           return;
         }
 
 
         const nuevo = {
-          ...(permisosEmpleado || {}),
+          ...(
+            objetoSeguro(
+              permisosEmpleado
+            )
+              ? permisosEmpleado
+              : {}
+          ),
         };
 
 
         const actuales =
           arraySeguro(
-            nuevo[modulo]
+            nuevo[
+              nombreModulo
+            ]
           );
 
 
-        nuevo[modulo] =
+        nuevo[
+          nombreModulo
+        ] =
           actuales.includes(
-            permiso
+            nombrePermiso
           )
             ? actuales.filter(
                 (item) =>
-                  item !== permiso
+                  item !==
+                  nombrePermiso
               )
             : [
                 ...actuales,
-                permiso,
+                nombrePermiso,
               ];
 
 
         try {
 
           await asignarPermisos(
-            empleado.id,
+            empleadoIdSeguro,
             nuevo
           );
 
+
           await cargarFicha(
-            empleado.id
+            empleadoIdSeguro
           );
 
         } catch (error) {
@@ -710,7 +838,7 @@ export default function SeguridadFicha({
       },
       [
         empleadoValido,
-        empleado,
+        empleadoIdSeguro,
         permisosEmpleado,
         asignarPermisos,
         cargarFicha,
@@ -718,11 +846,9 @@ export default function SeguridadFicha({
     );
 
 
-  /**
-   * ============================================================
-   * AUDITORÍA
-   * ============================================================
-   */
+  /* ============================================================
+     AUDITORÍA
+  ============================================================ */
 
   const auditoriaSegura =
     useMemo(
@@ -731,10 +857,13 @@ export default function SeguridadFicha({
           auditoria
         ).filter(
           (item) =>
-            item &&
-            typeof item === "object"
+            objetoSeguro(
+              item
+            )
         ),
-      [auditoria]
+      [
+        auditoria,
+      ]
     );
 
 
@@ -801,12 +930,23 @@ export default function SeguridadFicha({
     ]);
 
 
+  const totalPaginasAuditoria =
+    Math.max(
+      1,
+      Math.ceil(
+        auditoriaFiltrada.length /
+          pageSize
+      )
+    );
+
+
   const auditoriaPaginada =
     useMemo(() => {
 
       const inicio =
         paginaAud *
         pageSize;
+
 
       return auditoriaFiltrada.slice(
         inicio,
@@ -819,11 +959,9 @@ export default function SeguridadFicha({
     ]);
 
 
-  /**
-   * ============================================================
-   * LOGS
-   * ============================================================
-   */
+  /* ============================================================
+     LOGS
+  ============================================================ */
 
   const logsSeguros =
     useMemo(
@@ -832,10 +970,13 @@ export default function SeguridadFicha({
           logs
         ).filter(
           (item) =>
-            item &&
-            typeof item === "object"
+            objetoSeguro(
+              item
+            )
         ),
-      [logs]
+      [
+        logs,
+      ]
     );
 
 
@@ -901,12 +1042,23 @@ export default function SeguridadFicha({
     ]);
 
 
+  const totalPaginasLogs =
+    Math.max(
+      1,
+      Math.ceil(
+        logsFiltrados.length /
+          pageSize
+      )
+    );
+
+
   const logsPaginados =
     useMemo(() => {
 
       const inicio =
         paginaLog *
         pageSize;
+
 
       return logsFiltrados.slice(
         inicio,
@@ -919,11 +1071,9 @@ export default function SeguridadFicha({
     ]);
 
 
-  /**
-   * ============================================================
-   * EXPORTAR CSV
-   * ============================================================
-   */
+  /* ============================================================
+     EXPORTAR CSV
+  ============================================================ */
 
   const descargarCsv =
     useCallback(
@@ -941,8 +1091,8 @@ export default function SeguridadFicha({
                     (valor) =>
                       `"${String(
                         valor ?? ""
-                      ).replaceAll(
-                        '"',
+                      ).replace(
+                        /"/g,
                         '""'
                       )}"`
                   )
@@ -976,7 +1126,9 @@ export default function SeguridadFicha({
           );
 
 
-        enlace.href = url;
+        enlace.href =
+          url;
+
         enlace.download =
           nombre;
 
@@ -985,12 +1137,20 @@ export default function SeguridadFicha({
           enlace
         );
 
+
         enlace.click();
+
 
         enlace.remove();
 
-        URL.revokeObjectURL(
-          url
+
+        setTimeout(
+          () => {
+            URL.revokeObjectURL(
+              url
+            );
+          },
+          100
         );
 
       },
@@ -1011,6 +1171,7 @@ export default function SeguridadFicha({
             "Descripción",
             "Fecha",
           ],
+
           ...auditoriaFiltrada.map(
             (item) => [
               item.id ?? "",
@@ -1022,7 +1183,12 @@ export default function SeguridadFicha({
             ]
           ),
         ],
-        `auditoria_${empleado?.usuario || empleado?.id || "empleado"}.csv`
+
+        `auditoria_${
+          empleado?.usuario ||
+          empleado?.id ||
+          "empleado"
+        }.csv`
       );
 
     }, [
@@ -1044,6 +1210,7 @@ export default function SeguridadFicha({
             "Detalle",
             "IP",
           ],
+
           ...logsFiltrados.map(
             (item) => [
               item.id ?? "",
@@ -1054,7 +1221,12 @@ export default function SeguridadFicha({
             ]
           ),
         ],
-        `logs_${empleado?.usuario || empleado?.id || "empleado"}.csv`
+
+        `logs_${
+          empleado?.usuario ||
+          empleado?.id ||
+          "empleado"
+        }.csv`
       );
 
     }, [
@@ -1064,11 +1236,9 @@ export default function SeguridadFicha({
     ]);
 
 
-  /**
-   * ============================================================
-   * RESET PASSWORD
-   * ============================================================
-   */
+  /* ============================================================
+     RESET PASSWORD
+  ============================================================ */
 
   const ejecutarResetPassword =
     useCallback(
@@ -1089,9 +1259,10 @@ export default function SeguridadFicha({
         try {
 
           await resetPassword(
-            empleado.id,
+            empleadoIdSeguro,
             password
           );
+
 
           setNuevaPassword("");
 
@@ -1107,34 +1278,30 @@ export default function SeguridadFicha({
       },
       [
         empleadoValido,
-        empleado,
+        empleadoIdSeguro,
         nuevaPassword,
         resetPassword,
       ]
     );
 
 
-  /**
-   * ============================================================
-   * ASIGNAR ROL
-   * ============================================================
-   */
+  /* ============================================================
+     ASIGNAR ROL
+  ============================================================ */
 
   const ejecutarAsignarRol =
     useCallback(
       async () => {
 
         const rolId =
-          Number(
+          idSeguro(
             nuevoRol
           );
 
 
         if (
           !empleadoValido ||
-          !Number.isFinite(
-            rolId
-          )
+          rolId === null
         ) {
           return;
         }
@@ -1143,14 +1310,16 @@ export default function SeguridadFicha({
         try {
 
           await asignarRol(
-            empleado.id,
+            empleadoIdSeguro,
             rolId
           );
 
+
           setNuevoRol("");
 
+
           await cargarFicha(
-            empleado.id
+            empleadoIdSeguro
           );
 
         } catch (error) {
@@ -1165,7 +1334,7 @@ export default function SeguridadFicha({
       },
       [
         empleadoValido,
-        empleado,
+        empleadoIdSeguro,
         nuevoRol,
         asignarRol,
         cargarFicha,
@@ -1173,11 +1342,9 @@ export default function SeguridadFicha({
     );
 
 
-  /**
-   * ============================================================
-   * CARGANDO
-   * ============================================================
-   */
+  /* ============================================================
+     CARGANDO
+  ============================================================ */
 
   if (!ficha) {
 
@@ -1192,7 +1359,12 @@ export default function SeguridadFicha({
           text-center
         "
       >
-        <div className="animate-pulse">
+
+        <div
+          className="
+            animate-pulse
+          "
+        >
 
           <div
             className="
@@ -1216,11 +1388,16 @@ export default function SeguridadFicha({
           />
 
         </div>
+
       </div>
     );
 
   }
 
+
+  /* ============================================================
+     EMPLEADO NO VÁLIDO
+  ============================================================ */
 
   if (!empleadoValido) {
 
@@ -1244,15 +1421,13 @@ export default function SeguridadFicha({
   }
 
 
-  /**
-   * ============================================================
-   * MÉTRICAS
-   * ============================================================
-   */
+  /* ============================================================
+     MÉTRICAS
+  ============================================================ */
 
   const totalPermisos =
     Object.values(
-      permisosEmpleado || {}
+      permisosEmpleado
     ).reduce(
       (
         total,
@@ -1266,6 +1441,10 @@ export default function SeguridadFicha({
     );
 
 
+  /* ============================================================
+     RENDER
+  ============================================================ */
+
   return (
     <div
       className="
@@ -1274,7 +1453,9 @@ export default function SeguridadFicha({
       "
     >
 
-      {/* CABECERA */}
+      {/* ======================================================
+          CABECERA
+      ====================================================== */}
 
       <section
         className="
@@ -1317,6 +1498,7 @@ export default function SeguridadFicha({
               <img
                 src={
                   typeof empleado.foto === "string" &&
+                  empleado.foto.trim() !== "" &&
                   empleado.foto !== "-"
                     ? empleado.foto
                     : "/no-foto.png"
@@ -1389,7 +1571,10 @@ export default function SeguridadFicha({
                   text-[var(--erp-text)]
                 "
               >
-                {empleado.nombre}
+                {textoSeguro(
+                  empleado.nombre
+                )}
+
                 {empleado.apellidos
                   ? ` ${empleado.apellidos}`
                   : ""}
@@ -1415,7 +1600,7 @@ export default function SeguridadFicha({
               >
 
                 <Chip tone="primary">
-                  ID #{empleado.id}
+                  ID #{empleadoIdSeguro}
                 </Chip>
 
                 <Chip tone="purple">
@@ -1463,10 +1648,12 @@ export default function SeguridadFicha({
               <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--erp-text-soft)]">
                 Módulos
               </p>
+
               <p className="mt-1 text-xl font-bold text-[var(--erp-text)]">
                 {modulosVisibles.length}
               </p>
             </div>
+
 
             <div
               className="
@@ -1480,10 +1667,12 @@ export default function SeguridadFicha({
               <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--erp-text-soft)]">
                 Permisos
               </p>
+
               <p className="mt-1 text-xl font-bold text-[var(--erp-text)]">
                 {totalPermisos}
               </p>
             </div>
+
 
             <div
               className="
@@ -1497,10 +1686,12 @@ export default function SeguridadFicha({
               <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--erp-text-soft)]">
                 Auditoría
               </p>
+
               <p className="mt-1 text-xl font-bold text-[var(--erp-text)]">
                 {auditoriaFiltrada.length}
               </p>
             </div>
+
 
             <div
               className="
@@ -1514,6 +1705,7 @@ export default function SeguridadFicha({
               <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--erp-text-soft)]">
                 Logs
               </p>
+
               <p className="mt-1 text-xl font-bold text-[var(--erp-text)]">
                 {logsFiltrados.length}
               </p>
@@ -1537,11 +1729,12 @@ export default function SeguridadFicha({
         >
 
           {empleado.activo ? (
+
             <button
               type="button"
               onClick={() =>
                 bloquear(
-                  empleado.id
+                  empleadoIdSeguro
                 )
               }
               className="
@@ -1559,12 +1752,14 @@ export default function SeguridadFicha({
             >
               🔒 Bloquear usuario
             </button>
+
           ) : (
+
             <button
               type="button"
               onClick={() =>
                 desbloquear(
-                  empleado.id
+                  empleadoIdSeguro
                 )
               }
               className="
@@ -1582,6 +1777,7 @@ export default function SeguridadFicha({
             >
               🔓 Desbloquear usuario
             </button>
+
           )}
 
         </div>
@@ -1589,7 +1785,9 @@ export default function SeguridadFicha({
       </section>
 
 
-      {/* DATOS */}
+      {/* ======================================================
+          DATOS
+      ====================================================== */}
 
       <section
         className="
@@ -1633,6 +1831,7 @@ export default function SeguridadFicha({
             ],
           ].map(
             (item) => (
+
               <div
                 key={item[0]}
                 className="
@@ -1665,12 +1864,15 @@ export default function SeguridadFicha({
                     font-semibold
                     text-[var(--erp-text)]
                   "
-                  title={String(item[1])}
+                  title={String(
+                    item[1]
+                  )}
                 >
                   {item[1]}
                 </p>
 
               </div>
+
             )
           )}
 
@@ -1679,7 +1881,9 @@ export default function SeguridadFicha({
       </section>
 
 
-      {/* CREDENCIALES */}
+      {/* ======================================================
+          CREDENCIALES
+      ====================================================== */}
 
       <section
         className="
@@ -1725,6 +1929,8 @@ export default function SeguridadFicha({
             xl:grid-cols-2
           "
         >
+
+          {/* RESET PASSWORD */}
 
           <div
             className="
@@ -1823,6 +2029,8 @@ export default function SeguridadFicha({
           </div>
 
 
+          {/* ASIGNAR ROL */}
+
           <div
             className="
               rounded-xl
@@ -1851,6 +2059,7 @@ export default function SeguridadFicha({
               "
             >
               Rol actual:{" "}
+
               <span className="font-semibold text-purple-700">
                 {nombreRol}
               </span>
@@ -1869,6 +2078,7 @@ export default function SeguridadFicha({
 
               <input
                 type="number"
+                min="1"
                 value={nuevoRol}
                 onChange={(event) =>
                   setNuevoRol(
@@ -1898,7 +2108,11 @@ export default function SeguridadFicha({
                 onClick={
                   ejecutarAsignarRol
                 }
-                disabled={!nuevoRol}
+                disabled={
+                  idSeguro(
+                    nuevoRol
+                  ) === null
+                }
                 className="
                   rounded-xl
                   border
@@ -1925,7 +2139,9 @@ export default function SeguridadFicha({
       </section>
 
 
-      {/* MÓDULOS */}
+      {/* ======================================================
+          MÓDULOS
+      ====================================================== */}
 
       <SeccionAcordeon
         titulo="Módulos visibles"
@@ -2023,8 +2239,7 @@ export default function SeguridadFicha({
         </div>
 
 
-        {modulosDisponibles.length ===
-          0 && (
+        {modulosDisponibles.length === 0 && (
           <div
             className="
               rounded-xl
@@ -2044,7 +2259,9 @@ export default function SeguridadFicha({
       </SeccionAcordeon>
 
 
-      {/* PERMISOS */}
+      {/* ======================================================
+          PERMISOS
+      ====================================================== */}
 
       <SeccionAcordeon
         titulo="Permisos por módulo"
@@ -2115,6 +2332,7 @@ export default function SeguridadFicha({
                               actual
                             );
 
+
                           if (
                             siguiente.has(
                               modulo
@@ -2128,6 +2346,7 @@ export default function SeguridadFicha({
                               modulo
                             );
                           }
+
 
                           return siguiente;
 
@@ -2185,8 +2404,9 @@ export default function SeguridadFicha({
 
                       <Chip
                         tone={
+                          disponibles.length > 0 &&
                           activos ===
-                          disponibles.length
+                            disponibles.length
                             ? "success"
                             : "purple"
                         }
@@ -2194,7 +2414,13 @@ export default function SeguridadFicha({
                         {activos}
                       </Chip>
 
-                      <span className="text-xs text-[var(--erp-text-soft)]">
+                      <span
+                        className="
+                          text-xs
+                          text-[var(--erp-text-soft)]
+                        "
+                        aria-hidden="true"
+                      >
                         {abierto
                           ? "▲"
                           : "▼"}
@@ -2252,7 +2478,9 @@ export default function SeguridadFicha({
 
                               <input
                                 type="checkbox"
-                                checked={checked}
+                                checked={
+                                  checked
+                                }
                                 onChange={() =>
                                   cambiarPermiso(
                                     modulo,
@@ -2286,6 +2514,7 @@ export default function SeguridadFicha({
             }
           )}
 
+
           {Object.keys(
             permisosGlobales
           ).length === 0 && (
@@ -2310,7 +2539,9 @@ export default function SeguridadFicha({
       </SeccionAcordeon>
 
 
-      {/* AUDITORÍA */}
+      {/* ======================================================
+          AUDITORÍA
+      ====================================================== */}
 
       <SeccionAcordeon
         titulo="Auditoría del usuario"
@@ -2343,10 +2574,13 @@ export default function SeguridadFicha({
               type="text"
               value={busquedaAud}
               onChange={(event) => {
+
                 setBusquedaAud(
                   event.target.value
                 );
+
                 setPaginaAud(0);
+
               }}
               placeholder="Buscar módulo, acción o descripción..."
               className="
@@ -2366,14 +2600,18 @@ export default function SeguridadFicha({
               "
             />
 
+
             <input
               type="date"
               value={filtroFechaAud}
               onChange={(event) => {
+
                 setFiltroFechaAud(
                   event.target.value
                 );
+
                 setPaginaAud(0);
+
               }}
               className="
                 rounded-xl
@@ -2387,6 +2625,7 @@ export default function SeguridadFicha({
                 outline-none
               "
             />
+
 
             <button
               type="button"
@@ -2411,8 +2650,8 @@ export default function SeguridadFicha({
           </div>
 
 
-          {auditoriaPaginada.length ===
-          0 ? (
+          {auditoriaPaginada.length === 0 ? (
+
             <div
               className="
                 rounded-xl
@@ -2427,11 +2666,14 @@ export default function SeguridadFicha({
             >
               No hay registros de auditoría.
             </div>
+
           ) : (
+
             <div className="space-y-2">
 
               {auditoriaPaginada.map(
                 (item, index) => (
+
                   <div
                     key={
                       item.id ??
@@ -2484,6 +2726,7 @@ export default function SeguridadFicha({
 
                       </div>
 
+
                       <span
                         className="
                           text-xs
@@ -2508,10 +2751,12 @@ export default function SeguridadFicha({
                     </p>
 
                   </div>
+
                 )
               )}
 
             </div>
+
           )}
 
 
@@ -2532,8 +2777,14 @@ export default function SeguridadFicha({
               "
             >
               Página{" "}
-              {paginaAud + 1}
+              {Math.min(
+                paginaAud + 1,
+                totalPaginasAuditoria
+              )}{" "}
+              de{" "}
+              {totalPaginasAuditoria}
             </span>
+
 
             <div className="flex gap-2">
 
@@ -2564,19 +2815,20 @@ export default function SeguridadFicha({
                 Anterior
               </button>
 
+
               <button
                 type="button"
                 disabled={
-                  (
-                    paginaAud + 1
-                  ) *
-                    pageSize >=
-                  auditoriaFiltrada.length
+                  paginaAud >=
+                  totalPaginasAuditoria - 1
                 }
                 onClick={() =>
                   setPaginaAud(
                     (actual) =>
-                      actual + 1
+                      Math.min(
+                        totalPaginasAuditoria - 1,
+                        actual + 1
+                      )
                   )
                 }
                 className="
@@ -2601,7 +2853,9 @@ export default function SeguridadFicha({
       </SeccionAcordeon>
 
 
-      {/* LOGS */}
+      {/* ======================================================
+          LOGS
+      ====================================================== */}
 
       <SeccionAcordeon
         titulo="Logs técnicos del usuario"
@@ -2634,10 +2888,13 @@ export default function SeguridadFicha({
               type="text"
               value={busquedaLog}
               onChange={(event) => {
+
                 setBusquedaLog(
                   event.target.value
                 );
+
                 setPaginaLog(0);
+
               }}
               placeholder="Buscar evento, detalle o IP..."
               className="
@@ -2657,14 +2914,18 @@ export default function SeguridadFicha({
               "
             />
 
+
             <input
               type="date"
               value={filtroFechaLog}
               onChange={(event) => {
+
                 setFiltroFechaLog(
                   event.target.value
                 );
+
                 setPaginaLog(0);
+
               }}
               className="
                 rounded-xl
@@ -2678,6 +2939,7 @@ export default function SeguridadFicha({
                 outline-none
               "
             />
+
 
             <button
               type="button"
@@ -2702,8 +2964,8 @@ export default function SeguridadFicha({
           </div>
 
 
-          {logsPaginados.length ===
-          0 ? (
+          {logsPaginados.length === 0 ? (
+
             <div
               className="
                 rounded-xl
@@ -2718,7 +2980,9 @@ export default function SeguridadFicha({
             >
               No hay logs técnicos.
             </div>
+
           ) : (
+
             <div className="space-y-2">
 
               {logsPaginados.map(
@@ -2731,13 +2995,10 @@ export default function SeguridadFicha({
 
 
                   const tono =
-                    evento ===
-                    "error"
+                    evento === "error"
                       ? "danger"
-                      : evento ===
-                          "warning" ||
-                        evento ===
-                          "login_error"
+                      : evento === "warning" ||
+                        evento === "login_error"
                         ? "warning"
                         : "neutral";
 
@@ -2782,6 +3043,7 @@ export default function SeguridadFicha({
                               "Evento"}
                           </Chip>
 
+
                           {item.ip && (
                             <span
                               className="
@@ -2794,6 +3056,7 @@ export default function SeguridadFicha({
                           )}
 
                         </div>
+
 
                         <span
                           className="
@@ -2825,6 +3088,7 @@ export default function SeguridadFicha({
               )}
 
             </div>
+
           )}
 
 
@@ -2845,8 +3109,14 @@ export default function SeguridadFicha({
               "
             >
               Página{" "}
-              {paginaLog + 1}
+              {Math.min(
+                paginaLog + 1,
+                totalPaginasLogs
+              )}{" "}
+              de{" "}
+              {totalPaginasLogs}
             </span>
+
 
             <div className="flex gap-2">
 
@@ -2877,19 +3147,20 @@ export default function SeguridadFicha({
                 Anterior
               </button>
 
+
               <button
                 type="button"
                 disabled={
-                  (
-                    paginaLog + 1
-                  ) *
-                    pageSize >=
-                  logsFiltrados.length
+                  paginaLog >=
+                  totalPaginasLogs - 1
                 }
                 onClick={() =>
                   setPaginaLog(
                     (actual) =>
-                      actual + 1
+                      Math.min(
+                        totalPaginasLogs - 1,
+                        actual + 1
+                      )
                   )
                 }
                 className="

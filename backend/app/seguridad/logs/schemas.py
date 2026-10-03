@@ -5,28 +5,20 @@ from pydantic import BaseModel, ConfigDict
 
 
 # ============================================================
-# LOG - CREACIÓN
+# CREAR LOG
 # ============================================================
 
 class LogCreate(BaseModel):
-    """
-    Datos necesarios para registrar un nuevo log.
-    """
-
     evento: str
     detalle: Optional[str] = None
     ip: Optional[str] = None
 
 
 # ============================================================
-# LOG - SALIDA
+# RESPUESTA
 # ============================================================
 
 class LogOut(BaseModel):
-    """
-    Representación de un log devuelto por la API.
-    """
-
     id: int
     evento: str
     detalle: Optional[str] = None

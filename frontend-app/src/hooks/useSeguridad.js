@@ -18,22 +18,14 @@ import { useSeguridadStore } from "../store/seguridadStore";
  * La carga general mediante cargarTodo() debe ejecutarse
  * únicamente desde el componente padre de Seguridad.
  *
- * Los módulos hijos:
- *
- * - SeguridadRolEditor
- * - SeguridadLogs
- * - SeguridadPermisos
- * - SeguridadEmpleados
- * - SeguridadAuditoria
- *
- * solamente consumen este hook.
+ * Los módulos hijos solamente consumen este hook.
  * ============================================================
  */
 
 export const useSeguridad = () => {
 
   // ============================================================
-  // DATOS
+  // DATOS DEL STORE
   // ============================================================
 
   const rolesStore =
@@ -140,6 +132,7 @@ export const useSeguridad = () => {
       )
       .map(
         (rol) => ({
+
           ...rol,
 
           id:
@@ -156,6 +149,7 @@ export const useSeguridad = () => {
                   rol.name ??
                   ""
                 ),
+
         })
       )
       .filter(
@@ -163,11 +157,13 @@ export const useSeguridad = () => {
           rol.nombre.trim() !== ""
       );
 
-  }, [rolesStore]);
+  }, [
+    rolesStore,
+  ]);
 
 
   // ============================================================
-  // PERMISOS
+  // PERMISOS GLOBALES
   // ============================================================
 
   const permisos = useMemo(() => {
@@ -184,6 +180,7 @@ export const useSeguridad = () => {
       )
       .map(
         (permiso) => ({
+
           ...permiso,
 
           modulo:
@@ -191,7 +188,7 @@ export const useSeguridad = () => {
               permiso.modulo ??
               permiso.module ??
               ""
-            ),
+            ).trim(),
 
           permiso:
             String(
@@ -199,16 +196,19 @@ export const useSeguridad = () => {
               permiso.nombre ??
               permiso.permission ??
               ""
-            ),
+            ).trim(),
+
         })
       )
       .filter(
         (permiso) =>
-          permiso.modulo.trim() !== "" ||
-          permiso.permiso.trim() !== ""
+          permiso.modulo !== "" &&
+          permiso.permiso !== ""
       );
 
-  }, [permisosStore]);
+  }, [
+    permisosStore,
+  ]);
 
 
   // ============================================================
@@ -229,6 +229,7 @@ export const useSeguridad = () => {
       )
       .map(
         (empleado) => ({
+
           ...empleado,
 
           id:
@@ -272,12 +273,17 @@ export const useSeguridad = () => {
 
           activo:
             empleado.activo !== undefined
-              ? Boolean(empleado.activo)
+              ? Boolean(
+                  empleado.activo
+                )
               : true,
+
         })
       );
 
-  }, [empleadosStore]);
+  }, [
+    empleadosStore,
+  ]);
 
 
   // ============================================================
@@ -298,6 +304,7 @@ export const useSeguridad = () => {
       )
       .map(
         (registro) => ({
+
           ...registro,
 
           id:
@@ -341,10 +348,13 @@ export const useSeguridad = () => {
               registro.module ??
               ""
             ),
+
         })
       );
 
-  }, [auditoriaStore]);
+  }, [
+    auditoriaStore,
+  ]);
 
 
   // ============================================================
@@ -365,6 +375,7 @@ export const useSeguridad = () => {
       )
       .map(
         (log) => ({
+
           ...log,
 
           id:
@@ -423,10 +434,13 @@ export const useSeguridad = () => {
               log.severidad ??
               "INFO"
             ).toUpperCase(),
+
         })
       );
 
-  }, [logsStore]);
+  }, [
+    logsStore,
+  ]);
 
 
   // ============================================================
@@ -442,135 +456,308 @@ export const useSeguridad = () => {
       return null;
     }
 
+
+    // ----------------------------------------------------------
+    // EMPLEADO
+    // ----------------------------------------------------------
+
     const empleadoOriginal =
       fichaStore.empleado;
+
 
     if (
       !empleadoOriginal ||
       typeof empleadoOriginal !== "object"
     ) {
+
       return {
+
         ...fichaStore,
+
         empleado: null,
+
+        permisos_modulo: {},
+
         permisos_modulo_dict: {},
+
+        modulos_visibles: [],
+
       };
+
     }
 
-    const permisosModulo =
+
+    // ----------------------------------------------------------
+    // PERMISOS
+    //
+    // El backend/store puede utilizar cualquiera de estos
+    // nombres. Normalizamos todos al mismo objeto.
+    // ----------------------------------------------------------
+
+    const permisosModuloFuente =
       fichaStore.permisos_modulo_dict ??
       fichaStore.permisos_modulo ??
       fichaStore.permisos ??
       {};
 
-    const modulosVisibles =
+
+    const permisosModulo =
+      permisosModuloFuente &&
+      typeof permisosModuloFuente === "object" &&
+      !Array.isArray(
+        permisosModuloFuente
+      )
+
+        ? Object.fromEntries(
+
+            Object.entries(
+              permisosModuloFuente
+            ).map(
+              ([modulo, lista]) => [
+
+                String(modulo),
+
+                Array.isArray(lista)
+
+                  ? lista
+                      .filter(
+                        (permiso) =>
+                          typeof permiso === "string"
+                      )
+                      .map(
+                        (permiso) =>
+                          permiso.trim()
+                      )
+                      .filter(
+                        Boolean
+                      )
+
+                  : [],
+
+              ]
+            )
+
+          )
+
+        : {};
+
+
+    // ----------------------------------------------------------
+    // MÓDULOS VISIBLES
+    // ----------------------------------------------------------
+
+    const modulosVisiblesFuente =
       empleadoOriginal.modulos_visibles_list ??
       empleadoOriginal.modulos_visibles ??
       fichaStore.modulos_visibles ??
       [];
 
+
+    const modulosVisibles =
+      Array.isArray(
+        modulosVisiblesFuente
+      )
+
+        ? modulosVisiblesFuente
+            .filter(
+              (modulo) =>
+                typeof modulo === "string"
+            )
+            .map(
+              (modulo) =>
+                modulo.trim()
+            )
+            .filter(
+              Boolean
+            )
+
+        : [];
+
+
+    // ----------------------------------------------------------
+    // ROL
+    // ----------------------------------------------------------
+
+    const rolOriginal =
+      empleadoOriginal.rol;
+
+
+    let rolNormalizado =
+      null;
+
+
+    if (
+      rolOriginal &&
+      typeof rolOriginal === "object"
+    ) {
+
+      rolNormalizado = {
+
+        ...rolOriginal,
+
+        id:
+          rolOriginal.id !== undefined &&
+          rolOriginal.id !== null
+            ? Number(
+                rolOriginal.id
+              )
+            : rolOriginal.id,
+
+        nombre:
+          String(
+            rolOriginal.nombre ??
+            rolOriginal.name ??
+            ""
+          ),
+
+      };
+
+    } else if (
+      typeof rolOriginal === "string"
+    ) {
+
+      rolNormalizado = {
+
+        id: null,
+
+        nombre:
+          rolOriginal,
+
+      };
+
+    } else if (
+      empleadoOriginal.rol_id !== undefined &&
+      empleadoOriginal.rol_id !== null
+    ) {
+
+      rolNormalizado = {
+
+        id:
+          Number(
+            empleadoOriginal.rol_id
+          ),
+
+        nombre:
+          String(
+            empleadoOriginal.rol_nombre ??
+            ""
+          ),
+
+      };
+
+    }
+
+
+    // ----------------------------------------------------------
+    // EMPLEADO NORMALIZADO
+    // ----------------------------------------------------------
+
+    const empleadoNormalizado = {
+
+      ...empleadoOriginal,
+
+      id:
+        empleadoOriginal.id !== undefined &&
+        empleadoOriginal.id !== null
+          ? Number(
+              empleadoOriginal.id
+            )
+          : empleadoOriginal.id,
+
+      nombre:
+        String(
+          empleadoOriginal.nombre ??
+          empleadoOriginal.name ??
+          ""
+        ),
+
+      usuario:
+        String(
+          empleadoOriginal.usuario ??
+          empleadoOriginal.username ??
+          ""
+        ),
+
+      apellidos:
+        String(
+          empleadoOriginal.apellidos ??
+          ""
+        ),
+
+      dni:
+        String(
+          empleadoOriginal.dni ??
+          ""
+        ),
+
+      email_empresa:
+        String(
+          empleadoOriginal.email_empresa ??
+          empleadoOriginal.email ??
+          ""
+        ),
+
+      activo:
+        empleadoOriginal.activo !== undefined
+          ? Boolean(
+              empleadoOriginal.activo
+            )
+          : true,
+
+      rol:
+        rolNormalizado,
+
+      rol_nombre:
+        String(
+          empleadoOriginal.rol_nombre ??
+          (
+            rolNormalizado &&
+            rolNormalizado.nombre
+          ) ??
+          ""
+        ),
+
+      foto:
+        typeof empleadoOriginal.foto === "string"
+          ? empleadoOriginal.foto
+          : null,
+
+      modulos_visibles_list:
+        modulosVisibles,
+
+    };
+
+
+    // ========================================================
+    // RESULTADO FINAL
+    //
+    // IMPORTANTE:
+    // Exponemos permisos_modulo Y permisos_modulo_dict
+    // para mantener compatibilidad con SeguridadFicha.jsx
+    // y con cualquier componente antiguo.
+    // ========================================================
+
     return {
 
       ...fichaStore,
 
-      empleado: {
+      empleado:
+        empleadoNormalizado,
 
-        ...empleadoOriginal,
-
-        id:
-          empleadoOriginal.id !== undefined &&
-          empleadoOriginal.id !== null
-            ? Number(empleadoOriginal.id)
-            : empleadoOriginal.id,
-
-        nombre:
-          String(
-            empleadoOriginal.nombre ??
-            ""
-          ),
-
-        usuario:
-          String(
-            empleadoOriginal.usuario ??
-            ""
-          ),
-
-        apellidos:
-          String(
-            empleadoOriginal.apellidos ??
-            ""
-          ),
-
-        dni:
-          String(
-            empleadoOriginal.dni ??
-            ""
-          ),
-
-        email_empresa:
-          String(
-            empleadoOriginal.email_empresa ??
-            empleadoOriginal.email ??
-            ""
-          ),
-
-        activo:
-          empleadoOriginal.activo !== undefined
-            ? Boolean(
-                empleadoOriginal.activo
-              )
-            : true,
-
-        rol_nombre:
-          String(
-            empleadoOriginal.rol_nombre ??
-            empleadoOriginal.rol ??
-            ""
-          ),
-
-        foto:
-          typeof empleadoOriginal.foto === "string"
-            ? empleadoOriginal.foto
-            : null,
-
-        modulos_visibles_list:
-          Array.isArray(modulosVisibles)
-            ? modulosVisibles.filter(
-                (modulo) =>
-                  typeof modulo === "string"
-              )
-            : [],
-      },
+      permisos_modulo:
+        permisosModulo,
 
       permisos_modulo_dict:
-        permisosModulo &&
-        typeof permisosModulo === "object" &&
-        !Array.isArray(permisosModulo)
+        permisosModulo,
 
-          ? Object.fromEntries(
+      modulos_visibles:
+        modulosVisibles,
 
-              Object.entries(
-                permisosModulo
-              ).map(
-                ([modulo, lista]) => [
-
-                  modulo,
-
-                  Array.isArray(lista)
-                    ? lista.filter(
-                        (permiso) =>
-                          typeof permiso === "string"
-                      )
-                    : [],
-
-                ]
-              )
-
-            )
-
-          : {},
     };
 
-  }, [fichaStore]);
+  }, [
+    fichaStore,
+  ]);
 
 
   // ============================================================
@@ -593,7 +780,8 @@ export const useSeguridad = () => {
 
     loading,
 
-    error: errorStore,
+    error:
+      errorStore,
 
     cargarTodo,
 

@@ -299,8 +299,6 @@ export default function Sidebar() {
   /**
    * ==========================================================
    * MÓDULOS PRINCIPALES
-   *
-   * Estos son los que queremos visibles directamente.
    * ==========================================================
    */
 
@@ -347,7 +345,7 @@ export default function Sidebar() {
       label: "Intranet",
       icon: "globe",
     },
-    
+
     {
       key: "mensajes",
       to: "/mensajes",
@@ -355,7 +353,7 @@ export default function Sidebar() {
       icon: "chat",
       badge: mensajesNoLeidos,
     },
-   
+
     {
       key: "utilidades",
       to: "/herramientas/utilidades",
@@ -363,7 +361,7 @@ export default function Sidebar() {
       icon: "cog",
     },
 
-        {
+    {
       key: "notificaciones",
       to: "/notificaciones",
       label: "Notificaciones",
@@ -378,7 +376,15 @@ export default function Sidebar() {
    * ==========================================================
    * MÓDULOS SECUNDARIOS
    *
-   * Solamente aparecen si el usuario puede verlos.
+   * SEGURIDAD Y AUDITORÍA SON MÓDULOS INDEPENDIENTES.
+   *
+   * Seguridad:
+   *   /seguridad
+   *
+   * Auditoría:
+   *   /auditoria
+   *
+   * Cada uno utiliza su propia clave de permisos.
    * ==========================================================
    */
 
@@ -391,6 +397,12 @@ export default function Sidebar() {
       icon: "chart",
     },
 
+    {
+      key: "seguridad",
+      to: "/seguridad",
+      label: "Seguridad",
+      icon: "shield",
+    },
 
     {
       key: "logs",
@@ -406,7 +418,6 @@ export default function Sidebar() {
       icon: "database",
     },
 
-
     {
       key: "panel-tecnico",
       to: "/panel-tecnico",
@@ -419,13 +430,6 @@ export default function Sidebar() {
       to: "/realtime",
       label: "Realtime",
       icon: "activity",
-    },
-
-    {
-      key: "seguridad",
-      to: "/seguridad",
-      label: "Seguridad",
-      icon: "shield",
     },
 
   ];
@@ -502,28 +506,30 @@ export default function Sidebar() {
         >
 
           <div
-  className="
-    w-9
-    h-9
-    rounded-xl
-    bg-white
-    flex
-    items-center
-    justify-center
-    overflow-hidden
-    flex-shrink-0
-  "
->
-  <img
-    src="/img/logo.jpg"
-    alt="CancelaGest"
-    className="
-      w-full
-      h-full
-      object-contain
-    "
-  />
-</div>
+            className="
+              w-9
+              h-9
+              rounded-xl
+              bg-white
+              flex
+              items-center
+              justify-center
+              overflow-hidden
+              flex-shrink-0
+            "
+          >
+
+            <img
+              src="/img/logo.jpg"
+              alt="CancelaGest"
+              className="
+                w-full
+                h-full
+                object-contain
+              "
+            />
+
+          </div>
 
 
           <div className="hidden lg:block">
@@ -873,7 +879,9 @@ export default function Sidebar() {
               active:scale-[0.96]
             "
           >
+
             <ProfileIcon />
+
           </button>
 
 
@@ -900,7 +908,9 @@ export default function Sidebar() {
               active:scale-[0.96]
             "
           >
+
             <LogoutIcon />
+
           </button>
 
         </div>

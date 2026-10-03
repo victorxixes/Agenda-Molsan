@@ -1,7 +1,12 @@
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
 from backend.app.database import get_db
+
+from backend.app.seguridad.auditoria.schemas import (
+    AuditoriaCreate,
+    AuditoriaOut,
+)
 
 from backend.app.seguridad.auditoria.service import (
     obtener_auditoria,
@@ -11,112 +16,117 @@ from backend.app.seguridad.auditoria.service import (
 )
 
 
+# ============================================================
+# ROUTER
+# ============================================================
+
 router = APIRouter(
     prefix="/seguridad/auditoria",
-    tags=[
-        "Seguridad - Auditoría"
-    ],
+    tags=["Seguridad - Auditoría"],
 )
 
 
-# =========================================================
+# ============================================================
 # AUDITORÍA GLOBAL
-# =========================================================
+# ============================================================
 
-@router.get("/")
+@router.get(
+    "/",
+    response_model=list[AuditoriaOut],
+    summary="Obtener auditoría global",
+)
 def listar_auditoria(
-    limite: int = Query(
-        200,
-        ge=1,
-        le=1000,
-    ),
     db: Session = Depends(get_db),
 ):
     """
-    Devuelve los últimos registros globales de auditoría.
+    Devuelve los registros de auditoría globales,
+    ordenados del más reciente al más antiguo.
+
+    El límite y la lógica de consulta pertenecen al service.
     """
 
-    return obtener_auditoria(
-        db,
-        limite=limite,
-    )
+    return obtener_auditoria(db)
 
 
-# =========================================================
+# ============================================================
 # AUDITORÍA POR EMPLEADO
-# =========================================================
+# ============================================================
 
 @router.get(
-    "/empleado/{empleado_id}"
+    "/empleado/{empleado_id}",
+    response_model=list[AuditoriaOut],
+    summary="Obtener auditoría de un empleado",
 )
 def listar_auditoria_empleado(
     empleado_id: int,
-    limite: int = Query(
-        100,
-        ge=1,
-        le=500,
-    ),
     db: Session = Depends(get_db),
 ):
     """
-    Devuelve el histórico de auditoría de un empleado.
-
-    `empleado_id` es el ID numérico de empleados.
-    El service resuelve internamente el usuario/login
-    utilizado por el histórico de auditoría.
+    Devuelve la actividad de auditoría asociada
+    al empleado indicado.
     """
 
     return obtener_auditoria_empleado(
-        db,
+        db=db,
         empleado_id=empleado_id,
-        limite=limite,
     )
 
 
-# =========================================================
+# ============================================================
 # MÉTRICAS
-# =========================================================
+# ============================================================
 
 @router.get(
-    "/metricas"
+    "/metricas",
+    summary="Obtener métricas de auditoría",
 )
 def metricas(
     db: Session = Depends(get_db),
 ):
     """
-    Devuelve métricas generales de auditoría.
+    Devuelve las métricas agregadas de auditoría:
+    - total de registros
+    - registros por módulo
+    - registros por acción
+    - últimos logins
     """
 
-    return obtener_metricas(
-        db
-    )
+    return obtener_metricas(db)
 
 
-# =========================================================
+# ============================================================
 # REGISTRAR AUDITORÍA
-# =========================================================
+# ============================================================
 
-@router.post("/")
+@router.post(
+    "/",
+    response_model=AuditoriaOut,
+    status_code=status.HTTP_201_CREATED,
+    summary="Registrar evento de auditoría",
+)
 def registrar(
-    usuario: str,
-    modulo: str,
-    accion: str,
-    descripcion: str,
-    ip: str | None = None,
+    datos: AuditoriaCreate,
     db: Session = Depends(get_db),
 ):
     """
-    Registra manualmente un evento de auditoría.
+    Registra un nuevo evento de auditoría.
 
-    Este endpoint conserva la compatibilidad con el sistema
-    actual, donde el registro se identifica por usuario/login.
+    El cuerpo esperado es:
+
+    {
+        "usuario": "usuario",
+        "modulo": "seguridad",
+        "accion": "login",
+        "descripcion": "Inicio de sesión",
+        "ip": "127.0.0.1"
+    }
     """
 
     return registrar_auditoria(
         db=db,
-        usuario=usuario,
-        modulo=modulo,
-        accion=accion,
-        descripcion=descripcion,
-        ip=ip,
+        usuario=datos.usuario,
+        modulo=datos.modulo,
+        accion=datos.accion,
+        descripcion=datos.descripcion,
+        ip=datos.ip,
     )

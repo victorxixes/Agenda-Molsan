@@ -1,14 +1,31 @@
 import { useState } from "react";
 import axios from "axios";
 
+
+/**
+ * ============================================================
+ * IMPORTADOR ABSIS
+ * MOLSAN ERP — TEMA CLARO PREMIUM
+ * ============================================================
+ */
+
 export default function ImportadorAbsis() {
+
     const [fecha, setFecha] = useState("");
     const [file, setFile] = useState(null);
     const [resultado, setResultado] = useState(null);
     const [cargando, setCargando] = useState(false);
     const [error, setError] = useState(null);
 
+
+    /**
+     * ========================================================
+     * IMPORTAR
+     * ========================================================
+     */
+
     const importar = async (modo) => {
+
         setError(null);
         setResultado(null);
 
@@ -25,392 +42,905 @@ export default function ImportadorAbsis() {
         setCargando(true);
 
         try {
+
             const formData = new FormData();
-            formData.append("fichero", file);
+
+            formData.append(
+                "fichero",
+                file
+            );
 
             const url =
                 modo === "hoy"
                     ? "/utilidades/importador-absis/expedientes"
                     : `/utilidades/importador-absis/expedientes?fecha=${fecha}`;
 
-            const res = await axios.post(url, formData);
+            const res = await axios.post(
+                url,
+                formData
+            );
 
             setResultado(res.data);
+
         } catch (err) {
-            console.error("Error importando ABSIS:", err);
+
+            console.error(
+                "Error importando ABSIS:",
+                err
+            );
 
             setError(
                 err?.response?.data?.error ||
                 "Error al importar el archivo. Revisa el formato o el servidor."
             );
+
+        } finally {
+
+            setCargando(false);
+
         }
 
-        setCargando(false);
     };
 
+
+    /**
+     * ========================================================
+     * ARCHIVO
+     * ========================================================
+     */
+
+    const seleccionarArchivo = (event) => {
+
+        const seleccionado =
+            event.target.files?.[0] || null;
+
+        setError(null);
+        setResultado(null);
+
+        if (!seleccionado) {
+            setFile(null);
+            return;
+        }
+
+        const extension =
+            seleccionado.name
+                .split(".")
+                .pop()
+                ?.toLowerCase();
+
+        if (extension !== "xlsx") {
+
+            setFile(null);
+
+            setError(
+                "El archivo seleccionado debe estar en formato .xlsx."
+            );
+
+            event.target.value = "";
+
+            return;
+        }
+
+        setFile(seleccionado);
+
+    };
+
+
+    /**
+     * ========================================================
+     * FORMATEAR TAMAÑO
+     * ========================================================
+     */
+
+    const tamañoArchivo = file
+        ? `${(file.size / 1024 / 1024).toFixed(2)} MB`
+        : "";
+
+
     return (
-        <div className="p-6 space-y-6 animate-fade-in text-white">
 
-            {/* =====================================================
+        <div
+            className="
+                w-full
+                p-4
+                lg:p-6
+                space-y-5
+                animate-fade-in
+                text-[var(--erp-text)]
+            "
+        >
+
+
+            {/* ==================================================
                 CABECERA
-            ====================================================== */}
+                ================================================== */}
 
-            <div
+            <section
                 className="
-                    bg-white/10 backdrop-blur-xl
-                    border border-white/20
+                    bg-white
+                    border
+                    border-[var(--erp-border)]
                     rounded-2xl
-                    p-6
-                    shadow-xl
+                    p-5
+                    lg:p-6
+                    shadow-sm
                 "
             >
-                <div className="flex items-start gap-4">
+
+                <div
+                    className="
+                        flex
+                        items-center
+                        gap-4
+                    "
+                >
+
+                    {/* ICONO */}
 
                     <div
                         className="
-                            w-12 h-12
+                            w-12
+                            h-12
+                            rounded-2xl
+                            bg-[var(--erp-primary-soft)]
+                            border
+                            border-[var(--erp-primary)]
+                            flex
+                            items-center
+                            justify-center
+                            flex-shrink-0
+                            shadow-sm
+                        "
+                    >
+
+                        <span
+                            className="
+                                text-xl
+                            "
+                        >
+                            📥
+                        </span>
+
+                    </div>
+
+
+                    {/* TEXTO */}
+
+                    <div className="min-w-0">
+
+                        <h1
+                            className="
+                                text-2xl
+                                lg:text-3xl
+                                font-bold
+                                tracking-tight
+                                text-[var(--erp-text)]
+                            "
+                        >
+                            Importador ABSIS
+                        </h1>
+
+                        <p
+                            className="
+                                text-sm
+                                text-[var(--erp-text-soft)]
+                                mt-1
+                            "
+                        >
+                            Importa expedientes desde el Excel matriz ABSIS
+                            seleccionando el día que deseas procesar.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+
+            {/* ==================================================
+                PANEL PRINCIPAL
+                ================================================== */}
+
+            <section
+                className="
+                    bg-white
+                    border
+                    border-[var(--erp-border)]
+                    rounded-2xl
+                    p-5
+                    lg:p-6
+                    shadow-sm
+                "
+            >
+
+
+                {/* =================================================
+                    CABECERA DEL PANEL
+                    ================================================= */}
+
+                <div
+                    className="
+                        flex
+                        items-center
+                        gap-3
+                        mb-6
+                    "
+                >
+
+                    <div
+                        className="
+                            w-9
+                            h-9
                             rounded-xl
-                            bg-blue-500/20
-                            border border-blue-400/30
-                            flex items-center justify-center
-                            text-2xl
-                            shadow-lg
+                            bg-[var(--erp-primary-soft)]
+                            border
+                            border-[var(--erp-border)]
+                            flex
+                            items-center
+                            justify-center
                         "
                     >
                         📥
                     </div>
 
                     <div>
-                        <h1 className="text-3xl font-bold drop-shadow">
-                            Importador ABSIS
-                        </h1>
 
-                        <p className="text-white/70 text-sm mt-1">
-                            Importa expedientes desde el Excel matriz ABSIS
-                            seleccionando el día que deseas procesar.
+                        <h2
+                            className="
+                                text-base
+                                font-bold
+                                text-[var(--erp-text)]
+                            "
+                        >
+                            Configuración de la importación
+                        </h2>
+
+                        <p
+                            className="
+                                text-xs
+                                text-[var(--erp-text-soft)]
+                            "
+                        >
+                            Selecciona la fecha y el archivo Excel ABSIS.
                         </p>
+
                     </div>
 
                 </div>
-            </div>
 
 
-            {/* =====================================================
-                PANEL PRINCIPAL
-            ====================================================== */}
-
-            <div
-                className="
-                    bg-white/10 backdrop-blur-xl
-                    border border-white/20
-                    rounded-2xl
-                    p-6
-                    shadow-xl
-                    space-y-6
-                "
-            >
 
                 {/* =================================================
                     FECHA
-                ================================================== */}
+                    ================================================= */}
 
-                <div>
+                <div className="mb-6">
+
                     <label
+                        htmlFor="absis-fecha"
                         className="
-                            block
+                            flex
+                            items-center
+                            gap-2
                             text-sm
                             font-semibold
-                            text-white/80
+                            text-[var(--erp-text)]
                             mb-2
                         "
                     >
-                        📅 Fecha de importación
+
+                        <span>📅</span>
+
+                        <span>
+                            Fecha de importación
+                        </span>
+
                     </label>
+
 
                     <div
                         className="
                             max-w-sm
-                            bg-white/5
-                            border border-white/10
-                            rounded-xl
-                            p-3
+                            relative
                         "
                     >
+
                         <input
+                            id="absis-fecha"
                             type="date"
                             value={fecha}
-                            onChange={(e) => setFecha(e.target.value)}
+                            onChange={(e) =>
+                                setFecha(e.target.value)
+                            }
                             disabled={cargando}
                             className="
                                 w-full
-                                bg-transparent
-                                text-white
+                                h-11
+                                px-3
+                                rounded-xl
+                                border
+                                border-[var(--erp-border)]
+                                bg-white
+                                text-[var(--erp-text)]
+                                text-sm
                                 outline-none
-                                cursor-pointer
+                                transition-all
+                                focus:border-[var(--erp-primary)]
+                                focus:ring-2
+                                focus:ring-[var(--erp-primary-soft)]
+                                disabled:bg-gray-50
+                                disabled:cursor-not-allowed
                             "
                         />
+
                     </div>
 
-                    <p className="text-xs text-white/50 mt-2">
+
+                    <p
+                        className="
+                            text-xs
+                            text-[var(--erp-text-soft)]
+                            mt-2
+                        "
+                    >
                         Selecciona una fecha si quieres importar un día
                         concreto del histórico ABSIS.
                     </p>
+
                 </div>
 
 
+
                 {/* =================================================
-                    ARCHIVO
-                ================================================== */}
+                    ARCHIVO EXCEL
+                    ================================================= */}
 
                 <div>
+
                     <label
                         className="
-                            block
+                            flex
+                            items-center
+                            gap-2
                             text-sm
                             font-semibold
-                            text-white/80
+                            text-[var(--erp-text)]
                             mb-2
                         "
                     >
-                        📊 Archivo Excel
+
+                        <span>📊</span>
+
+                        <span>
+                            Archivo Excel
+                        </span>
+
                     </label>
+
 
                     <label
                         className="
+                            group
                             flex
                             flex-col
                             items-center
                             justify-center
                             w-full
-                            min-h-[150px]
+                            min-h-[155px]
                             rounded-2xl
-                            border
+                            border-2
                             border-dashed
-                            border-white/20
-                            bg-white/5
-                            hover:bg-white/10
-                            transition
+                            border-[var(--erp-border)]
+                            bg-[var(--erp-background)]
+                            hover:border-[var(--erp-primary)]
+                            hover:bg-[var(--erp-primary-soft)]
+                            transition-all
+                            duration-200
                             cursor-pointer
+                            px-6
                         "
                     >
-                        <div className="text-center pointer-events-none">
 
-                            <div className="text-4xl mb-2">
-                                📄
+                        <div
+                            className="
+                                text-center
+                                pointer-events-none
+                            "
+                        >
+
+                            {/* ICONO */}
+
+                            <div
+                                className="
+                                    mx-auto
+                                    w-12
+                                    h-12
+                                    rounded-2xl
+                                    bg-white
+                                    border
+                                    border-[var(--erp-border)]
+                                    flex
+                                    items-center
+                                    justify-center
+                                    text-2xl
+                                    shadow-sm
+                                    mb-3
+                                    group-hover:border-[var(--erp-primary)]
+                                    transition
+                                "
+                            >
+                                {file ? "📊" : "📄"}
                             </div>
 
+
+                            {/* ARCHIVO SELECCIONADO */}
+
                             {file ? (
+
                                 <>
-                                    <div className="font-semibold text-white">
+
+                                    <div
+                                        className="
+                                            font-semibold
+                                            text-[var(--erp-text)]
+                                            text-sm
+                                            break-all
+                                        "
+                                    >
                                         {file.name}
                                     </div>
 
-                                    <div className="text-xs text-white/50 mt-1">
-                                        {(file.size / 1024 / 1024).toFixed(2)} MB
+                                    <div
+                                        className="
+                                            text-xs
+                                            text-[var(--erp-text-soft)]
+                                            mt-1
+                                        "
+                                    >
+                                        {tamañoArchivo}
                                     </div>
+
+                                    <div
+                                        className="
+                                            inline-flex
+                                            items-center
+                                            gap-1.5
+                                            mt-3
+                                            px-3
+                                            py-1
+                                            rounded-full
+                                            bg-green-50
+                                            border
+                                            border-green-200
+                                            text-green-700
+                                            text-[11px]
+                                            font-semibold
+                                        "
+                                    >
+                                        <span>✓</span>
+                                        Excel seleccionado
+                                    </div>
+
                                 </>
+
                             ) : (
+
                                 <>
-                                    <div className="font-semibold text-white">
+
+                                    <div
+                                        className="
+                                            font-semibold
+                                            text-[var(--erp-text)]
+                                            text-sm
+                                        "
+                                    >
                                         Selecciona el Excel ABSIS
                                     </div>
 
-                                    <div className="text-xs text-white/50 mt-1">
+                                    <div
+                                        className="
+                                            text-xs
+                                            text-[var(--erp-text-soft)]
+                                            mt-1
+                                        "
+                                    >
                                         Formato permitido: .xlsx
                                     </div>
+
+                                    <div
+                                        className="
+                                            text-[11px]
+                                            text-[var(--erp-text-soft)]
+                                            mt-3
+                                        "
+                                    >
+                                        Haz clic aquí para seleccionar el archivo
+                                    </div>
+
                                 </>
+
                             )}
 
                         </div>
+
 
                         <input
                             type="file"
                             accept=".xlsx"
                             disabled={cargando}
-                            onChange={(e) => setFile(e.target.files[0])}
+                            onChange={seleccionarArchivo}
                             className="hidden"
                         />
+
                     </label>
+
                 </div>
+
 
 
                 {/* =================================================
                     BOTONES
-                ================================================== */}
+                    ================================================= */}
 
-                <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                <div
+                    className="
+                        grid
+                        grid-cols-1
+                        lg:grid-cols-2
+                        gap-3
+                        mt-6
+                    "
+                >
+
+                    {/* IMPORTAR DÍA ACTUAL */}
 
                     <button
                         type="button"
-                        onClick={() => importar("hoy")}
-                        disabled={cargando || !file}
+                        onClick={() =>
+                            importar("hoy")
+                        }
+                        disabled={
+                            cargando ||
+                            !file
+                        }
                         className="
-                            flex-1
+                            min-h-[46px]
                             px-5
-                            py-3
                             rounded-xl
-                            bg-blue-600
-                            hover:bg-blue-700
+                            bg-[var(--erp-primary)]
+                            hover:brightness-95
                             text-white
                             font-semibold
-                            shadow-lg
+                            text-sm
+                            shadow-sm
                             transition-all
-                            active:scale-[0.97]
+                            active:scale-[0.98]
                             disabled:opacity-40
                             disabled:cursor-not-allowed
                         "
                     >
+
                         {cargando ? (
-                            <span className="flex items-center justify-center gap-2">
-                                <span className="animate-spin">
+
+                            <span
+                                className="
+                                    flex
+                                    items-center
+                                    justify-center
+                                    gap-2
+                                "
+                            >
+
+                                <span
+                                    className="
+                                        animate-spin
+                                        text-lg
+                                    "
+                                >
                                     ⟳
                                 </span>
+
                                 Importando...
+
                             </span>
+
                         ) : (
-                            "📥 Importar expedientes del día"
+
+                            <span
+                                className="
+                                    flex
+                                    items-center
+                                    justify-center
+                                    gap-2
+                                "
+                            >
+                                📥
+                                Importar expedientes del día
+                            </span>
+
                         )}
+
                     </button>
 
 
+
+                    {/* IMPORTAR FECHA */}
+
                     <button
                         type="button"
-                        onClick={() => importar("fecha")}
-                        disabled={cargando || !file || !fecha}
+                        onClick={() =>
+                            importar("fecha")
+                        }
+                        disabled={
+                            cargando ||
+                            !file ||
+                            !fecha
+                        }
                         className="
-                            flex-1
+                            min-h-[46px]
                             px-5
-                            py-3
                             rounded-xl
                             bg-green-600
                             hover:bg-green-700
                             text-white
                             font-semibold
-                            shadow-lg
+                            text-sm
+                            shadow-sm
                             transition-all
-                            active:scale-[0.97]
+                            active:scale-[0.98]
                             disabled:opacity-40
                             disabled:cursor-not-allowed
                         "
                     >
+
                         {cargando ? (
-                            <span className="flex items-center justify-center gap-2">
-                                <span className="animate-spin">
+
+                            <span
+                                className="
+                                    flex
+                                    items-center
+                                    justify-center
+                                    gap-2
+                                "
+                            >
+
+                                <span
+                                    className="
+                                        animate-spin
+                                        text-lg
+                                    "
+                                >
                                     ⟳
                                 </span>
+
                                 Importando...
+
                             </span>
+
                         ) : (
-                            "📅 Importar fecha seleccionada"
+
+                            <span
+                                className="
+                                    flex
+                                    items-center
+                                    justify-center
+                                    gap-2
+                                "
+                            >
+                                📅
+                                Importar fecha seleccionada
+                            </span>
+
                         )}
+
                     </button>
 
                 </div>
 
-            </div>
+
+            </section>
 
 
-            {/* =====================================================
+
+            {/* ==================================================
                 ERROR
-            ====================================================== */}
+                ================================================== */}
 
             {error && (
-                <div
+
+                <section
                     className="
-                        bg-red-500/15
-                        backdrop-blur-xl
-                        border border-red-400/30
+                        bg-red-50
+                        border
+                        border-red-200
                         rounded-2xl
                         p-5
-                        shadow-xl
-                        animate-fade-in
-                    "
-                >
-                    <div className="flex items-start gap-3">
-
-                        <div className="text-2xl">
-                            ⛔
-                        </div>
-
-                        <div>
-                            <h3 className="font-semibold text-red-200">
-                                Error en la importación
-                            </h3>
-
-                            <p className="text-sm text-red-100/80 mt-1">
-                                {error}
-                            </p>
-                        </div>
-
-                    </div>
-                </div>
-            )}
-
-
-            {/* =====================================================
-                RESULTADO
-            ====================================================== */}
-
-            {resultado && (
-                <div
-                    className="
-                        bg-green-500/10
-                        backdrop-blur-xl
-                        border border-green-400/30
-                        rounded-2xl
-                        p-6
-                        shadow-xl
+                        shadow-sm
                         animate-fade-in
                     "
                 >
 
-                    <div className="flex items-center gap-3 mb-5">
+                    <div
+                        className="
+                            flex
+                            items-start
+                            gap-3
+                        "
+                    >
 
                         <div
                             className="
-                                w-11 h-11
+                                w-10
+                                h-10
                                 rounded-xl
-                                bg-green-500/20
-                                border border-green-400/30
-                                flex items-center justify-center
+                                bg-red-100
+                                flex
+                                items-center
+                                justify-center
+                                text-lg
+                                flex-shrink-0
+                            "
+                        >
+                            ⛔
+                        </div>
+
+
+                        <div>
+
+                            <h3
+                                className="
+                                    font-semibold
+                                    text-red-800
+                                "
+                            >
+                                Error en la importación
+                            </h3>
+
+                            <p
+                                className="
+                                    text-sm
+                                    text-red-700
+                                    mt-1
+                                "
+                            >
+                                {error}
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+            )}
+
+
+
+            {/* ==================================================
+                RESULTADO
+                ================================================== */}
+
+            {resultado && (
+
+                <section
+                    className="
+                        bg-white
+                        border
+                        border-green-200
+                        rounded-2xl
+                        p-5
+                        lg:p-6
+                        shadow-sm
+                        animate-fade-in
+                    "
+                >
+
+                    {/* CABECERA */}
+
+                    <div
+                        className="
+                            flex
+                            items-center
+                            gap-3
+                            mb-5
+                        "
+                    >
+
+                        <div
+                            className="
+                                w-11
+                                h-11
+                                rounded-xl
+                                bg-green-50
+                                border
+                                border-green-200
+                                flex
+                                items-center
+                                justify-center
                                 text-xl
+                                text-green-600
                             "
                         >
                             ✓
                         </div>
 
+
                         <div>
-                            <h2 className="text-xl font-bold text-white">
+
+                            <h2
+                                className="
+                                    text-xl
+                                    font-bold
+                                    text-[var(--erp-text)]
+                                "
+                            >
                                 Importación completada
                             </h2>
 
-                            <p className="text-sm text-white/60">
+                            <p
+                                className="
+                                    text-sm
+                                    text-[var(--erp-text-soft)]
+                                "
+                            >
                                 El proceso ABSIS ha finalizado correctamente.
                             </p>
+
                         </div>
 
                     </div>
 
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+
+                    {/* KPIS */}
+
+                    <div
+                        className="
+                            grid
+                            grid-cols-1
+                            sm:grid-cols-2
+                            lg:grid-cols-4
+                            gap-3
+                        "
+                    >
 
                         {/* FECHA */}
 
                         <div
                             className="
-                                bg-white/5
-                                border border-white/10
                                 rounded-xl
+                                border
+                                border-[var(--erp-border)]
+                                bg-[var(--erp-background)]
                                 p-4
                             "
                         >
-                            <div className="text-xs text-white/50 uppercase tracking-wide">
+
+                            <div
+                                className="
+                                    text-[11px]
+                                    font-semibold
+                                    uppercase
+                                    tracking-wide
+                                    text-[var(--erp-text-soft)]
+                                "
+                            >
                                 Fecha importada
                             </div>
 
-                            <div className="text-lg font-semibold mt-1">
+                            <div
+                                className="
+                                    text-lg
+                                    font-bold
+                                    text-[var(--erp-text)]
+                                    mt-1
+                                "
+                            >
                                 {resultado.fecha_importada || "-"}
                             </div>
+
                         </div>
 
 
@@ -418,19 +948,37 @@ export default function ImportadorAbsis() {
 
                         <div
                             className="
-                                bg-white/5
-                                border border-white/10
                                 rounded-xl
+                                border
+                                border-green-200
+                                bg-green-50
                                 p-4
                             "
                         >
-                            <div className="text-xs text-white/50 uppercase tracking-wide">
+
+                            <div
+                                className="
+                                    text-[11px]
+                                    font-semibold
+                                    uppercase
+                                    tracking-wide
+                                    text-green-700
+                                "
+                            >
                                 Expedientes creados
                             </div>
 
-                            <div className="text-2xl font-bold text-green-300 mt-1">
+                            <div
+                                className="
+                                    text-2xl
+                                    font-bold
+                                    text-green-700
+                                    mt-1
+                                "
+                            >
                                 {resultado.expedientes_creados ?? 0}
                             </div>
+
                         </div>
 
 
@@ -438,19 +986,37 @@ export default function ImportadorAbsis() {
 
                         <div
                             className="
-                                bg-white/5
-                                border border-white/10
                                 rounded-xl
+                                border
+                                border-blue-200
+                                bg-blue-50
                                 p-4
                             "
                         >
-                            <div className="text-xs text-white/50 uppercase tracking-wide">
+
+                            <div
+                                className="
+                                    text-[11px]
+                                    font-semibold
+                                    uppercase
+                                    tracking-wide
+                                    text-blue-700
+                                "
+                            >
                                 Expedientes actualizados
                             </div>
 
-                            <div className="text-2xl font-bold text-blue-300 mt-1">
+                            <div
+                                className="
+                                    text-2xl
+                                    font-bold
+                                    text-blue-700
+                                    mt-1
+                                "
+                            >
                                 {resultado.expedientes_actualizados ?? 0}
                             </div>
+
                         </div>
 
 
@@ -458,47 +1024,78 @@ export default function ImportadorAbsis() {
 
                         <div
                             className="
-                                bg-white/5
-                                border border-white/10
                                 rounded-xl
+                                border
+                                border-[var(--erp-border)]
+                                bg-[var(--erp-background)]
                                 p-4
                             "
                         >
-                            <div className="text-xs text-white/50 uppercase tracking-wide">
+
+                            <div
+                                className="
+                                    text-[11px]
+                                    font-semibold
+                                    uppercase
+                                    tracking-wide
+                                    text-[var(--erp-text-soft)]
+                                "
+                            >
                                 Total filtrados
                             </div>
 
-                            <div className="text-2xl font-bold text-white mt-1">
+                            <div
+                                className="
+                                    text-2xl
+                                    font-bold
+                                    text-[var(--erp-text)]
+                                    mt-1
+                                "
+                            >
                                 {resultado.total_filtrados ?? 0}
                             </div>
+
                         </div>
 
                     </div>
 
 
+
                     {/* ERRORES */}
 
                     {resultado.errores > 0 && (
+
                         <div
                             className="
                                 mt-4
                                 p-4
                                 rounded-xl
-                                bg-yellow-500/10
-                                border border-yellow-400/20
-                                text-yellow-100
+                                bg-yellow-50
+                                border
+                                border-yellow-200
+                                text-yellow-800
                                 text-sm
                             "
                         >
+
                             ⚠️ La importación terminó con{" "}
-                            <strong>{resultado.errores}</strong>{" "}
+
+                            <strong>
+                                {resultado.errores}
+                            </strong>{" "}
+
                             registros con error.
+
                         </div>
+
                     )}
 
-                </div>
+                </section>
+
             )}
 
         </div>
+
     );
+
 }

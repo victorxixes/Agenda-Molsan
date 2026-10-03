@@ -1,30 +1,80 @@
 import { create } from "zustand";
+
 import * as api from "../api/logs";
 
+
 /**
- * Store de Logs — Versión SJ‑2026 Premium
+ * ============================================================
+ * STORE DE LOGS
+ * MOLSAN ERP SAAS PREMIUM 2027
+ * ============================================================
+ *
  * Gestiona:
- * - Listado de logs
- * - Filtros
- * - Estado de carga
+ *
+ * - listado de logs
+ * - estado de carga
+ * - errores
+ * - recarga de información
+ *
+ * ============================================================
  */
 
 export const useLogsStore = create((set) => ({
+
+  /* ==========================================================
+     ESTADO
+  ========================================================== */
+
   logs: [],
+
   loading: false,
+
   error: null,
 
-  // ---------------------------------------------------------
-  // CARGAR LOGS
-  // ---------------------------------------------------------
+
+  /* ==========================================================
+     CARGAR LOGS
+  ========================================================== */
+
   cargarLogs: async (filtros = {}) => {
-    set({ loading: true, error: null });
+
+    set({
+      loading: true,
+      error: null,
+    });
 
     try {
-      const res = await api.listarLogs(filtros);
-      set({ logs: res.data || [], loading: false });
-    } catch {
-      set({ logs: [], loading: false, error: "Error cargando logs" });
+
+      const response = await api.listarLogs(
+        filtros
+      );
+
+      const datos =
+        Array.isArray(response?.data)
+          ? response.data
+          : [];
+
+      set({
+        logs: datos,
+        loading: false,
+        error: null,
+      });
+
+    } catch (error) {
+
+      console.error(
+        "ERROR CARGANDO LOGS:",
+        error
+      );
+
+      set({
+        logs: [],
+        loading: false,
+        error: "No se han podido cargar los logs.",
+      });
+
     }
+
   },
+
 }));

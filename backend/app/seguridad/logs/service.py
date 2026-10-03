@@ -7,8 +7,15 @@ from backend.app.seguridad.logs.models import Log
 
 
 # ============================================================
+# SEGURIDAD — LOGS SERVICE
+# MOLSAN ERP SAAS PREMIUM 2027
+# ============================================================
+
+
+# ============================================================
 # REGISTRAR LOG
 # ============================================================
+
 
 def registrar_log(
     db: Session,
@@ -16,15 +23,51 @@ def registrar_log(
     detalle: Optional[str] = None,
     ip: Optional[str] = None,
 ):
+    """
+    Registra un evento técnico del sistema.
+
+    Ejemplos:
+
+        login_error
+        login_success
+        api_error
+        system_error
+        warning
+        import_start
+        import_finished
+        import_error
+    """
+
+    evento = (
+        str(evento).strip()
+        if evento is not None
+        else ""
+    )
+
+    if not evento:
+        raise ValueError(
+            "El evento del log es obligatorio."
+        )
+
     registro = Log(
-        evento=evento,
-        detalle=detalle,
-        ip=ip,
+        evento=evento[:200],
+        detalle=(
+            str(detalle)[:1000]
+            if detalle is not None
+            else None
+        ),
+        ip=(
+            str(ip)[:50]
+            if ip is not None
+            else None
+        ),
         fecha=datetime.utcnow(),
     )
 
     db.add(registro)
+
     db.commit()
+
     db.refresh(registro)
 
     return registro.as_dict()
@@ -34,12 +77,44 @@ def registrar_log(
 # OBTENER LOGS
 # ============================================================
 
+
 def obtener_logs(
     db: Session,
     evento: Optional[str] = None,
     fecha_inicio: Optional[date] = None,
     fecha_fin: Optional[date] = None,
+    limite: int = 200,
 ):
+    """
+    Obtiene logs técnicos.
+
+    Filtros disponibles:
+
+        evento
+        fecha_inicio
+        fecha_fin
+
+    Siempre devuelve los registros más recientes primero.
+    """
+
+    # --------------------------------------------------------
+    # VALIDAR LÍMITE
+    # --------------------------------------------------------
+
+    try:
+        limite = int(limite)
+    except (TypeError, ValueError):
+        limite = 200
+
+    limite = max(
+        1,
+        min(limite, 1000),
+    )
+
+    # --------------------------------------------------------
+    # QUERY BASE
+    # --------------------------------------------------------
+
     query = db.query(Log)
 
     # --------------------------------------------------------
@@ -47,18 +122,23 @@ def obtener_logs(
     # --------------------------------------------------------
 
     if evento:
-        texto = evento.strip()
+
+        texto = str(evento).strip()
 
         if texto:
+
             query = query.filter(
-                Log.evento.ilike(f"%{texto}%")
+                Log.evento.ilike(
+                    f"%{texto}%"
+                )
             )
 
     # --------------------------------------------------------
-    # FILTRO FECHA INICIO
+    # FECHA INICIO
     # --------------------------------------------------------
 
     if fecha_inicio:
+
         inicio = datetime.combine(
             fecha_inicio,
             datetime.min.time(),
@@ -69,29 +149,48 @@ def obtener_logs(
         )
 
     # --------------------------------------------------------
-    # FILTRO FECHA FIN
+    # FECHA FIN
     # --------------------------------------------------------
 
     if fecha_fin:
-        fin = datetime.combine(
+
+        # Utilizamos el inicio del día siguiente
+        # para evitar problemas con microsegundos.
+
+        fin_exclusivo = datetime.combine(
             fecha_fin,
-            datetime.max.time(),
+            datetime.min.time(),
+        )
+
+        # Sumamos un día.
+
+        from datetime import timedelta
+
+        fin_exclusivo += timedelta(
+            days=1
         )
 
         query = query.filter(
-            Log.fecha <= fin
+            Log.fecha < fin_exclusivo
         )
 
     # --------------------------------------------------------
-    # ORDEN MÁS RECIENTE PRIMERO
+    # ORDEN
     # --------------------------------------------------------
 
     registros = (
         query
-        .order_by(Log.fecha.desc())
-        .limit(500)
+        .order_by(
+            Log.fecha.desc(),
+            Log.id.desc(),
+        )
+        .limit(limite)
         .all()
     )
+
+    # --------------------------------------------------------
+    # RESULTADO
+    # --------------------------------------------------------
 
     return [
         registro.as_dict()

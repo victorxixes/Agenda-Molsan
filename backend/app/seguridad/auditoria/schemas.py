@@ -1,20 +1,78 @@
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
+
+# ============================================================
+# SEGURIDAD — AUDITORÍA SCHEMAS
+# MOLSAN ERP SAAS
+# ============================================================
+
+
+# ============================================================
+# BASE
+# ============================================================
 
 class AuditoriaBase(BaseModel):
-    usuario: Optional[str] = None
-    modulo: Optional[str] = None
-    accion: Optional[str] = None
-    descripcion: Optional[str] = None
-    ip: Optional[str] = None
+    """
+    Campos comunes de un registro de auditoría.
+    """
 
+    usuario: Optional[str] = Field(
+        default=None,
+        max_length=100,
+    )
+
+    modulo: Optional[str] = Field(
+        default=None,
+        max_length=100,
+    )
+
+    accion: Optional[str] = Field(
+        default=None,
+        max_length=100,
+    )
+
+    descripcion: Optional[str] = Field(
+        default=None,
+        max_length=500,
+    )
+
+    ip: Optional[str] = Field(
+        default=None,
+        max_length=50,
+    )
+
+
+# ============================================================
+# CREAR
+# ============================================================
+
+class AuditoriaCreate(AuditoriaBase):
+    """
+    Datos necesarios para crear un registro de auditoría.
+
+    Se mantienen todos los campos opcionales porque la auditoría
+    también puede registrar eventos generados por el sistema
+    donde alguno de los datos no esté disponible.
+    """
+
+    pass
+
+
+# ============================================================
+# SALIDA
+# ============================================================
 
 class AuditoriaOut(AuditoriaBase):
+    """
+    Registro de auditoría devuelto por la API.
+    """
+
     id: int
-    fecha: Optional[datetime] = None
+
+    fecha: datetime
 
     model_config = ConfigDict(
         from_attributes=True

@@ -1,5 +1,5 @@
 // ============================================================
-// ERP SJ‑2026 — Sistema de rutas principal
+// ERP SJ-2026 — Sistema de rutas principal
 // ============================================================
 
 import { Routes, Route, Navigate } from "react-router-dom";
@@ -73,33 +73,71 @@ import SeguridadRoles from "./pages/seguridad/SeguridadRoles.jsx";
 import SeguridadModulos from "./pages/seguridad/SeguridadModulos.jsx";
 import SeguridadPermisos from "./pages/seguridad/SeguridadPermisos.jsx";
 import SeguridadFicha from "./pages/seguridad/SeguridadFicha.jsx";
-import SeguridadAuditoria from "./pages/seguridad/SeguridadAuditoria.jsx";
 import SeguridadLogs from "./pages/seguridad/SeguridadLogs.jsx";
 import SeguridadRolEditor from "./pages/seguridad/SeguridadRolEditor.jsx";
 
+/* AUDITORÍA */
+import SeguridadAuditoria from "./pages/seguridad/SeguridadAuditoria.jsx";
+
+
+/**
+ * ============================================================
+ * WRAPPER MENSAJES
+ * ============================================================
+ */
+
 function MensajesWrapper() {
-  const empleado = useAuthStore((s) => s.empleado);
+
+  const empleado = useAuthStore(
+    (s) => s.empleado
+  );
 
   if (!empleado || !empleado.id) {
+
     return (
       <div className="p-6 text-white/70">
         Cargando módulo de mensajes…
       </div>
     );
+
   }
 
-  return <Mensajes usuarioId={empleado.id} />;
+  return (
+    <Mensajes
+      usuarioId={empleado.id}
+    />
+  );
 }
 
+
+/**
+ * ============================================================
+ * APP
+ * ============================================================
+ */
+
 export default function App() {
+
   return (
+
     <div className="animate-fade-in">
+
       <Routes>
 
-        {/* LOGIN */}
-        <Route path="/login" element={<LoginPage />} />
+        {/* ====================================================
+            LOGIN
+            ==================================================== */}
 
-        {/* RUTAS PRIVADAS */}
+        <Route
+          path="/login"
+          element={<LoginPage />}
+        />
+
+
+        {/* ====================================================
+            RUTAS PRIVADAS
+            ==================================================== */}
+
         <Route
           path="/"
           element={
@@ -108,65 +146,296 @@ export default function App() {
             </RequireAuth>
           }
         >
-          <Route index element={<Dashboard />} />
 
-          <Route path="dashboard" element={<Dashboard />} />
+          {/* ==================================================
+              DASHBOARD
+              ================================================== */}
 
-          <Route path="agenda" element={<Agenda />} />
-          <Route path="agenda/dia" element={<VistaDia />} />
-          <Route path="agenda/semana" element={<VistaSemana />} />
-          <Route path="agenda/mes" element={<VistaMes />} />
+          <Route
+            index
+            element={<Dashboard />}
+          />
 
-          {/* EXPEDIENTES */}
-          <Route path="expedientes" element={<ExpedientesListado />} />
-          <Route path="expedientes/:id" element={<FichaExpediente />} />
+          <Route
+            path="dashboard"
+            element={<Dashboard />}
+          />
 
-          <Route path="ctn" element={<Ctn />} />
-          <Route path="ctn/listado" element={<CtnListadoPage />} />
-          <Route path="ctn/:id" element={<CtnDetallePage />} />
 
-          <Route path="empleados" element={<EmpleadosModulo2026 />} />
-          <Route path="empleados/listado" element={<EmpleadosListado />} />
-          <Route path="empleados/:id" element={<EmpleadoFicha />} />
-          <Route path="empleados/:id/editar" element={<EmpleadoEditar />} />
+          {/* ==================================================
+              AGENDA
+              ================================================== */}
 
-          <Route path="intranet" element={<Intranet />} />
+          <Route
+            path="agenda"
+            element={<Agenda />}
+          />
 
-          <Route path="mensajes" element={<MensajesWrapper />} />
+          <Route
+            path="agenda/dia"
+            element={<VistaDia />}
+          />
 
-          <Route path="herramientas" element={<Herramientas />} />
-          <Route path="herramientas/importar-ctn" element={<ImportarCTN />} />
-          <Route path="herramientas/importador-absis" element={<ImportadorAbsis />} />
-          <Route path="herramientas/utilidades" element={<Utilidades />} />
-          <Route path="herramientas/utilidades/crear-noticia" element={<CrearNoticia />} />
-          <Route path="herramientas/utilidades/subir-documento" element={<SubirDocumento />} />
-          <Route path="herramientas/informes" element={<Informes />} />
+          <Route
+            path="agenda/semana"
+            element={<VistaSemana />}
+          />
 
-          <Route path="logs" element={<Logs />} />
+          <Route
+            path="agenda/mes"
+            element={<VistaMes />}
+          />
 
-          <Route path="notificaciones" element={<Notificaciones />} />
 
-          <Route path="paneltecnico" element={<PanelTecnico />} />
-          <Route path="paneltecnico/monitor-sistema" element={<MonitorSistema />} />
-          <Route path="paneltecnico/monitor-realtime" element={<MonitorRealtime />} />
-          <Route path="paneltecnico/auditoria-avanzada" element={<AuditoriaAvanzada />} />
-          <Route path="paneltecnico/logs-avanzados" element={<LogsAvanzados />} />
+          {/* ==================================================
+              EXPEDIENTES
+              ================================================== */}
 
-          <Route path="seguridad" element={<Seguridad />} />
-          <Route path="seguridad/usuarios" element={<SeguridadUsuarios />} />
-          <Route path="seguridad/roles" element={<SeguridadRoles />} />
-          <Route path="seguridad/modulos" element={<SeguridadModulos />} />
-          <Route path="seguridad/permisos" element={<SeguridadPermisos />} />
-          <Route path="seguridad/ficha/:id" element={<SeguridadFicha />} />
-          <Route path="seguridad/auditoria" element={<SeguridadAuditoria />} />
-          <Route path="seguridad/logs" element={<SeguridadLogs />} />
-          <Route path="seguridad/roles/editor" element={<SeguridadRolEditor />} />
+          <Route
+            path="expedientes"
+            element={<ExpedientesListado />}
+          />
+
+          <Route
+            path="expedientes/:id"
+            element={<FichaExpediente />}
+          />
+
+
+          {/* ==================================================
+              CTN
+              ================================================== */}
+
+          <Route
+            path="ctn"
+            element={<Ctn />}
+          />
+
+          <Route
+            path="ctn/listado"
+            element={<CtnListadoPage />}
+          />
+
+          <Route
+            path="ctn/:id"
+            element={<CtnDetallePage />}
+          />
+
+
+          {/* ==================================================
+              EMPLEADOS
+              ================================================== */}
+
+          <Route
+            path="empleados"
+            element={<EmpleadosModulo2026 />}
+          />
+
+          <Route
+            path="empleados/listado"
+            element={<EmpleadosListado />}
+          />
+
+          <Route
+            path="empleados/:id"
+            element={<EmpleadoFicha />}
+          />
+
+          <Route
+            path="empleados/:id/editar"
+            element={<EmpleadoEditar />}
+          />
+
+
+          {/* ==================================================
+              INTRANET
+              ================================================== */}
+
+          <Route
+            path="intranet"
+            element={<Intranet />}
+          />
+
+
+          {/* ==================================================
+              MENSAJES
+              ================================================== */}
+
+          <Route
+            path="mensajes"
+            element={<MensajesWrapper />}
+          />
+
+
+          {/* ==================================================
+              HERRAMIENTAS
+              ================================================== */}
+
+          <Route
+            path="herramientas"
+            element={<Herramientas />}
+          />
+
+          <Route
+            path="herramientas/importar-ctn"
+            element={<ImportarCTN />}
+          />
+
+          <Route
+            path="herramientas/importador-absis"
+            element={<ImportadorAbsis />}
+          />
+
+          <Route
+            path="herramientas/utilidades"
+            element={<Utilidades />}
+          />
+
+          <Route
+            path="herramientas/utilidades/crear-noticia"
+            element={<CrearNoticia />}
+          />
+
+          <Route
+            path="herramientas/utilidades/subir-documento"
+            element={<SubirDocumento />}
+          />
+
+          <Route
+            path="herramientas/informes"
+            element={<Informes />}
+          />
+
+
+          {/* ==================================================
+              LOGS
+              ================================================== */}
+
+          <Route
+            path="logs"
+            element={<Logs />}
+          />
+
+
+          {/* ==================================================
+              NOTIFICACIONES
+              ================================================== */}
+
+          <Route
+            path="notificaciones"
+            element={<Notificaciones />}
+          />
+
+
+          {/* ==================================================
+              PANEL TÉCNICO
+              ================================================== */}
+
+          <Route
+            path="paneltecnico"
+            element={<PanelTecnico />}
+          />
+
+          <Route
+            path="paneltecnico/monitor-sistema"
+            element={<MonitorSistema />}
+          />
+
+          <Route
+            path="paneltecnico/monitor-realtime"
+            element={<MonitorRealtime />}
+          />
+
+          <Route
+            path="paneltecnico/auditoria-avanzada"
+            element={<AuditoriaAvanzada />}
+          />
+
+          <Route
+            path="paneltecnico/logs-avanzados"
+            element={<LogsAvanzados />}
+          />
+
+
+          {/* ==================================================
+              SEGURIDAD
+              
+              IMPORTANTE:
+              Seguridad queda separada de Auditoría.
+              ================================================== */}
+
+          <Route
+            path="seguridad"
+            element={<Seguridad />}
+          />
+
+          <Route
+            path="seguridad/usuarios"
+            element={<SeguridadUsuarios />}
+          />
+
+          <Route
+            path="seguridad/roles"
+            element={<SeguridadRoles />}
+          />
+
+          <Route
+            path="seguridad/modulos"
+            element={<SeguridadModulos />}
+          />
+
+          <Route
+            path="seguridad/permisos"
+            element={<SeguridadPermisos />}
+          />
+
+          <Route
+            path="seguridad/ficha/:id"
+            element={<SeguridadFicha />}
+          />
+
+          <Route
+            path="seguridad/logs"
+            element={<SeguridadLogs />}
+          />
+
+          <Route
+            path="seguridad/roles/editor"
+            element={<SeguridadRolEditor />}
+          />
+
+
+          {/* ==================================================
+              AUDITORÍA
+              
+              Módulo independiente de Seguridad.
+              ================================================== */}
+
+          <Route
+            path="auditoria"
+            element={<SeguridadAuditoria />}
+          />
 
         </Route>
 
-        {/* CUALQUIER OTRA RUTA → LOGIN */}
-        <Route path="*" element={<Navigate to="/login" replace />} />
+
+        {/* ====================================================
+            CUALQUIER OTRA RUTA → LOGIN
+            ==================================================== */}
+
+        <Route
+          path="*"
+          element={
+            <Navigate
+              to="/login"
+              replace
+            />
+          }
+        />
+
       </Routes>
+
     </div>
+
   );
 }
